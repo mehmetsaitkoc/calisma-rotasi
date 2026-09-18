@@ -131,6 +131,19 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   }
 }
 
+// 4) Normal review load is capped, while urgent repair work can bypass that cap.
+{
+  const src=between('function routeIsReviewLike','function routeQuestionTarget');
+  const api=new Function(src+';return {routeIsReviewLike,routeIsCriticalReview,routeReviewDailyLimit,routeReviewWeeklyLimit};')();
+  assert.equal(api.routeIsReviewLike({source:'spaced_review',kind:'review'}),true);
+  assert.equal(api.routeIsCriticalReview({source:'spaced_review',reviewWave:1,priority:78}),true);
+  assert.equal(api.routeIsCriticalReview({source:'spaced_review',reviewWave:3,priority:68}),false);
+  assert.equal(api.routeIsCriticalReview({source:'mistake',priority:88}),true);
+  assert.equal(api.routeReviewDailyLimit(30),30);
+  assert.equal(api.routeReviewDailyLimit(120),60);
+  assert.equal(api.routeReviewWeeklyLimit(150),70);
+}
+
 // 4) Topic mastery suggestion requires learning + both review waves + evidence.
 {
   const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');
@@ -161,6 +174,9 @@ for(const marker of [
   'Sinyal güveni',
   'const waves=needsRepair?[1,3,7]:[3,7]',
   'routeHeavyLimit',
+  'routeReviewDailyLimit',
+  'routeReviewWeeklyLimit',
+  'routeIsCriticalReview',
   'latestBaseByTopic',
   'recentWorkedTopics',
   'routeTopicMasterySignal',

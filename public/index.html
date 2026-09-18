@@ -1403,7 +1403,11 @@ function routeBuildCandidates(){
   const title=R.topic(space,q.topicId)?.title||q.question||subName(q.subjectId),goal=routeReviewGoal(q.subjectId,q.topicId,title,'spaced');
   push({id:R.uid(),date:today(),subjectId:q.subjectId,topicId:q.topicId||('teacher-'+q.id),title:('Rota Hoca tekrar · '+title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceTeacherQuestionId:q.id,source:'ai_teacher',priority:q.status==='stuck'?82:72,reason:q.status==='stuck'?'Rota Hoca’da “Anlamadım” olarak işaretlediğin soru yeniden çalışılmalı.':'Rota Hoca’da tekrar bakılacak olarak işaretledin.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }}catch{}
+ const latestBaseByTopic=new Map();
  for(const p of space.plan.filter(function(p){return p.done&&p.topicId&&R.topic(space,p.topicId)&&!['mistake','spaced_review','checkpoint'].includes(p.source);})){
+  const prev=latestBaseByTopic.get(p.topicId);if(!prev||p.date>prev.date)latestBaseByTopic.set(p.topicId,p);
+ }
+ for(const p of latestBaseByTopic.values()){
   for(const wave of [3,7]){
    const legacyKey='spaced:'+p.topicId+':'+p.date,key='spaced:'+wave+':'+p.topicId+':'+p.date;
    if(space.plan.some(function(x){return x.routeKey===key||(wave===3&&x.routeKey===legacyKey);})||seenKeys.has(key))continue;
@@ -1412,7 +1416,8 @@ function routeBuildCandidates(){
    push({id:R.uid(),date:today(),subjectId:p.subjectId,topicId:p.topicId,title:(wave+' gün tekrarı · '+p.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'spaced_review',reviewWave:wave,priority:wave===3?68:63,reason:wave===3?'İlk çalışmadan birkaç gün sonra kısa geri çağırma ve uygulamayla unutmayı erkenden kontrol ediyoruz.':'Bir hafta sonra aynı konuyu yeniden yoklayarak sadece kısa süreli hatırlamayı değil kalıcılığı kontrol ediyoruz.',earliest:due<today()?today():due,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
   }
  }
- const topics=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)!==2&&!seenTopics.has(t.id);});
+ const recentCutoff=R.dayAdd(today(),-5),recentWorkedTopics=new Set(space.plan.filter(function(p){return p.done&&p.date>=recentCutoff&&p.topicId&&R.topic(space,p.topicId);}).map(function(p){return p.topicId;}));
+ const topics=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)!==2&&!seenTopics.has(t.id)&&!recentWorkedTopics.has(t.id);});
  for(const t of topics){
   const isPriority=space.settings.priorities.includes(t.subjectId),wk=weak[t.subjectId],ps=routeProfileSignal(t.subjectId),last=routeLastLogDate(t.subjectId),goal=routeTaskGoal(t.subjectId,t.id,t.title),method=routeStudyMethod(t.subjectId,t.id,t.title);
   let priority=30+(isPriority?18:0)+(wk?.boost||0)+ps.boost;
@@ -1483,7 +1488,7 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  const oldMap=new Map(space.plan.filter(function(p){return !p.done;}).map(function(p){return [p.id,p.date];}));let changed=0;for(const p of scheduled)if(oldMap.get(p.id)!==p.date)changed++;
  space.plan=kept.concat(scheduled).sort(function(a,b){return a.date.localeCompare(b.date)||((b.priority||0)-(a.priority||0));});
  space.route.lastRun=today();
- space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
+ space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
  space.route.lastChanged=changed;
  space.route.decisions=scheduled.slice(0,80).map(function(p){return {taskId:p.id,date:p.date,source:p.source||'curriculum',priority:p.priority||0,reason:p.reason||''};});
  if(!silent)toast(changed?changed+' görev kapasite ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');

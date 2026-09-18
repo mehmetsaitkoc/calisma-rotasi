@@ -612,7 +612,7 @@ function validateBackup(data){
    w.topicState[id]={status:int(t.status??0,0,2,'konu durumu'),url:safeUrl(text(t.url||'',2000)),position:int(t.position||0,0,100000,'kaynak dakikası'),note:text(t.note||'',4000),updated:typeof t.updated==='number'?t.updated:0};
   }
   w.plan=array(old.plan).map(p=>({id:ident(p.id),date:checkedDate(p.date),subjectId:sub(p.subjectId),topicId:ident(p.topicId),title:text(p.title,180),minutes:int(p.minutes,1,1440,'oturum süresi'),done:!!p.done,...(['review','route'].includes(p.kind)?{kind:p.kind}:{}),...(p.sourceMistakeId?{sourceMistakeId:ident(p.sourceMistakeId)}:{}),...(p.sourceTeacherQuestionId?{sourceTeacherQuestionId:ident(p.sourceTeacherQuestionId)}:{}),...(p.source?{source:text(p.source,40)}:{}),...(Number.isFinite(p.priority)?{priority:Math.max(0,Math.min(100,Math.round(p.priority)))}:{}),...(p.reason?{reason:text(p.reason,500)}:{}),...(p.taskState&&['open','later'].includes(p.taskState)?{taskState:p.taskState}:{}),...(p.deferUntil?{deferUntil:checkedDate(p.deferUntil)}:{}),...(p.routeKey?{routeKey:text(p.routeKey,180)}:{}),...(Number.isInteger(p.targetQuestions)?{targetQuestions:int(p.targetQuestions,0,200,'soru hedefi')}:{}),...(p.taskGoal?{taskGoal:text(p.taskGoal,300)}:{}),...([1,3,7].includes(p.reviewWave)?{reviewWave:p.reviewWave}:{})}));
-  w.logs=array(old.logs).map(l=>({id:ident(l.id),date:checkedDate(l.date),subjectId:sub(l.subjectId),title:text(l.title,180),minutes:int(l.minutes,0,1440,'çalışma süresi'),questions:int(l.questions,0,5000,'soru sayısı'),note:text(l.note||'',2000),sessionId:l.sessionId?ident(l.sessionId):'',...(['stuck','ok','strong'].includes(l.outcome)?{outcome:l.outcome}:{}),...(Number.isInteger(l.correct)?{correct:int(l.correct,0,5000,'doğru sayısı')}:{}),...(Number.isInteger(l.wrong)?{wrong:int(l.wrong,0,5000,'yanlış sayısı')}:{}),...(Number.isFinite(l.created)?{created:Math.max(0,l.created)}:{}),...(Number.isFinite(l.updated)?{updated:Math.max(0,l.updated)}:{})}));
+  w.logs=array(old.logs).map(l=>({id:ident(l.id),date:checkedDate(l.date),subjectId:sub(l.subjectId),title:text(l.title,180),minutes:int(l.minutes,0,1440,'çalışma süresi'),questions:int(l.questions,0,5000,'soru sayısı'),note:text(l.note||'',2000),sessionId:l.sessionId?ident(l.sessionId):'',...(['stuck','ok','strong'].includes(l.outcome)?{outcome:l.outcome}:{}),...(['concept','process','speed','attention','strategy'].includes(l.difficulty)?{difficulty:l.difficulty}:{}),...(Number.isInteger(l.correct)?{correct:int(l.correct,0,5000,'doğru sayısı')}:{}),...(Number.isInteger(l.wrong)?{wrong:int(l.wrong,0,5000,'yanlış sayısı')}:{}),...(Number.isFinite(l.created)?{created:Math.max(0,l.created)}:{}),...(Number.isFinite(l.updated)?{updated:Math.max(0,l.updated)}:{})}));
   for(const l of w.logs){if((Number.isInteger(l.correct)||Number.isInteger(l.wrong))&&((l.correct||0)+(l.wrong||0)>l.questions))throw Error('Çalışma günlüğünde doğru + yanlış, toplam soru sayısını aşıyor.');}
   w.exams=array(old.exams).map(x=>{if(!C.TYPES[x.type]||C.TYPES[x.type].exam!==e)throw Error('Yedekte diğer sınava ait deneme var.');const parts=array(x.parts).map(p=>({label:text(p.label,100),total:p.total,correct:p.correct,wrong:p.wrong}));if(!parts.length||parts.length>20)throw Error('Geçersiz deneme testleri.');calcNet(parts,x.penalty);return {id:ident(x.id),type:x.type,name:text(x.name,120),date:checkedDate(x.date),parts,penalty:x.penalty,note:text(x.note||'',2000)};});
   w.mistakes=array(old.mistakes).map(m=>({id:ident(m.id),subjectId:sub(m.subjectId),title:text(m.title,180),cause:text(m.cause,80),note:text(m.note,4000),reviewDate:checkedDate(m.reviewDate),resolved:!!m.resolved,...(m.examId?{examId:ident(m.examId),partLabel:text(m.partLabel,100)}:{}),...(m.topicId?{topicId:ident(m.topicId)}:{})}));
@@ -1258,7 +1258,7 @@ function routeQuestionTarget(subjectId,topicId='',fallbackTitle=''){
  return Math.max(5,Math.min(30,count));
 }
 function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
- const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,method=routeStudyMethod(subjectId,topicId,fallbackTitle);let q=routeQuestionTarget(subjectId,topicId,fallbackTitle);
+ const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,method=routeStudyMethod(subjectId,topicId,fallbackTitle),difficulty=routeEffectiveDifficulty(subjectId,topicId);let q=routeQuestionTarget(subjectId,topicId,fallbackTitle);
  const mins={
   quant:[40,35,35,30],geometry:[40,35,30,30],science:[35,35,30,30],biology:[35,30,30,25],
   paragraph:[30,30,30,30],logic:[35,35,30,30],grammar:[35,30,30,25],history:[35,30,25,25],
@@ -1318,14 +1318,15 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
   text=level<=1?'12 dk konuyu çalış + kaynağı kapatıp 5 kavramı kendi cümlenle anlat + yaklaşık '+q+' soru':
        'Kaynağı kapatıp 5 ana kavramı geri çağır + yaklaşık '+q+' soru + yanlış kavramı tek cümleyle düzelt';
  }
+ if(difficulty.known){const rx=routeDifficultyPrescription(subjectId,topicId,fallbackTitle,difficulty.recent);if(rx)text+=' · Son zorlanma: '+difficulty.label+'. '+rx;}
  if(adaptive.mode==='ease')text+=' · Bugün hedefi küçük tut: bitirmek, yükü büyütmekten daha önemli.';
  else if(adaptive.mode==='repair')text+=' · Öncelik hız değil: yanlışın nedenini düzeltmeden yeni konuya koşma.';
  else if(adaptive.mode==='progress')text+=' · Son 5 dakikada 2 zorlayıcı ek soru ile seviyeni yokla.';
  return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label,adaptiveMode:adaptive.mode,adaptiveLabel:adaptive.label};
 }
 function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
- const method=routeStudyMethod(subjectId,topicId,fallbackTitle),base=routeQuestionTarget(subjectId,topicId,fallbackTitle);let q=Math.max(5,Math.min(18,Math.round(base*(mode==='checkpoint'?0.9:mode==='mistake'?0.65:mode==='long'?0.7:0.55))));
- let minutes=mode==='checkpoint'?30:25;const uncappedMinutes=minutes;minutes=Math.min(minutes,routeMaxTaskMinutes());if(minutes<uncappedMinutes)q=Math.max(5,Math.round(q*minutes/uncappedMinutes));
+ const method=routeStudyMethod(subjectId,topicId,fallbackTitle),base=routeQuestionTarget(subjectId,topicId,fallbackTitle),adaptive=routeSubjectAdaptiveState(subjectId,topicId);let mult=mode==='checkpoint'?0.9:mode==='mistake'?0.65:mode==='long'?0.7:0.55;if(['spaced','long'].includes(mode)&&adaptive.mode==='progress')mult*=.85;let q=Math.max(5,Math.min(18,Math.round(base*mult)));
+ let minutes=mode==='checkpoint'?30:((['spaced','long'].includes(mode)&&adaptive.mode==='progress')?20:25);const uncappedMinutes=minutes;minutes=Math.min(minutes,routeMaxTaskMinutes());if(minutes<uncappedMinutes)q=Math.max(5,Math.round(q*minutes/uncappedMinutes));
  let text='';
  if(method.key==='quant'||method.key==='geometry')text=(method.key==='geometry'?'Şekli/kuralı':'Kuralı/formülü')+' bakmadan hatırla + 2 eski soruyu yeniden çöz + yaklaşık '+q+' yeni soru; aynı hatayı tekrar edip etmediğini kontrol et';
  else if(method.key==='science')text='3 ana kavram/formülü kaynaksız yaz + yaklaşık '+q+' karışık soru + yanlışın kavram/yorum/işlem nedenini işaretle';
@@ -1342,6 +1343,7 @@ function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
  else if(method.key==='ydt_reading')text='Yaklaşık '+q+' soruluk süreli okuma mini seti + yanlışta kelime mi çıkarım mı olduğunu işaretle';
  else text='Kaynağı kapatıp 6 ana kavramı kendi cümlenle anlat + yaklaşık '+q+' soru + yanlış kavramı düzelt';
  if(mode==='long')text='Önce 5 dk kaynağı açmadan ne hatırladığını çıkar. '+text;
+ if(['spaced','long'].includes(mode)&&adaptive.mode==='progress')text='Kısa tut: amaç yükü büyütmek değil kalıcılığı yoklamak. '+text;
  return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label};
 }
 function routeProfileSignal(subjectId){
@@ -1357,14 +1359,37 @@ function routeBehaviorSignal(subjectId,topicId=''){
 }
 function routeOutcomeSignal(subjectId,topicId=''){
  const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!['stuck','ok','strong'].includes(l.outcome))return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,6);
- let stuck=0,ok=0,strong=0;for(const l of xs){if(l.outcome==='stuck')stuck++;else if(l.outcome==='strong')strong++;else ok++;}
- const total=xs.length,recent=xs[0]?.outcome||'';
- return {known:total>0,total,stuck,ok,strong,recent,stuckRate:total?stuck/total:0,strongRate:total?strong/total:0};
+ const weights=[1,.82,.68,.55,.45,.36];let stuck=0,ok=0,strong=0,weighted=0,weightTotal=0;
+ xs.forEach(function(l,i){if(l.outcome==='stuck')stuck++;else if(l.outcome==='strong')strong++;else ok++;const wgt=weights[i]||.3,score=l.outcome==='strong'?1:l.outcome==='stuck'?-1:0;weighted+=score*wgt;weightTotal+=wgt;});
+ const total=xs.length,recent=xs[0]?.outcome||'',trend=weightTotal?weighted/weightTotal:0;
+ return {known:total>0,total,stuck,ok,strong,recent,stuckRate:total?stuck/total:0,strongRate:total?strong/total:0,trend};
 }
 function routePracticeSignal(subjectId,topicId=''){
  const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,6);
- let correct=0,wrong=0;for(const l of xs){correct+=l.correct;wrong+=l.wrong;}const answered=correct+wrong,accuracy=answered?correct/answered:0;
- return {known:xs.length>0,sessions:xs.length,correct,wrong,answered,accuracy,recent:xs[0]||null};
+ const weights=[1,.82,.68,.55,.45,.36];let correct=0,wrong=0,weighted=0,weightTotal=0;
+ xs.forEach(function(l,i){correct+=l.correct;wrong+=l.wrong;const answered=l.correct+l.wrong,wgt=weights[i]||.3;weighted+=(answered?l.correct/answered:0)*wgt;weightTotal+=wgt;});
+ const answered=correct+wrong,accuracy=answered?correct/answered:0,recent=xs[0]||null,recentAnswered=recent?(recent.correct+recent.wrong):0,recentAccuracy=recentAnswered?recent.correct/recentAnswered:0,weightedAccuracy=weightTotal?weighted/weightTotal:0;
+ return {known:xs.length>0,sessions:xs.length,correct,wrong,answered,accuracy,weightedAccuracy,recent,recentAccuracy,recentAnswered};
+}
+function routeDifficultyLabel(value){return ({concept:'Konu / kavram eksiği',process:'İşlem / uygulama hatası',speed:'Süre yetişmedi',attention:'Dikkat hatası',strategy:'Soruya yaklaşım'}[value]||'');}
+function routeDifficultySignal(subjectId,topicId=''){
+ const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),allowed=['concept','process','speed','attention','strategy'];
+ const xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!allowed.includes(l.difficulty))return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,6);
+ const counts={};for(const l of xs)counts[l.difficulty]=(counts[l.difficulty]||0)+1;const recent=xs[0]?.difficulty||'',top=Object.entries(counts).sort(function(a,b){return b[1]-a[1];})[0]?.[0]||recent;
+ return {known:xs.length>0,total:xs.length,recent,top,label:routeDifficultyLabel(recent),topLabel:routeDifficultyLabel(top),counts};
+}
+function routeEffectiveDifficulty(subjectId,topicId=''){
+ const topicSignal=topicId&&R.topic(w(),topicId)?routeDifficultySignal(subjectId,topicId):null;
+ return topicSignal?.known?{...topicSignal,scope:'topic'}:{...routeDifficultySignal(subjectId),scope:'subject'};
+}
+function routeDifficultyPrescription(subjectId,topicId,fallbackTitle,difficulty){
+ if(!difficulty)return '';const method=routeStudyMethod(subjectId,topicId,fallbackTitle);
+ if(difficulty==='concept')return ['quant','geometry','science','biology'].includes(method.key)?'İlk bölümde formül ezberlemek yerine temel ilişkiyi kendi cümlenle anlat; sonra örnek soruya geç.':'İlk bölümde kaynağı kapatıp ana kavramı kendi cümlenle geri çağır; sonra teste geç.';
+ if(difficulty==='process')return ['quant','geometry','science'].includes(method.key)?'Çözümde ara adımları atlama; her yanlışta işlemin koptuğu satırı işaretle.':'Cevabın gerekçesini tek cümleyle yaz; yalnız doğru seçeneği bulup geçme.';
+ if(difficulty==='speed')return ['paragraph','ydt_reading'].includes(method.key)?'Seti süreli çöz; bir soruda fazla takılırsan işaretleyip sona bırak ve tur sonunda geri dön.':'İlk turda süre tut; takıldığın soruyu işaretleyip geç, ikinci turda zor sorulara dön.';
+ if(difficulty==='attention')return 'Her soruda soru kökündeki kritik kelimeyi işaretle; son 3 dakikayı yalnız kontrol turuna ayır.';
+ if(difficulty==='strategy')return ['quant','geometry','science','logic'].includes(method.key)?'Çözmeden önce “verilen–istenen–yöntem” üçlüsünü yaz; yöntemi seçmeden işleme başlama.':'Cevaplamadan önce soru kökünün senden istediğini bir cümleyle yeniden söyle; sonra seçenekleri ele.';
+ return '';
 }
 function routeSubjectAdaptiveState(subjectId,topicId=''){
  const realTopic=topicId&&R.topic(w(),topicId)?topicId:'';
@@ -1372,34 +1397,34 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  const topicOutcome=realTopic?routeOutcomeSignal(subjectId,realTopic):null,subjectOutcome=routeOutcomeSignal(subjectId),outcome=topicOutcome?.known?topicOutcome:subjectOutcome;
  const topicPractice=realTopic?routePracticeSignal(subjectId,realTopic):null,subjectPractice=routePracticeSignal(subjectId),practice=topicPractice?.known?topicPractice:subjectPractice;
  const topicEvidence=!!(realTopic&&(topicBehavior?.known||topicOutcome?.known||topicPractice?.known));
- const weak=routeExamWeakness()[subjectId],openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId&&(!realTopic||m.topicId===realTopic);}).length;
+ const weak=routeExamWeakness()[subjectId],openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId&&(!realTopic||m.topicId===realTopic);}).length,practiceAccuracy=practice.known?(practice.weightedAccuracy||practice.accuracy):0;
  let mode='steady',label='DENGELİ TEMPO',note='Görev dozu mevcut seviyene göre korunuyor.',repairScore=0,progressScore=0,evidence=[];
  if(weak&&weak.ratio<.52){repairScore+=3;evidence.push('deneme belirgin zayıf');}
  else if(weak&&weak.ratio<.62){repairScore+=1;evidence.push('deneme zayıf');}
  if(openMistakes>=3){repairScore+=3;evidence.push(openMistakes+' açık yanlış');}
  else if(openMistakes>=2){repairScore+=2;evidence.push(openMistakes+' açık yanlış');}
  else if(openMistakes===1){repairScore+=1;evidence.push('1 açık yanlış');}
- if(outcome.total>=3&&outcome.stuckRate>=.50){repairScore+=3;evidence.push('tekrarlayan zorlanma');}
- else if(outcome.total>=2&&outcome.stuckRate>=.50){repairScore+=2;evidence.push('birden fazla zorlanma');}
+ if(outcome.total>=3&&outcome.stuckRate>=.50&&outcome.trend<.15){repairScore+=3;evidence.push('tekrarlayan zorlanma');}
+ else if(outcome.total>=2&&outcome.stuckRate>=.50&&outcome.trend<.20){repairScore+=2;evidence.push('birden fazla zorlanma');}
  else if(outcome.recent==='stuck'){repairScore+=1;evidence.push('son oturum zor geçti');}
- if(practice.known&&practice.answered>=12&&practice.accuracy<.50){repairScore+=3;evidence.push('soru doğruluğu çok düşük');}
- else if(practice.known&&practice.answered>=10&&practice.accuracy<.62){repairScore+=2;evidence.push('soru doğruluğu düşük');}
- else if(practice.known&&practice.answered>=8&&practice.accuracy<.70){repairScore+=1;evidence.push('soru doğruluğu sınırda');}
+ if(practice.known&&practice.answered>=12&&practiceAccuracy<.50){repairScore+=3;evidence.push('soru doğruluğu çok düşük');}
+ else if(practice.known&&practice.answered>=10&&practiceAccuracy<.62){repairScore+=2;evidence.push('soru doğruluğu düşük');}
+ else if(practice.known&&practice.answered>=8&&practiceAccuracy<.70){repairScore+=1;evidence.push('soru doğruluğu sınırda');}
  const severeFriction=behavior.known&&behavior.total>=4&&behavior.friction>=.60;
  const moderateFriction=behavior.known&&behavior.total>=3&&behavior.friction>=.42;
  if(behavior.known&&behavior.total>=4&&behavior.completion>=.80){progressScore+=2;evidence.push('yüksek tamamlama');}
  else if(behavior.known&&behavior.total>=3&&behavior.completion>=.75){progressScore+=1;evidence.push('iyi tamamlama');}
- if(outcome.total>=3&&outcome.strongRate>=.50&&outcome.stuckRate<=.25&&outcome.recent!=='stuck'){progressScore+=2;evidence.push('rahat ilerleme tekrar ediyor');}
- else if(outcome.total>=2&&outcome.strongRate>=.50&&outcome.recent!=='stuck'){progressScore+=1;evidence.push('rahat ilerleme');}
- if(practice.known&&practice.sessions>=2&&practice.answered>=15&&practice.accuracy>=.85){progressScore+=2;evidence.push('yüksek soru doğruluğu');}
- else if(practice.known&&practice.answered>=12&&practice.accuracy>=.78){progressScore+=1;evidence.push('iyi soru doğruluğu');}
+ if(outcome.total>=3&&outcome.trend>=.30&&outcome.recent!=='stuck'){progressScore+=2;evidence.push('rahat ilerleme tekrar ediyor');}
+ else if(outcome.total>=2&&outcome.trend>=.18&&outcome.recent!=='stuck'){progressScore+=1;evidence.push('rahat ilerleme');}
+ if(practice.known&&practice.sessions>=2&&practice.answered>=15&&practiceAccuracy>=.85){progressScore+=2;evidence.push('yüksek soru doğruluğu');}
+ else if(practice.known&&practice.answered>=12&&practiceAccuracy>=.78){progressScore+=1;evidence.push('iyi soru doğruluğu');}
  if(weak&&weak.ratio>=.78){progressScore+=1;evidence.push('deneme güçlü');}
  if(openMistakes===0)progressScore+=1;else progressScore=Math.max(0,progressScore-1);
  if(severeFriction){
   mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note='Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama belirgin arttığı için önce görevi küçültüp düzeni koruyoruz.';
  }else if(repairScore>=3){
   mode='repair';label='ONARIM MODU';
-  note=practice.known&&practice.accuracy<.62?'Birden fazla sinyal soru doğruluğu ve temel üzerinde onarım gerektiğini gösteriyor; yükü büyütmeden yanlış nedenine dönüyoruz.':
+  note=practice.known&&practiceAccuracy<.62?'Birden fazla sinyal soru doğruluğu ve temel üzerinde onarım gerektiğini gösteriyor; yükü büyütmeden yanlış nedenine dönüyoruz.':
        outcome.total>=2&&outcome.stuckRate>=.5?'Zorlanma tekrarladığı ve başka sinyallerle desteklendiği için yeni yük eklemek yerine temeli onarıyoruz.':
        'Deneme, yanlış ve çalışma sinyalleri birlikte temel onarımını öne çıkarıyor.';
  }else if(moderateFriction){
@@ -1418,9 +1443,9 @@ function routeTopicMasterySignal(topicId){
  const t=R.topic(w(),topicId);if(!t)return {ready:false,reason:''};
  const done=w().plan.filter(function(p){return p.done&&p.topicId===topicId;}),base=done.some(function(p){return !['mistake','spaced_review','checkpoint','ai_teacher'].includes(p.source);}),review3=done.some(function(p){return p.source==='spaced_review'&&p.reviewWave===3;}),review7=done.some(function(p){return p.source==='spaced_review'&&p.reviewWave===7;});
  const outcome=routeOutcomeSignal(t.subjectId,topicId),practice=routePracticeSignal(t.subjectId,topicId),openMistake=w().mistakes.some(function(m){return !m.resolved&&m.topicId===topicId;});
- const hasEvidence=outcome.known||practice.known,performanceOk=practice.known?practice.accuracy>=.78:(outcome.known&&outcome.recent!=='stuck'&&outcome.stuckRate<=.25);
+ const hasEvidence=outcome.known||practice.known,performanceAccuracy=practice.known?(practice.weightedAccuracy||practice.accuracy):0,performanceOk=practice.known?performanceAccuracy>=.78:(outcome.known&&outcome.recent!=='stuck'&&outcome.trend>=0);
  const ready=base&&review3&&review7&&hasEvidence&&performanceOk&&!openMistake;
- const reason=ready?(practice.known?'Ana çalışma ve 3/7 gün tekrarları tamamlandı; son soru doğruluğu %'+Math.round(practice.accuracy*100)+'.':'Ana çalışma ve 3/7 gün tekrarları tamamlandı; son geri bildirimde belirgin zorlanma yok.'):'';
+ const reason=ready?(practice.known?'Ana çalışma ve 3/7 gün tekrarları tamamlandı; yakın dönem ağırlıklı soru doğruluğu %'+Math.round(performanceAccuracy*100)+'.':'Ana çalışma ve 3/7 gün tekrarları tamamlandı; son geri bildirimlerde belirgin zorlanma yok.'):'';
  return {ready,reason,base,review3,review7,outcome,practice,openMistake};
 }
 function routeClearCompletedTopicQueue(topicId){

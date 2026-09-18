@@ -86,6 +86,35 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
     weak:{'k-ma':{ratio:.8}}
   });
   assert.equal(friction.mode,'ease');
+
+  // Topic evidence must override broad subject history when it exists.
+  {
+    const space={
+      plan:[
+        {id:'s1',subjectId:'k-ma',topicId:'topic-1'},
+        {id:'s2',subjectId:'k-ma',topicId:'topic-2'},
+        {id:'s3',subjectId:'k-ma',topicId:'topic-2'}
+      ],
+      logs:[
+        {subjectId:'k-ma',sessionId:'s1',date:'2026-09-18',outcome:'stuck',correct:5,wrong:5},
+        {subjectId:'k-ma',sessionId:'s2',date:'2026-09-18',outcome:'strong',correct:9,wrong:1},
+        {subjectId:'k-ma',sessionId:'s3',date:'2026-09-17',outcome:'strong',correct:9,wrong:1}
+      ],
+      mistakes:[]
+    };
+    const R={dayAdd:()=> '2026-08-29',topic:(_w,id)=>['topic-1','topic-2'].includes(id)?{id}:null};
+    const today=()=> '2026-09-19';
+    const w=()=>space;
+    const routeBehaviorSignal=(_subject,topic='')=>topic==='topic-2'?{known:true,completion:.9,friction:.05}:{known:false,completion:0,friction:0};
+    const routeExamWeakness=()=>({'k-ma':{ratio:.8}});
+    const adaptive=new Function('R','today','w','routeBehaviorSignal','routeExamWeakness',src+';return routeSubjectAdaptiveState;')(R,today,w,routeBehaviorSignal,routeExamWeakness);
+    const weakTopic=adaptive('k-ma','topic-1');
+    const strongTopic=adaptive('k-ma','topic-2');
+    assert.equal(weakTopic.mode,'repair');
+    assert.equal(weakTopic.scope,'topic');
+    assert.equal(strongTopic.mode,'progress');
+    assert.equal(strongTopic.scope,'topic');
+  }
 }
 
 // 4) Guard core personalization features against accidental removal.
@@ -96,6 +125,8 @@ for(const marker of [
   'routePracticeSignal',
   'for(const wave of [3,7])',
   'routeHeavyLimit',
+  'latestBaseByTopic',
+  'recentWorkedTopics',
   'SÜRELİ ANLAMA SETİ',
   'ZAMAN ÇİZGİSİ + HATIRLAMA'
 ]) assert.ok(html.includes(marker),`Missing personalization marker: ${marker}`);

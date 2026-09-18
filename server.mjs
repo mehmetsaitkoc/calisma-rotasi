@@ -1,0 +1,234 @@
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PUBLIC = path.join(__dirname, 'public');
+const INDEX = path.join(PUBLIC, 'index.html');
+const PORT = Number(process.env.PORT || 8787);
+const HOST = process.env.HOST || '0.0.0.0';
+const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/,'');
+let runtimeApiKey = process.env.OPENAI_API_KEY || '';
+let runtimeProfile = ['best','balanced','economy'].includes(process.env.ROTA_AI_PROFILE) ? process.env.ROTA_AI_PROFILE : 'best';
+let runtimeModel = process.env.ROTA_AI_MODEL || ({best:'gpt-6-astra',balanced:'gpt-5.6-sol',economy:'gpt-5.6-luna'}[runtimeProfile]);
+const TTS_MODEL = process.env.ROTA_TTS_MODEL || 'gpt-4o-mini-tts';
+const MALE_VOICE = process.env.ROTA_TTS_MALE_VOICE || 'cedar';
+const FEMALE_VOICE = process.env.ROTA_TTS_FEMALE_VOICE || 'marin';
+const MAX_BODY = 7 * 1024 * 1024;
+const buckets = new Map();
+
+const PROFILE_MODELS = {
+  best:['gpt-6-astra','gpt-5.6-sol','gpt-5.6-terra','gpt-5.6-luna'],
+  balanced:['gpt-5.6-sol','gpt-5.6-terra','gpt-5.6-luna'],
+  economy:['gpt-5.6-luna']
+};
+
+function json(res, status, value) {
+  const body = JSON.stringify(value);
+  res.writeHead(status, {'content-type':'application/json; charset=utf-8','content-length':Buffer.byteLength(body),'cache-control':'no-store'});
+  res.end(body);
+}
+function rateLimit(req, limit=30, windowMs=60_000) {
+  const ip = req.socket.remoteAddress || 'local';
+  const now = Date.now();
+  const old = buckets.get(ip) || [];
+  const fresh = old.filter(t => now - t < windowMs);
+  if (fresh.length >= limit) return false;
+  fresh.push(now); buckets.set(ip, fresh); return true;
+}
+function readJson(req) {
+  return new Promise((resolve, reject) => {
+    let size=0, chunks=[];
+    req.on('data', c => {
+      size += c.length;
+      if (size > MAX_BODY) { reject(Object.assign(new Error('İstek çok büyük.'),{status:413})); req.destroy(); return; }
+      chunks.push(c);
+    });
+    req.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); } catch { reject(Object.assign(new Error('Geçersiz JSON.'),{status:400})); } });
+    req.on('error', reject);
+  });
+}
+function cleanText(v, max=5000){ return typeof v === 'string' ? v.slice(0,max) : ''; }
+function safePhoto(photo){
+  if (!photo) return '';
+  if (typeof photo !== 'string' || photo.length > 5_800_000) throw Object.assign(new Error('Fotoğraf çok büyük.'),{status:413});
+  if (!/^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(photo)) throw Object.assign(new Error('Desteklenmeyen fotoğraf biçimi.'),{status:400});
+  return photo;
+}
+function extractOutputText(data){
+  if (typeof data?.output_text === 'string' && data.output_text.trim()) return data.output_text.trim();
+  for (const item of data?.output || []) for (const c of item?.content || []) if (typeof c?.text === 'string') return c.text;
+  return '';
+}
+function isStem(subject, question){
+  const t=(subject+' '+question).toLocaleLowerCase('tr-TR');
+  return /(matematik|geometri|fizik|kimya|sayısal|denklem|fonksiyon|türev|integral|olasılık|oran|problem|hız|kuvvet|enerji|mol|asit|baz|\d\s*[+\-*/^×÷=])/.test(t);
+}
+function validateAnswer(a){
+  if(!a || typeof a!=='object') throw new Error('Model cevabı geçersiz.');
+  for(const k of ['kind','direct_answer','message','diagnosis','steps','summary','confidence','detected_subject','detected_topic','difficulty','needs_clarification','verification','route_signal','source_notes']) if(!(k in a)) throw new Error('Model cevabında alan eksik: '+k);
+  if(!Array.isArray(a.steps)||!Array.isArray(a.source_notes)) throw new Error('Model cevabı liste alanları geçersiz.');
+  return a;
+}
+
+const schema = {
+  type:'object', additionalProperties:false,
+  properties:{
+    kind:{type:'string',enum:['chat','fact','solution','concept','study','clarify']},
+    direct_answer:{type:'string'},
+    message:{type:'string'},
+    diagnosis:{type:'string'},
+    steps:{type:'array',maxItems:8,items:{type:'object',additionalProperties:false,properties:{title:{type:'string'},text:{type:'string'}},required:['title','text']}},
+    summary:{type:'string'},
+    confidence:{type:'number',minimum:0,maximum:1},
+    detected_subject:{type:'string'},
+    detected_topic:{type:'string'},
+    difficulty:{type:'string',enum:['basic','medium','advanced']},
+    needs_clarification:{type:'boolean'},
+    verification:{type:'object',additionalProperties:false,properties:{status:{type:'string',enum:['checked','partial','not_needed','uncertain']},methods:{type:'array',items:{type:'string'}},note:{type:'string'}},required:['status','methods','note']},
+    route_signal:{type:'object',additionalProperties:false,properties:{importance:{type:'integer',minimum:0,maximum:3},reason:{type:'string'}},required:['importance','reason']},
+    source_notes:{type:'array',items:{type:'string'}}
+  },
+  required:['kind','direct_answer','message','diagnosis','steps','summary','confidence','detected_subject','detected_topic','difficulty','needs_clarification','verification','route_signal','source_notes']
+};
+
+async function callTeacher(body){
+  if (!runtimeApiKey) throw Object.assign(new Error('Rota Hoca AI henüz bağlanmadı.'), {status:503});
+  const question = cleanText(body.question, 5000).trim();
+  const photo = safePhoto(body.photo);
+  if(!question && !photo) throw Object.assign(new Error('Sorunu yaz veya fotoğraf ekle.'),{status:400});
+  const exam = cleanText(body.exam, 50) || 'Belirtilmedi';
+  const track = cleanText(body.track, 100);
+  const subject = cleanText(body.subject, 140);
+  const topic = cleanText(body.topic, 200);
+  const mode = ['base','simple','alternate','similar','review'].includes(body.mode) ? body.mode : 'base';
+  const context = body.studentContext && typeof body.studentContext === 'object' ? body.studentContext : {};
+  const previous = body.previousAnswer && typeof body.previousAnswer === 'object' ? body.previousAnswer : null;
+  const contextText = JSON.stringify(context).slice(0,11000);
+  const previousText = previous ? JSON.stringify(previous).slice(0,8000) : '';
+  const instructions = `Sen Çalışma Rotası içindeki Rota Hoca'sın. Türkçe konuşan, sakin, güvenilir ve sınav odaklı bir KPSS/YKS öğretmenisin.
+
+Öğrenci bağlamı:
+- Sınav: ${exam}${track?` / ${track}`:''}
+- Seçili ders: ${subject||'belirtilmedi'}
+- Seçili konu: ${topic||'belirtilmedi'}
+
+Zorunlu davranış kuralları:
+1) Geçerli bir müfredat veya genel bilgi sorusunu gerçekten cevapla. Basit bilgi sorularında doğru cevabı ilk cümlede ver; gereksiz yere “bilmiyorum” deme.
+2) Matematik/geometri/fizik/kimyada hesabı ve sonucu kendi içinde kontrol et. Gerekirse Code Interpreter kullan. Kullanıcıya gizli düşünce zinciri verme; bunun yerine kısa, öğretici ve doğrulanabilir çözüm adımları yaz.
+3) Fotoğraf varsa soru metnini, seçenekleri, şekli ve tabloyu görselden incele. Görsel gerçekten okunamıyorsa tahmin etme; needs_clarification=true yap ve tam olarak neyin net olmadığını söyle.
+4) Çoktan seçmeli soruda mümkünse doğru seçeneği direct_answer alanında belirt ve kısa gerekçe ver.
+5) Güncel mevzuat, güncel kurum bilgisi, güncel kişi/tarih/istatistik veya değişebilecek bilgi sorulursa web aramasını kullan. Kaynak kullandıysan source_notes alanına kısa kaynak notları ekle.
+6) Seçili ders/konu yanlışsa soruyu reddetme. detected_subject ve detected_topic alanlarında doğru sınıflandırmayı yaz; cevap yine ver.
+7) Emin olmadığın şeyi uydurma. Belirsizlik çözümü etkiliyorsa clarification iste; confidence değerini gerçekçi tut.
+8) Cevap pedagojik olsun: direct_answer = doğrudan sonuç; diagnosis = öğrencinin muhtemel takıldığı nokta; steps = öğrenciye gösterilecek kısa adımlar; summary = tek cümlelik kapanış.
+9) “simple” modunda daha sade ve kısa; “alternate” modunda farklı çözüm yolu; “similar” modunda çözümsüz benzer soru; “review” modunda kısa konu özeti üret.
+10) Öğrencinin geçmiş verisini yalnız eğitim amaçlı kullan. route_signal yalnızca gerçekten tekrar yararlıysa 1-3, değilse 0 olsun.
+11) Sorunun kendisi sohbet ise kind=chat; ders sorusuysa fact/solution/concept; çalışma tavsiyesiyse study; netleştirme gerekiyorsa clarify.
+
+Öğrenci çalışma bağlamı: ${contextText}
+${previousText?`Önceki cevap/bağlam: ${previousText}\n`:''}İstenen devam modu: ${mode}.`;
+
+  const content = [{type:'input_text', text: question || 'Bu fotoğraftaki soruyu çöz. Önce soruyu doğru oku, sonra öğretmen gibi açıkla.'}];
+  if (photo) content.push({type:'input_image', image_url:photo, detail:'high'});
+  const tools=[{type:'web_search'}];
+  if(isStem(subject,question)) tools.push({type:'code_interpreter',container:{type:'auto'}});
+  const payload = {
+    model: runtimeModel,
+    store: false,
+    instructions,
+    input:[{role:'user',content}],
+    tools,
+    text:{format:{type:'json_schema',name:'rota_hoca_answer',strict:true,schema}},
+    reasoning:{effort:(photo||isStem(subject,question))?'high':'medium'},
+    max_output_tokens:2600
+  };
+  const response = await fetch(OPENAI_BASE_URL + '/responses', {method:'POST',headers:{'authorization':`Bearer ${runtimeApiKey}`,'content-type':'application/json'},body:JSON.stringify(payload)});
+  const raw = await response.text();
+  let data; try { data=JSON.parse(raw); } catch { data={}; }
+  if (!response.ok) throw Object.assign(new Error(data?.error?.message || `AI isteği başarısız (${response.status}).`), {status:502});
+  const text = extractOutputText(data);
+  if (!text) throw Object.assign(new Error('Model yapılandırılmış cevap döndürmedi.'), {status:502});
+  let answer; try { answer=validateAnswer(JSON.parse(text)); } catch(e) { throw Object.assign(new Error('Model cevabı çözümlenemedi: '+e.message), {status:502}); }
+  return {answer, model:data.model || runtimeModel, responseId:data.id || '', usage:data.usage || null};
+}
+
+async function callTTS(body){
+  if (!runtimeApiKey) throw Object.assign(new Error('Rota Hoca AI henüz bağlanmadı.'), {status:503});
+  const input = cleanText(body.text, 4096).trim();
+  if(!input) throw Object.assign(new Error('Seslendirilecek metin boş.'),{status:400});
+  const gender = body.gender === 'female' ? 'female' : 'male';
+  const voice = gender === 'female' ? FEMALE_VOICE : MALE_VOICE;
+  const instructions = gender === 'female'
+    ? 'Türkçe konuşan yetişkin bir kadın öğretmen gibi, doğal, sakin, sıcak ve profesyonel konuş. Orta tonda, temiz diksiyonla, acele etmeden anlat. Reklam veya spiker tonu kullanma.'
+    : 'Türkçe konuşan yetişkin bir erkek öğretmen gibi, doğal, sakin, sıcak ve profesyonel konuş. Orta-alt ses perdesinde, temiz diksiyonla, acele etmeden anlat. Reklam veya spiker tonu kullanma.';
+  const response = await fetch(OPENAI_BASE_URL + '/audio/speech', {method:'POST',headers:{'authorization':`Bearer ${runtimeApiKey}`,'content-type':'application/json'},body:JSON.stringify({model:TTS_MODEL,voice,input,instructions,response_format:'mp3',speed:0.95})});
+  if(!response.ok){let msg='Ses üretilemedi.';try{const e=await response.json();msg=e?.error?.message||msg;}catch{}throw Object.assign(new Error(msg),{status:502});}
+  return Buffer.from(await response.arrayBuffer());
+}
+
+async function modelAvailable(key,model){
+  const check=await fetch(OPENAI_BASE_URL + '/models/' + encodeURIComponent(model),{headers:{'authorization':`Bearer ${key}`}});
+  if(check.ok)return {ok:true};
+  let message='Model erişimi yok.';try{const j=await check.json();message=j?.error?.message||message;}catch{}
+  return {ok:false,message};
+}
+function mime(file){ const ext=path.extname(file).toLowerCase(); return ({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon'}[ext]||'application/octet-stream'); }
+function serve(req,res){
+  let p; try { p=decodeURIComponent(new URL(req.url,'http://localhost').pathname); } catch { p='/'; }
+  if(p==='/' || p==='/index.html'){
+    return fs.readFile(INDEX,(err,data)=>{
+      if(err) return json(res,500,{error:'Arayüz dosyası bulunamadı.'});
+      res.writeHead(200,{'content-type':'text/html; charset=utf-8','content-length':data.length,'cache-control':'no-store'});
+      res.end(data);
+    });
+  }
+  const file=path.normalize(path.join(PUBLIC,p));
+  if(!file.startsWith(PUBLIC)) return json(res,403,{error:'Yasak yol.'});
+  fs.stat(file,(err,st)=>{if(err||!st.isFile()) return json(res,404,{error:'Bulunamadı.'});res.writeHead(200,{'content-type':mime(file),'cache-control':'no-store'});fs.createReadStream(file).pipe(res);});
+}
+
+const server=http.createServer(async (req,res)=>{
+  res.setHeader('x-content-type-options','nosniff');
+  res.setHeader('referrer-policy','no-referrer');
+  res.setHeader('x-frame-options','SAMEORIGIN');
+  if(req.method==='GET'&&req.url==='/api/health'){ const ip=req.socket.remoteAddress||''; const local=ip==='127.0.0.1'||ip==='::1'||ip==='::ffff:127.0.0.1'; return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,configurable:local&&!runtimeApiKey}); }
+
+  if(req.method==='POST'&&req.url==='/api/configure'){
+    const ip = req.socket.remoteAddress || '';
+    const local = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    if(!local) return json(res,403,{error:'AI anahtarı yalnızca bu bilgisayardan bağlanabilir.'});
+    try{
+      const body=await readJson(req);
+      const key=cleanText(body.apiKey,500).trim();
+      if(key.length<20) return json(res,400,{error:'Geçerli bir OpenAI API anahtarı gir.'});
+      const profile=['best','balanced','economy'].includes(body.profile)?body.profile:'best';
+      const forced=cleanText(body.model,80).trim();
+      const candidates=[...new Set([...(forced?[forced]:[]),...PROFILE_MODELS[profile]])];
+      let okModel='', lastMsg='API anahtarı veya model erişimi doğrulanamadı.';
+      for(const candidate of candidates){
+        const check=await modelAvailable(key,candidate);
+        if(check.ok){okModel=candidate;break;}
+        lastMsg=check.message||lastMsg;
+      }
+      if(!okModel)return json(res,400,{error:lastMsg});
+      runtimeApiKey=key;runtimeProfile=profile;runtimeModel=okModel;
+      return json(res,200,{ok:true,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL});
+    }catch(e){return json(res,e.status||500,{error:e.message||'AI bağlantısı kurulamadı.'});}
+  }
+  if(req.method==='POST'&&req.url==='/api/teacher'){
+    if(!rateLimit(req,20)) return json(res,429,{error:'Çok hızlı istek gönderildi. Biraz sonra tekrar dene.'});
+    try{const body=await readJson(req);const out=await callTeacher(body);return json(res,200,out);}catch(e){return json(res,e.status||500,{error:e.message||'Rota Hoca isteği başarısız.'});}
+  }
+  if(req.method==='POST'&&req.url==='/api/tts'){
+    if(!rateLimit(req,36)) return json(res,429,{error:'Ses istek limiti aşıldı.'});
+    try{const body=await readJson(req);const audio=await callTTS(body);res.writeHead(200,{'content-type':'audio/mpeg','content-length':audio.length,'cache-control':'no-store','x-rota-voice-profile':body.gender==='female'?'female':'male'});return res.end(audio);}catch(e){return json(res,e.status||500,{error:e.message||'Ses üretilemedi.'});}
+  }
+  if(req.method==='GET') return serve(req,res);
+  return json(res,405,{error:'Desteklenmeyen yöntem.'});
+});
+server.listen(PORT,HOST,()=>{
+  console.log(`Çalışma Rotası: http://${HOST}:${PORT}`);
+  console.log(runtimeApiKey ? `Rota Hoca AI açık · ${runtimeModel} · ${runtimeProfile}` : 'Rota Hoca AI henüz bağlı değil · uygulama içinden bağlayabilirsin');
+});

@@ -472,7 +472,7 @@ html[data-ui-theme="cyan"] .theme-page-badge{background:#087b93!important}
 .theme-violet i:first-child{background:#35205f}.theme-violet i:nth-child(2){background:#e7ddff}.theme-violet i:nth-child(3){background:#f4efff}
 .theme-cyan i:first-child{background:#073e4d}.theme-cyan i:nth-child(2){background:#d8f5fb}.theme-cyan i:nth-child(3){background:#eafaff}
 @media(max-width:650px){.theme-choice-grid{grid-template-columns:1fr}}
-.route-method-pill{display:inline-flex;align-items:center;border:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--paper));color:var(--accent);border-radius:6px;padding:3px 7px;font-size:8px;font-weight:800;letter-spacing:.65px;line-height:1.3}.route-why-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.route-why-grid>div{border:1px solid var(--line);border-radius:11px;background:var(--paper);padding:13px}.route-why-grid small{display:block;font-size:8px;font-weight:800;letter-spacing:1px;color:var(--muted);margin-bottom:4px}.route-why-grid strong{display:block;font-size:13px}.route-why-grid p{font-size:10px;line-height:1.55;color:var(--muted);margin-top:5px}@media(max-width:620px){.route-why-grid{grid-template-columns:1fr}}</style>
+.route-method-pill{display:inline-flex;align-items:center;border:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--paper));color:var(--accent);border-radius:6px;padding:3px 7px;font-size:8px;font-weight:800;letter-spacing:.65px;line-height:1.3}.route-why-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.route-why-grid>div{border:1px solid var(--line);border-radius:11px;background:var(--paper);padding:13px}.route-why-grid small{display:block;font-size:8px;font-weight:800;letter-spacing:1px;color:var(--muted);margin-bottom:4px}.route-why-grid strong{display:block;font-size:13px}.route-why-grid p{font-size:10px;line-height:1.55;color:var(--muted);margin-top:5px}@media(max-width:620px){.route-why-grid{grid-template-columns:1fr}}.route-adaptive-pill{display:inline-flex;align-items:center;border-radius:6px;padding:3px 7px;font-size:8px;font-weight:800;letter-spacing:.55px;line-height:1.3;border:1px solid var(--line);background:var(--paper);color:var(--muted)}.route-adaptive-pill.mode-repair{background:#fff2df;color:#9a5b20;border-color:#efd6b4}.route-adaptive-pill.mode-ease{background:#eef4fb;color:#466789;border-color:#d8e5f0}.route-adaptive-pill.mode-progress{background:#e9f5e8;color:#477544;border-color:#cfe3cc}</style>
 </head>
 <body>
 <div id="storage-warning" class="storage-warning" role="alert" hidden></div>
@@ -1244,6 +1244,10 @@ function routeQuestionTarget(subjectId,topicId='',fallbackTitle=''){
  };
  let count=(bases[method.key]||bases.concept)[level]??12;
  if(g.known&&g.gap>=30)count+=3;else if(g.known&&g.gap>=15)count+=2;else if(g.known&&g.gap>=7)count+=1;
+ const adaptive=routeSubjectAdaptiveState(subjectId);
+ if(adaptive.mode==='ease')count=Math.max(5,Math.round(count*.8));
+ else if(adaptive.mode==='repair')count=Math.max(5,Math.round(count*.9));
+ else if(adaptive.mode==='progress')count+=2;
  return Math.max(5,Math.min(30,count));
 }
 function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
@@ -1254,7 +1258,11 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
   geography:[35,30,25,25],concept:[35,30,25,25],current:[25,25,25,20],literature:[35,30,25,25],
   ydt_vocab:[30,30,25,25],ydt_grammar:[35,30,30,25],ydt_reading:[35,30,30,30]
  };
- const minutes=(mins[method.key]||mins.concept)[level]||30;
+ let minutes=(mins[method.key]||mins.concept)[level]||30;
+ const adaptive=routeSubjectAdaptiveState(subjectId);
+ if(adaptive.mode==='ease')minutes=Math.max(20,minutes-10);
+ else if(adaptive.mode==='repair')minutes=Math.max(25,minutes-5);
+ else if(adaptive.mode==='progress')minutes=Math.min(45,minutes+5);
  let text='';
  if(method.key==='quant'){
   text=level===0?'12 dk temel kavram + 2 çözümlü örneği kapatıp yeniden çöz + yaklaşık '+q+' temel soru; yapamadıklarını işaretle':
@@ -1302,7 +1310,10 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
   text=level<=1?'12 dk konuyu çalış + kaynağı kapatıp 5 kavramı kendi cümlenle anlat + yaklaşık '+q+' soru':
        'Kaynağı kapatıp 5 ana kavramı geri çağır + yaklaşık '+q+' soru + yanlış kavramı tek cümleyle düzelt';
  }
- return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label};
+ if(adaptive.mode==='ease')text+=' · Bugün hedefi küçük tut: bitirmek, yükü büyütmekten daha önemli.';
+ else if(adaptive.mode==='repair')text+=' · Öncelik hız değil: yanlışın nedenini düzeltmeden yeni konuya koşma.';
+ else if(adaptive.mode==='progress')text+=' · Son 5 dakikada 2 zorlayıcı ek soru ile seviyeni yokla.';
+ return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label,adaptiveMode:adaptive.mode,adaptiveLabel:adaptive.label};
 }
 function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
  const method=routeStudyMethod(subjectId,topicId,fallbackTitle),base=routeQuestionTarget(subjectId,topicId,fallbackTitle);
@@ -1330,6 +1341,20 @@ function routeProfileSignal(subjectId){
  return {level,boost:base+goalBoost,label:profileLevelLabel(level),goalBoost};
 }
 function routeLastLogDate(subjectId){return [...w().logs].filter(l=>l.subjectId===subjectId).sort((a,b)=>b.date.localeCompare(a.date))[0]?.date||'';}
+function routeBehaviorSignal(subjectId){
+ const since=R.dayAdd(today(),-14),planMap=new Map(w().plan.map(function(p){return [p.id,p];})),events=w().taskEvents.filter(function(ev){const p=planMap.get(ev.taskId);return p&&p.subjectId===subjectId&&ev.date>=since;});
+ let complete=0,skip=0,later=0,start=0;for(const ev of events){if(ev.action==='complete')complete++;else if(ev.action==='skip')skip++;else if(ev.action==='later')later++;else if(ev.action==='start')start++;}
+ const meaningful=complete+skip+later;
+ return {known:meaningful>=3,complete,skip,later,start,total:meaningful,completion:meaningful?complete/meaningful:0,friction:meaningful?(skip+later*.5)/meaningful:0};
+}
+function routeSubjectAdaptiveState(subjectId){
+ const behavior=routeBehaviorSignal(subjectId),weak=routeExamWeakness()[subjectId],openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId;}).length;
+ let mode='steady',label='DENGELİ TEMPO',note='Görev dozu mevcut seviyene göre korunuyor.';
+ if((weak&&weak.ratio<.58)||openMistakes>=2){mode='repair';label='ONARIM MODU';note='Deneme/yanlış sinyali zayıf olduğu için yük artırmak yerine temeli sağlamlaştırıyoruz.';}
+ if(behavior.known&&behavior.friction>=.45){mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note='Bu derste erteleme/atlama arttığı için görevi küçültüp uygulanabilir tutuyoruz.';}
+ else if(behavior.known&&behavior.completion>=.75&&(!weak||weak.ratio>=.72)&&openMistakes===0){mode='progress';label='GELİŞİM MODU';note='Görevleri düzenli tamamladığın ve performans sinyali iyi olduğu için yük kontrollü artırılıyor.';}
+ return {mode,label,note,behavior,weak,openMistakes};
+}
 function routeCandidateFromPlan(p){
  const overdue=p.date<today(),days=overdue?Math.max(1,Math.floor((new Date(today()+'T12:00:00')-new Date(p.date+'T12:00:00'))/86400000)):0;
  let source=p.source||'curriculum',priority=Number.isFinite(p.priority)?p.priority:35,reason=p.reason||'Haftalık çalışma rotandaki görev.';
@@ -1447,8 +1472,8 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
 function routeAutoSync(){if(!state.activeExam||!w().configured||sampleSaved)return;routeEnsure();const overdue=w().plan.some(p=>!p.done&&p.date<today());if(w().route.lastAutoDate!==today()||overdue){const message=overdue?'Kaçırılan görevler günlük kapasiteye göre yeniden dağıtıldı.':'Bugünün rotası güncel verilerle kontrol edildi.';routeRebalance(message,true);w().route.lastAutoDate=today();save();}}
 function routeTaskReason(p){return p.reason||({mistake:'Yanlış defterinden tekrar.',ai_teacher:'Rota Hoca tekrar sinyali.',exam:'Deneme performansından gelen öncelik.',profile:'Ders seviye profilinden gelen başlangıç önceliği.',backlog:'Kaçırılan görev yeniden yerleştirildi.',spaced_review:'Birkaç gün sonraki kısa geri çağırma tekrarı.',checkpoint:'Haftalık öğrenme kontrolü.'}[p.source]||'Kişisel çalışma rotandaki görev.');}
 function routeTodayTask(p){
- const done=p.done,later=p.taskState==='later',goal=p.taskGoal||'',qs=Number.isInteger(p.targetQuestions)&&p.targetQuestions>0?p.targetQuestions:0,method=routeStudyMethod(p.subjectId,p.topicId,p.title),sourceLabel=p.source==='spaced_review'&&p.reviewWave?(p.reviewWave+' GÜN TEKRARI'):routeSourceLabel(p.source);
- return '<article class="route-task '+(done?'is-done':'')+' '+(later?'is-later':'')+'">'+subIcon(p.subjectId)+'<div class="route-task-main"><div class="row wrap"><span class="route-source">'+esc(sourceLabel)+'</span><span class="route-method-pill">'+esc(method.label)+'</span><span class="tiny muted">'+esc(subName(p.subjectId,state.activeExam==='yks'))+'</span></div><h3>'+esc(p.title)+'</h3><div class="route-task-meta"><span>'+p.minutes+' dk</span>'+(qs?'<span>· ≈ '+qs+' soru</span>':'')+(later?'<span>· bugün daha sonra</span>':'')+'<button class="route-why" data-action="route-why" data-id="'+p.id+'">Neden bugün?</button></div>'+(goal?'<div class="route-task-goal">'+icon('target')+'<span>'+esc(goal)+'</span></div>':'')+'<p class="route-task-reason">'+esc(routeTaskReason(p))+'</p></div><div class="route-task-actions">'+(done?'<span class="pill">Tamamlandı</span>':btn(icon('play')+' Başla','focus-session','sm primary','data-id="'+p.id+'"')+btn('Daha sonra','route-later','sm ghost','data-id="'+p.id+'"')+btn('Atla','route-skip','sm ghost','data-id="'+p.id+'"')+'<button class="check-btn" data-action="complete-session" data-id="'+p.id+'" aria-label="Oturumu tamamla">'+icon('check')+'</button>')+'</div></article>';
+ const done=p.done,later=p.taskState==='later',goal=p.taskGoal||'',qs=Number.isInteger(p.targetQuestions)&&p.targetQuestions>0?p.targetQuestions:0,method=routeStudyMethod(p.subjectId,p.topicId,p.title),adaptive=routeSubjectAdaptiveState(p.subjectId),sourceLabel=p.source==='spaced_review'&&p.reviewWave?(p.reviewWave+' GÜN TEKRARI'):routeSourceLabel(p.source);
+ return '<article class="route-task '+(done?'is-done':'')+' '+(later?'is-later':'')+'">'+subIcon(p.subjectId)+'<div class="route-task-main"><div class="row wrap"><span class="route-source">'+esc(sourceLabel)+'</span><span class="route-method-pill">'+esc(method.label)+'</span><span class="route-adaptive-pill mode-'+esc(adaptive.mode)+'">'+esc(adaptive.label)+'</span><span class="tiny muted">'+esc(subName(p.subjectId,state.activeExam==='yks'))+'</span></div><h3>'+esc(p.title)+'</h3><div class="route-task-meta"><span>'+p.minutes+' dk</span>'+(qs?'<span>· ≈ '+qs+' soru</span>':'')+(later?'<span>· bugün daha sonra</span>':'')+'<button class="route-why" data-action="route-why" data-id="'+p.id+'">Neden bugün?</button></div>'+(goal?'<div class="route-task-goal">'+icon('target')+'<span>'+esc(goal)+'</span></div>':'')+'<p class="route-task-reason">'+esc(routeTaskReason(p))+'</p></div><div class="route-task-actions">'+(done?'<span class="pill">Tamamlandı</span>':btn(icon('play')+' Başla','focus-session','sm primary','data-id="'+p.id+'"')+btn('Daha sonra','route-later','sm ghost','data-id="'+p.id+'"')+btn('Atla','route-skip','sm ghost','data-id="'+p.id+'"')+'<button class="check-btn" data-action="complete-session" data-id="'+p.id+'" aria-label="Oturumu tamamla">'+icon('check')+'</button>')+'</div></article>';
 }
 function routeTodayPage(){
  routeEnsure();const tasks=w().plan.filter(p=>p.date===today()).sort((a,b)=>(a.done-b.done)||((a.taskState==='later')-(b.taskState==='later'))||((b.priority||0)-(a.priority||0))),open=tasks.filter(p=>!p.done),total=open.reduce((n,p)=>n+p.minutes,0),first=open.find(p=>p.taskState!=='later')||open[0],overdue=w().plan.filter(p=>!p.done&&p.date<today()).length,due=w().mistakes.filter(m=>!m.resolved&&m.reviewDate<=today()).length,last=[...w().exams].sort((a,b)=>b.date.localeCompare(a.date))[0],capacity=routeEffectiveDailyMinutes();
@@ -1835,10 +1860,10 @@ function onSubmit(event){const form=event.target;if(!(form instanceof HTMLFormEl
 function onAction(event){const b=event.target.closest('[data-action]');if(!b)return;const action=b.dataset.action,id=b.dataset.id;try{if(action.startsWith('teacher-')){teacherAction(b);return;}if(action.startsWith('video-')){videoAction(b);return;}if(action.startsWith('paid-')){handlePaidAction(b);return;}if(!isPlus()&&['note-from-exam','plan-review'].includes(action)){openUpgrade('analysis');return;}if(action==='route-rebalance'){routeRebalance('Kullanıcı rotayı yeniden düzenledi.',true);commit('Rotan güncel verilerle yeniden düzenlendi.');return;}if(action==='route-why'){
  const p=w().plan.find(function(x){return x.id===id;});
  if(p){
-  const method=routeStudyMethod(p.subjectId,p.topicId,p.title),profile=routeProfileSignal(p.subjectId),gap=routeSubjectGap(p.subjectId),consistency=routeConsistencySignal(),capacity=routeEffectiveDailyMinutes(),sourceLabel=p.source==='spaced_review'&&p.reviewWave?(p.reviewWave+' GÜN TEKRARI'):routeSourceLabel(p.source);
+  const method=routeStudyMethod(p.subjectId,p.topicId,p.title),profile=routeProfileSignal(p.subjectId),gap=routeSubjectGap(p.subjectId),consistency=routeConsistencySignal(),capacity=routeEffectiveDailyMinutes(),adaptive=routeSubjectAdaptiveState(p.subjectId),sourceLabel=p.source==='spaced_review'&&p.reviewWave?(p.reviewWave+' GÜN TEKRARI'):routeSourceLabel(p.source);
   const netText=gap.current===null?(gap.label?gap.label+' mevcut net verisi yok':'Mevcut net verisi yok'):(gap.label?gap.label+' ':'')+format(gap.current,1)+' net'+(gap.source==='exam'?' · son denemeden':' · başlangıç beyanından')+(gap.target?' → '+format(gap.target,1)+' hedef':'');
   const consistencyText=consistency.known?Math.round(consistency.ratio*100)+'% · '+consistency.active+'/'+consistency.expected+' planlı gün':'Henüz yeterli geçmiş gün yok';
-  openModal('Neden bugün bu görev?',`<div class="review-summary"><div class="eyebrow">${esc(sourceLabel)} · ÖNCELİK ${Math.round(p.priority||0)}/100</div><h3>${esc(p.title)}</h3><p>${esc(routeTaskReason(p))}</p></div><div class="route-why-grid"><div><small>ÇALIŞMA YÖNTEMİ</small><strong>${esc(method.label)}</strong><p>${esc(p.taskGoal||'Görev, dersin türüne ve seviyene göre oluşturuldu.')}</p></div><div><small>DERS SEVİYEN</small><strong>${esc(profile.label)}</strong><p>Başlangıç beyanın rota önceliğini etkiler; gerçek deneme ve çalışma verileri geldikçe ağırlığı azalır.</p></div><div><small>NET SİNYALİ</small><strong>${esc(netText)}</strong><p>${gap.known?'Mevcut–hedef farkı zayıf derslerin ağırlığını artırabilir.':'Net farkı bilinmediği için ders seviyesi ve gerçek performans sinyalleri daha çok kullanılır.'}</p></div><div><small>TEMPO</small><strong>${duration(capacity)} / çalışma günü</strong><p>Son 7 gün devamlılık: ${esc(consistencyText)}. Seçtiğin üst sınır ${duration(w().settings.dailyMinutes)}.</p></div></div><div class="notice mt">Yerleştirme yalnız puana göre yapılmaz. Aynı güne mümkün olduğunca aynı ders/yöntem tekrarı ve aşırı sayısal yük bindirilmez; kapasite yetmezse düşük öncelikli görev daha sonraki uygun güne bırakılır.</div>`);
+  openModal('Neden bugün bu görev?',`<div class="review-summary"><div class="eyebrow">${esc(sourceLabel)} · ÖNCELİK ${Math.round(p.priority||0)}/100</div><h3>${esc(p.title)}</h3><p>${esc(routeTaskReason(p))}</p></div><div class="route-why-grid"><div><small>ÇALIŞMA YÖNTEMİ</small><strong>${esc(method.label)}</strong><p>${esc(p.taskGoal||'Görev, dersin türüne ve seviyene göre oluşturuldu.')}</p></div><div><small>DERS SEVİYEN</small><strong>${esc(profile.label)}</strong><p>Başlangıç beyanın rota önceliğini etkiler; gerçek deneme ve çalışma verileri geldikçe ağırlığı azalır.</p></div><div><small>NET SİNYALİ</small><strong>${esc(netText)}</strong><p>${gap.known?'Mevcut–hedef farkı zayıf derslerin ağırlığını artırabilir.':'Net farkı bilinmediği için ders seviyesi ve gerçek performans sinyalleri daha çok kullanılır.'}</p></div><div><small>TEMPO</small><strong>${duration(capacity)} / çalışma günü</strong><p>Son 7 gün devamlılık: ${esc(consistencyText)}. Seçtiğin üst sınır ${duration(w().settings.dailyMinutes)}.</p></div><div><small>UYARLANAN DOZ</small><strong>${esc(adaptive.label)}</strong><p>${esc(adaptive.note)}${adaptive.behavior.known?' Son 14 gün görev tamamlanma oranı %'+Math.round(adaptive.behavior.completion*100)+'.':''}</p></div></div><div class="notice mt">Yerleştirme yalnız puana göre yapılmaz. Aynı güne mümkün olduğunca aynı ders/yöntem tekrarı ve aşırı sayısal yük bindirilmez; kapasite yetmezse düşük öncelikli görev daha sonraki uygun güne bırakılır.</div>`);
  }
  return;
 }if(action==='route-later'){const p=w().plan.find(p=>p.id===id);if(p&&!p.done){p.taskState=p.taskState==='later'?'open':'later';routeEvent(p.id,'later');commit(p.taskState==='later'?'Görev bugün listenin sonuna alındı.':'Görev normal sırasına döndü.');}return;}if(action==='route-skip'){const p=w().plan.find(p=>p.id===id);if(p&&!p.done){p.deferUntil=R.dayAdd(p.date>today()?p.date:today(),1);p.taskState='open';routeEvent(p.id,'skip');routeRebalance('Atlanan görev, günlük kapasiteye göre sonraki uygun güne dağıtıldı.',true);commit('Görev atlandı; rota kalan kapasiteye göre yeniden düzenlendi.');}return;}switch(action){

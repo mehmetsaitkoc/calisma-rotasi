@@ -284,6 +284,8 @@ for(const marker of [
   '(space.topicState[p.topicId]?.status||0)!==2',
   'topic-accept-mastery',
   'topic-mastery-steps',
+  'function routeMasteryOverview()',
+  'performans kanıtı bekliyor',
   'En az 2 performans kaydı',
   'SÜRELİ ANLAMA SETİ',
   'ZAMAN ÇİZGİSİ + HATIRLAMA'

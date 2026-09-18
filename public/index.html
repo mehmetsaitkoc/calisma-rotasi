@@ -472,7 +472,7 @@ html[data-ui-theme="cyan"] .theme-page-badge{background:#087b93!important}
 .theme-violet i:first-child{background:#35205f}.theme-violet i:nth-child(2){background:#e7ddff}.theme-violet i:nth-child(3){background:#f4efff}
 .theme-cyan i:first-child{background:#073e4d}.theme-cyan i:nth-child(2){background:#d8f5fb}.theme-cyan i:nth-child(3){background:#eafaff}
 @media(max-width:650px){.theme-choice-grid{grid-template-columns:1fr}}
-</style>
+.route-method-pill{display:inline-flex;align-items:center;border:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--paper));color:var(--accent);border-radius:6px;padding:3px 7px;font-size:8px;font-weight:800;letter-spacing:.65px;line-height:1.3}</style>
 </head>
 <body>
 <div id="storage-warning" class="storage-warning" role="alert" hidden></div>
@@ -1137,9 +1137,15 @@ function routeExamWeakness(){
  const out={};for(const [id,vals] of Object.entries(scores)){const avg=vals.reduce((a,b)=>a+b,0)/vals.length;out[id]={ratio:avg,boost:Math.round(Math.max(0,.78-avg)*55),samples:vals.length};}return out;
 }
 
+function routeObservedCurrentNet(){
+ const type=state.activeExam==='kpss'?'KPSS':'TYT';
+ const x=[...w().exams].filter(function(e){return e.type===type;}).sort(function(a,b){return b.date.localeCompare(a.date);})[0];
+ if(!x)return null;
+ try{const n=R.calcNet(x.parts,x.penalty);return {net:Math.max(0,Number(n.net)||0),date:x.date,label:C.TYPES[type]?.label||type};}catch{return null;}
+}
 function routeNetGap(){
- const p=w().profile||{},current=Number.isFinite(p.currentNet)?Number(p.currentNet):null,target=Number(p.targetNet)||0;
- return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0};
+ const p=w().profile||{},observed=routeObservedCurrentNet(),reported=Number.isFinite(p.currentNet)?Number(p.currentNet):null,current=observed?observed.net:reported,target=Number(p.targetNet)||0;
+ return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0,source:observed?'exam':reported!==null?'profile':'none',observed};
 }
 function routeGoalPressure(){
  const p=w().profile||{},g=routeNetGap();let pressure=0;
@@ -1150,66 +1156,203 @@ function routeGoalPressure(){
  if(w().settings.targetDate){const days=Math.ceil((new Date(w().settings.targetDate+'T12:00:00')-new Date(today()+'T12:00:00'))/86400000);if(days>0&&days<=60)pressure+=4;else if(days>60&&days<=120)pressure+=2;}
  return Math.min(14,pressure);
 }
-function routeQuestionTarget(subjectId){
- const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,g=routeNetGap();let count=[8,12,15,18][level]??15;
- if(g.known&&g.gap>=30)count+=4;else if(g.known&&g.gap>=15)count+=2;
- return Math.max(6,Math.min(22,count));
+function routeStudyMethod(subjectId,topicId='',fallbackTitle=''){
+ const topic=R.topic(w(),topicId),raw=((topic?.title||fallbackTitle||'')+'').toLocaleLowerCase('tr-TR');
+ const geometryIds=['t-ge','a-ge'];
+ const mathIds=['k-ma','t-ma','a-ma'];
+ const scienceIds=['t-fi','t-ki','a-fi','a-ki'];
+ const biologyIds=['t-bi','a-bi'];
+ const historyIds=['k-ta','t-ta','a-t1','a-t2'];
+ const geographyIds=['k-co','t-co','a-c1','a-c2'];
+ const conceptIds=['k-va','t-fe','t-di','a-fg','a-di'];
+ if(subjectId==='d-yd'){
+  if(/kelime/.test(raw))return {key:'ydt_vocab',label:'KELİME + GERİ ÇAĞIRMA'};
+  if(/dil bilgisi/.test(raw))return {key:'ydt_grammar',label:'KURAL + UYGULAMA'};
+  return {key:'ydt_reading',label:'OKUMA + SÜRE'};
+ }
+ if(subjectId==='a-ed')return {key:'literature',label:'ESER–YAZAR + HATIRLAMA'};
+ if(subjectId==='k-gu')return {key:'current',label:'KISA NOT + GERİ ÇAĞIRMA'};
+ if(historyIds.includes(subjectId))return {key:'history',label:'ZAMAN ÇİZGİSİ + HATIRLAMA'};
+ if(geographyIds.includes(subjectId))return {key:'geography',label:'HARİTA + HATIRLAMA'};
+ if(conceptIds.includes(subjectId))return {key:'concept',label:'KAVRAM + AKTİF HATIRLAMA'};
+ if(biologyIds.includes(subjectId))return {key:'biology',label:'AKTİF HATIRLAMA + TEST'};
+ if(scienceIds.includes(subjectId))return {key:'science',label:'KAVRAM + UYGULAMA'};
+ if(geometryIds.includes(subjectId)||((subjectId==='k-ma')&&/üçgen|dörtgen|çokgen|çember|daire|analitik|katı cisim/.test(raw)))return {key:'geometry',label:'ŞEKİL + SORU'};
+ if(mathIds.includes(subjectId))return {key:'quant',label:'SORU + YANLIŞ ANALİZİ'};
+ if(['k-tr','t-tr'].includes(subjectId)){
+  if(/sözel mantık/.test(raw))return {key:'logic',label:'ŞEMA + SÖZEL MANTIK'};
+  if(/paragraf|sözcükte anlam|cümlede anlam/.test(raw))return {key:'paragraph',label:'SÜRELİ ANLAMA SETİ'};
+  return {key:'grammar',label:'KURAL + UYGULAMA'};
+ }
+ return {key:'concept',label:'KAVRAM + AKTİF HATIRLAMA'};
 }
-function routeTaskGoal(subjectId){
- const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,q=routeQuestionTarget(subjectId);
- const text=level===0?'15 dk konu öğren + yaklaşık '+q+' temel soru':level===1?'10 dk kısa konu tekrarı + yaklaşık '+q+' soru':level===2?'Yaklaşık '+q+' soru + yanlışları işaretle':'Yaklaşık '+q+' süreli soru + yanlış analizi';
- return {questions:q,text};
+function routeQuestionTarget(subjectId,topicId='',fallbackTitle=''){
+ const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,g=routeNetGap(),method=routeStudyMethod(subjectId,topicId,fallbackTitle);
+ const bases={
+  quant:[8,12,16,20],geometry:[6,10,14,18],science:[8,12,15,18],biology:[8,10,13,16],
+  paragraph:[12,16,20,25],logic:[5,7,9,12],grammar:[10,14,18,22],history:[8,10,12,15],
+  geography:[8,10,12,15],concept:[8,10,12,15],current:[6,8,10,12],literature:[8,10,12,15],
+  ydt_vocab:[8,10,12,15],ydt_grammar:[10,14,18,22],ydt_reading:[10,14,18,22]
+ };
+ let count=(bases[method.key]||bases.concept)[level]??12;
+ if(g.known&&g.gap>=30)count+=3;else if(g.known&&g.gap>=15)count+=2;else if(g.known&&g.gap>=7)count+=1;
+ return Math.max(5,Math.min(30,count));
+}
+function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
+ const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,method=routeStudyMethod(subjectId,topicId,fallbackTitle),q=routeQuestionTarget(subjectId,topicId,fallbackTitle);
+ const mins={
+  quant:[40,35,35,30],geometry:[40,35,30,30],science:[35,35,30,30],biology:[35,30,30,25],
+  paragraph:[30,30,30,30],logic:[35,35,30,30],grammar:[35,30,30,25],history:[35,30,25,25],
+  geography:[35,30,25,25],concept:[35,30,25,25],current:[25,25,25,20],literature:[35,30,25,25],
+  ydt_vocab:[30,30,25,25],ydt_grammar:[35,30,30,25],ydt_reading:[35,30,30,30]
+ };
+ const minutes=(mins[method.key]||mins.concept)[level]||30;
+ let text='';
+ if(method.key==='quant'){
+  text=level===0?'12 dk temel kavram + 2 çözümlü örneği kapatıp yeniden çöz + yaklaşık '+q+' temel soru; yapamadıklarını işaretle':
+       level===1?'8 dk kısa tekrar + yaklaşık '+q+' soru; en az 2 yanlışı çözüme bakmadan yeniden çöz':
+       level===2?'Yaklaşık '+q+' soru çöz; ilk turu akıcı çöz, sonra yanlış/boşları nedenine göre ayır':
+       'Yaklaşık '+q+' süreli karışık soru + yanlış/boşları ikinci turda çözüme bakmadan tamamla';
+ }else if(method.key==='geometry'){
+  text=level<=1?'10 dk kural/özellik tekrarı + her soruda şekli kendin çizip yaklaşık '+q+' soru çöz':
+       'Yaklaşık '+q+' soru; şekli kendin çiz, verilenleri işaretle ve yanlışta hangi bağıntıyı kaçırdığını yaz';
+ }else if(method.key==='science'){
+  text=level===0?'12 dk kavramı öğren + 3 ana ilişki/formülü kapatıp yaz + yaklaşık '+q+' temel soru':
+       level===1?'8 dk kavram/formül tekrarı + yaklaşık '+q+' soru + yanlışta kavram mı işlem mi olduğunu yaz':
+       'Yaklaşık '+q+' karışık soru + her yanlışta kavram/yorum/işlem nedenini işaretle';
+ }else if(method.key==='biology'){
+  text=level<=1?'12 dk konuyu çalış + kaynağı kapatıp 5 anahtar kavramı kendi cümlenle anlat + yaklaşık '+q+' soru':
+       'Kaynağı kapatıp 5 anahtar kavramı hatırla + yaklaşık '+q+' soru + yanlış bilgiyi tek cümleyle düzelt';
+ }else if(method.key==='paragraph'){
+  text=level===0?'Yaklaşık '+q+' soruluk kontrollü set; önce doğru anlama, sonra süre. Her yanlışta soru kökü/çıkarım/odak nedenini işaretle':
+       'Yaklaşık '+q+' soruluk süreli set + yanlışları soru kökü/çıkarım/odak olarak sınıflandır';
+ }else if(method.key==='logic'){
+  text='Yaklaşık '+q+' sözel mantık sorusu; her soruda tablo/şemayı sıfırdan kur ve çözemediğin soruda kırılma noktasını not et';
+ }else if(method.key==='grammar'){
+  text=level<=1?'10 dk kuralı öğren + 3 kendi örneğini yaz + yaklaşık '+q+' soru':
+       '3 temel kuralı örnekle hatırla + yaklaşık '+q+' soru + yanlış kuralı tek satır not et';
+ }else if(method.key==='history'){
+  text=level<=1?'12 dk küçük konu parçası + kaynağı kapatıp 5 olay/kişi/tarih bağlantısı kur + yaklaşık '+q+' soru':
+       'Kaynağı kapatıp 5 olay–neden–sonuç bağlantısı çıkar + yaklaşık '+q+' soru + karıştırdığın kronolojiyi düzelt';
+ }else if(method.key==='geography'){
+  text=level<=1?'10 dk konuyu çalış + harita/şema üzerinde 5 yer veya kavramı göster + yaklaşık '+q+' soru':
+       'Harita/şema üzerinden 5 bilgiyi kaynaksız hatırla + yaklaşık '+q+' soru + yanlışın yer/kavram nedenini yaz';
+ }else if(method.key==='literature'){
+  text=level<=1?'12 dk dönem/konu çalış + kaynağı kapatıp 5 yazar–eser–özellik eşlemesi yap + yaklaşık '+q+' soru':
+       '5 yazar–eser–dönem eşlemesini kaynaksız yap + yaklaşık '+q+' soru + karıştırdığın eşleşmeyi karta dönüştür';
+ }else if(method.key==='current'){
+  text='6 kısa güncel bilgi notu çıkar + 5 dk sonra kaynağı kapatıp geri çağır + yaklaşık '+q+' mini soru/kart kontrolü';
+ }else if(method.key==='ydt_vocab'){
+  const words=[10,12,15,18][level]||12;
+  text=words+' kelimeyi anlam + örnek cümleyle çalış; önceki kelimelerden 5 tanesini geri çağır + yaklaşık '+q+' kullanım sorusu';
+ }else if(method.key==='ydt_grammar'){
+  text=level<=1?'10 dk kural + 3 örnek cümle/çeviri + yaklaşık '+q+' soru':
+       'Kuralı kaynaksız özetle + yaklaşık '+q+' soru + yanlış cümleyi doğru hâliyle yeniden yaz';
+ }else if(method.key==='ydt_reading'){
+  text='Yaklaşık '+q+' soruluk süreli okuma seti; bilinmeyen kelimelerden en fazla 8 tanesini seçip sonradan karta ekle';
+ }else{
+  text=level<=1?'12 dk konuyu çalış + kaynağı kapatıp 5 kavramı kendi cümlenle anlat + yaklaşık '+q+' soru':
+       'Kaynağı kapatıp 5 ana kavramı geri çağır + yaklaşık '+q+' soru + yanlış kavramı tek cümleyle düzelt';
+ }
+ return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label};
+}
+function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
+ const method=routeStudyMethod(subjectId,topicId,fallbackTitle),base=routeQuestionTarget(subjectId,topicId,fallbackTitle);
+ const q=Math.max(5,Math.min(18,Math.round(base*(mode==='checkpoint'?0.9:mode==='mistake'?0.65:0.55))));
+ let text='';
+ if(method.key==='quant'||method.key==='geometry')text=(method.key==='geometry'?'Şekli/kuralı':'Kuralı/formülü')+' bakmadan hatırla + 2 eski soruyu yeniden çöz + yaklaşık '+q+' yeni soru; aynı hatayı tekrar edip etmediğini kontrol et';
+ else if(method.key==='science')text='3 ana kavram/formülü kaynaksız yaz + yaklaşık '+q+' karışık soru + yanlışın kavram/yorum/işlem nedenini işaretle';
+ else if(method.key==='biology')text='Kaynağı kapatıp 6 anahtar kavramı geri çağır + yaklaşık '+q+' soru + yanlış bilgiyi doğru cümleyle değiştir';
+ else if(method.key==='paragraph')text='Yaklaşık '+q+' soruluk süreli mini set + yanlışları soru kökü/çıkarım/odak olarak sınıflandır';
+ else if(method.key==='logic')text='Yaklaşık '+q+' soru; tablo/şemayı sıfırdan kur ve eski hatanın nerede başladığını kontrol et';
+ else if(method.key==='grammar')text='3 kuralı örnekle kaynaksız hatırla + yaklaşık '+q+' soru + yanlış kuralı tek satır düzelt';
+ else if(method.key==='history')text='Kaynağı kapatıp 6 olay–neden–sonuç/kronoloji bağlantısı kur + yaklaşık '+q+' soru';
+ else if(method.key==='geography')text='Harita/şema üzerinde 6 bilgiyi kaynaksız göster + yaklaşık '+q+' soru + karıştırdığın bölge/kavramı düzelt';
+ else if(method.key==='literature')text='6 yazar–eser–dönem eşlemesini kaynaksız yap + yaklaşık '+q+' soru + karışan eşleşmeyi karta dönüştür';
+ else if(method.key==='current')text='Önceki kısa notlardan 8 bilgiyi kaynaksız hatırla + yaklaşık '+q+' mini kontrol sorusu';
+ else if(method.key==='ydt_vocab')text='Önceki kelimelerden 12 tanesini Türkçe karşılığına bakmadan hatırla + yaklaşık '+q+' kullanım sorusu';
+ else if(method.key==='ydt_grammar')text='Kuralı kaynaksız anlat + 3 örnek cümle kur + yaklaşık '+q+' soru';
+ else if(method.key==='ydt_reading')text='Yaklaşık '+q+' soruluk süreli okuma mini seti + yanlışta kelime mi çıkarım mı olduğunu işaretle';
+ else text='Kaynağı kapatıp 6 ana kavramı kendi cümlenle anlat + yaklaşık '+q+' soru + yanlış kavramı düzelt';
+ return {questions:q,text,minutes:mode==='checkpoint'?30:25,methodKey:method.key,methodLabel:method.label};
 }
 function routeProfileSignal(subjectId){
  routeEnsure();const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,base=[24,16,7,-3][level]??7,goal=routeGoalPressure(),goalBoost=level<=1?goal:level===2?Math.round(goal/2):0;
  return {level,boost:base+goalBoost,label:profileLevelLabel(level),goalBoost};
 }
 function routeLastLogDate(subjectId){return [...w().logs].filter(l=>l.subjectId===subjectId).sort((a,b)=>b.date.localeCompare(a.date))[0]?.date||'';}
-function routeCandidateFromPlan(p){const overdue=p.date<today(),days=overdue?Math.max(1,Math.floor((new Date(today()+'T12:00:00')-new Date(p.date+'T12:00:00'))/86400000)):0;let source=p.source||'curriculum',priority=Number.isFinite(p.priority)?p.priority:35,reason=p.reason||'Haftalık çalışma rotandaki görev.';if(p.sourceMistakeId){source='mistake';priority=Math.max(priority,78);reason='Yanlış defterindeki bir tekrar görevi.';}else if(p.sourceTeacherQuestionId){source='ai_teacher';priority=Math.max(priority,72);reason='Rota Hoca’da tekrar gerektiren bir sorudan geldi.';}else if(overdue){source='backlog';priority=Math.max(priority,82+Math.min(12,days*3));reason=`${days} gün önce tamamlanmadığı için rota motoru yeniden yerleştiriyor.`;}return {...p,source,priority:Math.min(100,priority),reason,earliest:p.deferUntil&&p.deferUntil>today()?p.deferUntil:today(),routeKey:p.routeKey||('plan:'+p.id),taskState:p.taskState==='later'?'later':'open'};}
+function routeCandidateFromPlan(p){
+ const overdue=p.date<today(),days=overdue?Math.max(1,Math.floor((new Date(today()+'T12:00:00')-new Date(p.date+'T12:00:00'))/86400000)):0;
+ let source=p.source||'curriculum',priority=Number.isFinite(p.priority)?p.priority:35,reason=p.reason||'Haftalık çalışma rotandaki görev.';
+ if(p.sourceMistakeId){source='mistake';priority=Math.max(priority,78);reason='Yanlış defterindeki bir tekrar görevi.';}
+ else if(p.sourceTeacherQuestionId){source='ai_teacher';priority=Math.max(priority,72);reason='Rota Hoca’da tekrar gerektiren bir sorudan geldi.';}
+ else if(overdue){source='backlog';priority=Math.max(priority,82+Math.min(12,days*3));reason=days+' gün önce tamamlanmadığı için rota motoru yeniden yerleştiriyor.';}
+ let recipe=null;
+ if(p.sourceMistakeId)recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'mistake');
+ else if(p.sourceTeacherQuestionId)recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'spaced');
+ else if(source==='spaced_review')recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'spaced');
+ else if(source==='checkpoint')recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'checkpoint');
+ else if(['curriculum','profile','priority','exam','backlog'].includes(source))recipe=routeTaskGoal(p.subjectId,p.topicId,p.title);
+ return {...p,...(recipe?{minutes:recipe.minutes,targetQuestions:recipe.questions,taskGoal:recipe.text}:{}),source,priority:Math.min(100,priority),reason,earliest:p.deferUntil&&p.deferUntil>today()?p.deferUntil:today(),routeKey:p.routeKey||('plan:'+p.id),taskState:p.taskState==='later'?'later':'open'};
+}
 function routeBuildCandidates(){
  const space=w(),weak=routeExamWeakness(),seenTopics=new Set(),seenKeys=new Set(),out=[];
  const push=function(c){if(!c||seenKeys.has(c.routeKey))return;seenKeys.add(c.routeKey);if(c.topicId&&R.topic(space,c.topicId))seenTopics.add(c.topicId);out.push(c);};
  const horizon=R.dayAdd(today(),13);
  for(const p of space.plan.filter(function(p){return !p.done&&(p.date<=horizon||p.date<today());}))push(routeCandidateFromPlan(p));
  for(const m of space.mistakes.filter(function(m){return !m.resolved;})){
-  const key='mistake:'+m.id;if(seenKeys.has(key)||space.plan.some(function(p){return !p.done&&p.sourceMistakeId===m.id;}))continue;const due=m.reviewDate<=today();
-  push({id:R.uid(),date:today(),subjectId:m.subjectId,topicId:m.topicId||('review-'+m.id),title:('Yanlış tekrarı · '+m.title).slice(0,180),minutes:25,done:false,kind:'review',sourceMistakeId:m.id,source:'mistake',priority:due?88:72,reason:due?'Yanlış defterindeki tekrar tarihi geldi.':'Yanlış defterindeki konu yeniden çalışılmalı.',earliest:due?today():m.reviewDate,routeKey:key,taskState:'open',targetQuestions:8,taskGoal:'Çözümü hatırla + 8 benzer soru + aynı hatayı tekrar edip etmediğini kontrol et'});
+  const key='mistake:'+m.id;if(seenKeys.has(key)||space.plan.some(function(p){return !p.done&&p.sourceMistakeId===m.id;}))continue;const due=m.reviewDate<=today(),goal=routeReviewGoal(m.subjectId,m.topicId,m.title,'mistake');
+  push({id:R.uid(),date:today(),subjectId:m.subjectId,topicId:m.topicId||('review-'+m.id),title:('Yanlış tekrarı · '+m.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceMistakeId:m.id,source:'mistake',priority:due?88:72,reason:due?'Yanlış defterindeki tekrar tarihi geldi.':'Yanlış defterindeki konu yeniden çalışılmalı.',earliest:due?today():m.reviewDate,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }
  try{for(const q of teacherQuestions().filter(function(q){return ['stuck','review'].includes(q.status);})){
   const key='teacher:'+q.id;if(seenKeys.has(key)||space.plan.some(function(p){return !p.done&&p.sourceTeacherQuestionId===q.id;}))continue;
-  push({id:R.uid(),date:today(),subjectId:q.subjectId,topicId:q.topicId||('teacher-'+q.id),title:('Rota Hoca tekrar · '+(R.topic(space,q.topicId)?.title||q.question||subName(q.subjectId))).slice(0,180),minutes:25,done:false,kind:'review',sourceTeacherQuestionId:q.id,source:'ai_teacher',priority:q.status==='stuck'?82:72,reason:q.status==='stuck'?'Rota Hoca’da “Anlamadım” olarak işaretlediğin soru yeniden çalışılmalı.':'Rota Hoca’da tekrar bakılacak olarak işaretledin.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:8,taskGoal:'Önce çözümü kendin hatırla, sonra 8 benzer soru çöz'});
+  const title=R.topic(space,q.topicId)?.title||q.question||subName(q.subjectId),goal=routeReviewGoal(q.subjectId,q.topicId,title,'spaced');
+  push({id:R.uid(),date:today(),subjectId:q.subjectId,topicId:q.topicId||('teacher-'+q.id),title:('Rota Hoca tekrar · '+title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceTeacherQuestionId:q.id,source:'ai_teacher',priority:q.status==='stuck'?82:72,reason:q.status==='stuck'?'Rota Hoca’da “Anlamadım” olarak işaretlediğin soru yeniden çalışılmalı.':'Rota Hoca’da tekrar bakılacak olarak işaretledin.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }}catch{}
  for(const p of space.plan.filter(function(p){return p.done&&p.topicId&&R.topic(space,p.topicId)&&!['mistake','spaced_review','checkpoint'].includes(p.source);})){
   const key='spaced:'+p.topicId+':'+p.date;if(space.plan.some(function(x){return x.routeKey===key;})||seenKeys.has(key))continue;
-  const due=R.dayAdd(p.date,3);if(due>horizon)continue;const q=Math.max(6,Math.round(routeQuestionTarget(p.subjectId)*.6));
-  push({id:R.uid(),date:today(),subjectId:p.subjectId,topicId:p.topicId,title:('3 gün tekrarı · '+p.title).slice(0,180),minutes:25,done:false,kind:'review',source:'spaced_review',priority:68,reason:'Bu konuyu çalıştıktan birkaç gün sonra kısa geri çağırma ve soru tekrarı yapman unutmayı azaltmaya yardımcı olur.',earliest:due<today()?today():due,routeKey:key,taskState:'open',targetQuestions:q,taskGoal:'5 dk kitaba bakmadan hatırla + yaklaşık '+q+' soru + yanlış kontrolü'});
+  const due=R.dayAdd(p.date,3);if(due>horizon)continue;const goal=routeReviewGoal(p.subjectId,p.topicId,p.title,'spaced');
+  push({id:R.uid(),date:today(),subjectId:p.subjectId,topicId:p.topicId,title:('3 gün tekrarı · '+p.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'spaced_review',priority:68,reason:'Bu konu birkaç gün sonra dersin yapısına uygun kısa geri çağırma ve uygulamayla yeniden kontrol ediliyor.',earliest:due<today()?today():due,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }
  const topics=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)!==2&&!seenTopics.has(t.id);});
  for(const t of topics){
-  const isPriority=space.settings.priorities.includes(t.subjectId),wk=weak[t.subjectId],ps=routeProfileSignal(t.subjectId),last=routeLastLogDate(t.subjectId),goal=routeTaskGoal(t.subjectId);
+  const isPriority=space.settings.priorities.includes(t.subjectId),wk=weak[t.subjectId],ps=routeProfileSignal(t.subjectId),last=routeLastLogDate(t.subjectId),goal=routeTaskGoal(t.subjectId,t.id,t.title),method=routeStudyMethod(t.subjectId,t.id,t.title);
   let priority=30+(isPriority?18:0)+(wk?.boost||0)+ps.boost;
   let reason=isPriority?'Bu dersi öncelikli olarak seçtin.':'Tamamlanmamış konu rotandan geliyor.';
   let source=wk?.boost?'exam':isPriority?'priority':ps.level<=1?'profile':'curriculum';
-  if(wk?.boost){reason='Son deneme verilerinde '+subName(t.subjectId)+' daha fazla çalışma sinyali veriyor.';}
-  else if(ps.level<=1){reason='Seviye profilinde '+subName(t.subjectId)+' dersini “'+ps.label+'” olarak işaretledin; bu yüzden temel öğrenme ve soru pratiği daha sık geliyor.';if(ps.goalBoost)reason+=' Mevcut–hedef farkın bu ağırlığı artırıyor.';}
-  else if(ps.level===3){reason='Bu derste seviyen iyi; uzun konu anlatımı yerine soru ve yanlış analizi ağırlığı veriliyor.';}
+  if(wk?.boost){reason='Son deneme verilerinde '+subName(t.subjectId)+' daha fazla çalışma sinyali veriyor. Görev biçimi '+method.label.toLocaleLowerCase('tr-TR')+' yöntemine göre ayarlandı.';}
+  else if(ps.level<=1){reason='Seviye profilinde '+subName(t.subjectId)+' dersini “'+ps.label+'” olarak işaretledin; bu yüzden temel öğrenme ve '+method.label.toLocaleLowerCase('tr-TR')+' çalışması daha sık geliyor.';if(ps.goalBoost)reason+=' Mevcut–hedef farkın bu ağırlığı artırıyor.';}
+  else if(ps.level===3){reason='Bu derste seviyen iyi; görev '+method.label.toLocaleLowerCase('tr-TR')+' biçiminde daha fazla uygulama ve yanlış kontrolüne kaydırıldı.';}
   if(!last||last<R.dayAdd(today(),-7)){priority+=7;reason+=' Bu derste son 7 günde kayıtlı çalışma az.';}
-  push({id:R.uid(),date:today(),subjectId:t.subjectId,topicId:t.id,title:t.title,minutes:25,done:false,kind:'route',source,priority:Math.max(12,Math.min(96,priority)),reason,earliest:today(),routeKey:'topic:'+t.id,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
+  push({id:R.uid(),date:today(),subjectId:t.subjectId,topicId:t.id,title:t.title,minutes:goal.minutes,done:false,kind:'route',source,priority:Math.max(12,Math.min(96,priority)),reason,earliest:today(),routeKey:'topic:'+t.id,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }
  const dt=new Date(today()+'T12:00:00'),monday=R.dayAdd(today(),-((dt.getDay()+6)%7)),checkpointKey='checkpoint:'+monday;
  if(!space.plan.some(function(p){return p.routeKey===checkpointKey;})&&!seenKeys.has(checkpointKey)){
   const ranked=subjects().map(function(sub){const ps=routeProfileSignal(sub.id),wk=weak[sub.id];return {sub,score:ps.boost+(wk?.boost||0)+(space.settings.priorities.includes(sub.id)?12:0)};}).sort(function(a,b){return b.score-a.score;});
-  const top=ranked[0]?.sub;if(top){const q=Math.max(15,routeQuestionTarget(top.id));
-   push({id:R.uid(),date:today(),subjectId:top.id,topicId:'checkpoint-'+top.id,title:'Haftalık kontrol · '+top.name,minutes:25,done:false,kind:'review',source:'checkpoint',priority:60,reason:'Hafta içinde çalıştığın şeylerin gerçekten oturup oturmadığını görmek için kısa kontrol görevi.',earliest:R.dayAdd(today(),4),routeKey:checkpointKey,taskState:'open',targetQuestions:q,taskGoal:'Yaklaşık '+q+' karışık soru + yanlışları konu başlığıyla not et'});
+  const top=ranked[0]?.sub;if(top){const goal=routeReviewGoal(top.id,'',top.name,'checkpoint'),method=routeStudyMethod(top.id,'',top.name);
+   push({id:R.uid(),date:today(),subjectId:top.id,topicId:'checkpoint-'+top.id,title:'Haftalık kontrol · '+top.name,minutes:goal.minutes,done:false,kind:'review',source:'checkpoint',priority:60,reason:'Hafta içinde çalıştığın şeylerin gerçekten oturup oturmadığını '+method.label.toLocaleLowerCase('tr-TR')+' biçiminde kontrol eden haftalık görev.',earliest:R.dayAdd(today(),4),routeKey:checkpointKey,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
   }
  }
  return out.sort(function(a,b){return b.priority-a.priority||String(a.routeKey).localeCompare(String(b.routeKey));});
 }
+function routeConsistencySignal(space=w()){
+ const start=R.dayAdd(today(),-7),end=R.dayAdd(today(),-1),expected=[];
+ for(let i=0;i<7;i++){const date=R.dayAdd(start,i),dow=new Date(date+'T12:00:00').getDay();if(date<=end&&space.settings.days.includes(dow))expected.push(date);}
+ if(expected.length<3)return {known:false,ratio:0,active:0,expected:expected.length};
+ const active=new Set(space.logs.filter(function(l){return l.date>=start&&l.date<=end&&l.minutes>=15;}).map(function(l){return l.date;}));
+ const hit=expected.filter(function(d){return active.has(d);}).length;
+ return {known:true,ratio:hit/expected.length,active:hit,expected:expected.length};
+}
 function routeEffectiveDailyMinutes(space=w()){
  const base=Math.max(30,Number(space.settings.dailyMinutes)||30),habit=space.profile?.studyHabit;
- if(habit==='no')return Math.min(base,Math.max(30,Math.ceil((base*.5)/30)*30));
- if(habit==='sometimes')return Math.min(base,Math.max(30,Math.ceil((base*.7)/30)*30));
- return base;
+ let start=base;
+ if(habit==='no')start=Math.min(base,Math.max(30,Math.ceil((base*.5)/30)*30));
+ else if(habit==='sometimes')start=Math.min(base,Math.max(30,Math.ceil((base*.7)/30)*30));
+ const consistency=routeConsistencySignal(space);
+ if(!consistency.known)return start;
+ if(consistency.ratio<.4)return Math.max(30,start-30);
+ if(consistency.ratio>=.8&&start<base)return Math.min(base,start+30);
+ return start;
 }
 function routeRebalance(reason='Rota güncellendi',silent=false){
  if(!state.activeExam||!w().configured)return {changed:0,scheduled:0};routeEnsure();const space=w(),start=today(),end=R.dayAdd(start,20),candidates=routeBuildCandidates();const managedIds=new Set(candidates.filter(c=>space.plan.some(p=>p.id===c.id)).map(c=>c.id));
@@ -1221,15 +1364,15 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
 function routeAutoSync(){if(!state.activeExam||!w().configured||sampleSaved)return;routeEnsure();const overdue=w().plan.some(p=>!p.done&&p.date<today());if(w().route.lastAutoDate!==today()||overdue){const message=overdue?'Kaçırılan görevler günlük kapasiteye göre yeniden dağıtıldı.':'Bugünün rotası güncel verilerle kontrol edildi.';routeRebalance(message,true);w().route.lastAutoDate=today();save();}}
 function routeTaskReason(p){return p.reason||({mistake:'Yanlış defterinden tekrar.',ai_teacher:'Rota Hoca tekrar sinyali.',exam:'Deneme performansından gelen öncelik.',profile:'Ders seviye profilinden gelen başlangıç önceliği.',backlog:'Kaçırılan görev yeniden yerleştirildi.',spaced_review:'Birkaç gün sonraki kısa geri çağırma tekrarı.',checkpoint:'Haftalık öğrenme kontrolü.'}[p.source]||'Kişisel çalışma rotandaki görev.');}
 function routeTodayTask(p){
- const done=p.done,later=p.taskState==='later',goal=p.taskGoal||'',qs=Number.isInteger(p.targetQuestions)&&p.targetQuestions>0?p.targetQuestions:0;
- return '<article class="route-task '+(done?'is-done':'')+' '+(later?'is-later':'')+'">'+subIcon(p.subjectId)+'<div class="route-task-main"><div class="row wrap"><span class="route-source">'+esc(routeSourceLabel(p.source))+'</span><span class="tiny muted">'+esc(subName(p.subjectId,state.activeExam==='yks'))+'</span></div><h3>'+esc(p.title)+'</h3><div class="route-task-meta"><span>'+p.minutes+' dk</span>'+(qs?'<span>· ≈ '+qs+' soru</span>':'')+(later?'<span>· bugün daha sonra</span>':'')+'<button class="route-why" data-action="route-why" data-id="'+p.id+'">Neden bugün?</button></div>'+(goal?'<div class="route-task-goal">'+icon('target')+'<span>'+esc(goal)+'</span></div>':'')+'<p class="route-task-reason">'+esc(routeTaskReason(p))+'</p></div><div class="route-task-actions">'+(done?'<span class="pill">Tamamlandı</span>':btn(icon('play')+' Başla','focus-session','sm primary','data-id="'+p.id+'"')+btn('Daha sonra','route-later','sm ghost','data-id="'+p.id+'"')+btn('Atla','route-skip','sm ghost','data-id="'+p.id+'"')+'<button class="check-btn" data-action="complete-session" data-id="'+p.id+'" aria-label="Oturumu tamamla">'+icon('check')+'</button>')+'</div></article>';
+ const done=p.done,later=p.taskState==='later',goal=p.taskGoal||'',qs=Number.isInteger(p.targetQuestions)&&p.targetQuestions>0?p.targetQuestions:0,method=routeStudyMethod(p.subjectId,p.topicId,p.title);
+ return '<article class="route-task '+(done?'is-done':'')+' '+(later?'is-later':'')+'">'+subIcon(p.subjectId)+'<div class="route-task-main"><div class="row wrap"><span class="route-source">'+esc(routeSourceLabel(p.source))+'</span><span class="route-method-pill">'+esc(method.label)+'</span><span class="tiny muted">'+esc(subName(p.subjectId,state.activeExam==='yks'))+'</span></div><h3>'+esc(p.title)+'</h3><div class="route-task-meta"><span>'+p.minutes+' dk</span>'+(qs?'<span>· ≈ '+qs+' soru</span>':'')+(later?'<span>· bugün daha sonra</span>':'')+'<button class="route-why" data-action="route-why" data-id="'+p.id+'">Neden bugün?</button></div>'+(goal?'<div class="route-task-goal">'+icon('target')+'<span>'+esc(goal)+'</span></div>':'')+'<p class="route-task-reason">'+esc(routeTaskReason(p))+'</p></div><div class="route-task-actions">'+(done?'<span class="pill">Tamamlandı</span>':btn(icon('play')+' Başla','focus-session','sm primary','data-id="'+p.id+'"')+btn('Daha sonra','route-later','sm ghost','data-id="'+p.id+'"')+btn('Atla','route-skip','sm ghost','data-id="'+p.id+'"')+'<button class="check-btn" data-action="complete-session" data-id="'+p.id+'" aria-label="Oturumu tamamla">'+icon('check')+'</button>')+'</div></article>';
 }
 function routeTodayPage(){
  routeEnsure();const tasks=w().plan.filter(p=>p.date===today()).sort((a,b)=>(a.done-b.done)||((a.taskState==='later')-(b.taskState==='later'))||((b.priority||0)-(a.priority||0))),open=tasks.filter(p=>!p.done),total=open.reduce((n,p)=>n+p.minutes,0),first=open.find(p=>p.taskState!=='later')||open[0],overdue=w().plan.filter(p=>!p.done&&p.date<today()).length,due=w().mistakes.filter(m=>!m.resolved&&m.reviewDate<=today()).length,last=[...w().exams].sort((a,b)=>b.date.localeCompare(a.date))[0],capacity=routeEffectiveDailyMinutes();
  const reason=w().route.lastReason||'Rota motoru çalışma kapasiteni ve mevcut kayıtlarını birlikte değerlendirir.';
  const profileNudge=!w().profile?.completed?`<div class="profile-incomplete"><div><strong>Kişisel rota profilin eksik.</strong><p>Ders seviyelerini ve hedefini girersen rota başlangıç ağırlıklarını sana göre ayarlar.</p></div>${btn('Profilimi tamamla','nav','sm primary','data-view="settings"')}</div>`:'';
- const levelValues=subjects().map(s=>routeProfileSignal(s.id).level),weakCount=levelValues.filter(v=>v<=1).length;
- return `${profileNudge}<header class="route-v1-head"><div><div class="eyebrow">${dateLabel(today(),true)}</div><h1>Bugünkü Rotan</h1><p>Ne çalışacağını düşünme. Sıradaki küçük adımın burada.</p></div>${btn(icon('refresh')+' Rotayı yeniden düzenle','route-rebalance','ghost')}</header><section class="route-today-hero"><div class="grow"><div class="eyebrow">${examLabel()} · ${esc(trackLabel())}</div><h2>${open.length?`${open.length} görev hazır.`:'Bugünkü rotanı tamamladın.'}</h2><p>${open.length?'Görevler günlük kapasiten ve öğrenme sinyallerine göre sıralandı.':'Yeni bir görev eklemek zorunda değilsin; istersen serbest çalışma yapabilirsin.'}</p></div><div class="route-total"><strong>${duration(total)}</strong><span>bugün planlanan · başlangıç kapasitesi ${duration(capacity)}${capacity<w().settings.dailyMinutes?' · üst sınır '+duration(w().settings.dailyMinutes):''}</span></div>${first?btn('ÇALIŞMAYA BAŞLA '+icon('arrow'),'focus-session','route-start-big',`data-id="${first.id}"`):btn('Serbest çalışma ekle','add-log','route-start-big')}</section><div class="route-reason">${icon('spark')}<div><strong>Rota motoru:</strong> ${esc(reason)}${w().route.lastChanged?` ${w().route.lastChanged} görev yeniden yerleştirildi.`:''}</div></div><section class="route-list">${tasks.length?tasks.map(routeTodayTask).join(''):`<div class="route-empty">${icon('leaf')}<h3>Bugün için zorunlu görev yok.</h3><p>Rotanı yeniden düzenleyebilir veya kısa bir serbest çalışma ekleyebilirsin.</p>${btn('Rotayı oluştur','route-rebalance','primary')}</div>`}</section><div class="route-secondary"><section class="card"><div class="card-head"><h3>Motorun kullandığı sinyaller</h3><span class="pill plain">Açıklanabilir</span></div><div class="route-mini-row"><strong>${weakCount} zayıf / çok zayıf ders</strong><p>${w().profile?.completed?'Seviye profilin başlangıç görev ağırlıklarına bağlandı.':'Profilini tamamladığında başlangıç rota puanına eklenecek.'}</p></div><div class="route-mini-row"><strong>${overdue} kaçırılmış görev</strong><p>Eski görevler kapasiteyi aşmadan yeniden dağıtılır.</p></div><div class="route-mini-row"><strong>${due} tekrar zamanı gelen yanlış</strong><p>Yanlış defterindeki açık tekrarlar daha yüksek öncelik alır.</p></div><div class="route-mini-row"><strong>${last?C.TYPES[last.type].label+' · '+dateLabel(last.date):'Henüz deneme yok'}</strong><p>${last?'Son denemelerde düşük kalan dersler rota puanını artırabilir.':'Deneme eklediğinde rota motoru ders bazlı sinyal kullanabilir.'}</p></div></section><section class="card"><div class="card-head"><h3>Bu hafta</h3>${btn('Programı aç','nav','sm ghost','data-view="plan"')}</div>${Array.from({length:7},(_,i)=>R.dayAdd(today(),i)).map(d=>{const xs=w().plan.filter(p=>p.date===d&&!p.done),mins=xs.reduce((n,p)=>n+p.minutes,0);return `<div class="route-mini-row"><div class="row between"><strong>${d===today()?'Bugün':dateLabel(d)}</strong><span class="tiny muted">${xs.length} görev · ${duration(mins)}</span></div></div>`;}).join('')}</section></div>`;
+ const levelValues=subjects().map(s=>routeProfileSignal(s.id).level),weakCount=levelValues.filter(v=>v<=1).length,netGap=routeNetGap(),consistency=routeConsistencySignal();
+ return `${profileNudge}<header class="route-v1-head"><div><div class="eyebrow">${dateLabel(today(),true)}</div><h1>Bugünkü Rotan</h1><p>Ne çalışacağını düşünme. Sıradaki küçük adımın burada.</p></div>${btn(icon('refresh')+' Rotayı yeniden düzenle','route-rebalance','ghost')}</header><section class="route-today-hero"><div class="grow"><div class="eyebrow">${examLabel()} · ${esc(trackLabel())}</div><h2>${open.length?`${open.length} görev hazır.`:'Bugünkü rotanı tamamladın.'}</h2><p>${open.length?'Görevler günlük kapasiten ve öğrenme sinyallerine göre sıralandı.':'Yeni bir görev eklemek zorunda değilsin; istersen serbest çalışma yapabilirsin.'}</p></div><div class="route-total"><strong>${duration(total)}</strong><span>bugün planlanan · başlangıç kapasitesi ${duration(capacity)}${capacity<w().settings.dailyMinutes?' · üst sınır '+duration(w().settings.dailyMinutes):''}</span></div>${first?btn('ÇALIŞMAYA BAŞLA '+icon('arrow'),'focus-session','route-start-big',`data-id="${first.id}"`):btn('Serbest çalışma ekle','add-log','route-start-big')}</section><div class="route-reason">${icon('spark')}<div><strong>Rota motoru:</strong> ${esc(reason)}${w().route.lastChanged?` ${w().route.lastChanged} görev yeniden yerleştirildi.`:''}</div></div><section class="route-list">${tasks.length?tasks.map(routeTodayTask).join(''):`<div class="route-empty">${icon('leaf')}<h3>Bugün için zorunlu görev yok.</h3><p>Rotanı yeniden düzenleyebilir veya kısa bir serbest çalışma ekleyebilirsin.</p>${btn('Rotayı oluştur','route-rebalance','primary')}</div>`}</section><div class="route-secondary"><section class="card"><div class="card-head"><h3>Motorun kullandığı sinyaller</h3><span class="pill plain">Açıklanabilir</span></div><div class="route-mini-row"><strong>${weakCount} zayıf / çok zayıf ders</strong><p>${w().profile?.completed?'Seviye profilin başlangıç görev ağırlıklarına bağlandı.':'Profilini tamamladığında başlangıç rota puanına eklenecek.'}</p></div><div class="route-mini-row"><strong>${netGap.current!==null?format(netGap.current,1)+' mevcut net':'Mevcut net bilinmiyor'}</strong><p>${netGap.source==='exam'?'Son '+(netGap.observed?.label||'deneme')+' sonucu kişisel başlangıç netinin yerine rota hesabında kullanılıyor.':netGap.source==='profile'?'Başlangıçta verdiğin net bilgisi hedef farkı hesabında kullanılıyor.':'Bir mevcut net veya deneme sonucu eklersen hedef farkı daha doğru hesaplanır.'}</p></div><div class="route-mini-row"><strong>${consistency.known?Math.round(consistency.ratio*100)+'% son 7 gün devamlılığı':'Devamlılık verisi oluşuyor'}</strong><p>${consistency.known?consistency.active+'/'+consistency.expected+' planlı çalışma gününde en az 15 dk kayıt var. Motor başlangıç kapasitesini buna göre gerektiğinde 30 dk azaltıp artırabilir.':'En az 3 geçmiş planlı gün oluşunca tempo gerçek devamlılığa göre ayarlanabilir.'}</p></div><div class="route-mini-row"><strong>${overdue} kaçırılmış görev</strong><p>Eski görevler kapasiteyi aşmadan yeniden dağıtılır.</p></div><div class="route-mini-row"><strong>${due} tekrar zamanı gelen yanlış</strong><p>Yanlış defterindeki açık tekrarlar daha yüksek öncelik alır.</p></div><div class="route-mini-row"><strong>${last?C.TYPES[last.type].label+' · '+dateLabel(last.date):'Henüz deneme yok'}</strong><p>${last?'Son denemelerde düşük kalan dersler rota puanını artırabilir.':'Deneme eklediğinde rota motoru ders bazlı sinyal kullanabilir.'}</p></div></section><section class="card"><div class="card-head"><h3>Bu hafta</h3>${btn('Programı aç','nav','sm ghost','data-view="plan"')}</div>${Array.from({length:7},(_,i)=>R.dayAdd(today(),i)).map(d=>{const xs=w().plan.filter(p=>p.date===d&&!p.done),mins=xs.reduce((n,p)=>n+p.minutes,0);return `<div class="route-mini-row"><div class="row between"><strong>${d===today()?'Bugün':dateLabel(d)}</strong><span class="tiny muted">${xs.length} görev · ${duration(mins)}</span></div></div>`;}).join('')}</section></div>`;
 }
 function baseTodayPage(){return routeTodayPage();}
 function todayPage(){return membershipBanner()+baseTodayPage();}

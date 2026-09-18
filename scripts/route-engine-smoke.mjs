@@ -131,6 +131,49 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   }
 }
 
+
+// 4) Recent learning evidence must outweigh stale history without erasing it.
+{
+  const src=between('function routeOutcomeSignal','function routeDifficultyLabel');
+  const space={
+    logs:[
+      {id:'recent-1',subjectId:'k-ma',sessionId:'a',date:'2026-09-18',correct:9,wrong:1,outcome:'strong',updated:3},
+      {id:'recent-2',subjectId:'k-ma',sessionId:'b',date:'2026-09-17',correct:9,wrong:1,outcome:'strong',updated:2},
+      {id:'old',subjectId:'k-ma',sessionId:'c',date:'2026-09-16',correct:10,wrong:40,outcome:'stuck',updated:1}
+    ],
+    plan:[]
+  };
+  const R={dayAdd:()=> '2026-08-29'};
+  const today=()=> '2026-09-19';
+  const w=()=>space;
+  const api=new Function('R','today','w',src+';return {routeOutcomeSignal,routePracticeSignal};')(R,today,w);
+  const practice=api.routePracticeSignal('k-ma');
+  const outcome=api.routeOutcomeSignal('k-ma');
+  assert.ok(practice.weightedAccuracy>practice.accuracy,'Recent good sessions should weigh more than an older large bad set');
+  assert.ok(outcome.trend>0,'Recent strong feedback should produce a positive recency trend');
+}
+
+// 4) Difficulty cause must be retrievable and must alter the study prescription.
+{
+  const src=between('function routeDifficultyLabel','function routeSubjectAdaptiveState');
+  const space={
+    logs:[
+      {id:'d1',subjectId:'k-ma',sessionId:'a',date:'2026-09-18',difficulty:'speed',updated:2},
+      {id:'d2',subjectId:'k-ma',sessionId:'b',date:'2026-09-17',difficulty:'process',updated:1}
+    ],
+    plan:[]
+  };
+  const R={dayAdd:()=> '2026-08-29',topic:()=>null};
+  const today=()=> '2026-09-19';
+  const w=()=>space;
+  const routeStudyMethod=()=>({key:'quant',label:'SORU + YANLIŞ ANALİZİ'});
+  const api=new Function('R','today','w','routeStudyMethod',src+';return {routeDifficultySignal,routeDifficultyPrescription};')(R,today,w,routeStudyMethod);
+  const signal=api.routeDifficultySignal('k-ma');
+  assert.equal(signal.recent,'speed');
+  assert.match(api.routeDifficultyPrescription('k-ma','','Problemler','speed'),/süre/i);
+  assert.match(api.routeDifficultyPrescription('k-ma','','Problemler','process'),/adım|işlem/i);
+}
+
 // 4) Task duration must fit the student's effective daily capacity.
 {
   const src=between('function routeHeavyLimit','function routeQuestionTarget');
@@ -198,6 +241,10 @@ for(const marker of [
   'routeStageGap',
   'routeConsistencySignal',
   'routePracticeSignal',
+  'weightedAccuracy',
+  'routeDifficultySignal',
+  'routeDifficultyPrescription',
+  'Zorlandıysan en çok nerede?',
   'Sinyal güveni',
   'const waves=needsRepair?[1,3,7]:[3,7]',
   'routeHeavyLimit',

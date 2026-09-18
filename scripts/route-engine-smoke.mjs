@@ -131,6 +131,24 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   }
 }
 
+// 4) Topic frontier keeps curriculum order and prevents deep-topic flooding.
+{
+  const src=between('function routeTopicFrontier','function routeBuildCandidates');
+  const subjects=()=>[{id:'k-ma'},{id:'k-ta'}];
+  const catalog=[
+    {id:'m1',subjectId:'k-ma'},{id:'m2',subjectId:'k-ma'},{id:'m3',subjectId:'k-ma'},{id:'m4',subjectId:'k-ma'},
+    {id:'t1',subjectId:'k-ta'},{id:'t2',subjectId:'k-ta'},{id:'t3',subjectId:'k-ta'}
+  ];
+  const space={topicState:{m1:{status:2},m3:{status:1}},settings:{priorities:['k-ma']}};
+  const R={allTopics:()=>catalog};
+  const state={activeExam:'kpss'};
+  const routeProfileSignal=id=>({level:id==='k-ma'?1:2});
+  const frontier=new Function('R','state','subjects','routeProfileSignal',src+';return routeTopicFrontier;')(R,state,subjects,routeProfileSignal);
+  const picked=frontier(space,catalog.filter(t=>(space.topicState[t.id]?.status||0)!==2));
+  assert.deepEqual(picked.filter(t=>t.subjectId==='k-ma').map(t=>t.id),['m3','m2','m4']);
+  assert.deepEqual(picked.filter(t=>t.subjectId==='k-ta').map(t=>t.id),['t1','t2']);
+}
+
 // 4) Normal review load is capped, while urgent repair work can bypass that cap.
 {
   const src=between('function routeIsReviewLike','function routeQuestionTarget');
@@ -174,6 +192,8 @@ for(const marker of [
   'Sinyal güveni',
   'const waves=needsRepair?[1,3,7]:[3,7]',
   'routeHeavyLimit',
+  'routeTopicFrontier',
+  'routeSequenceRank',
   'routeReviewDailyLimit',
   'routeReviewWeeklyLimit',
   'routeIsCriticalReview',

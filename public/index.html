@@ -549,7 +549,7 @@ const uid=()=> (root.crypto&&root.crypto.randomUUID?root.crypto.randomUUID():Dat
 const iso=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function dayAdd(date,days){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+days);return iso(d);}
 function validDate(v){return typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(new Date(v+'T12:00:00'))&&iso(new Date(v+'T12:00:00'))===v;}
-function workspace(exam){return {configured:false,settings:{name:'',track:exam==='yks'?'say':'lisans',dailyMinutes:90,days:[1,2,3,4,5,6],priorities:[],target:'',targetDate:''},profile:{version:3,completed:false,summaryConfirmed:false,currentNet:null,targetScore:0,targetRank:0,targetNet:0,studyHabit:'',subjectLevels:{},updated:0},topicState:{},customTopics:[],plan:[],logs:[],exams:[],mistakes:[],route:{version:1,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[]},taskEvents:[]};}
+function workspace(exam){return {configured:false,settings:{name:'',track:exam==='yks'?'say':'lisans',dailyMinutes:90,days:[1,2,3,4,5,6],priorities:[],target:'',targetDate:''},profile:{version:4,completed:false,summaryConfirmed:false,currentNet:null,targetNet:0,currentStageNet:null,targetStageNet:0,targetScore:0,targetRank:0,studyHabit:'',subjectLevels:{},updated:0},topicState:{},customTopics:[],plan:[],logs:[],exams:[],mistakes:[],route:{version:1,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[]},taskEvents:[]};}
 const fresh=()=>({version:1,activeExam:null,workspaces:{kpss:workspace('kpss'),yks:workspace('yks')}});
 function courses(exam,track){return C.subjects.filter(s=>s.exam===exam&&(!s.tracks.length||s.tracks.includes(track)));}
 function allTopics(w,exam){return courses(exam,w.settings.track).flatMap(s=>s.topics).concat(w.customTopics.filter(t=>courses(exam,w.settings.track).some(s=>s.id===t.subjectId)));}
@@ -599,7 +599,7 @@ function validateBackup(data){
   const levelSource=op.subjectLevels&&typeof op.subjectLevels==='object'&&!Array.isArray(op.subjectLevels)?op.subjectLevels:{};
   const subjectLevels={};
   for(const [sid,lv] of Object.entries(levelSource)){if(C.subjects.some(x=>x.id===sid&&x.exam===e)&&Number.isInteger(lv)&&lv>=0&&lv<=3)subjectLevels[sid]=lv;}
-  w.profile={version:3,completed:!!op.completed,summaryConfirmed:typeof op.summaryConfirmed==='boolean'?op.summaryConfirmed:!!op.completed,currentNet:Number.isFinite(op.currentNet)?Math.max(0,Math.min(120,Number(op.currentNet))):null,targetScore:Number.isFinite(op.targetScore)?Math.max(0,Math.min(1000,Number(op.targetScore))):0,targetRank:Number.isFinite(op.targetRank)?Math.max(0,Math.min(100000000,Math.round(Number(op.targetRank)))):0,targetNet:Number.isFinite(op.targetNet)?Math.max(0,Math.min(120,Number(op.targetNet))):0,studyHabit:['yes','sometimes','no'].includes(op.studyHabit)?op.studyHabit:'',subjectLevels,updated:Number.isFinite(op.updated)?Math.max(0,op.updated):0};
+  w.profile={version:4,completed:!!op.completed,summaryConfirmed:typeof op.summaryConfirmed==='boolean'?op.summaryConfirmed:!!op.completed,currentNet:Number.isFinite(op.currentNet)?Math.max(0,Math.min(120,Number(op.currentNet))):null,targetNet:Number.isFinite(op.targetNet)?Math.max(0,Math.min(120,Number(op.targetNet))):0,currentStageNet:Number.isFinite(op.currentStageNet)?Math.max(0,Math.min(80,Number(op.currentStageNet))):null,targetStageNet:Number.isFinite(op.targetStageNet)?Math.max(0,Math.min(80,Number(op.targetStageNet))):0,targetScore:Number.isFinite(op.targetScore)?Math.max(0,Math.min(1000,Number(op.targetScore))):0,targetRank:Number.isFinite(op.targetRank)?Math.max(0,Math.min(100000000,Math.round(Number(op.targetRank)))):0,studyHabit:['yes','sometimes','no'].includes(op.studyHabit)?op.studyHabit:'',subjectLevels,updated:Number.isFinite(op.updated)?Math.max(0,op.updated):0};
   if(!w.settings.days.length)throw Error('En az bir çalışma günü olmalı.');
   const subjectIds=new Set(C.subjects.filter(s=>s.exam===e).map(s=>s.id));
   const sub=v=>{if(!subjectIds.has(v))throw Error('Yedekte diğer sınava ait ders var.');return v;};
@@ -958,26 +958,39 @@ function profileLevelsHtml(track=w().settings.track){
 }
 function profileHabitValue(profile=w().profile||{}){return ['yes','sometimes','no'].includes(profile.studyHabit)?profile.studyHabit:'sometimes';}
 function profileHabitLabel(v){return {yes:'Evet · Genelde düzenliyim',sometimes:'Kararsız / Bazen · Düzenim bozulabiliyor',no:'Hayır · Düzen kurmakta zorlanıyorum'}[v]||'Kararsız / Bazen';}
+function yksStageLabel(track=w().settings.track){return track==='dil'?'YDT':track==='tyt'?'':'AYT';}
+function yksStageExamType(track=w().settings.track){return track==='dil'?'YDT':track==='say'?'AYT_SAY':track==='ea'?'AYT_EA':track==='soz'?'AYT_SOZ':'';}
+function profileStageFields(profile=w().profile||{},track=w().settings.track){
+ if(state.activeExam!=='yks'||track==='tyt')return '';
+ const label=yksStageLabel(track),current=Number.isFinite(profile.currentStageNet)?Number(profile.currentStageNet):null,target=Number(profile.targetStageNet)||0,gap=current!==null&&target?Math.max(0,target-current):null;
+ return '<label class="field">Şu anki '+label+' netin<input name="currentStageNet" type="number" min="0" max="80" step="0.25" value="'+(current===null?'':current)+'" placeholder="Örn. 32"><span class="field-help">Deneme çözmediysen boş bırakabilirsin.</span></label><label class="field">Hedef '+label+' netin<input name="targetStageNet" type="number" min="0" max="80" step="0.25" value="'+(target||'')+'" placeholder="Örn. 55"><span class="field-help">'+(gap===null?'Mevcut ve hedef birlikte girildiğinde '+label+' dersleri kendi farkına göre ağırlıklandırılır.':gap+' netlik '+label+' farkı rota motoruna sinyal veriyor.')+'</span></label>';
+}
 function profileFields(profile=w().profile||{},setupMode=false,track=w().settings.track){
- const targetScore=Number(profile.targetScore)||0,targetRank=Number(profile.targetRank)||0,targetNet=Number(profile.targetNet)||0,currentNet=Number.isFinite(profile.currentNet)?Number(profile.currentNet):null,habit=profileHabitValue(profile);
+ const targetScore=Number(profile.targetScore)||0,targetRank=Number(profile.targetRank)||0,targetNet=Number(profile.targetNet)||0,currentNet=Number.isFinite(profile.currentNet)?Number(profile.currentNet):null,habit=profileHabitValue(profile),stageFields=profileStageFields(profile,track);
  const goalField=state.activeExam==='kpss'
   ? '<label class="field">Hedef KPSS puanın<input name="targetScore" type="number" min="0" max="100" step="0.1" value="'+(targetScore||'')+'" placeholder="Örn. 88"><span class="field-help">Boş bırakabilirsin. Puan hedefi, net farkıyla birlikte rota önceliğine sinyal verir.</span></label>'
   : '<label class="field">Hedef sıralaman<input name="targetRank" type="number" min="1" max="100000000" step="1" value="'+(targetRank||'')+'" placeholder="Örn. 30000"><span class="field-help">Boş bırakabilirsin. Sıralama hedefi, net farkıyla birlikte rota önceliğine sinyal verir.</span></label>';
  const examNet=state.activeExam==='kpss'?'KPSS toplam':'TYT';
  const gap=currentNet!==null&&targetNet?Math.max(0,targetNet-currentNet):null;
- return '<div class="profile-section"><div class="profile-section-head"><div><div class="eyebrow">KİŞİSEL ROTA PROFİLİ</div><h3>Başlangıç noktanı ve hedefini söyle, rota gerçek farkı kullansın.</h3></div><span class="pill plain">Sonradan değiştirilebilir</span></div><div class="profile-goal-grid"><label class="field">Şu anki '+examNet+' netin<input name="currentNet" type="number" min="0" max="120" step="0.25" value="'+(currentNet===null?'':currentNet)+'" placeholder="Örn. 55"><span class="field-help">Deneme çözmediysen boş bırakabilirsin.</span></label><label class="field">Hedef '+examNet+' netin<input name="targetNet" type="number" min="0" max="120" step="0.25" value="'+(targetNet||'')+'" placeholder="Örn. 85"><span class="field-help">'+(gap===null?'Mevcut ve hedef net birlikte girilirse aradaki fark rota yoğunluğunda kullanılır.':gap+' netlik fark rota motoruna sinyal veriyor.')+'</span></label>'+goalField+'<label class="field">Düzenli çalışma durumun<select name="studyHabit"><option value="yes" '+(habit==='yes'?'selected':'')+'>Evet · Genelde düzenliyim</option><option value="sometimes" '+(habit==='sometimes'?'selected':'')+'>Kararsız / Bazen · Düzenim bozuluyor</option><option value="no" '+(habit==='no'?'selected':'')+'>Hayır · Düzen kurmakta zorlanıyorum</option></select><span class="field-help">İlk haftanın günlük yükünü sürdürülebilir kurmak için kullanılır.</span></label></div><div class="small mb" style="margin-bottom:8px;font-weight:650">Derslerde kendini nerede görüyorsun?</div><div class="profile-level-grid" data-profile-levels>'+profileLevelsHtml(track)+'</div><div class="profile-tip"><strong>Rota nasıl karar veriyor?</strong> Önce mevcut–hedef net farkına bakar; sonra zayıf dersleri, deneme sonuçlarını, yanlışları ve çalışma geçmişini ağırlıklandırır. Görevlerde soru hedefi ve kısa tekrar da verir.</div></div>';
+ return '<div class="profile-section"><div class="profile-section-head"><div><div class="eyebrow">KİŞİSEL ROTA PROFİLİ</div><h3>Başlangıç noktanı ve hedefini söyle, rota gerçek farkı kullansın.</h3></div><span class="pill plain">Sonradan değiştirilebilir</span></div><div class="profile-goal-grid"><label class="field">Şu anki '+examNet+' netin<input name="currentNet" type="number" min="0" max="120" step="0.25" value="'+(currentNet===null?'':currentNet)+'" placeholder="Örn. 55"><span class="field-help">Deneme çözmediysen boş bırakabilirsin.</span></label><label class="field">Hedef '+examNet+' netin<input name="targetNet" type="number" min="0" max="120" step="0.25" value="'+(targetNet||'')+'" placeholder="Örn. 85"><span class="field-help">'+(gap===null?'Mevcut ve hedef net birlikte girilirse aradaki fark rota yoğunluğunda kullanılır.':gap+' netlik fark rota motoruna sinyal veriyor.')+'</span></label>'+stageFields+goalField+'<label class="field">Düzenli çalışma durumun<select name="studyHabit"><option value="yes" '+(habit==='yes'?'selected':'')+'>Evet · Genelde düzenliyim</option><option value="sometimes" '+(habit==='sometimes'?'selected':'')+'>Kararsız / Bazen · Düzenim bozuluyor</option><option value="no" '+(habit==='no'?'selected':'')+'>Hayır · Düzen kurmakta zorlanıyorum</option></select><span class="field-help">İlk haftanın günlük yükünü sürdürülebilir kurmak için kullanılır.</span></label></div><div class="small mb" style="margin-bottom:8px;font-weight:650">Derslerde kendini nerede görüyorsun?</div><div class="profile-level-grid" data-profile-levels>'+profileLevelsHtml(track)+'</div><div class="profile-tip"><strong>Rota nasıl karar veriyor?</strong> TYT ve varsa AYT/YDT mevcut–hedef farkına bakar; sonra zayıf dersleri, deneme sonuçlarını, yanlışları ve çalışma geçmişini ağırlıklandırır. Görevlerde soru hedefi ve kısa tekrar da verir.</div></div>';
 }
 function readProfile(form){
  const fd=new FormData(form),track=state.activeExam==='yks'?String(fd.get('track')||w().settings.track):'lisans',levels={};
  for(const sub of profileSubjects(track)){const raw=fd.get('level:'+sub.id),v=Number(raw);levels[sub.id]=Number.isInteger(v)&&v>=0&&v<=3?v:2;}
  const currentRaw=String(fd.get('currentNet')||'').trim(),currentNet=currentRaw===''?null:Number(currentRaw),score=Number(fd.get('targetScore')||0),rank=Number(fd.get('targetRank')||0),targetNet=Number(fd.get('targetNet')||0),studyHabit=String(fd.get('studyHabit')||'sometimes');
+ const stageCurrentRaw=String(fd.get('currentStageNet')||'').trim(),currentStageNet=stageCurrentRaw===''?null:Number(stageCurrentRaw),targetStageNet=Number(fd.get('targetStageNet')||0);
  if(currentNet!==null&&(!Number.isFinite(currentNet)||currentNet<0||currentNet>120))throw Error('Mevcut net 0–120 arasında olmalı.');
  if(state.activeExam==='kpss'&&(!Number.isFinite(score)||score<0||score>100))throw Error('Hedef KPSS puanı 0–100 arasında olmalı.');
  if(state.activeExam==='yks'&&(!Number.isFinite(rank)||rank<0||rank>100000000||!Number.isInteger(rank)))throw Error('Hedef sıralamayı tam sayı olarak gir.');
- if(!Number.isFinite(targetNet)||targetNet<0||targetNet>120)throw Error('Hedef net 0–120 arasında olmalı.');
+ if(!Number.isFinite(targetNet)||targetNet<0||targetNet>120)throw Error('Hedef TYT/KPSS neti 0–120 arasında olmalı.');
  if(currentNet!==null&&targetNet&&targetNet<currentNet)throw Error('Hedef netin mevcut netinden düşük görünüyor. Değerleri kontrol et.');
+ if(state.activeExam==='yks'&&track!=='tyt'){
+  if(currentStageNet!==null&&(!Number.isFinite(currentStageNet)||currentStageNet<0||currentStageNet>80))throw Error(yksStageLabel(track)+' mevcut neti 0–80 arasında olmalı.');
+  if(!Number.isFinite(targetStageNet)||targetStageNet<0||targetStageNet>80)throw Error(yksStageLabel(track)+' hedef neti 0–80 arasında olmalı.');
+  if(currentStageNet!==null&&targetStageNet&&targetStageNet<currentStageNet)throw Error(yksStageLabel(track)+' hedef netin mevcut netinden düşük görünüyor.');
+ }
  if(!['yes','sometimes','no'].includes(studyHabit))throw Error('Düzenli çalışma durumunu seç.');
- return {version:3,completed:true,summaryConfirmed:true,currentNet,targetScore:state.activeExam==='kpss'?score:0,targetRank:state.activeExam==='yks'?rank:0,targetNet,studyHabit,subjectLevels:levels,updated:Date.now()};
+ return {version:4,completed:true,summaryConfirmed:true,currentNet,targetNet,currentStageNet:state.activeExam==='yks'&&track!=='tyt'?currentStageNet:null,targetStageNet:state.activeExam==='yks'&&track!=='tyt'?targetStageNet:0,targetScore:state.activeExam==='kpss'?score:0,targetRank:state.activeExam==='yks'?rank:0,studyHabit,subjectLevels:levels,updated:Date.now()};
 }
 function settingsFields(s,setup=false){return `<div class="form-grid"><label class="field">Sana nasıl hitap edelim?<input name="name" value="${esc(s.name)}" maxlength="60" placeholder="Adın (isteğe bağlı)" autocomplete="given-name"></label><label class="field">${state.activeExam==='yks'?'YKS alanın':'Sınav kapsamın'}${state.activeExam==='yks'?`<select name="track">${Object.entries(C.TRACKS).map(([k,v])=>`<option value="${k}" ${s.track===k?'selected':''}>${v}</option>`).join('')}</select>`:'<input value="KPSS Lisans · Genel Yetenek / Genel Kültür" readonly><input name="track" type="hidden" value="lisans">'}</label><label class="field">Çalışma günlerinde ayıracağın süre<select name="dailyMinutes">${[30,60,90,120,150,180,240,300,360].map(n=>`<option value="${n}" ${n===s.dailyMinutes?'selected':''}>${duration(n)} / gün</option>`).join('')}</select><span class="field-help">Her blok: 25 dakika çalışma + 5 dakika mola.</span></label><label class="field">Hedef tarihi (isteğe bağlı)<input name="targetDate" type="date" value="${esc(s.targetDate)}"><span class="field-help">Kendi hedefin; resmî sınav tarihi otomatik atanmaz.</span></label><label class="field full">Hedefin ne?<input name="target" maxlength="160" value="${esc(s.target)}" placeholder="Örneğin: Hedef bölümüm / düzenli hazırlanmak"></label><div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Hangi günler çalışabilirsin?</div><div class="check-group">${[[1,'Pzt'],[2,'Sal'],[3,'Çar'],[4,'Per'],[5,'Cum'],[6,'Cmt'],[0,'Paz']].map(([n,label])=>`<label class="check-chip"><input type="checkbox" name="days" value="${n}" ${s.days.includes(n)?'checked':''}>${label}</label>`).join('')}</div></div>${!setup?`<div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Öncelikli dersler <span class="muted tiny">· Daha çok oturum ayrılır</span></div><div class="check-group">${subjects().map(sub=>`<label class="check-chip"><input type="checkbox" name="priorities" value="${sub.id}" ${s.priorities.includes(sub.id)?'checked':''}>${esc((state.activeExam==='yks'?sub.stage+' ':'')+sub.name)}</label>`).join('')}</div></div>`:''}</div>`;}
 
@@ -1038,18 +1051,18 @@ function setupWizardSubmit(form){
  }
  if(key==='habit'){
   const studyHabit=String(fd.get('studyHabit')||'');if(!['yes','sometimes','no'].includes(studyHabit))throw Error('Düzenli çalışma durumunu seç.');
-  w().profile={...(w().profile||{}),version:3,studyHabit,completed:false,updated:Date.now()};
+  w().profile={...(w().profile||{}),version:4,studyHabit,completed:false,updated:Date.now()};
  }
  if(key==='currentNet'){
   const raw=String(fd.get('currentNet')||'').trim(),currentNet=raw===''?null:Number(raw);
   if(currentNet!==null&&(!Number.isFinite(currentNet)||currentNet<0||currentNet>120))throw Error('Mevcut net 0–120 arasında olmalı.');
-  w().profile={...(w().profile||{}),version:3,currentNet,completed:false,updated:Date.now()};
+  w().profile={...(w().profile||{}),version:4,currentNet,completed:false,updated:Date.now()};
  }
  if(key==='net'){
   const raw=String(fd.get('targetNet')||'').trim(),targetNet=raw===''?0:Number(raw),current=w().profile?.currentNet;
   if(!Number.isFinite(targetNet)||targetNet<0||targetNet>120)throw Error('Hedef net 0–120 arasında olmalı.');
   if(Number.isFinite(current)&&targetNet&&targetNet<current)throw Error('Hedef netin mevcut netinden düşük görünüyor. Değerleri kontrol et.');
-  w().profile={...(w().profile||{}),version:3,targetNet,completed:false,updated:Date.now()};
+  w().profile={...(w().profile||{}),version:4,targetNet,completed:false,updated:Date.now()};
  }
  if(key==='time'){
   const mins=Number(fd.get('dailyMinutes'));if(!Number.isInteger(mins)||mins<30||mins>720)throw Error('Günlük çalışma süreni seç.');w().settings.dailyMinutes=mins;
@@ -1063,12 +1076,12 @@ function setupWizardSubmit(form){
   const score=Number(fd.get('targetScore')||0),rank=Number(fd.get('targetRank')||0);
   if(state.activeExam==='kpss'&&(!Number.isFinite(score)||score<0||score>100))throw Error('Hedef KPSS puanı 0–100 arasında olmalı.');
   if(state.activeExam==='yks'&&(!Number.isFinite(rank)||rank<0||rank>100000000||!Number.isInteger(rank)))throw Error('Hedef sıralamayı tam sayı olarak gir.');
-  w().profile={...(w().profile||{}),version:3,targetScore:state.activeExam==='kpss'?score:0,targetRank:state.activeExam==='yks'?rank:0,completed:false,updated:Date.now()};
+  w().profile={...(w().profile||{}),version:4,targetScore:state.activeExam==='kpss'?score:0,targetRank:state.activeExam==='yks'?rank:0,completed:false,updated:Date.now()};
  }
  if(key==='levels'){
   const levels={};for(const sub of profileSubjects(w().settings.track)){const v=Number(fd.get('level:'+sub.id));levels[sub.id]=Number.isInteger(v)&&v>=0&&v<=3?v:2;}
   const studyHabit=['yes','sometimes','no'].includes(w().profile?.studyHabit)?w().profile.studyHabit:'sometimes';
-  w().profile={...(w().profile||{}),version:3,studyHabit,subjectLevels:levels,completed:true,summaryConfirmed:false,updated:Date.now()};
+  w().profile={...(w().profile||{}),version:4,studyHabit,subjectLevels:levels,completed:true,summaryConfirmed:false,updated:Date.now()};
   w().configured=true;save();ui.view='summary';ui.setupStep=0;render();window.scrollTo({top:0,behavior:'instant'});return;
  }
  save();ui.setupStep=Math.min(ui.setupStep+1,steps.length-1);render();window.scrollTo({top:0,behavior:'instant'});
@@ -1123,7 +1136,7 @@ function rhythm(){const days=Array.from({length:7},(_,i)=>R.dayAdd(today(),i-6))
 
 function routeEnsure(space=w()){
  space.route=space.route&&typeof space.route==='object'?space.route:{version:1,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[]};
- space.profile=space.profile&&typeof space.profile==='object'?space.profile:{version:3,completed:false,summaryConfirmed:false,currentNet:null,targetScore:0,targetRank:0,targetNet:0,studyHabit:'',subjectLevels:{},updated:0};
+ space.profile=space.profile&&typeof space.profile==='object'?space.profile:{version:4,completed:false,summaryConfirmed:false,currentNet:null,targetNet:0,currentStageNet:null,targetStageNet:0,targetScore:0,targetRank:0,studyHabit:'',subjectLevels:{},updated:0};
  space.profile.subjectLevels=space.profile.subjectLevels&&typeof space.profile.subjectLevels==='object'?space.profile.subjectLevels:{};
  space.taskEvents=Array.isArray(space.taskEvents)?space.taskEvents:[];
  for(const p of space.plan){if(!p.taskState)p.taskState='open';}

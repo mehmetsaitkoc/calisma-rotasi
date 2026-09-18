@@ -10,7 +10,10 @@ const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
 const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/,'');
 let runtimeApiKey = process.env.OPENAI_API_KEY || '';
-let runtimeProfile = ['best','balanced','economy'].includes(process.env.ROTA_AI_PROFILE) ? process.env.ROTA_AI_PROFILE : 'best';
+const requestedProfile = ['best','balanced','economy'].includes(process.env.ROTA_AI_PROFILE) ? process.env.ROTA_AI_PROFILE : 'economy';
+// Public beta defaults to economy even if an older Render env still says "best".
+// Premium models can be explicitly re-enabled later with ROTA_ALLOW_PREMIUM=1.
+let runtimeProfile = process.env.ROTA_ALLOW_PREMIUM === '1' ? requestedProfile : 'economy';
 let runtimeModel = process.env.ROTA_AI_MODEL || ({best:'gpt-6-astra',balanced:'gpt-5.6-sol',economy:'gpt-5.6-luna'}[runtimeProfile]);
 const TTS_MODEL = process.env.ROTA_TTS_MODEL || 'gpt-4o-mini-tts';
 const MALE_VOICE = process.env.ROTA_TTS_MALE_VOICE || 'cedar';
@@ -64,6 +67,17 @@ function extractOutputText(data){
 function isStem(subject, question){
   const t=(subject+' '+question).toLocaleLowerCase('tr-TR');
   return /(matematik|geometri|fizik|kimya|sayısal|denklem|fonksiyon|türev|integral|olasılık|oran|problem|hız|kuvvet|enerji|mol|asit|baz|\d\s*[+\-*/^×÷=])/.test(t);
+}
+function needsFreshWeb(question){
+  const t=(question||'').toLocaleLowerCase('tr-TR');
+  return /(güncel|bugün|şu an|son durum|en son|2026|mevzuat|yönetmelik|kanun değiş|atama|başvuru tarihi|sınav tarihi|kontenjan|puan türü|resm[iî] gazete|bakanlık duyuru|ösym duyuru)/i.test(t);
+}
+function needsHeavyCode(subject,question){
+  const t=((subject||'')+' '+(question||'')).toLocaleLowerCase('tr-TR');
+  if (/(türev|integral|limit|logaritma|trigonometri|olasılık|permütasyon|kombinasyon|karmaşık|vektör|kinematik|elektrik|mol hesabı|stokiyometri)/i.test(t)) return true;
+  const ops=(t.match(/[+\-*/^×÷=]/g)||[]).length;
+  const nums=(t.match(/\d+(?:[.,]\d+)?/g)||[]).length;
+  return ops>=4 && nums>=4;
 }
 function validateAnswer(a){
   if(!a || typeof a!=='object') throw new Error('Model cevabı geçersiz.');
@@ -132,8 +146,9 @@ ${previousText?`Önceki cevap/bağlam: ${previousText}\n`:''}İstenen devam modu
 
   const content = [{type:'input_text', text: question || 'Bu fotoğraftaki soruyu çöz. Önce soruyu doğru oku, sonra öğretmen gibi açıkla.'}];
   if (photo) content.push({type:'input_image', image_url:photo, detail:'high'});
-  const tools=[{type:'web_search'}];
-  if(isStem(subject,question)) tools.push({type:'code_interpreter',container:{type:'auto'}});
+  const tools=[];
+  if(needsFreshWeb(question)) tools.push({type:'web_search'});
+  if(needsHeavyCode(subject,question)) tools.push({type:'code_interpreter',container:{type:'auto'}});
   const payload = {
     model: runtimeModel,
     store: false,
@@ -141,8 +156,8 @@ ${previousText?`Önceki cevap/bağlam: ${previousText}\n`:''}İstenen devam modu
     input:[{role:'user',content}],
     tools,
     text:{format:{type:'json_schema',name:'rota_hoca_answer',strict:true,schema}},
-    reasoning:{effort:(photo||isStem(subject,question))?'high':'medium'},
-    max_output_tokens:2600
+    reasoning:{effort:photo?'medium':(needsHeavyCode(subject,question)?'medium':(isStem(subject,question)?'low':'none'))},
+    max_output_tokens:1400
   };
   const response = await fetch(OPENAI_BASE_URL + '/responses', {method:'POST',headers:{'authorization':`Bearer ${runtimeApiKey}`,'content-type':'application/json'},body:JSON.stringify(payload)});
   const raw = await response.text();
@@ -203,7 +218,7 @@ const server=http.createServer(async (req,res)=>{
       const body=await readJson(req);
       const key=cleanText(body.apiKey,500).trim();
       if(key.length<20) return json(res,400,{error:'Geçerli bir OpenAI API anahtarı gir.'});
-      const profile=['best','balanced','economy'].includes(body.profile)?body.profile:'best';
+      const profile=['best','balanced','economy'].includes(body.profile)?body.profile:'economy';
       const forced=cleanText(body.model,80).trim();
       const candidates=[...new Set([...(forced?[forced]:[]),...PROFILE_MODELS[profile]])];
       let okModel='', lastMsg='API anahtarı veya model erişimi doğrulanamadı.';

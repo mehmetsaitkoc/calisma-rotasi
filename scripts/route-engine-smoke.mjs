@@ -214,7 +214,7 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeReviewWeeklyLimit(150),70);
 }
 
-// 4) Topic mastery suggestion requires learning + both review waves + evidence.
+// 4) Topic mastery suggestion requires learning + both review waves + repeated evidence.
 {
   const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');
   const space={
@@ -227,12 +227,32 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   };
   const R={topic:(_w,id)=>id==='topic-1'?{id,subjectId:'k-ma'}:null};
   const w=()=>space;
-  const routeOutcomeSignal=()=>({known:true,recent:'strong',stuckRate:0});
-  const routePracticeSignal=()=>({known:true,accuracy:.84});
+  let outcome={known:false,total:0,recent:'',trend:0,stuckRate:0};
+  let practice={known:true,sessions:1,answered:20,weightedAccuracy:.90,accuracy:.90,recentAccuracy:.90};
+  const routeOutcomeSignal=()=>outcome;
+  const routePracticeSignal=()=>practice;
   const mastery=new Function('R','w','routeOutcomeSignal','routePracticeSignal',src+';return routeTopicMasterySignal;')(R,w,routeOutcomeSignal,routePracticeSignal);
-  assert.equal(mastery('topic-1').ready,true);
+
+  const oneSet=mastery('topic-1');
+  assert.equal(oneSet.ready,false,'One strong practice set must not be enough for mastery');
+  assert.equal(oneSet.progress,3);
+  assert.equal(oneSet.next,'En az 2 performans kaydı');
+
+  practice={known:true,sessions:2,answered:35,weightedAccuracy:.84,accuracy:.83,recentAccuracy:.82};
+  const ready=mastery('topic-1');
+  assert.equal(ready.ready,true);
+  assert.equal(ready.progress,4);
+  assert.equal(ready.next,'Tamamlanmaya hazır');
+
   space.mistakes.push({topicId:'topic-1',resolved:false});
-  assert.equal(mastery('topic-1').ready,false);
+  const blocked=mastery('topic-1');
+  assert.equal(blocked.ready,false);
+  assert.equal(blocked.next,'Açık yanlışı çöz');
+
+  space.mistakes=[];
+  practice={known:false,sessions:0,answered:0,weightedAccuracy:0,accuracy:0,recentAccuracy:0};
+  outcome={known:true,total:2,recent:'ok',trend:.2,stuckRate:0};
+  assert.equal(mastery('topic-1').ready,true,'Two consistent feedback records may validate mastery when practice detail is unavailable');
 }
 
 // 4) Guard core personalization features against accidental removal.
@@ -263,6 +283,8 @@ for(const marker of [
   "p.reviewWave===1?'mistake'",
   '(space.topicState[p.topicId]?.status||0)!==2',
   'topic-accept-mastery',
+  'topic-mastery-steps',
+  'En az 2 performans kaydı',
   'SÜRELİ ANLAMA SETİ',
   'ZAMAN ÇİZGİSİ + HATIRLAMA'
 ]) assert.ok(html.includes(marker),`Missing personalization marker: ${marker}`);

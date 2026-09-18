@@ -165,6 +165,8 @@ for(const marker of [
   'recentWorkedTopics',
   'routeTopicMasterySignal',
   'routeClearCompletedTopicQueue',
+  "p.reviewWave===1?'mistake'",
+  '(space.topicState[p.topicId]?.status||0)!==2',
   'topic-accept-mastery',
   'SÜRELİ ANLAMA SETİ',
   'ZAMAN ÇİZGİSİ + HATIRLAMA'

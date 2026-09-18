@@ -1244,7 +1244,7 @@ function routeQuestionTarget(subjectId,topicId='',fallbackTitle=''){
  };
  let count=(bases[method.key]||bases.concept)[level]??12;
  if(g.known&&g.gap>=30)count+=3;else if(g.known&&g.gap>=15)count+=2;else if(g.known&&g.gap>=7)count+=1;
- const adaptive=routeSubjectAdaptiveState(subjectId);
+ const adaptive=routeSubjectAdaptiveState(subjectId,topicId);
  if(adaptive.mode==='ease')count=Math.max(5,Math.round(count*.8));
  else if(adaptive.mode==='repair')count=Math.max(5,Math.round(count*.9));
  else if(adaptive.mode==='progress')count+=2;
@@ -1259,7 +1259,7 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
   ydt_vocab:[30,30,25,25],ydt_grammar:[35,30,30,25],ydt_reading:[35,30,30,30]
  };
  let minutes=(mins[method.key]||mins.concept)[level]||30;
- const adaptive=routeSubjectAdaptiveState(subjectId);
+ const adaptive=routeSubjectAdaptiveState(subjectId,topicId);
  if(adaptive.mode==='ease')minutes=Math.max(20,minutes-10);
  else if(adaptive.mode==='repair')minutes=Math.max(25,minutes-5);
  else if(adaptive.mode==='progress')minutes=Math.min(45,minutes+5);
@@ -1341,34 +1341,39 @@ function routeProfileSignal(subjectId){
  return {level,boost:base+goalBoost,label:profileLevelLabel(level),goalBoost};
 }
 function routeLastLogDate(subjectId){return [...w().logs].filter(l=>l.subjectId===subjectId).sort((a,b)=>b.date.localeCompare(a.date))[0]?.date||'';}
-function routeBehaviorSignal(subjectId){
- const since=R.dayAdd(today(),-14),planMap=new Map(w().plan.map(function(p){return [p.id,p];})),events=w().taskEvents.filter(function(ev){const p=planMap.get(ev.taskId);return p&&p.subjectId===subjectId&&ev.date>=since;});
+function routeBehaviorSignal(subjectId,topicId=''){
+ const since=R.dayAdd(today(),-14),planMap=new Map(w().plan.map(function(p){return [p.id,p];})),events=w().taskEvents.filter(function(ev){const p=planMap.get(ev.taskId);return p&&p.subjectId===subjectId&&(!topicId||p.topicId===topicId)&&ev.date>=since;});
  let complete=0,skip=0,later=0,start=0;for(const ev of events){if(ev.action==='complete')complete++;else if(ev.action==='skip')skip++;else if(ev.action==='later')later++;else if(ev.action==='start')start++;}
  const meaningful=complete+skip+later;
  return {known:meaningful>=3,complete,skip,later,start,total:meaningful,completion:meaningful?complete/meaningful:0,friction:meaningful?(skip+later*.5)/meaningful:0};
 }
-function routeOutcomeSignal(subjectId){
- const since=R.dayAdd(today(),-21),xs=w().logs.filter(function(l){return l.subjectId===subjectId&&l.sessionId&&l.date>=since&&['stuck','ok','strong'].includes(l.outcome);}).sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,6);
+function routeOutcomeSignal(subjectId,topicId=''){
+ const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!['stuck','ok','strong'].includes(l.outcome))return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,6);
  let stuck=0,ok=0,strong=0;for(const l of xs){if(l.outcome==='stuck')stuck++;else if(l.outcome==='strong')strong++;else ok++;}
  const total=xs.length,recent=xs[0]?.outcome||'';
  return {known:total>0,total,stuck,ok,strong,recent,stuckRate:total?stuck/total:0,strongRate:total?strong/total:0};
 }
-function routePracticeSignal(subjectId){
- const since=R.dayAdd(today(),-21),xs=w().logs.filter(function(l){return l.subjectId===subjectId&&l.sessionId&&l.date>=since&&Number.isInteger(l.correct)&&Number.isInteger(l.wrong)&&l.correct+l.wrong>=5;}).sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,6);
+function routePracticeSignal(subjectId,topicId=''){
+ const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,6);
  let correct=0,wrong=0;for(const l of xs){correct+=l.correct;wrong+=l.wrong;}const answered=correct+wrong,accuracy=answered?correct/answered:0;
  return {known:xs.length>0,sessions:xs.length,correct,wrong,answered,accuracy,recent:xs[0]||null};
 }
-function routeSubjectAdaptiveState(subjectId){
- const behavior=routeBehaviorSignal(subjectId),outcome=routeOutcomeSignal(subjectId),practice=routePracticeSignal(subjectId),weak=routeExamWeakness()[subjectId],openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId;}).length;
+function routeSubjectAdaptiveState(subjectId,topicId=''){
+ const realTopic=topicId&&R.topic(w(),topicId)?topicId:'';
+ const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior;
+ const topicOutcome=realTopic?routeOutcomeSignal(subjectId,realTopic):null,subjectOutcome=routeOutcomeSignal(subjectId),outcome=topicOutcome?.known?topicOutcome:subjectOutcome;
+ const topicPractice=realTopic?routePracticeSignal(subjectId,realTopic):null,subjectPractice=routePracticeSignal(subjectId),practice=topicPractice?.known?topicPractice:subjectPractice;
+ const topicEvidence=!!(realTopic&&(topicBehavior?.known||topicOutcome?.known||topicPractice?.known));
+ const weak=routeExamWeakness()[subjectId],openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId&&(!realTopic||m.topicId===realTopic);}).length;
  let mode='steady',label='DENGELİ TEMPO',note='Görev dozu mevcut seviyene göre korunuyor.';
  const feedbackRepair=outcome.recent==='stuck'||(outcome.total>=2&&outcome.stuckRate>=.5),practiceRepair=practice.known&&practice.accuracy<.60;
  if((weak&&weak.ratio<.58)||openMistakes>=2||feedbackRepair||practiceRepair){mode='repair';label='ONARIM MODU';note=practiceRepair?'Son soru pratiklerinde doğruluk düşük kaldığı için yükü büyütmeden yanlış nedenini ve temeli onarıyoruz.':feedbackRepair?'Son çalışma geri bildiriminde zorlandığın için soru sayısını büyütmeden temel ve yanlış nedenine dönüyoruz.':'Deneme/yanlış sinyali zayıf olduğu için yük artırmak yerine temeli sağlamlaştırıyoruz.';}
- if(behavior.known&&behavior.friction>=.45){mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note='Bu derste erteleme/atlama arttığı için görevi küçültüp uygulanabilir tutuyoruz.';}
+ if(behavior.known&&behavior.friction>=.45){mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note='Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama arttığı için görevi küçültüp uygulanabilir tutuyoruz.';}
  else {
   const feedbackProgress=!outcome.known||(outcome.total>=2&&outcome.strongRate>=.5&&outcome.recent!=='stuck'),practiceProgress=!practice.known||practice.accuracy>=.78;
   if(behavior.known&&behavior.completion>=.75&&feedbackProgress&&practiceProgress&&(!weak||weak.ratio>=.72)&&openMistakes===0){mode='progress';label='GELİŞİM MODU';note=practice.known?'Görevleri düzenli tamamladığın ve soru doğruluğun güçlü kaldığı için yük kontrollü artırılıyor.':outcome.known?'Görevleri düzenli tamamladığın ve son geri bildirimlerin rahat ilerlediğini gösterdiği için yük kontrollü artırılıyor.':'Görevleri düzenli tamamladığın ve performans sinyali iyi olduğu için yük kontrollü artırılıyor.';}
  }
- return {mode,label,note,behavior,outcome,practice,weak,openMistakes};
+ return {mode,label,note,behavior,outcome,practice,weak,openMistakes,scope:topicEvidence?'topic':'subject'};
 }
 function routeCandidateFromPlan(p){
  const overdue=p.date<today(),days=overdue?Math.max(1,Math.floor((new Date(today()+'T12:00:00')-new Date(p.date+'T12:00:00'))/86400000)):0;
@@ -1487,7 +1492,7 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
 function routeAutoSync(){if(!state.activeExam||!w().configured||sampleSaved)return;routeEnsure();const overdue=w().plan.some(p=>!p.done&&p.date<today());if(w().route.lastAutoDate!==today()||overdue){const message=overdue?'Kaçırılan görevler günlük kapasiteye göre yeniden dağıtıldı.':'Bugünün rotası güncel verilerle kontrol edildi.';routeRebalance(message,true);w().route.lastAutoDate=today();save();}}
 function routeTaskReason(p){return p.reason||({mistake:'Yanlış defterinden tekrar.',ai_teacher:'Rota Hoca tekrar sinyali.',exam:'Deneme performansından gelen öncelik.',profile:'Ders seviye profilinden gelen başlangıç önceliği.',backlog:'Kaçırılan görev yeniden yerleştirildi.',spaced_review:'Birkaç gün sonraki kısa geri çağırma tekrarı.',checkpoint:'Haftalık öğrenme kontrolü.'}[p.source]||'Kişisel çalışma rotandaki görev.');}
 function routeTodayTask(p){
- const done=p.done,later=p.taskState==='later',goal=p.taskGoal||'',qs=Number.isInteger(p.targetQuestions)&&p.targetQuestions>0?p.targetQuestions:0,method=routeStudyMethod(p.subjectId,p.topicId,p.title),adaptive=routeSubjectAdaptiveState(p.subjectId),sourceLabel=p.source==='spaced_review'&&p.reviewWave?(p.reviewWave+' GÜN TEKRARI'):routeSourceLabel(p.source);
+ const done=p.done,later=p.taskState==='later',goal=p.taskGoal||'',qs=Number.isInteger(p.targetQuestions)&&p.targetQuestions>0?p.targetQuestions:0,method=routeStudyMethod(p.subjectId,p.topicId,p.title),adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId),sourceLabel=p.source==='spaced_review'&&p.reviewWave?(p.reviewWave+' GÜN TEKRARI'):routeSourceLabel(p.source);
  return '<article class="route-task '+(done?'is-done':'')+' '+(later?'is-later':'')+'">'+subIcon(p.subjectId)+'<div class="route-task-main"><div class="row wrap"><span class="route-source">'+esc(sourceLabel)+'</span><span class="route-method-pill">'+esc(method.label)+'</span><span class="route-adaptive-pill mode-'+esc(adaptive.mode)+'">'+esc(adaptive.label)+'</span><span class="tiny muted">'+esc(subName(p.subjectId,state.activeExam==='yks'))+'</span></div><h3>'+esc(p.title)+'</h3><div class="route-task-meta"><span>'+p.minutes+' dk</span>'+(qs?'<span>· ≈ '+qs+' soru</span>':'')+(later?'<span>· bugün daha sonra</span>':'')+'<button class="route-why" data-action="route-why" data-id="'+p.id+'">Neden bugün?</button></div>'+(goal?'<div class="route-task-goal">'+icon('target')+'<span>'+esc(goal)+'</span></div>':'')+'<p class="route-task-reason">'+esc(routeTaskReason(p))+'</p></div><div class="route-task-actions">'+(done?'<span class="pill">Tamamlandı</span>':btn(icon('play')+' Başla','focus-session','sm primary','data-id="'+p.id+'"')+btn('Daha sonra','route-later','sm ghost','data-id="'+p.id+'"')+btn('Atla','route-skip','sm ghost','data-id="'+p.id+'"')+'<button class="check-btn" data-action="complete-session" data-id="'+p.id+'" aria-label="Oturumu tamamla">'+icon('check')+'</button>')+'</div></article>';
 }
 function routeTodayPage(){
@@ -1883,10 +1888,10 @@ function onSubmit(event){const form=event.target;if(!(form instanceof HTMLFormEl
 function onAction(event){const b=event.target.closest('[data-action]');if(!b)return;const action=b.dataset.action,id=b.dataset.id;try{if(action.startsWith('teacher-')){teacherAction(b);return;}if(action.startsWith('video-')){videoAction(b);return;}if(action.startsWith('paid-')){handlePaidAction(b);return;}if(!isPlus()&&['note-from-exam','plan-review'].includes(action)){openUpgrade('analysis');return;}if(action==='route-rebalance'){routeRebalance('Kullanıcı rotayı yeniden düzenledi.',true);commit('Rotan güncel verilerle yeniden düzenlendi.');return;}if(action==='route-why'){
  const p=w().plan.find(function(x){return x.id===id;});
  if(p){
-  const method=routeStudyMethod(p.subjectId,p.topicId,p.title),profile=routeProfileSignal(p.subjectId),gap=routeSubjectGap(p.subjectId),consistency=routeConsistencySignal(),capacity=routeEffectiveDailyMinutes(),adaptive=routeSubjectAdaptiveState(p.subjectId),sourceLabel=p.source==='spaced_review'&&p.reviewWave?(p.reviewWave+' GÜN TEKRARI'):routeSourceLabel(p.source);
+  const method=routeStudyMethod(p.subjectId,p.topicId,p.title),profile=routeProfileSignal(p.subjectId),gap=routeSubjectGap(p.subjectId),consistency=routeConsistencySignal(),capacity=routeEffectiveDailyMinutes(),adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId),sourceLabel=p.source==='spaced_review'&&p.reviewWave?(p.reviewWave+' GÜN TEKRARI'):routeSourceLabel(p.source);
   const netText=gap.current===null?(gap.label?gap.label+' mevcut net verisi yok':'Mevcut net verisi yok'):(gap.label?gap.label+' ':'')+format(gap.current,1)+' net'+(gap.source==='exam'?' · son denemeden':' · başlangıç beyanından')+(gap.target?' → '+format(gap.target,1)+' hedef':'');
   const consistencyText=consistency.known?Math.round(consistency.ratio*100)+'% · '+consistency.active+'/'+consistency.expected+' planlı gün':'Henüz yeterli geçmiş gün yok';
-  openModal('Neden bugün bu görev?',`<div class="review-summary"><div class="eyebrow">${esc(sourceLabel)} · ÖNCELİK ${Math.round(p.priority||0)}/100</div><h3>${esc(p.title)}</h3><p>${esc(routeTaskReason(p))}</p></div><div class="route-why-grid"><div><small>ÇALIŞMA YÖNTEMİ</small><strong>${esc(method.label)}</strong><p>${esc(p.taskGoal||'Görev, dersin türüne ve seviyene göre oluşturuldu.')}</p></div><div><small>DERS SEVİYEN</small><strong>${esc(profile.label)}</strong><p>Başlangıç beyanın rota önceliğini etkiler; gerçek deneme ve çalışma verileri geldikçe ağırlığı azalır.</p></div><div><small>NET SİNYALİ</small><strong>${esc(netText)}</strong><p>${gap.known?'Mevcut–hedef farkı zayıf derslerin ağırlığını artırabilir.':'Net farkı bilinmediği için ders seviyesi ve gerçek performans sinyalleri daha çok kullanılır.'}</p></div><div><small>TEMPO</small><strong>${duration(capacity)} / çalışma günü</strong><p>Son 7 gün devamlılık: ${esc(consistencyText)}. Seçtiğin üst sınır ${duration(w().settings.dailyMinutes)}.</p></div><div><small>UYARLANAN DOZ</small><strong>${esc(adaptive.label)}</strong><p>${esc(adaptive.note)}${adaptive.behavior.known?' Son 14 gün görev tamamlanma oranı %'+Math.round(adaptive.behavior.completion*100)+'.':''}${adaptive.outcome?.known?' Son '+adaptive.outcome.total+' planlı çalışmada: '+adaptive.outcome.stuck+' zorlandım · '+adaptive.outcome.ok+' normal · '+adaptive.outcome.strong+' rahat.':''}${adaptive.practice?.known?' Soru pratiği doğruluğu %'+Math.round(adaptive.practice.accuracy*100)+' ('+adaptive.practice.answered+' cevap).':''}</p></div></div><div class="notice mt">Yerleştirme yalnız puana göre yapılmaz. Aynı güne mümkün olduğunca aynı ders/yöntem tekrarı ve aşırı sayısal yük bindirilmez; kapasite yetmezse düşük öncelikli görev daha sonraki uygun güne bırakılır.</div>`);
+  openModal('Neden bugün bu görev?',`<div class="review-summary"><div class="eyebrow">${esc(sourceLabel)} · ÖNCELİK ${Math.round(p.priority||0)}/100</div><h3>${esc(p.title)}</h3><p>${esc(routeTaskReason(p))}</p></div><div class="route-why-grid"><div><small>ÇALIŞMA YÖNTEMİ</small><strong>${esc(method.label)}</strong><p>${esc(p.taskGoal||'Görev, dersin türüne ve seviyene göre oluşturuldu.')}</p></div><div><small>DERS SEVİYEN</small><strong>${esc(profile.label)}</strong><p>Başlangıç beyanın rota önceliğini etkiler; gerçek deneme ve çalışma verileri geldikçe ağırlığı azalır.</p></div><div><small>NET SİNYALİ</small><strong>${esc(netText)}</strong><p>${gap.known?'Mevcut–hedef farkı zayıf derslerin ağırlığını artırabilir.':'Net farkı bilinmediği için ders seviyesi ve gerçek performans sinyalleri daha çok kullanılır.'}</p></div><div><small>TEMPO</small><strong>${duration(capacity)} / çalışma günü</strong><p>Son 7 gün devamlılık: ${esc(consistencyText)}. Seçtiğin üst sınır ${duration(w().settings.dailyMinutes)}.</p></div><div><small>UYARLANAN DOZ</small><strong>${esc(adaptive.label)}</strong><p>${esc(adaptive.note)} ${adaptive.scope==='topic'?'Bu uyarlama öncelikle bu konudaki son çalışmalarından geliyor.':'Henüz konuya özel yeterli veri olmadığı için ders geneli kullanılıyor.'}${adaptive.behavior.known?' Son 14 gün görev tamamlanma oranı %'+Math.round(adaptive.behavior.completion*100)+'.':''}${adaptive.outcome?.known?' Son '+adaptive.outcome.total+' planlı çalışmada: '+adaptive.outcome.stuck+' zorlandım · '+adaptive.outcome.ok+' normal · '+adaptive.outcome.strong+' rahat.':''}${adaptive.practice?.known?' Soru pratiği doğruluğu %'+Math.round(adaptive.practice.accuracy*100)+' ('+adaptive.practice.answered+' cevap).':''}</p></div></div><div class="notice mt">Yerleştirme yalnız puana göre yapılmaz. Aynı güne mümkün olduğunca aynı ders/yöntem tekrarı ve aşırı sayısal yük bindirilmez; kapasite yetmezse düşük öncelikli görev daha sonraki uygun güne bırakılır.</div>`);
  }
  return;
 }if(action==='route-later'){const p=w().plan.find(p=>p.id===id);if(p&&!p.done){p.taskState=p.taskState==='later'?'open':'later';routeEvent(p.id,'later');commit(p.taskState==='later'?'Görev bugün listenin sonuna alındı.':'Görev normal sırasına döndü.');}return;}if(action==='route-skip'){const p=w().plan.find(p=>p.id===id);if(p&&!p.done){p.deferUntil=R.dayAdd(p.date>today()?p.date:today(),1);p.taskState='open';routeEvent(p.id,'skip');routeRebalance('Atlanan görev, günlük kapasiteye göre sonraki uygun güne dağıtıldı.',true);commit('Görev atlandı; rota kalan kapasiteye göre yeniden düzenlendi.');}return;}switch(action){

@@ -64,7 +64,7 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
       {subjectId:'k-ma',sessionId:'a',date:'2026-09-18',outcome:'stuck',correct:6,wrong:6},
       {subjectId:'k-ma',sessionId:'b',date:'2026-09-17',outcome:'ok',correct:5,wrong:5}
     ],
-    behavior:{known:true,completion:.9,friction:.1},
+    behavior:{known:true,total:4,completion:.9,friction:.1},
     weak:{'k-ma':{ratio:.8}}
   });
   assert.equal(struggle.mode,'repair');
@@ -75,17 +75,31 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
       {subjectId:'k-ma',sessionId:'b',date:'2026-09-17',outcome:'strong',correct:17,wrong:3},
       {subjectId:'k-ma',sessionId:'c',date:'2026-09-16',outcome:'ok',correct:16,wrong:4}
     ],
-    behavior:{known:true,completion:.85,friction:.08},
+    behavior:{known:true,total:5,completion:.85,friction:.08},
     weak:{'k-ma':{ratio:.8}}
   });
   assert.equal(strong.mode,'progress');
 
   const friction=evaluate({
     logs:[{subjectId:'k-ma',sessionId:'a',date:'2026-09-18',outcome:'strong',correct:18,wrong:2}],
-    behavior:{known:true,completion:.35,friction:.55},
+    behavior:{known:true,total:4,completion:.35,friction:.55},
     weak:{'k-ma':{ratio:.8}}
   });
   assert.equal(friction.mode,'ease');
+
+  const oneBad=evaluate({
+    logs:[{subjectId:'k-ma',sessionId:'a',date:'2026-09-18',outcome:'stuck',correct:7,wrong:3}],
+    behavior:{known:false,total:1,completion:1,friction:0},
+    weak:{'k-ma':{ratio:.8}}
+  });
+  assert.equal(oneBad.mode,'steady','A single bad session must not overreact into repair');
+
+  const oneGood=evaluate({
+    logs:[{subjectId:'k-ma',sessionId:'a',date:'2026-09-18',outcome:'strong',correct:9,wrong:1}],
+    behavior:{known:false,total:1,completion:1,friction:0},
+    weak:{'k-ma':{ratio:.8}}
+  });
+  assert.equal(oneGood.mode,'steady','A single good session must not overreact into progress');
 
   // Topic evidence must override broad subject history when it exists.
   {
@@ -105,7 +119,7 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
     const R={dayAdd:()=> '2026-08-29',topic:(_w,id)=>['topic-1','topic-2'].includes(id)?{id}:null};
     const today=()=> '2026-09-19';
     const w=()=>space;
-    const routeBehaviorSignal=(_subject,topic='')=>topic==='topic-2'?{known:true,completion:.9,friction:.05}:{known:false,completion:0,friction:0};
+    const routeBehaviorSignal=(_subject,topic='')=>topic==='topic-2'?{known:true,total:4,completion:.9,friction:.05}:{known:false,total:0,completion:0,friction:0};
     const routeExamWeakness=()=>({'k-ma':{ratio:.8}});
     const adaptive=new Function('R','today','w','routeBehaviorSignal','routeExamWeakness',src+';return routeSubjectAdaptiveState;')(R,today,w,routeBehaviorSignal,routeExamWeakness);
     const weakTopic=adaptive('k-ma','topic-1');
@@ -144,7 +158,8 @@ for(const marker of [
   'routeStageGap',
   'routeConsistencySignal',
   'routePracticeSignal',
-  'for(const wave of [3,7])',
+  'Sinyal güveni',
+  'const waves=needsRepair?[1,3,7]:[3,7]',
   'routeHeavyLimit',
   'latestBaseByTopic',
   'recentWorkedTopics',

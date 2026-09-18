@@ -1412,7 +1412,7 @@ function routeTopicMasterySignal(topicId){
  const t=R.topic(w(),topicId);if(!t)return {ready:false,reason:''};
  const done=w().plan.filter(function(p){return p.done&&p.topicId===topicId;}),base=done.some(function(p){return !['mistake','spaced_review','checkpoint','ai_teacher'].includes(p.source);}),review3=done.some(function(p){return p.source==='spaced_review'&&p.reviewWave===3;}),review7=done.some(function(p){return p.source==='spaced_review'&&p.reviewWave===7;});
  const outcome=routeOutcomeSignal(t.subjectId,topicId),practice=routePracticeSignal(t.subjectId,topicId),openMistake=w().mistakes.some(function(m){return !m.resolved&&m.topicId===topicId;});
- const hasEvidence=outcome.known||practice.known,performanceOk=practice.known?practice.accuracy>=.70:(outcome.known&&outcome.recent!=='stuck'&&outcome.stuckRate<.5);
+ const hasEvidence=outcome.known||practice.known,performanceOk=practice.known?practice.accuracy>=.78:(outcome.known&&outcome.recent!=='stuck'&&outcome.stuckRate<=.25);
  const ready=base&&review3&&review7&&hasEvidence&&performanceOk&&!openMistake;
  const reason=ready?(practice.known?'Ana çalışma ve 3/7 gün tekrarları tamamlandı; son soru doğruluğu %'+Math.round(practice.accuracy*100)+'.':'Ana çalışma ve 3/7 gün tekrarları tamamlandı; son geri bildirimde belirgin zorlanma yok.'):'';
  return {ready,reason,base,review3,review7,outcome,practice,openMistake};
@@ -1460,7 +1460,7 @@ function routeCandidateFromPlan(p){
  let recipe=null;
  if(p.sourceMistakeId)recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'mistake');
  else if(p.sourceTeacherQuestionId)recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'spaced');
- else if(source==='spaced_review')recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,p.reviewWave===7?'long':'spaced');
+ else if(source==='spaced_review')recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,p.reviewWave===1?'mistake':p.reviewWave===7?'long':'spaced');
  else if(source==='checkpoint')recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'checkpoint');
  else if(['curriculum','profile','priority','exam','backlog'].includes(source))recipe=routeTaskGoal(p.subjectId,p.topicId,p.title);
  return {...p,...(recipe?{minutes:recipe.minutes,targetQuestions:recipe.questions,taskGoal:recipe.text}:{}),source,priority:Math.min(100,priority),reason,earliest:p.deferUntil&&p.deferUntil>today()?p.deferUntil:today(),routeKey:p.routeKey||('plan:'+p.id),taskState:p.taskState==='later'?'later':'open'};
@@ -1480,7 +1480,7 @@ function routeBuildCandidates(){
   push({id:R.uid(),date:today(),subjectId:q.subjectId,topicId:q.topicId||('teacher-'+q.id),title:('Rota Hoca tekrar · '+title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceTeacherQuestionId:q.id,source:'ai_teacher',priority:q.status==='stuck'?82:72,reason:q.status==='stuck'?'Rota Hoca’da “Anlamadım” olarak işaretlediğin soru yeniden çalışılmalı.':'Rota Hoca’da tekrar bakılacak olarak işaretledin.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }}catch{}
  const latestBaseByTopic=new Map();
- for(const p of space.plan.filter(function(p){return p.done&&p.topicId&&R.topic(space,p.topicId)&&!['mistake','spaced_review','checkpoint'].includes(p.source);})){
+ for(const p of space.plan.filter(function(p){return p.done&&p.topicId&&R.topic(space,p.topicId)&&(space.topicState[p.topicId]?.status||0)!==2&&!['mistake','spaced_review','checkpoint'].includes(p.source);})){
   const prev=latestBaseByTopic.get(p.topicId);if(!prev||p.date>prev.date)latestBaseByTopic.set(p.topicId,p);
  }
  for(const p of latestBaseByTopic.values()){

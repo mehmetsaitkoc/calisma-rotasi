@@ -131,6 +131,15 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   }
 }
 
+// 4) Task duration must fit the student's effective daily capacity.
+{
+  const src=between('function routeHeavyLimit','function routeQuestionTarget');
+  const w=()=>({});
+  const routeEffectiveDailyMinutes=()=>30;
+  const api=new Function('w','routeEffectiveDailyMinutes',src+';return {routeMaxTaskMinutes};')(w,routeEffectiveDailyMinutes);
+  assert.equal(api.routeMaxTaskMinutes(),25,'30 min daily capacity must leave room for the 5 min break');
+}
+
 // 4) Topic frontier keeps curriculum order and prevents deep-topic flooding.
 {
   const src=between('function routeTopicFrontier','function routeBuildCandidates');
@@ -192,6 +201,9 @@ for(const marker of [
   'Sinyal güveni',
   'const waves=needsRepair?[1,3,7]:[3,7]',
   'routeHeavyLimit',
+  'routeMaxTaskMinutes',
+  'routePaceSignal',
+  'TAKVİM SIKIŞIK',
   'routeTopicFrontier',
   'routeSequenceRank',
   'routeReviewDailyLimit',

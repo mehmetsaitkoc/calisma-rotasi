@@ -994,7 +994,7 @@ function readProfile(form){
 }
 function settingsFields(s,setup=false){return `<div class="form-grid"><label class="field">Sana nasıl hitap edelim?<input name="name" value="${esc(s.name)}" maxlength="60" placeholder="Adın (isteğe bağlı)" autocomplete="given-name"></label><label class="field">${state.activeExam==='yks'?'YKS alanın':'Sınav kapsamın'}${state.activeExam==='yks'?`<select name="track">${Object.entries(C.TRACKS).map(([k,v])=>`<option value="${k}" ${s.track===k?'selected':''}>${v}</option>`).join('')}</select>`:'<input value="KPSS Lisans · Genel Yetenek / Genel Kültür" readonly><input name="track" type="hidden" value="lisans">'}</label><label class="field">Çalışma günlerinde ayıracağın süre<select name="dailyMinutes">${[30,60,90,120,150,180,240,300,360].map(n=>`<option value="${n}" ${n===s.dailyMinutes?'selected':''}>${duration(n)} / gün</option>`).join('')}</select><span class="field-help">Her blok: 25 dakika çalışma + 5 dakika mola.</span></label><label class="field">Hedef tarihi (isteğe bağlı)<input name="targetDate" type="date" value="${esc(s.targetDate)}"><span class="field-help">Kendi hedefin; resmî sınav tarihi otomatik atanmaz.</span></label><label class="field full">Hedefin ne?<input name="target" maxlength="160" value="${esc(s.target)}" placeholder="Örneğin: Hedef bölümüm / düzenli hazırlanmak"></label><div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Hangi günler çalışabilirsin?</div><div class="check-group">${[[1,'Pzt'],[2,'Sal'],[3,'Çar'],[4,'Per'],[5,'Cum'],[6,'Cmt'],[0,'Paz']].map(([n,label])=>`<label class="check-chip"><input type="checkbox" name="days" value="${n}" ${s.days.includes(n)?'checked':''}>${label}</label>`).join('')}</div></div>${!setup?`<div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Öncelikli dersler <span class="muted tiny">· Daha çok oturum ayrılır</span></div><div class="check-group">${subjects().map(sub=>`<label class="check-chip"><input type="checkbox" name="priorities" value="${sub.id}" ${s.priorities.includes(sub.id)?'checked':''}>${esc((state.activeExam==='yks'?sub.stage+' ':'')+sub.name)}</label>`).join('')}</div></div>`:''}</div>`;}
 
-function setupSteps(){return state.activeExam==='yks'?['name','track','habit','currentNet','net','time','days','goal','levels']:['name','habit','currentNet','net','time','days','goal','levels'];}
+function setupSteps(){if(state.activeExam!=='yks')return ['name','habit','currentNet','net','time','days','goal','levels'];const base=['name','track','habit','currentNet','net'];if(w().settings.track!=='tyt')base.push('stageNet');return base.concat(['time','days','goal','levels']);}
 function setupStepKey(){const steps=setupSteps();ui.setupStep=Math.max(0,Math.min(ui.setupStep,steps.length-1));return steps[ui.setupStep];}
 function setupProgress(){const steps=setupSteps(),pct=Math.round(((ui.setupStep+1)/steps.length)*100);return '<div class="onboard-progress"><div class="onboard-progress-track"><span style="width:'+pct+'%"></span></div><small>'+(ui.setupStep+1)+' / '+steps.length+'</small></div>';}
 function setupBackButton(){return ui.setupStep===0?btn('← Sınav seçimine dön','select','ghost'):btn('← Geri','setup-prev','ghost');}
@@ -1019,6 +1019,10 @@ function setupNetField(){
  const p=w().profile||{},label=state.activeExam==='kpss'?'KPSS Genel Yetenek + Genel Kültür toplamında':'TYT’de';
  return '<div class="onboard-net-target"><label class="field"><span>'+label+' hedef netin</span><input name="targetNet" type="number" min="0" max="120" step="0.25" value="'+(Number(p.targetNet)||'')+'" placeholder="Örn. 90" inputmode="decimal" autofocus><span class="field-help">Henüz net hedefin yoksa boş bırakabilirsin. Bu değer resmî puan hesabı için kullanılmaz.</span></label><div class="onboard-net-hint"><strong>Neden soruyoruz?</strong><span>Hedef yükseldikçe zayıf derslerin başlangıç önceliğini biraz artırıyoruz; program yine seçtiğin günlük süreyi aşmıyor.</span></div></div>';
 }
+function setupStageNetField(){
+ const p=w().profile||{},track=w().settings.track,label=yksStageLabel(track),current=Number.isFinite(p.currentStageNet)?p.currentStageNet:'',target=Number(p.targetStageNet)||'';
+ return '<div class="onboard-net-target"><div class="form-grid"><label class="field"><span>Şu anki '+label+' netin</span><input name="currentStageNet" type="number" min="0" max="80" step="0.25" value="'+current+'" placeholder="Örn. 30" inputmode="decimal" autofocus><span class="field-help">Henüz '+label+' denemesi çözmediysen boş bırakabilirsin.</span></label><label class="field"><span>Hedef '+label+' netin</span><input name="targetStageNet" type="number" min="0" max="80" step="0.25" value="'+target+'" placeholder="Örn. 55" inputmode="decimal"><span class="field-help">0–80 arasında yaklaşık hedefin.</span></label></div><div class="onboard-net-hint"><strong>Neden ayrı soruyoruz?</strong><span>TYT aynı olsa bile '+label+' seviyesi farklı iki öğrencinin programı aynı olmamalı.</span></div></div>';
+}
 function setupLevelRows(){
  return profileSubjects(w().settings.track).map(function(sub){
   const label=(state.activeExam==='yks'?sub.stage+' · ':'')+sub.name;
@@ -1031,7 +1035,8 @@ function setupQuestion(){
  if(key==='track')return {title:'YKS’de hangi alandasın?',desc:'Derslerini ve seviye sorularını buna göre göstereceğiz.',body:'<div class="onboard-choice-grid">'+Object.entries(C.TRACKS).map(function(x){return '<label class="onboard-choice"><input type="radio" name="track" value="'+x[0]+'" '+(s.track===x[0]?'checked':'')+'><span>'+esc(x[1])+'</span></label>';}).join('')+'</div>'};
  if(key==='habit')return {title:'Düzenli ders çalışabiliyor musun?',desc:'İlk haftayı gerçekten sürdürebileceğin yoğunlukta kuracağız.',body:setupHabitChoices()};
  if(key==='currentNet')return {title:'Şu an yaklaşık kaç net yapıyorsun?',desc:'Başlangıç noktanı bilmeden gerçek kişisel program kuramayız. Deneme çözmediysen boş bırakabilirsin.',body:setupCurrentNetField()};
- if(key==='net')return {title:'Kaç net yapmak istiyorsun?',desc:state.activeExam==='kpss'?'Yaklaşık KPSS toplam net hedefini yazabilirsin.':'Yaklaşık TYT net hedefini yazabilirsin. AYT/YDT performansını denemelerin geldikçe ayrıca kullanacağız.',body:setupNetField()};
+ if(key==='net')return {title:'Kaç net yapmak istiyorsun?',desc:state.activeExam==='kpss'?'Yaklaşık KPSS toplam net hedefini yazabilirsin.':'Yaklaşık TYT net hedefini yazabilirsin.',body:setupNetField()};
+ if(key==='stageNet')return {title:yksStageLabel(s.track)+' seviyen ne durumda?',desc:'Alan derslerini TYT’den ayrı değerlendireceğiz. Yaklaşık değer yeterli; gerçek denemelerin geldikçe beyanın yerine geçecek.',body:setupStageNetField()};
  if(key==='time')return {title:'Bir çalışma gününde en fazla ne kadar zaman ayırabilirsin?',desc:'Bu senin üst sınırın. Düzen durumuna göre ilk hafta gerekirse daha hafif başlayacak.',body:setupTimeChoices()};
  if(key==='days')return {title:'Hangi günler düzenli çalışabilirsin?',desc:'Seçmediğin günleri mümkün olduğunca boş bırakacağız.',body:setupDayChoices()};
  if(key==='goal'){
@@ -1046,8 +1051,10 @@ function setupWizardSubmit(form){
  const fd=new FormData(form),key=setupStepKey(),steps=setupSteps();
  if(key==='name')w().settings.name=String(fd.get('name')||'').trim().slice(0,60);
  if(key==='track'){
-  const track=String(fd.get('track')||'');if(!C.TRACKS[track])throw Error('Alanını seç.');w().settings.track=track;
+  const track=String(fd.get('track')||'');if(!C.TRACKS[track])throw Error('Alanını seç.');const oldTrack=w().settings.track;w().settings.track=track;
   const valid=new Set(profileSubjects(track).map(function(s){return s.id;}));w().settings.priorities=w().settings.priorities.filter(function(id){return valid.has(id);});
+  if(track==='tyt')w().profile={...(w().profile||{}),version:4,currentStageNet:null,targetStageNet:0};
+  else if(oldTrack&&oldTrack!==track&&((oldTrack==='dil')!==(track==='dil')))w().profile={...(w().profile||{}),version:4,currentStageNet:null,targetStageNet:0};
  }
  if(key==='habit'){
   const studyHabit=String(fd.get('studyHabit')||'');if(!['yes','sometimes','no'].includes(studyHabit))throw Error('Düzenli çalışma durumunu seç.');
@@ -1063,6 +1070,13 @@ function setupWizardSubmit(form){
   if(!Number.isFinite(targetNet)||targetNet<0||targetNet>120)throw Error('Hedef net 0–120 arasında olmalı.');
   if(Number.isFinite(current)&&targetNet&&targetNet<current)throw Error('Hedef netin mevcut netinden düşük görünüyor. Değerleri kontrol et.');
   w().profile={...(w().profile||{}),version:4,targetNet,completed:false,updated:Date.now()};
+ }
+ if(key==='stageNet'){
+  const currentRaw=String(fd.get('currentStageNet')||'').trim(),currentStageNet=currentRaw===''?null:Number(currentRaw),targetStageNet=Number(fd.get('targetStageNet')||0),label=yksStageLabel(w().settings.track);
+  if(currentStageNet!==null&&(!Number.isFinite(currentStageNet)||currentStageNet<0||currentStageNet>80))throw Error(label+' mevcut neti 0–80 arasında olmalı.');
+  if(!Number.isFinite(targetStageNet)||targetStageNet<0||targetStageNet>80)throw Error(label+' hedef neti 0–80 arasında olmalı.');
+  if(currentStageNet!==null&&targetStageNet&&targetStageNet<currentStageNet)throw Error(label+' hedef netin mevcut netinden düşük görünüyor.');
+  w().profile={...(w().profile||{}),version:4,currentStageNet,targetStageNet,completed:false,updated:Date.now()};
  }
  if(key==='time'){
   const mins=Number(fd.get('dailyMinutes'));if(!Number.isInteger(mins)||mins<30||mins>720)throw Error('Günlük çalışma süreni seç.');w().settings.dailyMinutes=mins;
@@ -1150,22 +1164,36 @@ function routeExamWeakness(){
  const out={};for(const [id,vals] of Object.entries(scores)){const avg=vals.reduce((a,b)=>a+b,0)/vals.length;out[id]={ratio:avg,boost:Math.round(Math.max(0,.78-avg)*55),samples:vals.length};}return out;
 }
 
-function routeObservedCurrentNet(){
- const type=state.activeExam==='kpss'?'KPSS':'TYT';
+function routeObservedNet(type){
  const x=[...w().exams].filter(function(e){return e.type===type;}).sort(function(a,b){return b.date.localeCompare(a.date);})[0];
  if(!x)return null;
  try{const n=R.calcNet(x.parts,x.penalty);return {net:Math.max(0,Number(n.net)||0),date:x.date,label:C.TYPES[type]?.label||type};}catch{return null;}
 }
 function routeNetGap(){
- const p=w().profile||{},observed=routeObservedCurrentNet(),reported=Number.isFinite(p.currentNet)?Number(p.currentNet):null,current=observed?observed.net:reported,target=Number(p.targetNet)||0;
- return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0,source:observed?'exam':reported!==null?'profile':'none',observed};
+ const type=state.activeExam==='kpss'?'KPSS':'TYT',p=w().profile||{},observed=routeObservedNet(type),reported=Number.isFinite(p.currentNet)?Number(p.currentNet):null,current=observed?observed.net:reported,target=Number(p.targetNet)||0;
+ return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0,source:observed?'exam':reported!==null?'profile':'none',observed,label:C.TYPES[type]?.label||type};
+}
+function routeStageGap(){
+ if(state.activeExam!=='yks'||w().settings.track==='tyt')return {known:false,current:null,target:0,gap:0,source:'none',observed:null,label:''};
+ const type=yksStageExamType(),p=w().profile||{},observed=type?routeObservedNet(type):null,reported=Number.isFinite(p.currentStageNet)?Number(p.currentStageNet):null,current=observed?observed.net:reported,target=Number(p.targetStageNet)||0,label=yksStageLabel();
+ return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0,source:observed?'exam':reported!==null?'profile':'none',observed,label};
+}
+function routeSubjectGap(subjectId){
+ const s=subject(subjectId);
+ if(state.activeExam==='yks'&&s&&(s.stage==='AYT'||s.stage==='YDT'))return routeStageGap();
+ return routeNetGap();
+}
+function routeGapPressure(g){
+ if(!g||!g.known)return 0;
+ return g.gap>=40?10:g.gap>=25?8:g.gap>=15?6:g.gap>=7?4:g.gap>0?2:0;
 }
 function routeGoalPressure(){
- const p=w().profile||{},g=routeNetGap();let pressure=0;
+ const p=w().profile||{},g=routeNetGap(),sg=routeStageGap();let pressure=0;
  if(state.activeExam==='kpss'&&p.targetScore){pressure=p.targetScore>=90?7:p.targetScore>=85?5:p.targetScore>=80?3:1;}
  if(state.activeExam==='yks'&&p.targetRank){pressure=p.targetRank<=10000?7:p.targetRank<=50000?5:p.targetRank<=100000?3:1;}
- if(g.known){const gp=g.gap>=40?10:g.gap>=25?8:g.gap>=15?6:g.gap>=7?4:g.gap>0?2:0;pressure=Math.max(pressure,gp);}
- else if(p.targetNet){const np=p.targetNet>=100?5:p.targetNet>=85?4:p.targetNet>=70?2:1;pressure=Math.max(pressure,np);}
+ pressure=Math.max(pressure,routeGapPressure(g),routeGapPressure(sg));
+ if(!g.known&&p.targetNet){const np=p.targetNet>=100?5:p.targetNet>=85?4:p.targetNet>=70?2:1;pressure=Math.max(pressure,np);}
+ if(!sg.known&&state.activeExam==='yks'&&p.targetStageNet){const sp=p.targetStageNet>=60?5:p.targetStageNet>=45?4:p.targetStageNet>=30?2:1;pressure=Math.max(pressure,sp);}
  if(w().settings.targetDate){const days=Math.ceil((new Date(w().settings.targetDate+'T12:00:00')-new Date(today()+'T12:00:00'))/86400000);if(days>0&&days<=60)pressure+=4;else if(days>60&&days<=120)pressure+=2;}
  return Math.min(14,pressure);
 }
@@ -1206,7 +1234,7 @@ function routeMethodLoad(methodKey){
 function routeTaskMethod(task){return routeStudyMethod(task.subjectId,task.topicId,task.title);}
 function routeHeavyLimit(limit){return limit<=90?1:limit<=180?2:3;}
 function routeQuestionTarget(subjectId,topicId='',fallbackTitle=''){
- const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,g=routeNetGap(),method=routeStudyMethod(subjectId,topicId,fallbackTitle);
+ const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,g=routeSubjectGap(subjectId),method=routeStudyMethod(subjectId,topicId,fallbackTitle);
  const bases={
   quant:[8,12,16,20],geometry:[6,10,14,18],science:[8,12,15,18],biology:[8,10,13,16],
   paragraph:[12,16,20,25],logic:[5,7,9,12],grammar:[10,14,18,22],history:[8,10,12,15],

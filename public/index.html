@@ -1481,6 +1481,19 @@ function routeCandidateFromPlan(p){
  else if(['curriculum','profile','priority','exam','backlog'].includes(source))recipe=routeTaskGoal(p.subjectId,p.topicId,p.title);
  return {...p,...(recipe?{minutes:recipe.minutes,targetQuestions:recipe.questions,taskGoal:recipe.text}:{}),source,priority:Math.min(100,priority),reason,earliest:p.deferUntil&&p.deferUntil>today()?p.deferUntil:today(),routeKey:p.routeKey||('plan:'+p.id),taskState:p.taskState==='later'?'later':'open'};
 }
+function routeTopicFrontier(space,eligibleTopics){
+ const catalog=R.allTopics(space,state.activeExam),order=new Map(catalog.map(function(t,i){return [t.id,i];})),grouped=new Map();
+ for(const t of eligibleTopics){const list=grouped.get(t.subjectId)||[];list.push(t);grouped.set(t.subjectId,list);}
+ const out=[];
+ for(const sub of subjects()){
+  const list=(grouped.get(sub.id)||[]).sort(function(a,b){return (order.get(a.id)||0)-(order.get(b.id)||0);});
+  const active=list.filter(function(t){return (space.topicState[t.id]?.status||0)===1;}),fresh=list.filter(function(t){return (space.topicState[t.id]?.status||0)===0;}),merged=[],seen=new Set();
+  for(const t of active.concat(fresh)){if(!seen.has(t.id)){seen.add(t.id);merged.push(t);}}
+  const ps=routeProfileSignal(sub.id),limit=(space.settings.priorities.includes(sub.id)||ps.level<=1)?3:2;
+  merged.slice(0,limit).forEach(function(t,rank){out.push({...t,routeSequenceRank:rank,routeSequenceIndex:order.get(t.id)||0});});
+ }
+ return out;
+}
 function routeBuildCandidates(){
  const space=w(),weak=routeExamWeakness(),seenTopics=new Set(),seenKeys=new Set(),out=[];
  const push=function(c){if(!c||seenKeys.has(c.routeKey))return;seenKeys.add(c.routeKey);if(c.topicId&&R.topic(space,c.topicId))seenTopics.add(c.topicId);out.push(c);};
@@ -1515,15 +1528,16 @@ function routeBuildCandidates(){
   }
  }
  const recentCutoff=R.dayAdd(today(),-5),recentWorkedTopics=new Set(space.plan.filter(function(p){return p.done&&p.date>=recentCutoff&&p.topicId&&R.topic(space,p.topicId);}).map(function(p){return p.topicId;}));
- const topics=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)!==2&&!seenTopics.has(t.id)&&!recentWorkedTopics.has(t.id);});
+ const eligibleTopics=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)!==2&&!seenTopics.has(t.id)&&!recentWorkedTopics.has(t.id);}),topics=routeTopicFrontier(space,eligibleTopics);
  for(const t of topics){
   const isPriority=space.settings.priorities.includes(t.subjectId),wk=weak[t.subjectId],ps=routeProfileSignal(t.subjectId),last=routeLastLogDate(t.subjectId),goal=routeTaskGoal(t.subjectId,t.id,t.title),method=routeStudyMethod(t.subjectId,t.id,t.title);
-  let priority=30+(isPriority?18:0)+(wk?.boost||0)+ps.boost;
+  let priority=30+(isPriority?18:0)+(wk?.boost||0)+ps.boost-(t.routeSequenceRank||0)*3;
   let reason=isPriority?'Bu dersi öncelikli olarak seçtin.':'Tamamlanmamış konu rotandan geliyor.';
   let source=wk?.boost?'exam':isPriority?'priority':ps.level<=1?'profile':'curriculum';
   if(wk?.boost){reason='Son deneme verilerinde '+subName(t.subjectId)+' daha fazla çalışma sinyali veriyor. Görev biçimi '+method.label.toLocaleLowerCase('tr-TR')+' yöntemine göre ayarlandı.';}
   else if(ps.level<=1){reason='Seviye profilinde '+subName(t.subjectId)+' dersini “'+ps.label+'” olarak işaretledin; bu yüzden temel öğrenme ve '+method.label.toLocaleLowerCase('tr-TR')+' çalışması daha sık geliyor.';if(ps.goalBoost)reason+=' Mevcut–hedef farkın bu ağırlığı artırıyor.';}
   else if(ps.level===3){reason='Bu derste seviyen iyi; görev '+method.label.toLocaleLowerCase('tr-TR')+' biçiminde daha fazla uygulama ve yanlış kontrolüne kaydırıldı.';}
+  reason+=' '+(t.routeSequenceRank===0?'Bu dersin sıradaki uygun konusu.':'Aynı derste daha ileri başlıklara atlamadan yakın konu cephesinde tutuluyor.');
   if(!last||last<R.dayAdd(today(),-7)){priority+=7;reason+=' Bu derste son 7 günde kayıtlı çalışma az.';}
   push({id:R.uid(),date:today(),subjectId:t.subjectId,topicId:t.id,title:t.title,minutes:goal.minutes,done:false,kind:'route',source,priority:Math.max(12,Math.min(96,priority)),reason,earliest:today(),routeKey:'topic:'+t.id,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }
@@ -1601,7 +1615,7 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  const oldMap=new Map(space.plan.filter(function(p){return !p.done;}).map(function(p){return [p.id,p.date];}));let changed=0;for(const p of scheduled)if(oldMap.get(p.id)!==p.date)changed++;
  space.plan=kept.concat(scheduled).sort(function(a,b){return a.date.localeCompare(b.date)||((b.priority||0)-(a.priority||0));});
  space.route.lastRun=today();
- space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Normal tekrarlar günün yaklaşık yarısını ve haftalık kapasitenin yaklaşık %45’ini aşmayacak şekilde yayılır; kritik yanlış ve onarım görevleri gerektiğinde bu sınırı aşabilir. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
+ space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Normal tekrarlar günün yaklaşık yarısını ve haftalık kapasitenin yaklaşık %45’ini aşmayacak şekilde yayılır; kritik yanlış ve onarım görevleri gerektiğinde bu sınırı aşabilir. Her derste yalnız sıradaki 2–3 uygun konu aktif cepheye alınır; ileri başlıklar temel sıra atlanarak programa doldurulmaz. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
  space.route.lastChanged=changed;
  space.route.decisions=scheduled.slice(0,80).map(function(p){return {taskId:p.id,date:p.date,source:p.source||'curriculum',priority:p.priority||0,reason:p.reason||''};});
  if(!silent)toast(changed?changed+' görev kapasite, tekrar payı ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');

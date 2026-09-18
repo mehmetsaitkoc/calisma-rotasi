@@ -117,6 +117,27 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   }
 }
 
+// 4) Topic mastery suggestion requires learning + both review waves + evidence.
+{
+  const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');
+  const space={
+    plan:[
+      {id:'base',done:true,topicId:'topic-1',source:'curriculum'},
+      {id:'r3',done:true,topicId:'topic-1',source:'spaced_review',reviewWave:3},
+      {id:'r7',done:true,topicId:'topic-1',source:'spaced_review',reviewWave:7}
+    ],
+    mistakes:[]
+  };
+  const R={topic:(_w,id)=>id==='topic-1'?{id,subjectId:'k-ma'}:null};
+  const w=()=>space;
+  const routeOutcomeSignal=()=>({known:true,recent:'strong',stuckRate:0});
+  const routePracticeSignal=()=>({known:true,accuracy:.84});
+  const mastery=new Function('R','w','routeOutcomeSignal','routePracticeSignal',src+';return routeTopicMasterySignal;')(R,w,routeOutcomeSignal,routePracticeSignal);
+  assert.equal(mastery('topic-1').ready,true);
+  space.mistakes.push({topicId:'topic-1',resolved:false});
+  assert.equal(mastery('topic-1').ready,false);
+}
+
 // 4) Guard core personalization features against accidental removal.
 for(const marker of [
   'routeObservedNet',
@@ -127,6 +148,9 @@ for(const marker of [
   'routeHeavyLimit',
   'latestBaseByTopic',
   'recentWorkedTopics',
+  'routeTopicMasterySignal',
+  'routeClearCompletedTopicQueue',
+  'topic-accept-mastery',
   'SÜRELİ ANLAMA SETİ',
   'ZAMAN ÇİZGİSİ + HATIRLAMA'
 ]) assert.ok(html.includes(marker),`Missing personalization marker: ${marker}`);

@@ -1236,6 +1236,10 @@ function routeMethodLoad(methodKey){
 }
 function routeTaskMethod(task){return routeStudyMethod(task.subjectId,task.topicId,task.title);}
 function routeHeavyLimit(limit){return limit<=90?1:limit<=180?2:3;}
+function routeIsReviewLike(task){return !!task&&(task.kind==='review'||['mistake','ai_teacher','spaced_review','checkpoint'].includes(task.source));}
+function routeIsCriticalReview(task){return !!task&&(task.source==='mistake'||(task.source==='ai_teacher'&&(task.priority||0)>=80)||(task.source==='spaced_review'&&task.reviewWave===1));}
+function routeReviewDailyLimit(limit){return Math.max(30,Math.round((limit*.5)/5)*5);}
+function routeReviewWeeklyLimit(totalCapacity){return Math.max(30,Math.round((totalCapacity*.45)/5)*5);}
 function routeQuestionTarget(subjectId,topicId='',fallbackTitle=''){
  const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,g=routeSubjectGap(subjectId),method=routeStudyMethod(subjectId,topicId,fallbackTitle);
  const bases={
@@ -1547,13 +1551,27 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  const days=[];
  for(let i=0;i<21;i++){
   const date=R.dayAdd(start,i),dow=new Date(date+'T12:00:00').getDay();if(!space.settings.days.includes(dow))continue;
-  const dayKept=kept.filter(function(p){return p.date===date;}),limit=routeEffectiveDailyMinutes(space),methods=new Set(),subjectsSet=new Set();let heavy=0;
-  for(const p of dayKept){subjectsSet.add(p.subjectId);const method=routeTaskMethod(p);methods.add(method.key);if(routeMethodLoad(method.key)===2)heavy++;}
-  days.push({date,used:dayKept.reduce(function(n,p){return n+(p.minutes||25)+5;},0),limit,subjects:subjectsSet,methods,heavy,heavyLimit:routeHeavyLimit(limit)});
+  const dayKept=kept.filter(function(p){return p.date===date;}),limit=routeEffectiveDailyMinutes(space),methods=new Set(),subjectsSet=new Set();let heavy=0,reviewUsed=0;
+  for(const p of dayKept){
+   subjectsSet.add(p.subjectId);const method=routeTaskMethod(p);methods.add(method.key);if(routeMethodLoad(method.key)===2)heavy++;
+   if(routeIsReviewLike(p)&&!routeIsCriticalReview(p))reviewUsed+=(p.minutes||25)+5;
+  }
+  days.push({date,week:Math.floor(i/7),used:dayKept.reduce(function(n,p){return n+(p.minutes||25)+5;},0),limit,subjects:subjectsSet,methods,heavy,heavyLimit:routeHeavyLimit(limit),reviewUsed,reviewLimit:routeReviewDailyLimit(limit)});
  }
+ const weekState=new Map();
+ for(const day of days){
+  const st=weekState.get(day.week)||{capacity:0,reviewUsed:0,reviewLimit:0};
+  st.capacity+=day.limit;st.reviewUsed+=day.reviewUsed;weekState.set(day.week,st);
+ }
+ for(const st of weekState.values())st.reviewLimit=routeReviewWeeklyLimit(st.capacity);
  function fits(day,candidate,mode){
-  if(day.date<candidate.earliest||day.used+(candidate.minutes||25)+5>day.limit)return false;
-  const method=routeTaskMethod(candidate),isHeavy=routeMethodLoad(method.key)===2;
+  const cost=(candidate.minutes||25)+5;
+  if(day.date<candidate.earliest||day.used+cost>day.limit)return false;
+  const method=routeTaskMethod(candidate),isHeavy=routeMethodLoad(method.key)===2,normalReview=routeIsReviewLike(candidate)&&!routeIsCriticalReview(candidate);
+  if(normalReview){
+   const ws=weekState.get(day.week);
+   if(day.reviewUsed+cost>day.reviewLimit||ws&&ws.reviewUsed+cost>ws.reviewLimit)return false;
+  }
   if(mode<=2&&isHeavy&&day.heavy>=day.heavyLimit)return false;
   if(mode===0&&(day.subjects.has(candidate.subjectId)||day.methods.has(method.key)))return false;
   if(mode===1&&day.subjects.has(candidate.subjectId))return false;
@@ -1564,16 +1582,17 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
   let slot=null;for(let mode=0;mode<4&&!slot;mode++)slot=days.find(function(day){return fits(day,candidate,mode);});
   if(!slot)continue;
   const task={...candidate,date:slot.date,done:false,taskState:candidate.taskState==='later'&&slot.date===today()?'later':'open'};delete task.earliest;
-  slot.used+=task.minutes+5;slot.subjects.add(task.subjectId);const method=routeTaskMethod(task);slot.methods.add(method.key);if(routeMethodLoad(method.key)===2)slot.heavy++;
+  const cost=task.minutes+5;slot.used+=cost;slot.subjects.add(task.subjectId);const method=routeTaskMethod(task);slot.methods.add(method.key);if(routeMethodLoad(method.key)===2)slot.heavy++;
+  if(routeIsReviewLike(task)&&!routeIsCriticalReview(task)){slot.reviewUsed+=cost;const ws=weekState.get(slot.week);if(ws)ws.reviewUsed+=cost;}
   scheduled.push(task);
  }
  const oldMap=new Map(space.plan.filter(function(p){return !p.done;}).map(function(p){return [p.id,p.date];}));let changed=0;for(const p of scheduled)if(oldMap.get(p.id)!==p.date)changed++;
  space.plan=kept.concat(scheduled).sort(function(a,b){return a.date.localeCompare(b.date)||((b.priority||0)-(a.priority||0));});
  space.route.lastRun=today();
- space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
+ space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Normal tekrarlar günün yaklaşık yarısını ve haftalık kapasitenin yaklaşık %45’ini aşmayacak şekilde yayılır; kritik yanlış ve onarım görevleri gerektiğinde bu sınırı aşabilir. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
  space.route.lastChanged=changed;
  space.route.decisions=scheduled.slice(0,80).map(function(p){return {taskId:p.id,date:p.date,source:p.source||'curriculum',priority:p.priority||0,reason:p.reason||''};});
- if(!silent)toast(changed?changed+' görev kapasite ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');
+ if(!silent)toast(changed?changed+' görev kapasite, tekrar payı ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');
  return {changed,scheduled:scheduled.length};
 }
 function routeAutoSync(){if(!state.activeExam||!w().configured||sampleSaved)return;routeEnsure();const overdue=w().plan.some(p=>!p.done&&p.date<today());if(w().route.lastAutoDate!==today()||overdue){const message=overdue?'Kaçırılan görevler günlük kapasiteye göre yeniden dağıtıldı.':'Bugünün rotası güncel verilerle kontrol edildi.';routeRebalance(message,true);w().route.lastAutoDate=today();save();}}

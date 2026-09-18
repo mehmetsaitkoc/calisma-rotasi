@@ -107,6 +107,91 @@ const schema = {
   required:['kind','direct_answer','message','diagnosis','steps','summary','confidence','detected_subject','detected_topic','difficulty','needs_clarification','verification','route_signal','source_notes']
 };
 
+
+function demoTeacherAnswer(body, reason='quota'){
+  const q=cleanText(body?.question,5000).trim();
+  const subject=cleanText(body?.subject,140);
+  const topic=cleanText(body?.topic,200);
+  const photo=!!body?.photo;
+  const n=(q+' '+subject+' '+topic).toLocaleLowerCase('tr-TR');
+
+  let direct='Demo test cevabı';
+  let message='Bu cevap Demo Test Modu tarafından üretildi; gerçek OpenAI modeli kullanılmadı.';
+  let diagnosis='Amaç soru gönderme, cevap kartı, geçmiş ve rota sinyali akışını ücretsiz test etmektir.';
+  let steps=[{title:'Demo kontrolü',text:'Arayüz ve kayıt akışı çalışıyor.'}];
+  let summary='Demo akışı başarıyla çalıştı.';
+  let detectedSubject=subject||'';
+  let detectedTopic=topic||'';
+  let difficulty='basic';
+
+  if(photo){
+    direct='';
+    message='Demo Test Modu fotoğrafın yüklendiğini doğruladı ancak görselin içeriğini analiz etmedi.';
+    diagnosis='Gerçek fotoğraf çözümü yalnız gerçek AI kredisi olduğunda çalışır.';
+    steps=[
+      {title:'Fotoğraf yükleme',text:'Dosya uygulamadan sunucuya ulaştı.'},
+      {title:'Görsel analiz',text:'Demo modunda bilinçli olarak yapılmadı; görüntüden cevap uydurulmadı.'}
+    ];
+    summary='Fotoğraf akışı test edildi; gerçek görsel çözüm yapılmadı.';
+  } else if((/osmanl/.test(n)&&/kuruc/.test(n)) || (/kuruluş dönemi/.test(n)&&/kurucusu/.test(n))){
+    direct='Osman Gazi';
+    message='Demo örnek cevabı: Osmanlı Devleti’nin kurucusu Osman Gazi kabul edilir.';
+    diagnosis='Bu, demo modunda önceden tanımlanmış temel tarih testidir.';
+    steps=[
+      {title:'Kavramı eşleştir',text:'Soru Osmanlı Devleti’nin kuruluşunu ve kurucusunu soruyor.'},
+      {title:'Cevap',text:'Kurucu olarak Osman Gazi verilir.'}
+    ];
+    summary='Cevap: Osman Gazi.';
+    detectedSubject=subject||'Tarih';
+    detectedTopic=topic||'Osmanlı kuruluş dönemi';
+  } else {
+    const m=q.replace(/\s+/g,'').match(/^([+-]?\d*)x([+-]\d+(?:[.,]\d+)?)=([+-]?\d+(?:[.,]\d+)?)$/i);
+    if(m){
+      let a=m[1];
+      a=(a===''||a==='+')?1:(a==='-'?-1:Number(a.replace(',','.')));
+      const b=Number(m[2].replace(',','.'));
+      const rhs=Number(m[3].replace(',','.'));
+      if(Number.isFinite(a)&&a!==0&&Number.isFinite(b)&&Number.isFinite(rhs)){
+        const x=(rhs-b)/a;
+        direct='x = '+String(Number(x.toFixed(6)));
+        message='Demo modunda basit doğrusal denklem yerel olarak çözüldü.';
+        diagnosis='Eşitliğin iki tarafında aynı işlemleri uygulamak yeterli.';
+        steps=[
+          {title:'Sabit terimi taşı',text:`${a}x = ${rhs} - (${b}) = ${rhs-b}`},
+          {title:'Katsayıya böl',text:`x = ${rhs-b} / ${a} = ${Number(x.toFixed(6))}`}
+        ];
+        summary='Cevap: '+direct+'.';
+        detectedSubject=subject||'Matematik';
+        difficulty='basic';
+      }
+    }
+  }
+
+  return {
+    kind: photo?'clarify':(/tarih|osmanl/i.test(n)?'fact':'solution'),
+    direct_answer:direct,
+    message,
+    diagnosis,
+    steps,
+    summary,
+    confidence: photo?1:0.99,
+    detected_subject:detectedSubject,
+    detected_topic:detectedTopic,
+    difficulty,
+    needs_clarification:photo,
+    verification:{status:'not_needed',methods:['Demo Test Modu'],note:'Gerçek model çağrısı yapılmadı.'},
+    route_signal:{importance:0,reason:'Demo yanıtı rota puanını etkilemez.'},
+    source_notes:['DEMO TEST MODU — gerçek AI kullanılmadı.'],
+    _demo:true,
+    _demo_reason:reason
+  };
+}
+function isQuotaError(status,data,raw){
+  const msg=String(data?.error?.message||raw||'').toLocaleLowerCase('en-US');
+  const code=String(data?.error?.code||'').toLocaleLowerCase('en-US');
+  return status===429 && (code.includes('insufficient_quota') || msg.includes('no credits') || msg.includes('quota') || msg.includes('billing'));
+}
+
 async function callTeacher(body){
   if (!runtimeApiKey) throw Object.assign(new Error('Rota Hoca AI henüz bağlanmadı.'), {status:503});
   const question = cleanText(body.question, 5000).trim();
@@ -162,7 +247,12 @@ ${previousText?`Önceki cevap/bağlam: ${previousText}\n`:''}İstenen devam modu
   const response = await fetch(OPENAI_BASE_URL + '/responses', {method:'POST',headers:{'authorization':`Bearer ${runtimeApiKey}`,'content-type':'application/json'},body:JSON.stringify(payload)});
   const raw = await response.text();
   let data; try { data=JSON.parse(raw); } catch { data={}; }
-  if (!response.ok) throw Object.assign(new Error(data?.error?.message || `AI isteği başarısız (${response.status}).`), {status:502});
+  if (!response.ok) {
+    if (isQuotaError(response.status,data,raw)) {
+      return {answer:demoTeacherAnswer(body,'no_credits'),model:'demo-local',responseId:'',usage:null,demo:true,demoReason:'API kredisi yok; ücretsiz Demo Test Modu kullanıldı.'};
+    }
+    throw Object.assign(new Error(data?.error?.message || `AI isteği başarısız (${response.status}).`), {status:502});
+  }
   const text = extractOutputText(data);
   if (!text) throw Object.assign(new Error('Model yapılandırılmış cevap döndürmedi.'), {status:502});
   let answer; try { answer=validateAnswer(JSON.parse(text)); } catch(e) { throw Object.assign(new Error('Model cevabı çözümlenemedi: '+e.message), {status:502}); }
@@ -208,7 +298,7 @@ const server=http.createServer(async (req,res)=>{
   res.setHeader('x-content-type-options','nosniff');
   res.setHeader('referrer-policy','no-referrer');
   res.setHeader('x-frame-options','SAMEORIGIN');
-  if(req.method==='GET'&&req.url==='/api/health'){ const ip=req.socket.remoteAddress||''; const local=ip==='127.0.0.1'||ip==='::1'||ip==='::ffff:127.0.0.1'; return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,configurable:local&&!runtimeApiKey}); }
+  if(req.method==='GET'&&req.url==='/api/health'){ const ip=req.socket.remoteAddress||''; const local=ip==='127.0.0.1'||ip==='::1'||ip==='::ffff:127.0.0.1'; return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:true,configurable:local&&!runtimeApiKey}); }
 
   if(req.method==='POST'&&req.url==='/api/configure'){
     const ip = req.socket.remoteAddress || '';

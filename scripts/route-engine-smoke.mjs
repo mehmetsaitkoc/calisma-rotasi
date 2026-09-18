@@ -90,11 +90,11 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 
 // 4) Guard core personalization features against accidental removal.
 for(const marker of [
-  'routeObservedCurrentNet',
+  'routeObservedNet',
   'routeStageGap',
   'routeConsistencySignal',
   'routePracticeSignal',
-  'reviewWave:7',
+  'for(const wave of [3,7])',
   'routeHeavyLimit',
   'SÜRELİ ANLAMA SETİ',
   'ZAMAN ÇİZGİSİ + HATIRLAMA'

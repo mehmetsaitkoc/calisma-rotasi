@@ -288,6 +288,80 @@ html[data-ui-theme="sand"] .focus-banner .btn{background:#e6dfbd;border-color:#e
 html[data-ui-theme="sand"] .timer-card{background:#efeee1;border-color:#dfddcd}
 html[data-ui-theme="sand"] .onboard-choice:has(input:checked),
 html[data-ui-theme="sand"] .onboard-day:has(input:checked){background:#ecebd8;border-color:#cfceb1}
+
+/* Tema testi — bilinçli olarak belirgin farklar */
+.theme-preview-switch{display:flex;align-items:center;gap:5px;padding:2px 5px;border:1px solid #ffffff26;border-radius:8px}
+.theme-preview-current{font-size:9px;font-weight:800;letter-spacing:.7px;padding:0 5px;color:#fff;white-space:nowrap}
+.theme-preview-switch a{font-size:9px;font-weight:700;padding:5px 7px;border-radius:6px;color:#d8ddd7;white-space:nowrap}
+.theme-preview-switch a:hover,.theme-preview-switch a.selected{background:#fff;color:#26382f}
+.theme-page-badge{max-width:1030px;margin:7px auto 0;padding:7px 12px;border-radius:8px;font-size:10px;font-weight:800;letter-spacing:1px;text-align:center;background:var(--ink);color:#fff}
+@media(max-width:850px){.theme-preview-switch{display:none}.theme-page-badge{margin-left:17px;margin-right:17px}}
+
+/* FOREST — koyu yeşil navigasyon + açık adaçayı içerik */
+html[data-ui-theme="forest"] body{background:#e8f0ea!important}
+html[data-ui-theme="forest"] .welcome{background:radial-gradient(circle at 82% 20%,#dceadf 0,transparent 32%),#e8f0ea!important}
+html[data-ui-theme="forest"] .sidebar{background:#123b30!important;border-right-color:#244f42!important;color:#eef7f1!important}
+html[data-ui-theme="forest"] .sidebar .logo{color:#f7fff9!important}
+html[data-ui-theme="forest"] .sidebar .logo-mark{background:#dceadf!important;color:#123b30!important}
+html[data-ui-theme="forest"] .sidebar-selector{background:#1c4b3d!important;border-color:#396454!important;color:#fff!important}
+html[data-ui-theme="forest"] .sidebar-selector .muted,html[data-ui-theme="forest"] .sidebar .nav-label,html[data-ui-theme="forest"] .sidebar-quote p{color:#9fc0b1!important}
+html[data-ui-theme="forest"] .nav-item{color:#c7dcd2!important}
+html[data-ui-theme="forest"] .nav-item:hover{background:#1b4a3b!important;color:#fff!important}
+html[data-ui-theme="forest"] .nav-item.active{background:#2a624f!important;color:#fff!important}
+html[data-ui-theme="forest"] .sidebar-plus{background:#1a473a!important;border-color:#3c6657!important;color:#eef7f1!important}
+html[data-ui-theme="forest"] .sidebar-plus p{color:#a9c8ba!important}
+html[data-ui-theme="forest"] .topbar{background:#f8fbf8f2!important}
+html[data-ui-theme="forest"] .app-main{background:#edf3ee!important}
+html[data-ui-theme="forest"] .content{background:#edf3ee!important}
+html[data-ui-theme="forest"] .card,html[data-ui-theme="forest"] .stat,html[data-ui-theme="forest"] .route-task{background:#fff!important;border-color:#d5e2d8!important}
+html[data-ui-theme="forest"] .exam-card{background:#fff!important}
+html[data-ui-theme="forest"] .exam-card.yks{background:#dfeadf!important}
+html[data-ui-theme="forest"] .route-today-hero,html[data-ui-theme="forest"] .focus-banner,html[data-ui-theme="forest"] .summary-plan-preview{background:#174837!important}
+html[data-ui-theme="forest"] .btn.primary{background:#153d30!important;border-color:#153d30!important}
+
+/* NAVY — koyu lacivert sidebar + buz mavisi içerik */
+html[data-ui-theme="navy"] body{background:#e9eef8!important}
+html[data-ui-theme="navy"] .welcome{background:radial-gradient(circle at 82% 20%,#d9e3f6 0,transparent 34%),#edf2fb!important}
+html[data-ui-theme="navy"] .sidebar{background:#182b50!important;border-right-color:#29436f!important;color:#f6f8ff!important}
+html[data-ui-theme="navy"] .sidebar .logo{color:#fff!important}
+html[data-ui-theme="navy"] .sidebar .logo-mark{background:#dbe5fa!important;color:#182b50!important}
+html[data-ui-theme="navy"] .sidebar-selector{background:#223c68!important;border-color:#3b5785!important;color:#fff!important}
+html[data-ui-theme="navy"] .sidebar-selector .muted,html[data-ui-theme="navy"] .sidebar .nav-label,html[data-ui-theme="navy"] .sidebar-quote p{color:#aebfdf!important}
+html[data-ui-theme="navy"] .nav-item{color:#cad5eb!important}
+html[data-ui-theme="navy"] .nav-item:hover{background:#233d69!important;color:#fff!important}
+html[data-ui-theme="navy"] .nav-item.active{background:#365586!important;color:#fff!important}
+html[data-ui-theme="navy"] .sidebar-plus{background:#213960!important;border-color:#46618b!important;color:#f4f7ff!important}
+html[data-ui-theme="navy"] .sidebar-plus p{color:#b9c7e1!important}
+html[data-ui-theme="navy"] .topbar{background:#fbfcfff2!important}
+html[data-ui-theme="navy"] .app-main,html[data-ui-theme="navy"] .content{background:#eef3fb!important}
+html[data-ui-theme="navy"] .card,html[data-ui-theme="navy"] .stat,html[data-ui-theme="navy"] .route-task{background:#fff!important;border-color:#d8e1f0!important}
+html[data-ui-theme="navy"] .exam-card{background:#fff!important;border-color:#d7e0ef!important}
+html[data-ui-theme="navy"] .exam-card.yks{background:#e0e8f7!important}
+html[data-ui-theme="navy"] .route-today-hero,html[data-ui-theme="navy"] .focus-banner,html[data-ui-theme="navy"] .summary-plan-preview{background:#213f76!important}
+html[data-ui-theme="navy"] .btn.primary{background:#203a6a!important;border-color:#203a6a!important}
+html[data-ui-theme="navy"] .hero-brand-line,html[data-ui-theme="navy"] .text-link{color:#4269ad!important}
+
+/* SAND — koyu toprak sidebar + sıcak krem içerik */
+html[data-ui-theme="sand"] body{background:#eee5d5!important}
+html[data-ui-theme="sand"] .welcome{background:radial-gradient(circle at 82% 20%,#e6dbc4 0,transparent 34%),#f3ecdf!important}
+html[data-ui-theme="sand"] .sidebar{background:#514936!important;border-right-color:#685f49!important;color:#fffaf0!important}
+html[data-ui-theme="sand"] .sidebar .logo{color:#fffaf0!important}
+html[data-ui-theme="sand"] .sidebar .logo-mark{background:#e9dfc6!important;color:#514936!important}
+html[data-ui-theme="sand"] .sidebar-selector{background:#625943!important;border-color:#7c7258!important;color:#fff!important}
+html[data-ui-theme="sand"] .sidebar-selector .muted,html[data-ui-theme="sand"] .sidebar .nav-label,html[data-ui-theme="sand"] .sidebar-quote p{color:#cec5ad!important}
+html[data-ui-theme="sand"] .nav-item{color:#e1d8c2!important}
+html[data-ui-theme="sand"] .nav-item:hover{background:#625943!important;color:#fff!important}
+html[data-ui-theme="sand"] .nav-item.active{background:#776d50!important;color:#fff!important}
+html[data-ui-theme="sand"] .sidebar-plus{background:#605640!important;border-color:#81765b!important;color:#fffaf0!important}
+html[data-ui-theme="sand"] .sidebar-plus p{color:#d8cfb7!important}
+html[data-ui-theme="sand"] .topbar{background:#fffaf1f2!important}
+html[data-ui-theme="sand"] .app-main,html[data-ui-theme="sand"] .content{background:#f4ede1!important}
+html[data-ui-theme="sand"] .card,html[data-ui-theme="sand"] .stat,html[data-ui-theme="sand"] .route-task{background:#fffaf1!important;border-color:#dfd4c1!important}
+html[data-ui-theme="sand"] .exam-card{background:#fffaf1!important;border-color:#dfd4c1!important}
+html[data-ui-theme="sand"] .exam-card.yks{background:#e8e7cf!important}
+html[data-ui-theme="sand"] .route-today-hero,html[data-ui-theme="sand"] .focus-banner,html[data-ui-theme="sand"] .summary-plan-preview{background:#4f5b3b!important}
+html[data-ui-theme="sand"] .btn.primary{background:#4b5539!important;border-color:#4b5539!important}
+html[data-ui-theme="sand"] .hero-brand-line,html[data-ui-theme="sand"] .text-link{color:#69794d!important}
 </style>
 </head>
 <body>
@@ -626,7 +700,11 @@ if(typeof module==='object')module.exports=root.RotaVideo;
 const QUERY=new URLSearchParams(location.search);
 const FRESH_PREVIEW=QUERY.get('fresh')==='1';
 const UI_THEME=['forest','navy','sand'].includes(QUERY.get('theme'))?QUERY.get('theme'):'';
+const THEME_NAMES={forest:'FOREST',navy:'NAVY / INDIGO',sand:'SAND / OLIVE'};
 if(UI_THEME)document.documentElement.dataset.uiTheme=UI_THEME;
+function themeUrl(theme){
+ const q=new URLSearchParams(location.search);q.set('fresh','1');q.set('theme',theme);q.delete('utm_source');return location.pathname+'?'+q.toString();
+}
 const BASE_KEY='calisma-rotasi:all:v5';
 const C=window.RotaCatalog,R=window.RotaCore,A=window.RotaAnalysis,KEY=BASE_KEY+(FRESH_PREVIEW?':fresh-preview':''),TIMER_KEY=KEY+':timers';
 if(FRESH_PREVIEW){
@@ -688,7 +766,9 @@ function plusBadge(label='PLUS'){return `<span class="plus-badge">${icon('spark'
 function rememberBilling(){try{sessionStorage.setItem('rota-plus:visual-demo',JSON.stringify(billing));}catch{}}
 function changePreviewTier(tier,offer=billing.offer){if(!['free','plus'].includes(tier))return;billing={tier,offer:Object.hasOwn(OFFERS,offer)?offer:'monthly'};rememberBilling();closeModal();render();}
 function previewBar(){
- $('#preview-bar').innerHTML=`<div class="preview-inner"><span class="preview-caption"><i></i><span>Tasarım önizlemesi<span class="preview-extra"> · Ödeme alınmaz</span></span></span><div class="preview-controls"><button class="preview-text video-demo-shortcut" data-action="video-turkish-demo">Tüm dersleri gör</button>${sampleSaved?'<span class="sample-tag">Örnek veriler</span><button data-action="paid-end-sample" class="preview-text">Örnekten çık</button>':'<button data-action="paid-sample" class="preview-text">Örnek panel</button>'}<div class="preview-switch" role="group" aria-label="Üyelik görünümünü değiştir"><button data-action="paid-tier" data-tier="free" class="${!isPlus()?'selected':''}" aria-pressed="${!isPlus()}">Ücretsiz</button><button data-action="paid-tier" data-tier="plus" class="${isPlus()?'selected':''}" aria-pressed="${isPlus()}">${icon('spark')} Plus</button></div></div></div>`;
+ const themeLabel=UI_THEME?(THEME_NAMES[UI_THEME]||UI_THEME.toUpperCase()):'VARSAYILAN';
+ const themeLinks='<div class="theme-preview-switch" role="group" aria-label="Tema önizlemesi"><span class="theme-preview-current">TEMA: '+esc(themeLabel)+'</span>'+['forest','navy','sand'].map(function(t){return '<a class="'+(UI_THEME===t?'selected':'')+'" href="'+esc(themeUrl(t))+'">'+esc(THEME_NAMES[t])+'</a>';}).join('')+'</div>';
+ $('#preview-bar').innerHTML=`<div class="preview-inner"><span class="preview-caption"><i></i><span>Tasarım önizlemesi<span class="preview-extra"> · Ödeme alınmaz</span></span></span><div class="preview-controls">${themeLinks}<button class="preview-text video-demo-shortcut" data-action="video-turkish-demo">Tüm dersleri gör</button>${sampleSaved?'<span class="sample-tag">Örnek veriler</span><button data-action="paid-end-sample" class="preview-text">Örnekten çık</button>':'<button data-action="paid-sample" class="preview-text">Örnek panel</button>'}<div class="preview-switch" role="group" aria-label="Üyelik görünümünü değiştir"><button data-action="paid-tier" data-tier="free" class="${!isPlus()?'selected':''}" aria-pressed="${!isPlus()}">Ücretsiz</button><button data-action="paid-tier" data-tier="plus" class="${isPlus()?'selected':''}" aria-pressed="${isPlus()}">${icon('spark')} Plus</button></div></div></div>`;
 }
 function publicNav(){return `<nav class="welcome-nav paid-public-nav"><button class="brand-button" data-action="select" aria-label="Çalışma Rotası ana sayfa">${logo()}</button><div class="row"><button class="public-link ${ui.view==='pricing'?'active':''}" data-action="paid-pricing">Paketler</button>${btn(isPlus()?'Çalışma alanım '+icon('right'):'Ücretsiz başla '+icon('right'),'paid-start','primary sm')}</div></nav>`;}
 function welcomeUpgrade(){return `<section class="welcome-upgrade"><div class="row">${plusBadge('ROTA PLUS')}<span class="tiny muted">TEMEL TAKİPTEN BİR ADIM ÖTEYE</span></div><div class="welcome-upgrade-body"><div><h3>Sonucunu gör. <span class="serif">Sıradaki adımını belirle.</span></h3><p>Deneme karşılaştırması, planına eklenen tekrarlar ve aylık gelişim raporu.</p></div><div class="welcome-upgrade-price"><div><strong>149 ₺</strong><span> / ay</span></div>${btn('Paketleri gör '+icon('arrow'),'paid-pricing','primary')}</div></div><span class="price-footnote">Örnek fiyat · Ücretsiz paketle başlayabilirsin.</span></section>`;}
@@ -740,7 +820,8 @@ function handlePaidAction(b){const a=b.dataset.action;switch(a){
  }}
 
 function welcome(){
-return `<div class="welcome">${publicNav()}${FRESH_PREVIEW?'<div class="fresh-preview-badge">SIFIRDAN TEST MODU · Gerçek kayıtların etkilenmez</div>':''}<main class="welcome-main"><div class="welcome-intro"><div><div class="eyebrow">SENİN HEDEFİN. SENİN ROTAN.</div><h1>Herkesin çalışma programı<br><span class="serif">aynı olmak zorunda değil.</span></h1><div class="hero-brand-line">Çalışma Rotası — Sana göre çalışan çalışma programı.</div></div><p class="welcome-copy">Mevcut netin, hedefin, ayırabildiğin süre ve zorlandığın dersler farklıysa programın da farklı olmalı.</p></div><div class="step-indicator"><span class="step-num">1</span><span class="small">İlk soru: Hangi sınava hazırlanıyorsun?</span><span class="muted tiny">Diğer sınava her zaman geçebilirsin.</span></div><div class="exam-grid"><button class="exam-card" data-action="choose-exam" data-exam="kpss"><span class="exam-icon">${icon('building')}</span><span class="arrow-box">${icon('arrow')}</span><h2>KPSS</h2><span class="tagline">Kariyerine bir adım daha.</span><p class="description">Lisans Genel Yetenek ve Genel Kültür için<br>programını kur, konularını ve netlerini takip et.</p><span class="exam-card-footer"><span>GY · GK · KONU VE DENEME TAKİBİ</span><span>${state.workspaces.kpss.configured?'Devam et':'Rotamı kur'} ↗</span></span></button><button class="exam-card yks" data-action="choose-exam" data-exam="yks"><span class="exam-icon">${icon('cap')}</span><span class="arrow-box">${icon('arrow')}</span><h2>YKS</h2><span class="tagline">Hayalindeki bölüme doğru.</span><p class="description">TYT, AYT veya YDT. Kendi alanını seç;<br>derslerin ve çalışma planın sana göre şekillensin.</p><span class="exam-card-footer"><span>TYT · AYT · YDT</span><span>${state.workspaces.yks.configured?'Devam et':'Rotamı kur'} ↗</span></span></button></div><div class="welcome-benefits"><span>${icon('calendar')} Sana göre haftalık plan</span><span>${icon('chart')} Ayrı ayrı ilerleme takibi</span><span>${icon('shield')} Sınav değiştir, kaydını koru</span></div>${welcomeUpgrade()}<div class="notice small">Ücretli deneyim önizlemesi · Ödeme alınmaz. Kayıtlar bu tarayıcıda; cihazlar arasında otomatik eşitleme yok.</div><footer class="welcome-footer"><span>ÇALIŞMA ROTASI &nbsp; / &nbsp; İKİ HEDEF, TEK ÇALIŞMA ALANI</span><span>Küçük adımlar. Görünür ilerleme.</span></footer></main></div>`;
+const themeBadge=UI_THEME?'<div class="theme-page-badge">AKTİF TEMA · '+esc(THEME_NAMES[UI_THEME]||UI_THEME.toUpperCase())+'</div>':'';
+return `<div class="welcome">${publicNav()}${FRESH_PREVIEW?'<div class="fresh-preview-badge">SIFIRDAN TEST MODU · Gerçek kayıtların etkilenmez</div>':''}${themeBadge}<main class="welcome-main"><div class="welcome-intro"><div><div class="eyebrow">SENİN HEDEFİN. SENİN ROTAN.</div><h1>Herkesin çalışma programı<br><span class="serif">aynı olmak zorunda değil.</span></h1><div class="hero-brand-line">Çalışma Rotası — Sana göre çalışan çalışma programı.</div></div><p class="welcome-copy">Mevcut netin, hedefin, ayırabildiğin süre ve zorlandığın dersler farklıysa programın da farklı olmalı.</p></div><div class="step-indicator"><span class="step-num">1</span><span class="small">İlk soru: Hangi sınava hazırlanıyorsun?</span><span class="muted tiny">Diğer sınava her zaman geçebilirsin.</span></div><div class="exam-grid"><button class="exam-card" data-action="choose-exam" data-exam="kpss"><span class="exam-icon">${icon('building')}</span><span class="arrow-box">${icon('arrow')}</span><h2>KPSS</h2><span class="tagline">Kariyerine bir adım daha.</span><p class="description">Lisans Genel Yetenek ve Genel Kültür için<br>programını kur, konularını ve netlerini takip et.</p><span class="exam-card-footer"><span>GY · GK · KONU VE DENEME TAKİBİ</span><span>${state.workspaces.kpss.configured?'Devam et':'Rotamı kur'} ↗</span></span></button><button class="exam-card yks" data-action="choose-exam" data-exam="yks"><span class="exam-icon">${icon('cap')}</span><span class="arrow-box">${icon('arrow')}</span><h2>YKS</h2><span class="tagline">Hayalindeki bölüme doğru.</span><p class="description">TYT, AYT veya YDT. Kendi alanını seç;<br>derslerin ve çalışma planın sana göre şekillensin.</p><span class="exam-card-footer"><span>TYT · AYT · YDT</span><span>${state.workspaces.yks.configured?'Devam et':'Rotamı kur'} ↗</span></span></button></div><div class="welcome-benefits"><span>${icon('calendar')} Sana göre haftalık plan</span><span>${icon('chart')} Ayrı ayrı ilerleme takibi</span><span>${icon('shield')} Sınav değiştir, kaydını koru</span></div>${welcomeUpgrade()}<div class="notice small">Ücretli deneyim önizlemesi · Ödeme alınmaz. Kayıtlar bu tarayıcıda; cihazlar arasında otomatik eşitleme yok.</div><footer class="welcome-footer"><span>ÇALIŞMA ROTASI &nbsp; / &nbsp; İKİ HEDEF, TEK ÇALIŞMA ALANI</span><span>Küçük adımlar. Görünür ilerleme.</span></footer></main></div>`;
 }
 
 function profileSubjects(track=w().settings.track){return R.courses(state.activeExam,state.activeExam==='yks'?track:'lisans');}

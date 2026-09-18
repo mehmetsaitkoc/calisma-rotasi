@@ -611,7 +611,7 @@ function validateBackup(data){
    if(!topicIds.has(id))continue;
    w.topicState[id]={status:int(t.status??0,0,2,'konu durumu'),url:safeUrl(text(t.url||'',2000)),position:int(t.position||0,0,100000,'kaynak dakikası'),note:text(t.note||'',4000),updated:typeof t.updated==='number'?t.updated:0};
   }
-  w.plan=array(old.plan).map(p=>({id:ident(p.id),date:checkedDate(p.date),subjectId:sub(p.subjectId),topicId:ident(p.topicId),title:text(p.title,180),minutes:int(p.minutes,1,1440,'oturum süresi'),done:!!p.done,...(['review','route'].includes(p.kind)?{kind:p.kind}:{}),...(p.sourceMistakeId?{sourceMistakeId:ident(p.sourceMistakeId)}:{}),...(p.sourceTeacherQuestionId?{sourceTeacherQuestionId:ident(p.sourceTeacherQuestionId)}:{}),...(p.source?{source:text(p.source,40)}:{}),...(Number.isFinite(p.priority)?{priority:Math.max(0,Math.min(100,Math.round(p.priority)))}:{}),...(p.reason?{reason:text(p.reason,500)}:{}),...(p.taskState&&['open','later'].includes(p.taskState)?{taskState:p.taskState}:{}),...(p.deferUntil?{deferUntil:checkedDate(p.deferUntil)}:{}),...(p.routeKey?{routeKey:text(p.routeKey,180)}:{}),...(Number.isInteger(p.targetQuestions)?{targetQuestions:int(p.targetQuestions,0,200,'soru hedefi')}:{}),...(p.taskGoal?{taskGoal:text(p.taskGoal,300)}:{}),...([3,7].includes(p.reviewWave)?{reviewWave:p.reviewWave}:{})}));
+  w.plan=array(old.plan).map(p=>({id:ident(p.id),date:checkedDate(p.date),subjectId:sub(p.subjectId),topicId:ident(p.topicId),title:text(p.title,180),minutes:int(p.minutes,1,1440,'oturum süresi'),done:!!p.done,...(['review','route'].includes(p.kind)?{kind:p.kind}:{}),...(p.sourceMistakeId?{sourceMistakeId:ident(p.sourceMistakeId)}:{}),...(p.sourceTeacherQuestionId?{sourceTeacherQuestionId:ident(p.sourceTeacherQuestionId)}:{}),...(p.source?{source:text(p.source,40)}:{}),...(Number.isFinite(p.priority)?{priority:Math.max(0,Math.min(100,Math.round(p.priority)))}:{}),...(p.reason?{reason:text(p.reason,500)}:{}),...(p.taskState&&['open','later'].includes(p.taskState)?{taskState:p.taskState}:{}),...(p.deferUntil?{deferUntil:checkedDate(p.deferUntil)}:{}),...(p.routeKey?{routeKey:text(p.routeKey,180)}:{}),...(Number.isInteger(p.targetQuestions)?{targetQuestions:int(p.targetQuestions,0,200,'soru hedefi')}:{}),...(p.taskGoal?{taskGoal:text(p.taskGoal,300)}:{}),...([1,3,7].includes(p.reviewWave)?{reviewWave:p.reviewWave}:{})}));
   w.logs=array(old.logs).map(l=>({id:ident(l.id),date:checkedDate(l.date),subjectId:sub(l.subjectId),title:text(l.title,180),minutes:int(l.minutes,0,1440,'çalışma süresi'),questions:int(l.questions,0,5000,'soru sayısı'),note:text(l.note||'',2000),sessionId:l.sessionId?ident(l.sessionId):'',...(['stuck','ok','strong'].includes(l.outcome)?{outcome:l.outcome}:{}),...(Number.isInteger(l.correct)?{correct:int(l.correct,0,5000,'doğru sayısı')}:{}),...(Number.isInteger(l.wrong)?{wrong:int(l.wrong,0,5000,'yanlış sayısı')}:{})}));
   for(const l of w.logs){if((Number.isInteger(l.correct)||Number.isInteger(l.wrong))&&((l.correct||0)+(l.wrong||0)>l.questions))throw Error('Çalışma günlüğünde doğru + yanlış, toplam soru sayısını aşıyor.');}
   w.exams=array(old.exams).map(x=>{if(!C.TYPES[x.type]||C.TYPES[x.type].exam!==e)throw Error('Yedekte diğer sınava ait deneme var.');const parts=array(x.parts).map(p=>({label:text(p.label,100),total:p.total,correct:p.correct,wrong:p.wrong}));if(!parts.length||parts.length>20)throw Error('Geçersiz deneme testleri.');calcNet(parts,x.penalty);return {id:ident(x.id),type:x.type,name:text(x.name,120),date:checkedDate(x.date),parts,penalty:x.penalty,note:text(x.note||'',2000)};});
@@ -1160,7 +1160,7 @@ function routeEnsure(space=w()){
 }
 function routeEvent(taskId,action){routeEnsure();w().taskEvents.push({id:R.uid(),taskId,date:today(),action,created:Date.now()});w().taskEvents=w().taskEvents.slice(-300);}
 function routeSourceLabel(source){return ({backlog:'AKSAYAN',mistake:'YANLIŞ TEKRARI',ai_teacher:'ROTA HOCA',exam:'DENEME SİNYALİ',profile:'SEVİYE PROFİLİ',priority:'ÖNCELİKLİ DERS',curriculum:'KONU ROTASI',review:'TEKRAR',spaced_review:'TEKRAR',checkpoint:'HAFTALIK KONTROL'}[source]||'ROTA');}
-function routeTaskSourceLabel(task){return task?.source==='spaced_review'&&[3,7].includes(task.reviewWave)?task.reviewWave+' GÜN TEKRARI':routeSourceLabel(task?.source);}
+function routeTaskSourceLabel(task){return task?.source==='spaced_review'&&[1,3,7].includes(task.reviewWave)?(task.reviewWave===1?'1 GÜN ONARIMI':task.reviewWave+' GÜN TEKRARI'):routeSourceLabel(task?.source);}
 function routeExamWeakness(){
  const scores={};const xs=[...w().exams].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
  for(const x of xs){for(const p of x.parts){const n=R.calcNet([p],x.penalty),ratio=Math.max(0,Math.min(1,n.net/Math.max(1,p.total))),ids=C.PART_SUBJECTS[x.type]?.[p.label]||[];for(const id of ids){if(!subject(id)||subject(id).exam!==state.activeExam)continue;(scores[id]||(scores[id]=[])).push(ratio);}}}
@@ -1441,12 +1441,18 @@ function routeBuildCandidates(){
   const prev=latestBaseByTopic.get(p.topicId);if(!prev||p.date>prev.date)latestBaseByTopic.set(p.topicId,p);
  }
  for(const p of latestBaseByTopic.values()){
-  for(const wave of [3,7]){
+  const linkedLog=space.logs.find(function(l){return l.sessionId===p.id;}),practiceAnswered=(linkedLog?.correct||0)+(linkedLog?.wrong||0),practiceAccuracy=practiceAnswered?((linkedLog.correct||0)/practiceAnswered):null;
+  const needsRepair=linkedLog?.outcome==='stuck'||(practiceAnswered>=8&&practiceAccuracy<.65)||routeSubjectAdaptiveState(p.subjectId,p.topicId).mode==='repair';
+  const waves=needsRepair?[1,3,7]:[3,7];
+  for(const wave of waves){
    const legacyKey='spaced:'+p.topicId+':'+p.date,key='spaced:'+wave+':'+p.topicId+':'+p.date;
    if(space.plan.some(function(x){return x.routeKey===key||(wave===3&&x.routeKey===legacyKey);})||seenKeys.has(key))continue;
    const due=R.dayAdd(p.date,wave);if(due>horizon)continue;
-   const goal=routeReviewGoal(p.subjectId,p.topicId,p.title,wave===7?'long':'spaced');
-   push({id:R.uid(),date:today(),subjectId:p.subjectId,topicId:p.topicId,title:(wave+' gün tekrarı · '+p.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'spaced_review',reviewWave:wave,priority:wave===3?68:63,reason:wave===3?'İlk çalışmadan birkaç gün sonra kısa geri çağırma ve uygulamayla unutmayı erkenden kontrol ediyoruz.':'Bir hafta sonra aynı konuyu yeniden yoklayarak sadece kısa süreli hatırlamayı değil kalıcılığı kontrol ediyoruz.',earliest:due<today()?today():due,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
+   const reviewMode=wave===1?'mistake':wave===7?'long':'spaced',goal=routeReviewGoal(p.subjectId,p.topicId,p.title,reviewMode);
+   const title=(wave===1?'1 gün onarımı · ':wave+' gün tekrarı · ')+p.title;
+   const priority=wave===1?78:wave===3?68:63;
+   const reason=wave===1?'Bu çalışmada zorlanma veya düşük doğruluk sinyali var; konuyu soğutmadan ertesi gün kısa bir onarım turu yapıyoruz.':wave===3?'İlk çalışmadan birkaç gün sonra kısa geri çağırma ve uygulamayla unutmayı erkenden kontrol ediyoruz.':'Bir hafta sonra aynı konuyu yeniden yoklayarak sadece kısa süreli hatırlamayı değil kalıcılığı kontrol ediyoruz.';
+   push({id:R.uid(),date:today(),subjectId:p.subjectId,topicId:p.topicId,title:title.slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'spaced_review',reviewWave:wave,priority,reason,earliest:due<today()?today():due,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
   }
  }
  const recentCutoff=R.dayAdd(today(),-5),recentWorkedTopics=new Set(space.plan.filter(function(p){return p.done&&p.date>=recentCutoff&&p.topicId&&R.topic(space,p.topicId);}).map(function(p){return p.topicId;}));

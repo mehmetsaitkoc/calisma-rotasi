@@ -76,7 +76,8 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const state={activeExam:'yks'};
   const yksStageExamType=()=> 'AYT_SAY';
   const yksStageLabel=()=> 'AYT · Sayısal';
-  const api=new Function('R','C','state','w','yksStageExamType','yksStageLabel',src+';return {routeNetGap,routeStageGap};')(R,C,state,()=>space,yksStageExamType,yksStageLabel);
+  const routeExamEvidenceFactor=()=>1;
+  const api=new Function('R','C','state','w','yksStageExamType','yksStageLabel','routeExamEvidenceFactor',src+';return {routeNetGap,routeStageGap};')(R,C,state,()=>space,yksStageExamType,yksStageLabel,routeExamEvidenceFactor);
   const main=api.routeNetGap(),stage=api.routeStageGap();
   assert.equal(main.current,60);
   assert.equal(main.target,90);
@@ -84,6 +85,16 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(stage.current,25);
   assert.equal(stage.target,50);
   assert.equal(stage.observed.label,'AYT · Sayısal');
+}
+
+// 2d) Old exam evidence may remain visible, but its target-gap pressure must decay.
+{
+  const src=between('function routeGapPressure','function routeGoalPressure');
+  const fn=new Function(src+';return routeGapPressure;')();
+  assert.equal(fn({known:true,gap:40,freshness:1}),10);
+  assert.equal(fn({known:true,gap:40,freshness:.55}),6);
+  assert.equal(fn({known:true,gap:40,freshness:.35}),4);
+  assert.equal(fn({known:true,gap:40}),10,'Profile/non-aged evidence keeps normal gap pressure');
 }
 
 // 3) Adaptive dosage must react differently to struggle, strong performance and friction.
@@ -172,6 +183,24 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   }
 }
 
+
+// 3a) Stale exam weakness must not force ONARIM by itself.
+{
+  const src=between('function routeOutcomeSignal','function routeCandidateFromPlan');
+  function evaluate(weak){
+    const space={logs:[],mistakes:[],plan:[]};
+    const R={dayAdd:()=> '2026-08-29',topic:()=>null};
+    const today=()=> '2026-09-19';
+    const routeBehaviorSignal=()=>({known:false,total:0,completion:0,friction:0});
+    const routeExamWeakness=()=>({'k-ma':weak});
+    const api=new Function('R','today','w','routeBehaviorSignal','routeExamWeakness',src+';return routeSubjectAdaptiveState;')(R,today,()=>space,routeBehaviorSignal,routeExamWeakness);
+    return api('k-ma');
+  }
+  assert.equal(evaluate({ratio:.40,freshness:1}).mode,'repair','Fresh very weak exam evidence may trigger repair');
+  const stale=evaluate({ratio:.40,freshness:.35});
+  assert.equal(stale.mode,'steady','Very stale weak exam evidence may nudge but must not dictate repair alone');
+  assert.ok(stale.evidence.includes('eski denemede zayıflık sinyali'));
+}
 
 // 3b) Subjective effort and objective accuracy must be calibrated instead of trusted blindly.
 {
@@ -578,6 +607,10 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 // 4) Guard core personalization features against accidental removal.
 for(const marker of [
   'routeObservedNet',
+  'eskime payıyla',
+  'function routeGapPressure',
+  'Math.round(base*freshness)',
+  'examFreshness=weak?.freshness??1',
   'function routeExamEvidenceFactor',
   "(!subjectId||l.subjectId===subjectId)",
   'freshness',

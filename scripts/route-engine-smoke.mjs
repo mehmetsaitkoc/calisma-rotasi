@@ -1648,6 +1648,9 @@ for(const marker of [
   const src=between('function shell(content)','function activeLogs');
   for(const view of ['today','plan','teacher','exams'])assert.ok(src.includes('data-view="'+view+'"'),'Mobile dock must reuse existing '+view+' navigation target');
   assert.ok(src.includes('data-action="menu"'),'Mobile dock menu button must reuse the existing drawer action');
+  assert.ok(!src.includes('\\${content}'),'App shell must interpolate main content instead of rendering a literal template token');
+  assert.ok(!src.includes('\\${icon('),'Mobile dock icons must be interpolated instead of rendered as literal template tokens');
+  assert.ok(!src.includes('\\${ui.view'),'Mobile dock active-state expressions must be interpolated instead of rendered as literal template tokens');
 }
 
 

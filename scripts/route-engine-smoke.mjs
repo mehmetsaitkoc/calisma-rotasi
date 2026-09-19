@@ -805,6 +805,34 @@ for(const marker of [
   "['mistake','mini_repair','retention_refresh','spaced_review','checkpoint','ai_teacher']"
 ]) assert.ok(html.includes(marker),`Missing mastery/forgetting integration marker: ${marker}`);
 
+// 4) Exam risk must combine urgency, mastery/retention and evidence confidence without pretending low-confidence guesses are certain.
+{
+  const src=between('function routeExamRiskFromSignals','function routeTopicExamRisk');
+  const fn=new Function(src+';return routeExamRiskFromSignals;')();
+  const strong=fn({confidence:85,masteryScore:88,retained:84,learningNeed:22,daysToTarget:90,openMistakes:0,trend:'up',examWeakRatio:.84,subjectPriority:false,forgettingDue:false,paceStatus:'comfortable',status:2});
+  const weak=fn({confidence:85,masteryScore:42,retained:38,learningNeed:78,daysToTarget:30,openMistakes:2,trend:'down',examWeakRatio:.48,subjectPriority:true,forgettingDue:true,paceStatus:'overload',status:1});
+  const uncertain=fn({confidence:10,masteryScore:20,retained:20,learningNeed:90,daysToTarget:30,openMistakes:0,trend:'unknown',subjectPriority:false,forgettingDue:false,status:0});
+  assert.ok(weak.score>strong.score+30,'Weak, stale and urgent evidence should rank much higher');
+  assert.ok(weak.priorityBoost<=8&&weak.priorityBoost>=-2,'Risk may only make a bounded scheduler adjustment');
+  assert.equal(uncertain.priorityBoost,0,'Low-confidence risk must not silently dominate scheduling');
+  assert.ok(uncertain.score<weak.score,'Uncertain evidence should remain more conservative than repeated weakness');
+}
+{
+  const src=between('function routeExamRiskFromSignals','function routeTopicExamRisk');
+  const fn=new Function(src+';return routeExamRiskFromSignals;')();
+  const far=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:180,status:1}),near=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:14,status:1});
+  assert.ok(near.score>far.score,'The same learning gap must become more urgent near the target date');
+}
+
+// 4) Risk map must be explainable UI and affect normal topic priority only through its bounded boost.
+for(const marker of [
+  'function routeExamRiskMapCard()',
+  'SINAV RİSK HARİTASI',
+  'Risk puanı soru çıkma olasılığı değildir',
+  'risk.priorityBoost',
+  'Sınav risk haritası bu başlığı'
+]) assert.ok(html.includes(marker),`Missing exam risk map marker: ${marker}`);
+
 // 4) Topic mastery suggestion requires correctly spaced reviews + repeated evidence.
 {
   const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');

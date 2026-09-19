@@ -895,10 +895,11 @@ for(const marker of [
     {id:'fresh-mini',exam:'kpss',subjectId:'s2',title:'Fresh'}
   ];
   let repairDays=1;
-  const fn=new Function('subjects','ROTA_MINI_EXAMS','state','miniTopicId','routeSubjectAdaptiveState','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
+  const fn=new Function('subjects','ROTA_MINI_EXAMS','state','miniRecommendationContext','routeSubjectAdaptiveState','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
     src+';return miniRecommendation;'
   )(
-    ()=>[{id:'s1'},{id:'s2'}],defs,{activeExam:'kpss'},()=> '',
+    ()=>[{id:'s1'},{id:'s2'}],defs,{activeExam:'kpss'},
+    def=>({topicId:'',topicStarted:true,openTopic:false,recentTopicWork:false,subjectDaysSince:999,stageDaysSince:999}),
     id=>id==='s1'?{mode:'repair',label:'ONARIM MODU',repairScore:5,skillWeakness:{weak:[]}}:{mode:'steady',label:'DENGELİ TEMPO',repairScore:0,skillWeakness:{weak:[]}},
     id=>id==='repair-mini'?{miniId:id,total:10,correct:3,date:'2026-09-18'}:null,
     last=>last?repairDays:999,
@@ -908,6 +909,18 @@ for(const marker of [
   assert.equal(fn().def.id,'fresh-mini','A repair signal cannot override the hard three-day recommendation cooldown');
   repairDays=4;
   assert.equal(fn().def.id,'repair-mini','After cooldown, the stronger repair need should regain recommendation priority');
+}
+
+// 5) Recommendation scoring must prefer active/recently studied topics over untouched topics when other signals are comparable.
+{
+  const src=between('function miniRecommendationScore','function miniDaysSinceDate');
+  const score=new Function(src+';return miniRecommendationScore;')();
+  const adaptive={mode:'steady',repairScore:0};
+  const active=score(null,adaptive,999,{attempts7:0,attempts14:0,weakCount:0,openTopic:true,recentTopicWork:true,topicStarted:true,subjectDaysSince:999,stageDaysSince:999});
+  const untouched=score(null,adaptive,999,{attempts7:0,attempts14:0,weakCount:0,openTopic:false,recentTopicWork:false,topicStarted:false,subjectDaysSince:999,stageDaysSince:999});
+  assert.ok(active>untouched+50,'Active studied topic should materially outrank untouched content');
+  const sameSubjectToday=score(null,adaptive,999,{attempts7:0,attempts14:0,weakCount:0,openTopic:true,recentTopicWork:true,topicStarted:true,subjectDaysSince:0,stageDaysSince:999});
+  assert.ok(sameSubjectToday<active,'Recent measurement in the same subject should encourage recommendation diversity');
 }
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.
@@ -944,6 +957,10 @@ for(const marker of [
   'ROTA’NIN ÖNERİSİ',
   'function miniRecommendationScore',
   'function miniRecommendation',
+  'function miniRecommendationContext',
+  'stats.openTopic',
+  'stats.topicStarted',
+  'stats.subjectDaysSince',
   'Rota kararı',
   'Rota kararı · bu sonuçtan sonra',
   'Alt konu sinyali:',

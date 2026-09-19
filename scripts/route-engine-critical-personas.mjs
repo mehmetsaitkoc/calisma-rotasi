@@ -63,11 +63,36 @@ for(const id of IDS){
   console.log('CRITICAL-PERSONA '+id+' '+JSON.stringify(compact(r)));
 }
 
-assert.equal(byId['recovery-comeback'].day60.modeBounces,0,'recovery comeback must not bounce');
-assert.ok(byId['relapse'].days.slice(32,50).some(d=>d.studentState==='repair'),'relapse decline must reopen repair');
-const relapseReentry=transitions(byId['relapse'].days).find(x=>x.day>=33&&x.to==='repair');
-assert.ok(relapseReentry&&relapseReentry.day<=38,'relapse repair re-entry must occur within 6 days of sustained decline; got '+(relapseReentry?.day||'never'));
-assert.equal(byId['burnout-after-success'].day60.finalState,'sustainable','burnout must end in sustainable mode while adherence remains poor');
-assert.ok(byId['urgent-weak'].day60.risk>=45,'urgent weak risk must remain elevated near target while weakness persists');
+{
+  const r=byId['recovery-comeback'],ts=transitions(r.days);
+  assert.equal(r.day60.modeBounces,0,'recovery comeback must not bounce');
+  assert.ok((r.day60.longHorizonStabilityScore??0)>=95,'meaningful recovery transitions must not be mislabeled unstable');
+  assert.ok(ts.length<=4,'recovery comeback should not chatter after recovery');
+  assert.ok(r.days.at(-1).risk<r.days[0].risk,'recovery comeback risk should improve over the lifecycle');
+}
+{
+  const r=byId['relapse'],ts=transitions(r.days);
+  assert.ok(r.days.slice(32,50).some(d=>d.studentState==='repair'),'relapse decline must reopen repair');
+  const relapseReentry=ts.find(x=>x.day>=33&&x.to==='repair');
+  assert.ok(relapseReentry&&relapseReentry.day<=38,'relapse repair re-entry must occur within 6 days of sustained decline; got '+(relapseReentry?.day||'never'));
+  const relapseExit=ts.find(x=>x.day>relapseReentry.day&&x.from==='repair'&&x.to!=='repair');
+  assert.ok(relapseExit&&relapseExit.day<=48,'relapse must exit repair after second recovery becomes real; got '+(relapseExit?.day||'never'));
+  const relapseEnd=r.days.find(d=>d.day===44),final=r.days.at(-1);
+  assert.ok(final.performance>relapseEnd.performance,'second recovery must be reflected in final performance');
+}
+{
+  const r=byId['burnout-after-success'],ts=transitions(r.days),easeEntry=ts.find(x=>x.to==='ease'&&x.phase==='burnout');
+  assert.equal(r.day60.finalState,'sustainable','burnout must end in sustainable mode while adherence remains poor');
+  assert.ok(easeEntry&&easeEntry.day<=30,'burnout must enter sustainable mode within 10 days of burnout onset');
+  assert.ok(r.days.filter(d=>d.day>=easeEntry.day&&d.personaPhase==='burnout').every(d=>d.appliedMode==='ease'),'burnout must not leave sustainable mode while global completion remains poor');
+  assert.equal(r.day60.modeBounces,0,'burnout response must not chatter');
+}
+{
+  const r=byId['urgent-weak'],first=r.days[0],final=r.days.at(-1);
+  assert.ok(final.risk>=45,'urgent weak risk must remain elevated near target while weakness persists');
+  assert.ok(final.performance-first.performance>=20,'urgent weak must still show substantial performance recovery');
+  assert.ok(first.risk-final.risk>=20,'urgent weak risk should improve materially without being falsely normalized');
+  assert.equal(final.appliedMode,'steady','urgent weak should leave repair after objective recovery instead of being trapped');
+}
 
 console.log('route-engine-critical-personas: targeted pilot-readiness audit passed');

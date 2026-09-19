@@ -89,7 +89,7 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
       {id:'k-ta',exam:'kpss',stage:'GK',name:'Tarih',tracks:[],topics:[{id:'t1',subjectId:'k-ta',title:'İlk Türk devletleri'},{id:'t2',subjectId:'k-ta',title:'Osmanlı'}]}
     ]
   };
-  let seq=0;const uid=()=> 'g'+(++seq),validDate=v=>/^\\d{4}-\\d{2}-\\d{2}$/.test(v),dayAdd=(d,n)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);};
+  let seq=0;const uid=()=> 'g'+(++seq),validDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(v),dayAdd=(d,n)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);};
   const courses=()=>C.subjects,allTopics=()=>C.subjects.flatMap(s=>s.topics);
   const api=new Function('C','uid','validDate','dayAdd','courses','allTopics',core+';return {generatePlan,planSubjectGap,planTaskMinutes};')(C,uid,validDate,dayAdd,courses,allTopics);
   const w={settings:{track:'lisans',dailyMinutes:90,days:[0,1,2,3,4,5,6],priorities:[]},profile:{currentNet:55,targetNet:85,subjectLevels:{'k-ma':0,'k-ta':3}},topicState:{},customTopics:[],plan:[],logs:[],assessments:[],mistakes:[],exams:[{id:'e1',type:'KPSS',date:'2026-09-18',penalty:4,parts:[{label:'Matematik',total:30,correct:10,wrong:8},{label:'Tarih',total:27,correct:22,wrong:2}]}]};

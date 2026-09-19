@@ -161,6 +161,7 @@ async function setDay(page, date) {
   await page.clock.setFixedTime(new Date(date + 'T09:00:00+03:00'));
   await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   await page.locator('#app').waitFor({ state: 'visible' });
+  await navigate(page, 'today');
 }
 
 const server = spawn(process.execPath, ['server.mjs'], {

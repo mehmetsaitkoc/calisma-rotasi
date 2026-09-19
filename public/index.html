@@ -2351,7 +2351,7 @@ function routeBuildCandidates(){
   for(const wave of [3,7]){
    const key='mistake-spaced:'+wave+':'+p.id+':'+repairDate;
    if(seenKeys.has(key)||space.plan.some(function(x){return x.source==='spaced_review'&&x.reviewWave===wave&&x.reviewBaseTaskId===p.id;}))continue;
-   const due=R.dayAdd(repairDate,wave);if(due>horizon)continue;
+   const due=R.dayAdd(repairDate,wave);if(due>today())continue;
    const topicTitle=R.topic(space,p.topicId)?.title||p.title.replace(/^Yanlış tekrarı · /,''),goal=routeReviewGoal(p.subjectId,p.topicId,topicTitle,wave===7?'long':'spaced');
    push({id:R.uid(),date:today(),subjectId:p.subjectId,topicId:p.topicId,title:('Yanlış sonrası '+wave+' gün · '+topicTitle).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'spaced_review',reviewWave:wave,reviewBaseTaskId:p.id,reviewBaseDate:repairDate,priority:wave===3?74:68,reason:'Yanlış onarımını fiilî tamamlanma gününden '+wave+' gün sonra yeniden yoklayarak aynı hatanın geri dönüp dönmediğini kontrol ediyoruz.',earliest:due,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
   }

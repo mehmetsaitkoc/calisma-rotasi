@@ -1110,7 +1110,7 @@ for(const marker of [
   const candidate=between('function routeCandidateFromPlan','function routeTopicFrontier');
   assert.ok(candidate.includes("mistakeRepairBase=baseTask.source==='mistake'||!!baseTask.sourceMistakeId"),'Mistake-repair anchored spaced reviews must remain eligible');
   const build=between('function routeBuildCandidates','function routeConsistencySignal');
-  for(const marker of ['latestMistakeRepairByTopic','mistake-spaced:','Yanlış onarımını fiilî tamamlanma gününden','reviewBaseTaskId:p.id','reviewBaseDate:repairDate'])
+  for(const marker of ['latestMistakeRepairByTopic','mistake-spaced:','Yanlış onarımını fiilî tamamlanma gününden','reviewBaseTaskId:p.id','reviewBaseDate:repairDate','if(due>today())continue'])
     assert.ok(build.includes(marker),`Missing mistake repair retention marker: ${marker}`);
 }
 

@@ -837,6 +837,34 @@ for(const marker of [
   'ders, konu ve alt-konu performansına'
 ]) assert.ok(html.includes(marker),`Missing new mini evidence marker: ${marker}`);
 
+
+// 5) Mini development charts must collapse same-day retakes before comparing different days.
+{
+  const src=between('function miniDistinctAttempts','function miniProgressSvg');
+  const space={assessments:[
+    {id:'day1-old',miniId:'m1',date:'2026-09-18',correct:3,total:10,created:1},
+    {id:'day1-new',miniId:'m1',date:'2026-09-18',correct:6,total:10,created:2},
+    {id:'day2',miniId:'m1',date:'2026-09-19',correct:8,total:10,created:3},
+    {id:'other',miniId:'m2',date:'2026-09-19',correct:10,total:10,created:4}
+  ]};
+  const fn=new Function('w',src+';return miniDistinctAttempts;')(()=>space);
+  const xs=fn('m1');
+  assert.equal(xs.length,2);
+  assert.equal(xs[0].id,'day1-new','Chart must keep only the latest same-day attempt');
+  assert.equal(xs[1].id,'day2');
+}
+
+// 5) Route-decision snapshots must be stable values, not references to the current adaptive state.
+{
+  const src=between('function miniRouteDecisionSnapshot','function latestMiniResult');
+  const fn=new Function(src+';return miniRouteDecisionSnapshot;')();
+  const adaptive={mode:'repair',label:'ONARIM MODU',note:'n',confidence:70,evidence:['a','b']};
+  const snap=fn(adaptive);
+  adaptive.mode='progress';adaptive.evidence.push('c');
+  assert.equal(snap.mode,'repair');
+  assert.deepEqual(snap.evidence,['a','b']);
+}
+
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.
 for(const marker of [
   'assessments:[]',
@@ -872,6 +900,10 @@ for(const marker of [
   'Alt konu sinyali:',
   'Mini deneme odağı:',
   'Rota aynı denemeyi sık sık önermek yerine en az 3 gün',
+  'function miniDistinctAttempts',
+  'function miniProgressSection',
+  'Mini gelişim grafikleri',
+  'Aynı gün yapılan tekrarlar grafiği şişirmez',
   'MEBİ 2026–2027 Türkiye Geneli YKS Denemeleri',
   'ÖSYM 2026 YKS Temel Soru Kitapçıkları',
   'Telifli soruları Çalışma Rotası içine kopyalamıyoruz'

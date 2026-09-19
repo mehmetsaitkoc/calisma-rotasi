@@ -716,9 +716,81 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(candidate.taskGoal,'review recipe');
 }
 
+
+// 5) Deneme Merkezi pilots must be original, internally valid and isolated from full-exam net records.
+{
+  const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition');
+  const data=new Function(src+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES};')();
+  assert.equal(data.ROTA_MINI_EXAMS.length,2);
+  assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),['kpss-problemler-01','yks-paragraf-01']);
+  for(const exam of data.ROTA_MINI_EXAMS){
+    assert.equal(exam.questions.length,10,exam.id+' should contain 10 pilot questions');
+    assert.equal(new Set(exam.questions.map(q=>q.id)).size,10,'Question ids must be unique');
+    for(const q of exam.questions){
+      assert.equal(q.options.length,5);
+      assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<q.options.length,'Answer key must point to an option');
+      assert.ok(q.explanation.length>=10,'Every question needs an explanation');
+    }
+  }
+  assert.ok(data.OFFICIAL_EXAM_RESOURCES.yks.some(x=>/mebi\.eba\.gov\.tr/.test(x.url)));
+  assert.ok(data.OFFICIAL_EXAM_RESOURCES.yks.some(x=>/osym\.gov\.tr/.test(x.url)));
+  assert.ok(data.OFFICIAL_EXAM_RESOURCES.kpss.every(x=>/osym\.gov\.tr/.test(x.url)));
+}
+
+// 5) Mini scoring must distinguish correct, wrong and blank answers.
+{
+  const src=between('function scoreMiniExam','function latestMiniResult');
+  const scoreMiniExam=new Function(src+';return scoreMiniExam;')();
+  const def={questions:[
+    {answer:1},{answer:0},{answer:2}
+  ]};
+  const score=scoreMiniExam(def,[1,2,-1]);
+  assert.equal(score.total,3);
+  assert.equal(score.correct,1);
+  assert.equal(score.wrong,1);
+  assert.equal(score.blank,1);
+}
+
+// 5) Mini assessments feed topic practice evidence without becoming full TYT/KPSS exams.
+{
+  const src=between('function routeAssessmentSamples','function routeFeedbackCalibrationSignal');
+  const space={
+    plan:[],
+    logs:[],
+    assessments:[{id:'a1',miniId:'kpss-problemler-01',date:'2026-09-19',subjectId:'k-ma',topicId:'m1',correct:7,wrong:3,created:1}]
+  };
+  const R={dayAdd:()=> '2026-08-29'};
+  const today=()=> '2026-09-19';
+  const w=()=>space;
+  const api=new Function('R','today','w',src+';return {routeAssessmentSamples,routePracticeSignal};')(R,today,w);
+  assert.equal(api.routeAssessmentSamples('k-ma','m1').length,1);
+  const practice=api.routePracticeSignal('k-ma','m1');
+  assert.equal(practice.known,true);
+  assert.equal(practice.sessions,1);
+  assert.equal(practice.answered,10);
+  assert.equal(Math.round(practice.accuracy*100),70);
+}
+
+// 5) Guard Deneme Merkezi persistence and integration against accidental regression.
+for(const marker of [
+  'assessments:[]',
+  'w.assessments=Array.isArray(old.assessments)',
+  'space.assessments=Array.isArray(space.assessments)',
+  'function routeAssessmentSamples',
+  'w().assessments.push(result)',
+  'Rota Mini Deneme sonucu ders ve konu performansına eklendi',
+  'DENEME MERKEZİ · BETA',
+  'KPSS Problemler Mini #01',
+  'TYT Paragraf Mini #01',
+  'MEBİ 2026–2027 Türkiye Geneli YKS Denemeleri',
+  'ÖSYM 2026 YKS Temel Soru Kitapçıkları',
+  'Telifli soruları Çalışma Rotası içine kopyalamıyoruz'
+]) assert.ok(html.includes(marker),`Missing Deneme Merkezi marker: ${marker}`);
+assert.ok(!html.includes('w().exams.push(result)'),'Mini result must never be stored as a full exam');
 // 4) Guard core personalization features against accidental removal.
 for(const marker of [
   'routeObservedNet',
+  'function routeAssessmentSamples',
   'eskime payıyla',
   'function routeGapPressure',
   'Math.round(base*freshness)',

@@ -500,13 +500,15 @@ function simulatePersona(persona){
     if(afterModel.state==='repair')metrics.repairDays++;if(afterModel.state==='sustainable')metrics.sustainableDays++;if(afterSubjectModel.state==='sustainable')metrics.subjectSustainableDays++;if(afterModel.state==='progress')metrics.progressDays++;if(built.recovery.active)metrics.recoveryDays++;
     for(const e of events){if(e.action==='complete')metrics.completed++;else metrics.skipped++;if(e.topicId?.startsWith('m'))metrics.mathTasks++;else metrics.otherTasks++;}
     metrics.miniAttempts=space.assessments.length;
-    days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:practiceSignal(space,'k-ma','m1').weightedAccuracy||null});
+    days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,adaptiveMode:afterAdaptive.mode,adaptiveRepairScore:afterAdaptive.repairScore,adaptiveProgressScore:afterAdaptive.progressScore,adaptiveEvidence:afterAdaptive.evidence,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,retention:afterModel.retention,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:practiceSignal(space,'k-ma','m1').weightedAccuracy||null});
   }
   return {persona,space,days,metrics};
 }
 
 const results=PERSONAS.map(simulatePersona);
 const byId=Object.fromEntries(results.map(r=>[r.persona.id,r]));
+
+console.log('closed-loop-trace weak-improver '+JSON.stringify(byId['weak-improver'].days));
 
 for(const r of results){
   assert.equal(r.days.length,14,`${r.persona.id} did not simulate 14 days`);

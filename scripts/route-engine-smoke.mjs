@@ -58,8 +58,9 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(src.includes("?initial.outcome:''"),'Missing feedback must stay missing');
   assert.ok(src.includes("existing?!!session?.done"),'Editing a log must reflect actual plan completion');
   assert.ok(!src.includes("outcome:'ok'}"),'Normal feedback must never be fabricated by default');
-  assert.ok(src.includes('questions:0'),'New session log must start actual question count at zero');
+  assert.ok(src.includes("questions:''"),'New session log must leave actual question count blank');
   assert.ok(src.includes("Hedef ≈ '+session.targetQuestions"),'Planned question target should be shown only as a hint');
+  assert.ok(src.includes('Seçmezsen rota bu alan için varsayım yapmaz'),'Feedback UI must explain that no default assumption is made');
 }
 
 // 2b) Review labels must distinguish repair, normal review and earned challenge.

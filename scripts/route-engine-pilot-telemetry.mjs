@@ -118,7 +118,7 @@ assert.equal(d14.dataQuality.actualLogsExact,true);
 
 const payload=api.routePilotPayload();
 assert.equal(payload.schema,'calisma-rotasi-pilot-v1');
-assert.equal(payload.participantId,'pilot-1');
+assert.equal(payload.participantId,'p-pilot-1');
 assert.equal(payload.exam,'kpss');
 assert.equal(payload.track,'lisans');
 assert.deepEqual(payload.snapshots.map(x=>x.checkpoint),[0,7,14]);

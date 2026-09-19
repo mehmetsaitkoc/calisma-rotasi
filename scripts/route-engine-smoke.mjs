@@ -1428,6 +1428,35 @@ for(const marker of [
   assert.equal(xs[1].id,'day2');
 }
 
+// 5) Applied decisions must follow the calibrated Student Model across every adaptive state, not only progress.
+{
+  const src=between('function routeAppliedDecisionFromSignals','function routeAppliedDecision(subjectId');
+  const fn=new Function(src+';return routeAppliedDecisionFromSignals;')();
+  const adaptive=(mode,label)=>({mode,label,note:'raw note',evidence:['raw'],confidence:90});
+
+  let x=fn(adaptive('repair','ONARIM MODU'),{state:'collect',label:'VERİ TOPLUYOR',nextAction:'Yeni veri topla',confidence:18},{active:false});
+  assert.equal(x.mode,'steady','Low-confidence raw repair must be withheld');
+  assert.equal(x.label,'VERİ TOPLUYOR');
+  assert.equal(x.rawMode,'repair');
+
+  x=fn(adaptive('steady','DENGELİ TEMPO'),{state:'repair',label:'ONARIM ÖNCELİĞİ',nextAction:'Yanlışı onar',confidence:80},{active:false});
+  assert.equal(x.mode,'repair','Student Model repair must override a raw steady signal');
+
+  x=fn(adaptive('steady','DENGELİ TEMPO'),{state:'sustainable',label:'UYGULANABİLİR DOZ',nextAction:'Dozu küçült',confidence:75},{active:false});
+  assert.equal(x.mode,'ease','Student Model sustainable state must apply the smaller dose');
+
+  x=fn(adaptive('ease','SÜRDÜRÜLEBİLİR MOD'),{state:'retention',label:'KALICILIK AÇIĞI',nextAction:'Tekrarları tamamla',confidence:88},{active:false});
+  assert.equal(x.mode,'steady','Retention takes precedence over generic dose easing');
+  assert.equal(x.label,'KALICILIK AÇIĞI');
+
+  x=fn(adaptive('steady','DENGELİ TEMPO'),{state:'progress',label:'GELİŞİM DOĞRULANIYOR',nextAction:'Küçük seviye yoklaması',confidence:90},{active:false});
+  assert.equal(x.mode,'progress','Corroborated Student Model progress may apply even when the raw adaptive score is only steady');
+
+  x=fn(adaptive('progress','GELİŞİM MODU'),{state:'progress',label:'GELİŞİM DOĞRULANIYOR',nextAction:'Küçük seviye yoklaması',confidence:90},{active:true});
+  assert.equal(x.mode,'steady','Recovery must still block progression load increases');
+  assert.equal(x.label,'TOPARLANMA MODU');
+}
+
 // 5) User-facing route surfaces must read the applied decision rather than raw adaptive progress.
 {
   const todayTask=between('function routeTodayTask','function routeTodayPage');
@@ -1438,6 +1467,14 @@ for(const marker of [
   assert.ok(html.includes('adaptive=routeAppliedDecision(def.subjectId,topicId)'),'Mini recommendation must use the applied decision');
   assert.ok(html.includes('const adaptive=routeAppliedDecision(p.subjectId,p.topicId),mode='),'Intervention audit must use the applied decision');
   assert.ok(html.split('adaptive=routeAppliedDecision(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p);').length-1>=2,'Today task and Why modal must both explain the applied decision');
+}
+
+// 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
+{
+  const mini=between('function routeMiniRepairSignals','function routeBuildCandidates');
+  const candidate=between('function routeCandidateFromPlan','function routeTopicFrontier');
+  assert.ok(mini.includes("x.adaptive.mode==='repair'&&x.student.state==='repair'"),'Mini repair signal must require Student Model repair');
+  assert.ok(candidate.includes("miniAdaptive?.mode!=='repair'||miniStudent?.state!=='repair'"),'Existing mini repair must invalidate when calibrated repair is no longer present');
 }
 
 // 5) Route-decision snapshots must be stable values, not references to the current adaptive state.

@@ -373,9 +373,14 @@ function reviewGoal(subjectId,topicId,title,mode){
   const minutes=mode==='long'?25:mode==='mistake'?20:mode==='challenge'?25:20;
   return {minutes,questions:8,text:'review '+mode};
 }
-function taskGoal(persona,subjectId,topicId){
-  const level=profileSignal(persona,subjectId).level,base=taskMethod(subjectId)==='quant'?[35,35,30,30][level]:[30,30,25,25][level];
-  return {minutes:Math.min(base,Math.max(20,persona.dailyMinutes-5)),questions:taskMethod(subjectId)==='quant'?12:10,text:'goal'};
+function taskGoal(persona,subjectId,topicId,mode='steady'){
+  const level=profileSignal(persona,subjectId).level,method=taskMethod(subjectId),base=method==='quant'?[35,35,30,30][level]:[30,30,25,25][level];let minutes=Math.min(base,Math.max(20,persona.dailyMinutes-5)),questions=method==='quant'?12:10;
+  if(persona.lifecycleResponsive){
+    if(mode==='ease'){questions=Math.max(5,Math.round(questions*.8));minutes=Math.max(20,minutes-10);}
+    else if(mode==='repair'){questions=Math.max(5,Math.round(questions*.9));minutes=Math.max(25,minutes-5);}
+    else if(mode==='progress'){questions=Math.min(30,questions+2);minutes=Math.min(45,minutes+5);}
+  }
+  return {minutes,questions,text:'goal '+mode};
 }
 function recoverySignal(space,currentDate){
   const start=dayAdd(currentDate,-7),end=dayAdd(currentDate,-1),expected=[];
@@ -398,8 +403,9 @@ function buildCandidates(space,persona,currentDate){
     models[t.id]=modelFor(space,persona,t.subjectId,t.id,currentDate,weak[t.subjectId],adaptives[t.id]);
     risks[t.id]=riskFor(space,persona,t.id,currentDate,models[t.id],weak[t.subjectId]);
   }
+  const recovery=recoverySignal(space,currentDate);
   const R={dayAdd,uid:()=>`cl-${persona.id}-${++uid}`,topic:(_sp,id)=>topic(id),allTopics:()=>CATALOG};
-  const state={activeExam:'kpss'},subjects=()=>SUBJECTS,routeExamWeakness=()=>weak,routeRecoverySignal=()=>recoverySignal(space,currentDate),routeReviewAnchorDate=p=>reviewAnchorDate(space,p),routePlanEvidenceDate=p=>planEvidenceDate(space,p),routeSubjectAdaptiveState=(sid,tid)=>adaptives[tid]||{mode:'steady',scope:'topic',confidence:0,skillWeakness:{primary:null}},routeReviewGoal=(sid,tid,title,mode)=>reviewGoal(sid,tid,title,mode),routeTaskGoal=(sid,tid)=>taskGoal(persona,sid,tid),routeIsReviewLike=isReviewLike,routeRetentionRefreshCandidates=()=>refreshCandidates(space,persona,currentDate),routeSessionPerformanceSignal=sessionPerformance,routeLastLogDate=sid=>lastLogDate(space,sid),routeProfileSignal=sid=>profileSignal(persona,sid),routeStudyMethod=sid=>({key:taskMethod(sid),label:taskMethod(sid)}),routeStudentModel=(sid,tid)=>models[tid]||{confidence:0,priorityBoost:0},routePaceSignal=()=>paceSignal(space,currentDate),routeDaysToTarget=()=>space.settings.targetDate?Math.max(1,daysBetween(space.settings.targetDate,currentDate)):null,routeTopicExamRisk=(sid,tid)=>risks[tid]||{score:0,priorityBoost:0},teacherQuestions=()=>[],subName=id=>subject(id)?.name||id,routeEffectiveDailyMinutes=()=>persona.dailyMinutes,routeBacklogDailyLimit=(limit,recovery)=>Math.min(limit,Math.max(30,Math.round((limit*(recovery?.active?(recovery.severe?.30:.35):.45))/5)*5));
+  const state={activeExam:'kpss'},subjects=()=>SUBJECTS,routeExamWeakness=()=>weak,routeRecoverySignal=()=>recovery,routeReviewAnchorDate=p=>reviewAnchorDate(space,p),routePlanEvidenceDate=p=>planEvidenceDate(space,p),routeSubjectAdaptiveState=(sid,tid)=>adaptives[tid]||{mode:'steady',scope:'topic',confidence:0,skillWeakness:{primary:null}},routeReviewGoal=(sid,tid,title,mode)=>reviewGoal(sid,tid,title,mode),routeTaskGoal=(sid,tid)=>{let mode='steady';if(persona.lifecycleResponsive){const previous=tid==='m1'?(persona.previousApplied||null):null,decision=appliedDecisionFn(adaptives[tid]||{mode:'steady'},models[tid]||{state:'collect',confidence:0},recovery,previous);mode=decision.mode;}return taskGoal(persona,sid,tid,mode);},routeIsReviewLike=isReviewLike,routeRetentionRefreshCandidates=()=>refreshCandidates(space,persona,currentDate),routeSessionPerformanceSignal=sessionPerformance,routeLastLogDate=sid=>lastLogDate(space,sid),routeProfileSignal=sid=>profileSignal(persona,sid),routeStudyMethod=sid=>({key:taskMethod(sid),label:taskMethod(sid)}),routeStudentModel=(sid,tid)=>models[tid]||{confidence:0,priorityBoost:0},routePaceSignal=()=>paceSignal(space,currentDate),routeDaysToTarget=()=>space.settings.targetDate?Math.max(1,daysBetween(space.settings.targetDate,currentDate)):null,routeTopicExamRisk=(sid,tid)=>risks[tid]||{score:0,priorityBoost:0},teacherQuestions=()=>[],subName=id=>subject(id)?.name||id,routeEffectiveDailyMinutes=()=>persona.dailyMinutes,routeBacklogDailyLimit=(limit,recovery)=>Math.min(limit,Math.max(30,Math.round((limit*(recovery?.active?(recovery.severe?.30:.35):.45))/5)*5));
   const fn=new Function(
     'w','R','state','today','routeExamWeakness','routeRecoverySignal','routeReviewAnchorDate','routePlanEvidenceDate',
     'routeSubjectAdaptiveState','routeReviewGoal','routeTaskGoal','routeIsReviewLike','routeRetentionRefreshCandidates',
@@ -415,7 +421,7 @@ function buildCandidates(space,persona,currentDate){
     routePaceSignal,routeDaysToTarget,routeTopicExamRisk,teacherQuestions,subName,subjects,
     routeEffectiveDailyMinutes,routeBacklogDailyLimit
   )();
-  return {candidates,models,adaptives,risks,recovery:routeRecoverySignal(),weak};
+  return {candidates,models,adaptives,risks,recovery,weak};
 }
 function rebalance(space,persona,currentDate,candidates,recovery){
   const state={activeExam:'kpss'},R={dayAdd},routeEnsure=()=>{},routeBuildCandidates=()=>candidates.map(x=>({...x})),routeEffectiveDailyMinutes=()=>persona.dailyMinutes,routeTaskMethod=p=>({key:taskMethod(p.subjectId)}),routeMethodLoad=k=>['quant','geometry','science','logic','ydt_reading'].includes(k)?2:['biology','paragraph','grammar','ydt_grammar'].includes(k)?1:0,routeIsQuantitativeHeavy=quantitative,routeIsReviewLike=isReviewLike,routeIsCriticalReview=isCriticalReview,routeIsBacklog=p=>p.source==='backlog',routeHeavyLimit=l=>l<=90?1:l<=180?2:3,routeQuantitativeDailyLimit=l=>l<=90?1:2,routeReviewDailyLimit=l=>Math.max(30,Math.round((l*.5)/5)*5),routeBacklogDailyLimit=(l,r)=>Math.min(l,Math.max(30,Math.round((l*(r?.active?(r.severe?.30:.35):.45))/5)*5)),routeBacklogDailyCountLimit=r=>r?.active?1:2,routeReviewWeeklyLimit=t=>Math.max(30,Math.round((t*.45)/5)*5),routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5)),routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{},routeRecoverySignal=()=>recovery;
@@ -436,8 +442,13 @@ function rebalance(space,persona,currentDate,candidates,recovery){
 function completionRate(persona,dayIndex){
   return persona.completionCurve?persona.completionCurve(dayIndex):(persona.completion??.9);
 }
-function shouldComplete(persona,dayIndex,taskIndex){
-  const rate=completionRate(persona,dayIndex),score=(persona.seed*23+dayIndex*17+taskIndex*31)%100;
+function shouldComplete(persona,dayIndex,taskIndex,task=null){
+  let rate=completionRate(persona,dayIndex);
+  if(persona.lifecycleResponsive&&task){
+    const method=taskMethod(task.subjectId),review=isReviewLike(task),baseQ=review?8:(method==='quant'?12:10),level=profileSignal(persona,task.subjectId).level,baseMinutes=review?(task.reviewWave===7||task.source==='retention_refresh'?25:20):(method==='quant'?[35,35,30,30][level]:[30,30,25,25][level]),qRatio=(task.targetQuestions||baseQ)/Math.max(1,baseQ),mRatio=(task.minutes||baseMinutes)/Math.max(1,baseMinutes),dose=.55*qRatio+.45*mRatio,doseEffect=dose<=1?(1-dose)*.38:(1-dose)*.22;
+    rate=clamp(rate+doseEffect,.08,.98);
+  }
+  const score=(persona.seed*23+dayIndex*17+taskIndex*31)%100;
   return score<Math.round(rate*100);
 }
 function accuracyFor(persona,subjectId,dayIndex,task){
@@ -464,7 +475,7 @@ function maybeResolveMistake(space,task,accuracy){
 function simulateTasks(space,persona,currentDate,dayIndex){
   const tasks=space.plan.filter(p=>!p.done&&p.date===currentDate).sort((a,b)=>(b.priority||0)-(a.priority||0)),events=[];
   tasks.forEach((task,index)=>{
-    if(!shouldComplete(persona,dayIndex,index)){
+    if(!shouldComplete(persona,dayIndex,index,task)){
       space.taskEvents.push({taskId:task.id,date:currentDate,action:index%2?'later':'skip'});
       events.push({taskId:task.id,action:'skip',source:task.source,topicId:task.topicId,reviewVariant:task.reviewVariant||''});return;
     }
@@ -683,7 +694,7 @@ const LF_PERSONAS=PERSONAS.map(function(p){return {...p,targetDays:Math.max(90,p
 function lfPersona(base,d){
   const x=lfPhase(base,d),exam={...(base.exam||{})},examHistory=[{day:0,scores:{...(base.exam||{})}}];
   if(base.id==='exam-refresh'){examHistory.push({day:25,scores:{...(base.exam||{}),'k-ma':.84,'k-tr':.82,'k-ta':.78,'k-co':.76}});if(d>=25)exam['k-ma']=.84;}
-  return {...base,accuracy:x.accuracy,completion:x.completion,volume:x.volume,feeling:x.feeling,phase:x.phase,trend:{},exam,examHistory,dailyMinutes:base.dailyMinutes||120};
+  return {...base,accuracy:x.accuracy,completion:x.completion,volume:x.volume,feeling:x.feeling,phase:x.phase,lifecycleResponsive:true,trend:{},exam,examHistory,dailyMinutes:base.dailyMinutes||120};
 }
 function lfMini(space,p,date,d){
   if(![3,7,11,18,25,33,42,52].includes(d))return;
@@ -821,7 +832,7 @@ function lfCheckpoint(r,n){
 function lfSim(base){
   const space=makeSpace({...base,targetDays:Math.max(90,base.targetDays||90)}),days=[];let normStart=null,lastMastered=new Set();
   for(let d=0;d<60;d++){
-    const date=dayAdd(START,d),p=lfPersona(base,d),built=buildCandidates(space,p,date);
+    const date=dayAdd(START,d),p=lfPersona(base,d);p.previousApplied=days.length?{mode:days.at(-1).appliedMode,hysteresisHeld:!!days.at(-1).hysteresisHeld,easeHysteresisHeld:!!days.at(-1).easeHysteresisHeld,easeEntryHeld:!!days.at(-1).easeEntryHeld}:null;const built=buildCandidates(space,p,date);
     rebalance(space,p,date,built.candidates,built.recovery);dailySafety(space,p,date);
     const events=simulateTasks(space,p,date,d);lfMini(space,p,date,d);updateMasteryStatuses(space,date);
     const weak=examWeakness(p,d,space),ad=adaptiveState(space,p,'k-ma','m1',date,weak),model=modelFor(space,p,'k-ma','m1',date,weak['k-ma'],ad),risk=riskFor(space,p,'m1',date,model,weak['k-ma']);

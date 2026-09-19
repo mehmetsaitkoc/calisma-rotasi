@@ -374,11 +374,12 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 // 4) Recovery must suppress progression load increases without erasing the strong-performance signal.
 {
   const src=between('function routeQuestionTarget','function routeReviewGoal');
-  let recoveryActive=false;
+  let recoveryActive=false,studentState='steady';
   const w=()=>({profile:{subjectLevels:{'k-ma':2}}});
   const routeSubjectGap=()=>({known:false,gap:0});
   const routeStudyMethod=()=>({key:'quant',label:'SORU + YANLIŞ ANALİZİ'});
   const routeSubjectAdaptiveState=()=>({mode:'progress',calibration:{},skillWeakness:{primary:null}});
+  const routeStudentModel=()=>({state:studentState,confidence:90});
   const routeRecoverySignal=()=>({active:recoveryActive});
   const routeEffectiveDifficulty=()=>({known:false});
   const routeMaxTaskMinutes=()=>120;
@@ -386,22 +387,27 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const routeInterventionPolicyAdjustment=()=>({action:'hold'});
   const routeErrorMemorySignal=()=>({primary:null});
   const api=new Function(
-    'w','routeSubjectGap','routeStudyMethod','routeSubjectAdaptiveState','routeRecoverySignal',
+    'w','routeSubjectGap','routeStudyMethod','routeSubjectAdaptiveState','routeStudentModel','routeRecoverySignal',
     'routeEffectiveDifficulty','routeMaxTaskMinutes','routeDifficultyPrescription',
     'routeInterventionPolicyAdjustment','routeErrorMemorySignal',
     src+';return {routeQuestionTarget,routeTaskGoal};'
   )(
-    w,routeSubjectGap,routeStudyMethod,routeSubjectAdaptiveState,routeRecoverySignal,
+    w,routeSubjectGap,routeStudyMethod,routeSubjectAdaptiveState,routeStudentModel,routeRecoverySignal,
     routeEffectiveDifficulty,routeMaxTaskMinutes,routeDifficultyPrescription,
     routeInterventionPolicyAdjustment,routeErrorMemorySignal
   );
+  const unverifiedQuestions=api.routeQuestionTarget('k-ma','t1','x');
+  const unverifiedGoal=api.routeTaskGoal('k-ma','t1','x');
+  assert.equal(unverifiedQuestions,16,'Raw adaptive progress must not add questions before Student Model progression is corroborated');
+  assert.equal(unverifiedGoal.minutes,35,'Raw adaptive progress must not add minutes before Student Model progression is corroborated');
+  studentState='progress';
   const normalQuestions=api.routeQuestionTarget('k-ma','t1','x');
   const normalGoal=api.routeTaskGoal('k-ma','t1','x');
   recoveryActive=true;
   const recoveryQuestions=api.routeQuestionTarget('k-ma','t1','x');
   const recoveryGoal=api.routeTaskGoal('k-ma','t1','x');
-  assert.ok(normalQuestions>recoveryQuestions,'Progress may add questions in normal mode');
-  assert.ok(normalGoal.minutes>recoveryGoal.minutes,'Progress may add minutes in normal mode');
+  assert.ok(normalQuestions>unverifiedQuestions,'Corroborated progress may add questions in normal mode');
+  assert.ok(normalGoal.minutes>unverifiedGoal.minutes,'Corroborated progress may add minutes in normal mode');
   assert.equal(recoveryQuestions,16,'Recovery must preserve the base question dose instead of progress +2');
   assert.equal(recoveryGoal.minutes,35,'Recovery must preserve the base duration instead of progress +5');
   assert.match(recoveryGoal.text,/toparlanma modu açıkken dozu büyütmeden/i);

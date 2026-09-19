@@ -415,9 +415,9 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 {
   const candidate=between('function routeCandidateFromPlan','function routeTopicFrontier');
   const build=between('function routeBuildCandidates','function routeConsistencySignal');
-  assert.ok(candidate.includes("p.reviewVariant==='challenge'&&!routeRecoverySignal().active"),'Existing challenge review must downgrade in recovery');
-  assert.ok(candidate.includes("!routeRecoverySignal().active&&adaptive.mode==='progress'"),'7-day review may not become challenge during recovery');
-  assert.ok(build.includes("challengeReady=!recovery.active&&!needsRepair"),'New challenge review generation must be disabled during recovery');
+  assert.ok(candidate.includes("p.reviewVariant==='challenge'&&!routeRecoverySignal().active&&routeStudentModel(p.subjectId,p.topicId).state==='progress'"),'Existing challenge review must require current corroborated progression and downgrade otherwise');
+  assert.ok(candidate.includes("!routeRecoverySignal().active&&routeStudentModel(p.subjectId,p.topicId).state==='progress'"),'7-day review may only become challenge with current corroborated progression');
+  assert.ok(build.includes("challengeReady=!recovery.active&&!needsRepair&&student.state==='progress'"),'New challenge review generation must require corroborated progression and stay disabled during recovery');
 }
 
 // 4) Task duration must fit the student's effective daily capacity.

@@ -1670,11 +1670,14 @@ for(const marker of [
   const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
   const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
-  backup.workspaces.kpss.route.modeHistory=[{date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'progress',studentState:'steady',confidence:88,performance:73,learningNeed:24,hysteresisHeld:true,created:1}];
+  backup.workspaces.kpss.route.modeHistory=[{date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'progress',studentState:'steady',confidence:88,performance:73,learningNeed:24,hysteresisHeld:true,easeHysteresisHeld:true,easeEntryHeld:true,easeRecoveryHeld:true,created:1}];
   const row=env.RotaCore.validateBackup(backup).workspaces.kpss.route.modeHistory[0];
   assert.equal(row.mode,'progress');
   assert.equal(row.studentState,'steady');
   assert.equal(row.hysteresisHeld,true);
+  assert.equal(row.easeHysteresisHeld,true);
+  assert.equal(row.easeEntryHeld,true);
+  assert.equal(row.easeRecoveryHeld,true);
   assert.equal(row.performance,73);
 }
 

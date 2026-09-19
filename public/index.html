@@ -1444,7 +1444,7 @@ function routeProfileSignal(subjectId){
 }
 function routeLastLogDate(subjectId){return [...w().logs].filter(l=>l.subjectId===subjectId).sort((a,b)=>b.date.localeCompare(a.date))[0]?.date||'';}
 function routeBehaviorSignal(subjectId,topicId='',windowDays=null,endDate=today()){
- const since=R.dayAdd(endDate,windowDays===null?-14:-(Math.max(1,windowDays)-1)),planMap=new Map(w().plan.map(function(p){return [p.id,p];})),raw=w().taskEvents.filter(function(ev){const p=planMap.get(ev.taskId);return p&&p.subjectId===subjectId&&(!topicId||p.topicId===topicId)&&ev.date>=since&&ev.date<=endDate;}),groups=new Map();
+ const since=R.dayAdd(endDate,windowDays===null?-14:-(Math.max(1,windowDays)-1)),planMap=new Map(w().plan.map(function(p){return [p.id,p];})),raw=w().taskEvents.filter(function(ev){const p=planMap.get(ev.taskId);return p&&(!subjectId||p.subjectId===subjectId)&&(!topicId||p.topicId===topicId)&&ev.date>=since&&ev.date<=endDate;}),groups=new Map();
  for(const ev of raw){const key=ev.taskId+'|'+ev.date,actions=groups.get(key)||new Set();actions.add(ev.action);groups.set(key,actions);}
  let complete=0,skip=0,later=0,start=0;
  for(const actions of groups.values()){
@@ -1553,7 +1553,7 @@ function routeDifficultyPrescription(subjectId,topicId,fallbackTitle,difficulty)
 }
 function routeSubjectAdaptiveState(subjectId,topicId=''){
  const realTopic=topicId&&R.topic(w(),topicId)?topicId:'';
- const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior,recentSubjectBehavior=routeBehaviorSignal(subjectId,'',7,today()),previousSubjectBehavior=routeBehaviorSignal(subjectId,'',7,R.dayAdd(today(),-7)),completionCollapse=recentSubjectBehavior.known&&previousSubjectBehavior.known&&recentSubjectBehavior.total>=3&&previousSubjectBehavior.total>=3&&previousSubjectBehavior.completion>=.70&&recentSubjectBehavior.completion<=.55&&previousSubjectBehavior.completion-recentSubjectBehavior.completion>=.25;
+ const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior,recentSubjectBehavior=routeBehaviorSignal(subjectId,'',7,today()),previousSubjectBehavior=routeBehaviorSignal(subjectId,'',7,R.dayAdd(today(),-7)),recentGlobalBehavior=routeBehaviorSignal('','',7,today()),previousGlobalBehavior=routeBehaviorSignal('','',7,R.dayAdd(today(),-7)),subjectCompletionCollapse=recentSubjectBehavior.known&&previousSubjectBehavior.known&&recentSubjectBehavior.total>=3&&previousSubjectBehavior.total>=3&&previousSubjectBehavior.completion>=.70&&recentSubjectBehavior.completion<=.55&&previousSubjectBehavior.completion-recentSubjectBehavior.completion>=.25,globalCompletionCollapse=recentGlobalBehavior.known&&previousGlobalBehavior.known&&recentGlobalBehavior.total>=3&&previousGlobalBehavior.total>=3&&previousGlobalBehavior.completion>=.70&&recentGlobalBehavior.completion<=.55&&previousGlobalBehavior.completion-recentGlobalBehavior.completion>=.25,completionCollapse=subjectCompletionCollapse||globalCompletionCollapse;
  const topicOutcome=realTopic?routeOutcomeSignal(subjectId,realTopic):null,subjectOutcome=routeOutcomeSignal(subjectId),outcome=topicOutcome?.known?topicOutcome:subjectOutcome;
  const topicPractice=realTopic?routePracticeSignal(subjectId,realTopic):null,subjectPractice=routePracticeSignal(subjectId),practice=topicPractice?.known?topicPractice:subjectPractice;
  const topicCalibration=realTopic?routeFeedbackCalibrationSignal(subjectId,realTopic):null,subjectCalibration=routeFeedbackCalibrationSignal(subjectId),calibration=topicCalibration?.known?topicCalibration:subjectCalibration;
@@ -1617,7 +1617,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
   note='İyi sinyaller oluşuyor ama yük artırmak için biraz daha tutarlı veri bekliyoruz; mevcut doz korunuyor.';
  }
  const confidence=Math.min(100,Math.max(repairScore,progressScore)*20+(topicEvidence?10:0));
- return {mode,label,note,behavior,recentSubjectBehavior,previousSubjectBehavior,completionCollapse,outcome,practice,calibration,attainment,skillWeakness,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
+ return {mode,label,note,behavior,recentSubjectBehavior,previousSubjectBehavior,recentGlobalBehavior,previousGlobalBehavior,subjectCompletionCollapse,globalCompletionCollapse,completionCollapse,completionCollapseScope:globalCompletionCollapse?'global':subjectCompletionCollapse?'subject':'',outcome,practice,calibration,attainment,skillWeakness,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
 }
 const ROUTE_ERROR_TYPES=Object.freeze({concept:'Bilgi / kavram eksiği',process:'Yöntem / işlem hatası',attention:'Dikkat hatası',speed:'Süre yönetimi',strategy:'Soruya yaklaşım',reading:'Soru kökü / anlama',recall:'Hatırlama / karıştırma',other:'Diğer'});
 function routeErrorTypeLabel(type){return ROUTE_ERROR_TYPES[type]||ROUTE_ERROR_TYPES.other;}

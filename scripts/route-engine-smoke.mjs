@@ -399,6 +399,28 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(rebalance.includes('if(quantHeavy&&day.quantHeavy>=quantCeiling)return false'),'Quantitative-heavy cap must remain hard even for repeated critical tasks');
 }
 
+// 4) A new learning cycle must make older open review waves ineligible.
+{
+  const src=between('function routeLatestBaseCycle','function routeTopicFrontier');
+  const space={plan:[
+    {id:'old-base',date:'2026-09-01',done:true,topicId:'topic-1',source:'curriculum'},
+    {id:'old-r3',date:'2026-09-04',done:false,topicId:'topic-1',source:'spaced_review',reviewWave:3,reviewBaseTaskId:'old-base'},
+    {id:'new-base',date:'2026-09-18',done:true,topicId:'topic-1',source:'curriculum'}
+  ],logs:[]};
+  const routePlanEvidenceDate=p=>p.date;
+  const api=new Function(
+    'w','routePlanEvidenceDate','routeSubjectAdaptiveState','routeReviewAnchorDate','today','R','routeIsReviewLike',
+    'routeReviewGoal','routeTaskGoal','routeRecoverySignal','routeBacklogDailyLimit','routeEffectiveDailyMinutes','routeStudyMethod',
+    src+';return {routeLatestBaseCycle,routeCandidateFromPlan};'
+  )(
+    ()=>space,routePlanEvidenceDate,()=>({mode:'steady'}),()=>'',()=> '2026-09-19',
+    {dayAdd:(d,n)=>d,topic:()=>({title:'x'})},()=>true,()=>({minutes:20,questions:8,text:'x'}),
+    ()=>({minutes:30,questions:10,text:'x'}),()=>({active:false}),()=>30,()=>120,()=>({label:'x'})
+  );
+  assert.equal(api.routeLatestBaseCycle('topic-1').task.id,'new-base');
+  assert.equal(api.routeCandidateFromPlan(space.plan[1]),null,'Old-cycle open review must not coexist with a newer base cycle');
+}
+
 // 4) Reopening a base study must invalidate its still-open spaced reviews.
 {
   const src=between('function routeInvalidateBaseReviews','function routeCandidateFromPlan');

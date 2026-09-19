@@ -241,7 +241,9 @@ function skillWeakness(space,subjectId,topicId='',currentDate){
   return {known:true,attempts:attempts.length,weak:primary?[primary]:[],primary};
 }
 function personalNorm(space,subjectId,topicId){
-  const current=performanceSamples(space,subjectId,topicId),peers=performanceSamples(space,subjectId,'').filter(x=>x.topicId!==topicId);
+  const current=performanceSamples(space,subjectId,topicId);
+  if(!topicId)return personalApi.routePersonalNormFromSamples(current,[]);
+  const peers=performanceSamples(space,subjectId,'').filter(x=>x.topicId!==topicId);
   return personalApi.routePersonalNormFromSamples(current,peers);
 }
 function openMistakeCount(space,subjectId,topicId){
@@ -288,9 +290,9 @@ function learningVelocity(space,subjectId,topicId){
 }
 function modelFor(space,persona,subjectId,topicId,currentDate,weak,adaptiveOverride=null){
   const practice=practiceSignal(space,subjectId,topicId),behavior=behaviorSignal(space,subjectId,topicId,currentDate),outcome=outcomeSignal(space,subjectId,topicId),retention=retentionSignal(space,subjectId,topicId,currentDate),trend=trendSignal(space,subjectId,topicId,currentDate),calibration=calibrationSignal(space,subjectId,topicId,currentDate),skill=skillWeakness(space,subjectId,topicId,currentDate),weakMap={[subjectId]:weak},adaptive=adaptiveOverride||adaptiveState(space,persona,subjectId,topicId,currentDate,weakMap),norm=personalNorm(space,subjectId,topicId),mistakes=openMistakeCount(space,subjectId,topicId),errors=errorMemory(space,subjectId,topicId),velocity=learningVelocity(space,subjectId,topicId),att=attainmentRatio(space,subjectId,topicId,currentDate);
-  const planMap=new Map(space.plan.map(p=>[p.id,p])),practiceLogCount=space.logs.filter(l=>l.subjectId===subjectId&&Number.isInteger(l.correct)&&Number.isInteger(l.wrong)&&l.correct+l.wrong>=5&&planMap.get(l.sessionId)?.topicId===topicId).length,miniDays=new Set(space.assessments.filter(a=>a.subjectId===subjectId&&a.topicId===topicId).map(a=>a.date)).size;
+  const planMap=new Map(space.plan.map(p=>[p.id,p])),practiceLogCount=space.logs.filter(l=>l.subjectId===subjectId&&Number.isInteger(l.correct)&&Number.isInteger(l.wrong)&&l.correct+l.wrong>=5&&(!topicId||planMap.get(l.sessionId)?.topicId===topicId)).length,miniDays=new Set(space.assessments.filter(a=>a.subjectId===subjectId&&(!topicId||a.topicId===topicId)).map(a=>a.date)).size;
   const dates=performanceSamples(space,subjectId,topicId).map(x=>x.date).sort((a,b)=>b.localeCompare(a)),latestDate=dates[0]||'',latestDays=latestDate?daysBetween(currentDate,latestDate):999;
-  return studentFn({practice,weak,behavior,outcome,retention,trend,calibration,skillWeakness:skill,adaptive,openMistakes:mistakes,practiceLogCount,miniDays,difficultyKnown:space.logs.some(l=>l.subjectId===subjectId&&planMap.get(l.sessionId)?.topicId===topicId&&l.difficulty),errorMemory:errors,velocity,personalNorm:norm,latestDays,attainmentRatio:att});
+  return studentFn({practice,weak,behavior,outcome,retention,trend,calibration,skillWeakness:skill,adaptive,openMistakes:mistakes,practiceLogCount,miniDays,difficultyKnown:space.logs.some(l=>l.subjectId===subjectId&&(!topicId||planMap.get(l.sessionId)?.topicId===topicId)&&l.difficulty),errorMemory:errors,velocity,personalNorm:norm,latestDays,attainmentRatio:att});
 }
 function examWeakness(persona,dayIndex){
   const out={};
@@ -487,18 +489,18 @@ function dailySafety(space,persona,currentDate){
   }
 }
 function simulatePersona(persona){
-  const space=makeSpace(persona),days=[],metrics={repairDays:0,sustainableDays:0,progressDays:0,recoveryDays:0,mathTasks:0,otherTasks:0,miniAttempts:0,completed:0,skipped:0};
+  const space=makeSpace(persona),days=[],metrics={repairDays:0,sustainableDays:0,subjectSustainableDays:0,progressDays:0,recoveryDays:0,mathTasks:0,otherTasks:0,miniAttempts:0,completed:0,skipped:0};
   for(let dayIndex=0;dayIndex<14;dayIndex++){
     const currentDate=dayAdd(START,dayIndex),built=buildCandidates(space,persona,currentDate);
     rebalance(space,persona,currentDate,built.candidates,built.recovery);
     dailySafety(space,persona,currentDate);
     const beforeModel=built.models.m1||modelFor(space,'k-ma','m1',currentDate,built.weak['k-ma']),events=simulateTasks(space,persona,currentDate,dayIndex);
     addMini(space,persona,currentDate,dayIndex);updateMasteryStatuses(space,currentDate);
-    const afterWeak=examWeakness(persona,dayIndex),afterAdaptive=adaptiveState(space,persona,'k-ma','m1',currentDate,afterWeak),afterModel=modelFor(space,persona,'k-ma','m1',currentDate,afterWeak['k-ma'],afterAdaptive),afterRisk=riskFor(space,persona,'m1',currentDate,afterModel,afterWeak['k-ma']),recoveryAfter=recoverySignal(space,currentDate);
-    if(afterModel.state==='repair')metrics.repairDays++;if(afterModel.state==='sustainable')metrics.sustainableDays++;if(afterModel.state==='progress')metrics.progressDays++;if(built.recovery.active)metrics.recoveryDays++;
+    const afterWeak=examWeakness(persona,dayIndex),afterAdaptive=adaptiveState(space,persona,'k-ma','m1',currentDate,afterWeak),afterModel=modelFor(space,persona,'k-ma','m1',currentDate,afterWeak['k-ma'],afterAdaptive),afterSubjectAdaptive=adaptiveState(space,persona,'k-ma','',currentDate,afterWeak),afterSubjectModel=modelFor(space,persona,'k-ma','',currentDate,afterWeak['k-ma'],afterSubjectAdaptive),afterRisk=riskFor(space,persona,'m1',currentDate,afterModel,afterWeak['k-ma']),recoveryAfter=recoverySignal(space,currentDate);
+    if(afterModel.state==='repair')metrics.repairDays++;if(afterModel.state==='sustainable')metrics.sustainableDays++;if(afterSubjectModel.state==='sustainable')metrics.subjectSustainableDays++;if(afterModel.state==='progress')metrics.progressDays++;if(built.recovery.active)metrics.recoveryDays++;
     for(const e of events){if(e.action==='complete')metrics.completed++;else metrics.skipped++;if(e.topicId?.startsWith('m'))metrics.mathTasks++;else metrics.otherTasks++;}
     metrics.miniAttempts=space.assessments.length;
-    days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:practiceSignal(space,'k-ma','m1').weightedAccuracy||null});
+    days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:practiceSignal(space,'k-ma','m1').weightedAccuracy||null});
   }
   return {persona,space,days,metrics};
 }
@@ -521,6 +523,7 @@ for(const r of results){
 {
   const r=byId['high-skill-low-compliance'];
   assert.ok(r.metrics.recoveryDays>=1,'low-compliance student never entered recovery');
+  assert.ok(r.metrics.subjectSustainableDays>=1,'low-compliance student never received subject-level sustainable interpretation');
   assert.equal(r.metrics.progressDays,0,'low-compliance student must not receive progression decisions while adherence is poor');
 }
 {
@@ -564,7 +567,7 @@ for(const r of results){
 
 const summary=results.map(r=>({
   id:r.persona.id,completed:r.metrics.completed,skipped:r.metrics.skipped,repairDays:r.metrics.repairDays,
-  sustainableDays:r.metrics.sustainableDays,progressDays:r.metrics.progressDays,recoveryDays:r.metrics.recoveryDays,
+  sustainableDays:r.metrics.sustainableDays,subjectSustainableDays:r.metrics.subjectSustainableDays,progressDays:r.metrics.progressDays,recoveryDays:r.metrics.recoveryDays,
   mathTasks:r.metrics.mathTasks,finalConfidence:r.days.at(-1).confidence,finalNeed:r.days.at(-1).learningNeed,
   finalRisk:r.days.at(-1).risk,completedTopics:Object.values(r.space.topicState).filter(x=>x.status===2).length
 }));

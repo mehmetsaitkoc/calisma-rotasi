@@ -177,8 +177,8 @@ function practiceSignal(space,subjectId,topicId='',since=''){
     recentAccuracy:recent?recent.accuracy:0,recentAnswered:recent?recent.answered:0,recent
   };
 }
-function behaviorSignal(space,subjectId,topicId='',currentDate){
-  const since=dayAdd(currentDate,-14),planMap=new Map(space.plan.map(p=>[p.id,p])),groups=new Map();
+function behaviorSignal(space,subjectId,topicId='',currentDate,windowDays=null){
+  const since=dayAdd(currentDate,windowDays===null?-14:-(Math.max(1,windowDays)-1)),planMap=new Map(space.plan.map(p=>[p.id,p])),groups=new Map();
   for(const ev of space.taskEvents){
     const p=planMap.get(ev.taskId);if(!p||p.subjectId!==subjectId||(topicId&&p.topicId!==topicId)||ev.date<since||ev.date>currentDate)continue;
     const key=ev.taskId+'|'+ev.date,set=groups.get(key)||new Set();set.add(ev.action);groups.set(key,set);
@@ -268,7 +268,7 @@ function attainmentRatio(space,subjectId,topicId,currentDate){
 }
 function adaptiveState(space,persona,subjectId,topicId,currentDate,weakMap){
   const R={topic:(_w,id)=>topic(id)},w=()=>space,today=()=>currentDate;
-  const routeBehaviorSignal=(sid,tid='')=>behaviorSignal(space,sid,tid,currentDate);
+  const routeBehaviorSignal=(sid,tid='',windowDays=null,endDate=currentDate)=>behaviorSignal(space,sid,tid,endDate,windowDays);
   const routeOutcomeSignal=(sid,tid='',since='')=>outcomeSignal(space,sid,tid,since);
   const routePracticeSignal=(sid,tid='',since='')=>practiceSignal(space,sid,tid,since);
   const routeFeedbackCalibrationSignal=(sid,tid='')=>calibrationSignal(space,sid,tid,currentDate);
@@ -838,7 +838,7 @@ function lfSim(base){
     const noExam=modelFor(space,p,'k-ma','m1',date,null,ad),prev=days.length?{mode:days.at(-1).appliedMode,hysteresisHeld:!!days.at(-1).hysteresisHeld,easeHysteresisHeld:!!days.at(-1).easeHysteresisHeld,easeEntryHeld:!!days.at(-1).easeEntryHeld,easeRecoveryHeld:!!days.at(-1).easeRecoveryHeld}:null,applied=appliedDecisionFn(ad,model,built.recovery,prev),norm=personalNorm(space,'k-ma','m1');
     if(normStart===null&&d>=9&&Number.isFinite(norm.baselineAccuracy))normStart=norm.baselineAccuracy;
     const mastered=new Set(Object.entries(space.topicState).filter(function(x){return x[1].status===2;}).map(function(x){return x[0];})),masteryRegression=[...lastMastered].some(function(id){return !mastered.has(id);});lastMastered=mastered;
-    days.push({day:d+1,date,personaPhase:p.phase,studentState:model.state,appliedMode:applied.mode,hysteresisHeld:!!applied.hysteresisHeld,easeHysteresisHeld:!!applied.easeHysteresisHeld,easeEntryHeld:!!applied.easeEntryHeld,easeRecoveryHeld:!!applied.easeRecoveryHeld,adaptiveMode:ad.mode,adaptiveRepairScore:ad.repairScore,adaptiveProgressScore:ad.progressScore,adaptiveEvidence:ad.evidence,behaviorCompletion:ad.behavior?.completion??null,behaviorFriction:ad.behavior?.friction??null,frictionBehaviorFriction:ad.frictionBehavior?.friction??null,frictionScope:ad.frictionScope||'',attainmentRatio:ad.attainment?.weightedRatio??null,confidence:model.confidence,learningNeed:model.learningNeed,performance:model.performance,execution:model.execution,risk:risk.score,recovery:built.recovery.active,openMistakes:model.openMistakes,retention:model.retention,normBase:norm.baselineAccuracy,completedTopics:mastered.size,masteryRegression,forgettingRefreshes:events.filter(function(x){return x.source==='retention_refresh';}).length,staleEvidenceInfluence:(Number.isFinite(model.performance)&&Number.isFinite(noExam.performance))?Math.abs(model.performance-noExam.performance):0,examFreshness:weak['k-ma']?.freshness??null,oldExamWeight:weak['k-ma']?.oldestExamWeight??null,freshExamWeight:weak['k-ma']?.freshestExamWeight??null,examEvidenceCount:weak['k-ma']?.samples||0});
+    days.push({day:d+1,date,personaPhase:p.phase,studentState:model.state,appliedMode:applied.mode,hysteresisHeld:!!applied.hysteresisHeld,easeHysteresisHeld:!!applied.easeHysteresisHeld,easeEntryHeld:!!applied.easeEntryHeld,easeRecoveryHeld:!!applied.easeRecoveryHeld,adaptiveMode:ad.mode,adaptiveRepairScore:ad.repairScore,adaptiveProgressScore:ad.progressScore,adaptiveEvidence:ad.evidence,behaviorCompletion:ad.behavior?.completion??null,behaviorFriction:ad.behavior?.friction??null,recentSubjectCompletion:ad.recentSubjectBehavior?.completion??null,previousSubjectCompletion:ad.previousSubjectBehavior?.completion??null,completionCollapse:!!ad.completionCollapse,attainmentRatio:ad.attainment?.weightedRatio??null,confidence:model.confidence,learningNeed:model.learningNeed,performance:model.performance,execution:model.execution,risk:risk.score,recovery:built.recovery.active,openMistakes:model.openMistakes,retention:model.retention,normBase:norm.baselineAccuracy,completedTopics:mastered.size,masteryRegression,forgettingRefreshes:events.filter(function(x){return x.source==='retention_refresh';}).length,staleEvidenceInfluence:(Number.isFinite(model.performance)&&Number.isFinite(noExam.performance))?Math.abs(model.performance-noExam.performance):0,examFreshness:weak['k-ma']?.freshness??null,oldExamWeight:weak['k-ma']?.oldestExamWeight??null,freshExamWeight:weak['k-ma']?.freshestExamWeight??null,examEvidenceCount:weak['k-ma']?.samples||0});
   }
   const r={persona:base,space,days,normStart};r.day30=lfCheckpoint(r,30);r.day60=lfCheckpoint(r,60);return r;
 }

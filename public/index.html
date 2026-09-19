@@ -1196,7 +1196,7 @@ function routeEnsure(space=w()){
  return space.route;
 }
 function routeEvent(taskId,action){routeEnsure();const date=today();if(w().taskEvents.some(function(ev){return ev.taskId===taskId&&ev.action===action&&ev.date===date;}))return;w().taskEvents.push({id:R.uid(),taskId,date,action,created:Date.now()});w().taskEvents=w().taskEvents.slice(-300);}
-function routeSourceLabel(source){return ({backlog:'AKSAYAN',mistake:'YANLIŞ TEKRARI',mini_repair:'MİNİ ONARIM',ai_teacher:'ROTA HOCA',exam:'DENEME SİNYALİ',profile:'SEVİYE PROFİLİ',priority:'ÖNCELİKLİ DERS',curriculum:'KONU ROTASI',review:'TEKRAR',spaced_review:'TEKRAR',checkpoint:'HAFTALIK KONTROL'}[source]||'ROTA');}
+function routeSourceLabel(source){return ({backlog:'AKSAYAN',mistake:'YANLIŞ TEKRARI',mini_repair:'MİNİ ONARIM',retention_refresh:'KORUMA TEKRARI',ai_teacher:'ROTA HOCA',exam:'DENEME SİNYALİ',profile:'SEVİYE PROFİLİ',priority:'ÖNCELİKLİ DERS',curriculum:'KONU ROTASI',review:'TEKRAR',spaced_review:'TEKRAR',checkpoint:'HAFTALIK KONTROL'}[source]||'ROTA');}
 function routeTaskSourceLabel(task){
  if(task?.source==='spaced_review'&&task.reviewVariant==='challenge')return 'SEVİYE YOKLAMA';
  return task?.source==='spaced_review'&&[1,3,7].includes(task.reviewWave)?(task.reviewWave===1?'1 GÜN ONARIMI':task.reviewWave+' GÜN TEKRARI'):routeSourceLabel(task?.source);
@@ -1309,7 +1309,7 @@ function routeQuantitativeDailyLimit(limit){return limit<=90?1:2;}
 function routeTaskMethod(task){return routeStudyMethod(task.subjectId,task.topicId,task.title);}
 function routeHeavyLimit(limit){return limit<=90?1:limit<=180?2:3;}
 function routeMaxTaskMinutes(space=w()){return Math.max(15,routeEffectiveDailyMinutes(space)-5);}
-function routeIsReviewLike(task){return !!task&&(task.kind==='review'||['mistake','mini_repair','ai_teacher','spaced_review','checkpoint'].includes(task.source));}
+function routeIsReviewLike(task){return !!task&&(task.kind==='review'||['mistake','mini_repair','retention_refresh','ai_teacher','spaced_review','checkpoint'].includes(task.source));}
 function routeIsCriticalReview(task){return !!task&&(task.source==='mistake'||task.source==='mini_repair'||(task.source==='ai_teacher'&&(task.priority||0)>=80)||(task.source==='spaced_review'&&task.reviewWave===1));}
 function routeReviewDailyLimit(limit){return Math.max(30,Math.round((limit*.5)/5)*5);}
 function routeReviewWeeklyLimit(totalCapacity){return Math.max(30,Math.round((totalCapacity*.45)/5)*5);}
@@ -1746,7 +1746,7 @@ function routeStudentModelCard(){
 }
 function routeTopicMasterySignal(topicId){
  const space=w(),t=R.topic(space,topicId);if(!t)return {ready:false,reason:'',progress:0,total:4,next:'Ana çalışma'};
- const done=space.plan.filter(function(p){return p.done&&p.topicId===topicId;}),baseTasks=done.filter(function(p){return !['mistake','spaced_review','checkpoint','ai_teacher'].includes(p.source);}).map(function(p){return {task:p,date:routePlanEvidenceDate(p,space)};}).filter(function(x){return !!x.date;}).sort(function(a,b){return b.date.localeCompare(a.date);}),baseItem=baseTasks[0]||null,baseTask=baseItem?.task||null,base=!!baseTask,baseDate=baseItem?.date||'';
+ const done=space.plan.filter(function(p){return p.done&&p.topicId===topicId;}),baseTasks=done.filter(function(p){return !['mistake','mini_repair','retention_refresh','spaced_review','checkpoint','ai_teacher'].includes(p.source);}).map(function(p){return {task:p,date:routePlanEvidenceDate(p,space)};}).filter(function(x){return !!x.date;}).sort(function(a,b){return b.date.localeCompare(a.date);}),baseItem=baseTasks[0]||null,baseTask=baseItem?.task||null,base=!!baseTask,baseDate=baseItem?.date||'';
  const reviewValid=function(p,wave){
   if(!base||p.source!=='spaced_review'||p.reviewWave!==wave)return false;
   if(p.reviewBaseTaskId&&p.reviewBaseTaskId!==baseTask.id)return false;
@@ -1769,6 +1769,46 @@ function routeTopicMasterySignal(topicId){
  let reason='';
  if(ready)reason=practiceEnough?'Fiilî ana çalışma gününden sonra 3/7 gün tekrarları tamamlandı; en az 2 performans kaydında yakın dönem ağırlıklı soru doğruluğu %'+Math.round(performanceAccuracy*100)+'.':'Fiilî ana çalışma gününden sonra 3/7 gün tekrarları tamamlandı; en az 2 geri bildirimde belirgin zorlanma yok.';
  return {ready,reason,base,baseTaskId:baseTask?.id||'',baseDate,review3,review7,outcome,practice,openMistake,practiceEnough,outcomeEnough,hasEvidence,performanceOk,progress,total,next};
+}
+function routeMasteryScoreFromSignals(input){
+ const performance=Number.isFinite(input.performanceAccuracy)?Math.max(0,Math.min(100,input.performanceAccuracy)):null,spacing=(input.base?25:0)+(input.review3?30:0)+(input.review7?45:0),retention=Number.isFinite(input.retentionScore)?Math.max(0,Math.min(100,input.retentionScore)):Math.round(spacing*.75),trendScore=input.trend==='up'?90:input.trend==='down'?45:input.trend==='flat'?75:60;
+ let raw=performance===null?spacing*.55+retention*.30+trendScore*.15:performance*.42+spacing*.28+retention*.20+trendScore*.10;
+ raw-=Math.min(18,(input.openMistakes||0)*6)+Math.min(10,(input.skillMissed||0)*2)+(input.errorRepeated?6:0);
+ if(!input.base)raw=Math.min(raw,45);
+ else if(!input.hasEvidence)raw=Math.min(raw,68);
+ if(input.ready)raw=Math.max(raw,82);
+ const score=Math.max(0,Math.min(100,Math.round(raw))),label=score>=85?'SAĞLAM':score>=72?'İYİ':score>=55?'GELİŞİYOR':score>=35?'KIRILGAN':'BAŞLANGIÇ';
+ return {score,label,performance,spacing,retention,trendScore};
+}
+function routeTopicLatestEvidenceDate(subjectId,topicId){
+ const space=w(),dates=[],planMap=new Map(space.plan.map(function(p){return [p.id,p];}));
+ for(const l of space.logs){const p=planMap.get(l.sessionId);if(l.subjectId===subjectId&&p?.topicId===topicId&&l.date)dates.push(l.date);}
+ for(const a of (space.assessments||[])){if(a.subjectId===subjectId&&a.topicId===topicId&&a.date)dates.push(a.date);}
+ for(const p of space.plan){if(p.done&&p.subjectId===subjectId&&p.topicId===topicId){const d=routePlanEvidenceDate(p,space);if(d)dates.push(d);}}
+ return dates.sort(function(a,b){return b.localeCompare(a);})[0]||'';
+}
+function routeTopicMasteryScore(topicId){
+ const space=w(),t=R.topic(space,topicId);if(!t)return {known:false,score:0,label:'ÖLÇÜM YOK',confidence:0};
+ const binary=routeTopicMasterySignal(topicId),retention=routeRetentionEvidenceSignal(t.subjectId,topicId),trend=routePerformanceTrendSignal(t.subjectId,topicId),skill=routeAssessmentWeakSkillSignal(t.subjectId,topicId),errors=routeErrorMemorySignal(t.subjectId,topicId),openMistakes=space.mistakes.filter(function(m){return !m.resolved&&m.topicId===topicId;}).length,performanceAccuracy=binary.practice?.known?Math.round((binary.practice.weightedAccuracy||binary.practice.accuracy)*100):null,skillMissed=(skill.weak||[]).reduce(function(n,x){return n+(x.missed||0);},0),latestDate=routeTopicLatestEvidenceDate(t.subjectId,topicId),daysSince=latestDate?Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(latestDate+'T12:00:00'))/86400000)):999;
+ const core=routeMasteryScoreFromSignals({base:binary.base,review3:binary.review3,review7:binary.review7,hasEvidence:binary.hasEvidence,ready:binary.ready,performanceAccuracy,retentionScore:retention.known?retention.score:null,trend:trend.direction,openMistakes,skillMissed,errorRepeated:errors.repeated});
+ let confidence=(binary.base?18:0)+(binary.review3?18:0)+(binary.review7?22:0)+Math.min(24,(binary.practice?.sessions||0)*6)+(retention.known?8:0)+(trend.known?5:0)+(skill.known?3:0)+(errors.known?3:0);confidence=Math.round(Math.min(100,confidence)*routeEvidenceFreshness(daysSince));
+ return {known:!!binary.base||binary.practice?.known||skill.known||errors.known,confidence,latestDate,daysSince,...core,binary,retentionSignal:retention,trendSignal:trend,openMistakes,skillMissed,errorRepeated:errors.repeated};
+}
+function routeForgettingProjection(input){
+ const mastery=Math.max(0,Math.min(100,Number(input.mastery)||0)),days=Math.max(0,Number(input.daysSince)||0),stability=Math.max(2,Math.min(45,Number(input.stabilityDays)||3)),retained=Math.max(0,Math.min(100,Math.round(mastery*Math.exp(-days/(stability*3)))));
+ let dueIn=null;if(mastery>65){const targetDays=Math.max(0,Math.floor(-stability*3*Math.log(65/mastery)));dueIn=Math.max(0,targetDays-days);}else dueIn=0;
+ return {retained,stabilityDays:stability,daysSince:days,reviewDue:retained<65||dueIn===0,nextReviewIn:dueIn};
+}
+function routeTopicForgettingSignal(topicId,masteryInput=null){
+ const space=w(),t=R.topic(space,topicId);if(!t)return {known:false,retained:0,reviewDue:false,nextReviewIn:null,stabilityDays:0};
+ const mastery=masteryInput||routeTopicMasteryScore(topicId);if(!mastery.known||!mastery.latestDate)return {known:false,retained:mastery.score||0,reviewDue:false,nextReviewIn:null,stabilityDays:0,mastery};
+ const velocity=routeLearningVelocitySignal(t.subjectId,topicId),ret=mastery.retentionSignal,stability=3+(mastery.binary.review3?4:0)+(mastery.binary.review7?8:0)+(mastery.score>=80?5:mastery.score>=65?2:0)+(ret.known?Math.round(ret.score/20):0)+(velocity.key==='fast'?3:velocity.key==='slow'?-1:0);
+ const projection=routeForgettingProjection({mastery:mastery.score,daysSince:mastery.daysSince,stabilityDays:stability}),label=projection.retained>=80?'KORUMA GÜÇLÜ':projection.retained>=65?'KORUMA İYİ':projection.retained>=50?'UNUTMA RİSKİ ARTIYOR':'TEKRAR GEREKİYOR';
+ return {known:true,label,confidence:mastery.confidence,latestDate:mastery.latestDate,...projection,mastery,velocity};
+}
+function routeRetentionRefreshCandidates(){
+ const space=w(),items=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)===2;}).map(function(t){const mastery=routeTopicMasteryScore(t.id),forgetting=routeTopicForgettingSignal(t.id,mastery);return {topic:t,mastery,forgetting};}).filter(function(x){return x.forgetting.known&&x.forgetting.reviewDue&&x.mastery.confidence>=35;}).sort(function(a,b){return a.forgetting.retained-b.forgetting.retained||b.mastery.confidence-a.mastery.confidence;});
+ return items.slice(0,2);
 }
 function routeClearCompletedTopicQueue(topicId){
  const before=w().plan.length;
@@ -1922,6 +1962,7 @@ function routeCandidateFromPlan(p){
   const mode=reviewVariant==='challenge'?'challenge':p.reviewWave===1?'mistake':p.reviewWave===7?'long':'spaced';
   recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,mode);
  }
+ else if(source==='retention_refresh')recipe=routeReviewGoal(p.subjectId,p.topicId,p.title.replace(/^Koruma tekrarı · /,''),'long');
  else if(source==='checkpoint')recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'checkpoint');
  else if(['curriculum','profile','priority','exam','backlog'].includes(source))recipe=routeTaskGoal(p.subjectId,p.topicId,p.title);
  if(source==='backlog'&&recipe){
@@ -1989,8 +2030,14 @@ function routeBuildCandidates(){
   if(seenKeys.has(key))continue;
   push({id:R.uid(),date:today(),subjectId:a.subjectId,topicId:a.topicId,title:('Mini onarım · '+topicTitle).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'mini_repair',priority:84,reason,earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }
+ for(const item of routeRetentionRefreshCandidates()){
+  const t=item.topic,f=item.forgetting,key='retention-refresh:'+t.id+':'+f.latestDate;
+  if(seenKeys.has(key)||space.plan.some(function(p){return !p.done&&p.topicId===t.id&&p.source==='retention_refresh';}))continue;
+  const goal=routeReviewGoal(t.subjectId,t.id,t.title,'long'),priority=Math.max(66,Math.min(82,66+Math.round((65-f.retained)*.6)));
+  push({id:R.uid(),date:today(),subjectId:t.subjectId,topicId:t.id,title:('Koruma tekrarı · '+t.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'retention_refresh',priority,reason:'Tamamlanmış konuda Rota koruma tahmini %'+f.retained+' düzeyine geriledi. Yeni ana konu açmadan kısa bir geri çağırma ve doğrulama yapıyoruz.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
+ }
  const latestBaseByTopic=new Map();
- for(const p of space.plan.filter(function(p){return p.done&&p.topicId&&R.topic(space,p.topicId)&&(space.topicState[p.topicId]?.status||0)!==2&&!['mistake','spaced_review','checkpoint'].includes(p.source); })){
+ for(const p of space.plan.filter(function(p){return p.done&&p.topicId&&R.topic(space,p.topicId)&&(space.topicState[p.topicId]?.status||0)!==2&&!['mistake','mini_repair','retention_refresh','ai_teacher','spaced_review','checkpoint'].includes(p.source); })){
   const evidenceDate=routePlanEvidenceDate(p,space),prev=latestBaseByTopic.get(p.topicId);
   if(!prev||evidenceDate>prev.evidenceDate)latestBaseByTopic.set(p.topicId,{task:p,evidenceDate});
  }

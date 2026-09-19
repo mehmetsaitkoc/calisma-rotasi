@@ -776,6 +776,35 @@ for(const marker of [
   'çekirdek yaklaşımı geçmişte çoğunlukla işe yaradı'
 ]) assert.ok(html.includes(marker),`Missing bounded intervention-learning marker: ${marker}`);
 
+// 4) Numerical mastery must reward spaced evidence and penalize unresolved errors without replacing the existing binary gate.
+{
+  const src=between('function routeMasteryScoreFromSignals','function routeTopicLatestEvidenceDate');
+  const fn=new Function(src+';return routeMasteryScoreFromSignals;')();
+  const weak=fn({base:true,review3:false,review7:false,hasEvidence:true,ready:false,performanceAccuracy:58,retentionScore:45,trend:'down',openMistakes:2,skillMissed:3,errorRepeated:true});
+  const strong=fn({base:true,review3:true,review7:true,hasEvidence:true,ready:true,performanceAccuracy:88,retentionScore:86,trend:'up',openMistakes:0,skillMissed:0,errorRepeated:false});
+  assert.ok(strong.score>weak.score+30);
+  assert.ok(strong.score>=82,'Ready mastery must map to a strong numerical score');
+  assert.ok(weak.score<55,'Repeated unresolved errors should keep mastery fragile');
+}
+{
+  const src=between('function routeForgettingProjection','function routeTopicForgettingSignal');
+  const fn=new Function(src+';return routeForgettingProjection;')();
+  const fresh=fn({mastery:88,daysSince:2,stabilityDays:24}),old=fn({mastery:88,daysSince:24,stabilityDays:24}),fragile=fn({mastery:70,daysSince:10,stabilityDays:8});
+  assert.ok(fresh.retained>old.retained,'Retention estimate must decay as evidence gets older');
+  assert.ok(old.retained>fragile.retained,'Higher stability must protect knowledge longer');
+  assert.equal(fragile.reviewDue,true);
+}
+
+// 4) Completed topics may re-enter the route only as bounded retention refresh work; repair/review tasks must not become new base cycles.
+for(const marker of [
+  "retention_refresh:'KORUMA TEKRARI'",
+  "source==='retention_refresh'",
+  "function routeRetentionRefreshCandidates",
+  "source:'retention_refresh'",
+  "Koruma tekrarı · ",
+  "['mistake','mini_repair','retention_refresh','spaced_review','checkpoint','ai_teacher']"
+]) assert.ok(html.includes(marker),`Missing mastery/forgetting integration marker: ${marker}`);
+
 // 4) Topic mastery suggestion requires correctly spaced reviews + repeated evidence.
 {
   const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');

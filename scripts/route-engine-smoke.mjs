@@ -1138,6 +1138,48 @@ for(const marker of [
   'Sınav risk haritası bu başlığı'
 ]) assert.ok(html.includes(marker),`Missing exam risk map marker: ${marker}`);
 
+// 4) Full-exam analysis must emit deterministic route signals and apply them once at save-time, without inventing a wrong topic.
+{
+  const src=between('function sortedExams','root.RotaAnalysis=');
+  let uid=0;
+  const C={
+    TYPES:{KPSS:{exam:'kpss',label:'KPSS'}},
+    PART_SUBJECTS:{KPSS:{Matematik:['k-ma'],Tarih:['k-ta']}},
+    subjects:[
+      {id:'k-ma',exam:'kpss',name:'Matematik'},{id:'k-ta',exam:'kpss',name:'Tarih'}
+    ]
+  };
+  const R={
+    uid:()=> 'a'+(++uid),iso:()=> '2026-09-20',dayAdd:(d,n)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);},
+    validDate:v=>/^\d{4}-\d{2}-\d{2}$/.test(v),
+    calcNet:(parts,penalty=4)=>{const p=parts[0];return {net:p.correct-(penalty?p.wrong/penalty:0),correct:p.correct,wrong:p.wrong,blank:p.total-p.correct-p.wrong,total:p.total};},
+    allTopics:()=>[
+      {id:'m1',subjectId:'k-ma',title:'Problemler'},{id:'t1',subjectId:'k-ta',title:'Osmanlı'}
+    ],
+    planSubjectLevel:(_w,id)=>id==='k-ma'?0:3,planLatestEvidenceDate:()=> ''
+  };
+  const api=new Function('R','C',src+';return {analyze,applyExamSignals,makeReview,dayLoad,nextReviewDate};')(R,C);
+  const w={settings:{dailyMinutes:60,days:[0,1,2,3,4,5,6],priorities:[]},profile:{subjectLevels:{'k-ma':0,'k-ta':3}},topicState:{},customTopics:[],plan:[],logs:[],assessments:[],mistakes:[],exams:[
+    {id:'e1',type:'KPSS',date:'2026-09-20',penalty:4,parts:[{label:'Matematik',total:30,correct:8,wrong:8},{label:'Tarih',total:27,correct:23,wrong:1}]}
+  ]};
+  const analysis=api.analyze(w,'e1');
+  assert.equal(analysis.signals.find(x=>x.partLabel==='Matematik').severity,'critical');
+  assert.equal(analysis.signals.find(x=>x.partLabel==='Tarih').severity,'steady');
+  const applied=api.applyExamSignals(w,'e1','2026-09-20');
+  assert.equal(applied.added,1);
+  assert.equal(w.plan[0].subjectId,'k-ma');
+  assert.equal(w.plan[0].topicId,'m1','Full exam may choose the next real topic but must not claim it was the wrong topic');
+  assert.equal(w.plan[0].source,'exam');
+  assert.match(w.plan[0].reason,/denemesinde Matematik|sıradaki tamamlanmamış/i);
+  assert.ok(api.dayLoad(w,w.plan[0].date).total<=w.settings.dailyMinutes);
+  const repeated=api.applyExamSignals(w,'e1','2026-09-20');
+  assert.equal(repeated.added,1);
+  assert.equal(w.plan.filter(p=>String(p.routeKey||'').startsWith('exam-signal:e1:')).length,1,'Reapplying the same exam must replace, not duplicate, open auto tasks');
+  w.mistakes.push({id:'m-note',subjectId:'k-ma',topicId:'m1',title:'Problemler',resolved:false});
+  const review=api.makeReview(w,'m-note','2026-09-21',25,'2026-09-20');
+  assert.equal(review.source,'mistake');assert.equal(review.priority,88);assert.match(review.reason,/3\/7 günlük/);
+}
+
 // 4) A completed real-topic mistake repair must create its own 3/7-day retention cycle without replacing the normal mastery base.
 {
   const candidate=between('function routeCandidateFromPlan','function routeTopicFrontier');

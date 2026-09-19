@@ -499,7 +499,8 @@ function modeChurn(days){
   for(let i=1;i<modes.length;i++)if(modes[i]!==modes[i-1])transitions.push({day:i+1,from:modes[i-1],to:modes[i]});
   const bounces=[];
   for(let i=1;i<modes.length-1;i++)if(modes[i-1]===modes[i+1]&&modes[i]!==modes[i-1])bounces.push({day:i+1,from:modes[i-1],via:modes[i],back:modes[i+1]});
-  return {modes,transitionCount:transitions.length,bounceCount:bounces.length,transitions,bounces};
+  const stabilityScore=Math.max(0,100-transitions.length*5-bounces.length*25);
+  return {modes,transitionCount:transitions.length,bounceCount:bounces.length,stabilityScore,transitions,bounces};
 }
 
 function simulatePersona(persona){
@@ -528,6 +529,9 @@ for(const r of results){
   assert.ok(r.metrics.completed+r.metrics.skipped>0,`${r.persona.id} had no route decisions`);
   assert.ok(r.days.every(d=>d.confidence>=0&&d.confidence<=100),`${r.persona.id} invalid confidence`);
   assert.ok(r.days.every(d=>d.risk>=0&&d.risk<=100),`${r.persona.id} invalid risk`);
+  assert.equal(r.churn.bounceCount,0,`${r.persona.id} has repair/steady/progress mode oscillation`);
+  assert.ok(r.churn.transitionCount<=3,`${r.persona.id} changed applied mode too often: ${r.churn.transitionCount}`);
+  assert.ok(r.churn.stabilityScore>=85,`${r.persona.id} decision stability score too low: ${r.churn.stabilityScore}`);
 }
 
 {
@@ -610,7 +614,7 @@ const summary=results.map(r=>({
   sustainableDays:r.metrics.sustainableDays,subjectSustainableDays:r.metrics.subjectSustainableDays,progressDays:r.metrics.progressDays,recoveryDays:r.metrics.recoveryDays,challengeTasks:r.metrics.challengeTasks,
   mathTasks:r.metrics.mathTasks,finalConfidence:r.days.at(-1).confidence,finalNeed:r.days.at(-1).learningNeed,
   finalRisk:r.days.at(-1).risk,completedTopics:Object.values(r.space.topicState).filter(x=>x.status===2).length,
-  modeTransitions:r.churn.transitionCount,modeBounces:r.churn.bounceCount,appliedModes:r.churn.modes.join('>')
+  modeTransitions:r.churn.transitionCount,modeBounces:r.churn.bounceCount,stabilityScore:r.churn.stabilityScore,appliedModes:r.churn.modes.join('>')
 }));
 
 console.log('route-engine-closed-loop: 10 students x 14 days = 140 daily decision cycles passed');

@@ -1595,6 +1595,27 @@ for(const marker of [
 }
 
 
+// 5) Mobile task flow must surface focus and completion without inventing study evidence.
+for(const marker of [
+  'Mobile Task Flow v1 — start, focus, finish, record.',
+  'route-complete-label',
+  'route-focus-card',
+  'Bitir ve kaydet',
+  'Bu görev çalışma kaydına otomatik bağlanacak.'
+]) assert.ok(html.includes(marker),`Missing mobile task flow marker: ${marker}`);
+{
+  const task=between('function routeTodayTask','function routeTodayPage');
+  const focus=between('function focusSession','function replaceListRecord');
+  const timer=between('function timerCard','function rhythm');
+  const today=between('function routeTodayPage','function baseTodayPage');
+  assert.ok(task.includes('data-action="complete-session"'),'Mobile completion must keep the existing completion action');
+  assert.ok(focus.includes("t.sessionId=p.id"),'Focus start must link the existing plan task to the timer');
+  assert.ok(focus.includes("$('.route-focus-card')||$('#timer-subject')"),'Focus start must scroll to the visible focus surface');
+  assert.ok(timer.includes("p=t.sessionId?w().plan.find"),'Focus card must derive its task from the linked timer session');
+  assert.ok(today.includes("focusActive=!!focusTimer.sessionId&&w().plan.some"),'Today must show focus only for a real unfinished linked task');
+}
+
+
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
 {
   const mini=between('function routeMiniRepairSignals','function routeBuildCandidates');

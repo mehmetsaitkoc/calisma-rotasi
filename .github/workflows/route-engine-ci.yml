@@ -54,6 +54,12 @@ jobs:
       - name: Syntax check pilot cohort tests
         run: node --check scripts/route-engine-pilot-cohort.test.mjs
 
+      - name: Syntax check pilot operations model
+        run: node --check scripts/route-engine-pilot-operations.mjs
+
+      - name: Syntax check pilot operations tests
+        run: node --check scripts/route-engine-pilot-operations.test.mjs
+
       - name: Run route engine smoke, stress, route simulation, longitudinal and closed-loop tests
         run: npm test
 
@@ -68,6 +74,9 @@ jobs:
 
       - name: Run pilot cohort aggregation tests
         run: npm run pilot:test
+
+      - name: Run pilot operations rules
+        run: npm run pilot:operations:test
 
       - name: Validate quality report sections
         run: |

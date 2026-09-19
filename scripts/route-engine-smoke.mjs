@@ -1580,6 +1580,21 @@ for(const marker of [
 }
 
 
+// 5) Deneme Merkezi must keep the route recommendation visually primary without changing scoring.
+for(const marker of [
+  'Exam Center Premium v1 — recommendation first, catalog second.',
+  'KISA ÖLÇÜMLER',
+  'Rota Mini denemeleri',
+  'mini-section-head'
+]) assert.ok(html.includes(marker),`Missing premium exam center marker: ${marker}`);
+{
+  const src=between('function denemeCenterSection','function examsPage');
+  assert.ok(src.includes('rec=miniRecommendation()'),'Premium exam center must keep the existing recommendation engine');
+  assert.ok(src.includes("btn('Önerilen denemeyi çöz '+icon('arrow'),'start-mini-exam','primary'"),'Recommended mini CTA must keep the existing start action');
+  assert.ok(src.includes("minis.length+' uygun mini set'"),'Mini catalog count must derive from eligible minis');
+}
+
+
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
 {
   const mini=between('function routeMiniRepairSignals','function routeBuildCandidates');

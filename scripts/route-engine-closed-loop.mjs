@@ -267,7 +267,7 @@ function attainmentRatio(space,subjectId,topicId,currentDate){
   const s=targetAttainmentSignal(space,subjectId,topicId,currentDate);return s.known?s.weightedRatio:null;
 }
 function adaptiveState(space,persona,subjectId,topicId,currentDate,weakMap){
-  const R={topic:(_w,id)=>topic(id)},w=()=>space,today=()=>currentDate;
+  const R={topic:(_w,id)=>topic(id),dayAdd},w=()=>space,today=()=>currentDate;
   const routeBehaviorSignal=(sid,tid='',windowDays=null,endDate=currentDate)=>behaviorSignal(space,sid,tid,endDate,windowDays);
   const routeOutcomeSignal=(sid,tid='',since='')=>outcomeSignal(space,sid,tid,since);
   const routePracticeSignal=(sid,tid='',since='')=>practiceSignal(space,sid,tid,since);

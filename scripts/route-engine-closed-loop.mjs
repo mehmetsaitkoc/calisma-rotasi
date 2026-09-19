@@ -648,26 +648,26 @@ function lfExamFactor(space,date,exam,subjectId){
   return fn(function(){return date;},function(){return space;},{PART_SUBJECTS:{}})(exam,subjectId);
 }
 function lfPhase(p,d){
-  let math=.72,completion=.90,volume=.95,feeling='';
-  if(p.id==='weak-improver')math=Math.min(.86,.45+d*.010);
-  else if(p.id==='high-skill-low-compliance'){math=.88;completion=d<20?.38:.90;volume=d<20?.72:.95;}
-  else if(p.id==='hidden-gap'){math=Math.min(.82,.50+d*.007);feeling=d<14?'hidden-gap':'';}
-  else if(p.id==='productive-struggle'){math=.86;feeling=d<18?'productive-struggle':'';}
-  else if(p.id==='fast-learner')math=Math.min(.91,.58+d*.018);
-  else if(p.id==='plateau')math=.63+(d%9===0?.02:0);
-  else if(p.id==='regressing')math=d<18?.88:Math.max(.52,.88-(d-18)*.012);
-  else if(p.id==='recovery-comeback'){math=Math.min(.82,.70+d*.003);completion=d<6?.20:.90;volume=d<6?.70:.92;}
-  else if(p.id==='urgent-weak')math=Math.min(.76,.48+d*.006);
-  else if(p.id==='strong-balanced'){math=.88;completion=.96;volume=1;}
-  else if(p.id==='late-breakthrough')math=d<20?.50:d<40?Math.min(.84,.50+(d-19)*.017):.84;
-  else if(p.id==='burnout-after-success'){math=d<20?Math.min(.90,.78+d*.007):.78;completion=d<20?.96:.34;volume=d<20?1:.58;}
-  else if(p.id==='false-confidence-corrected'){math=d<15?.50:Math.min(.78,.56+(d-15)*.008);feeling=d<15?'hidden-gap':'';}
-  else if(p.id==='relapse')math=d<12?.50:d<32?Math.min(.82,.60+(d-12)*.012):d<44?.55:Math.min(.76,.58+(d-44)*.012);
-  else if(p.id==='exam-refresh')math=Math.min(.82,.58+d*.006);
-  else if(p.id==='long-stable'){math=.87;completion=.95;volume=1;}
-  else if(p.id==='slow-growth')math=Math.min(.84,.55+d*.005);
-  else if(p.id==='noisy-student')math=clamp(.72+Math.sin(d*1.7)*.10,.58,.84);
-  return {accuracy:{'k-ma':math,'k-tr':.78,'k-ta':.74,'k-co':.72},completion,volume,feeling};
+  let math=.72,completion=.90,volume=.95,feeling='',phase='stable';
+  if(p.id==='weak-improver'){math=Math.min(.86,.45+d*.010);phase='gradual-growth';}
+  else if(p.id==='high-skill-low-compliance'){math=.88;completion=d<20?.38:.90;volume=d<20?.72:.95;phase=d<20?'low-compliance':'regular-compliance';}
+  else if(p.id==='hidden-gap'){math=Math.min(.82,.50+d*.007);feeling=d<14?'hidden-gap':'';phase=d<14?'hidden-gap':'calibrated';}
+  else if(p.id==='productive-struggle'){math=.86;feeling=d<18?'productive-struggle':'';phase=d<18?'productive-struggle':'fluent';}
+  else if(p.id==='fast-learner'){math=Math.min(.91,.58+d*.018);phase='fast-growth';}
+  else if(p.id==='plateau'){math=.63+(d%9===0?.02:0);phase='plateau';}
+  else if(p.id==='regressing'){math=d<18?.88:Math.max(.52,.88-(d-18)*.012);phase=d<18?'strong':'regression';}
+  else if(p.id==='recovery-comeback'){math=Math.min(.82,.70+d*.003);completion=d<6?.20:.90;volume=d<6?.70:.92;phase=d<6?'disrupted':'recovered';}
+  else if(p.id==='urgent-weak'){math=Math.min(.76,.48+d*.006);phase='urgent-growth';}
+  else if(p.id==='strong-balanced'){math=.88;completion=.96;volume=1;phase='stable-strong';}
+  else if(p.id==='late-breakthrough'){math=d<20?.50:d<40?Math.min(.84,.50+(d-19)*.017):.84;phase=d<20?'weak':'breakthrough';}
+  else if(p.id==='burnout-after-success'){math=d<20?Math.min(.90,.78+d*.007):.78;completion=d<20?.96:.34;volume=d<20?1:.58;phase=d<20?'success':'burnout';}
+  else if(p.id==='false-confidence-corrected'){math=d<15?.50:Math.min(.78,.56+(d-15)*.008);feeling=d<15?'hidden-gap':'';phase=d<15?'false-confidence':'corrected';}
+  else if(p.id==='relapse'){math=d<12?.50:d<32?Math.min(.82,.60+(d-12)*.012):d<44?.55:Math.min(.76,.58+(d-44)*.012);phase=d<12?'weak':d<32?'recovered':d<44?'relapse':'second-recovery';}
+  else if(p.id==='exam-refresh'){math=Math.min(.82,.58+d*.006);phase=d<25?'old-exam':'fresh-exam';}
+  else if(p.id==='long-stable'){math=.87;completion=.95;volume=1;phase='stable-strong';}
+  else if(p.id==='slow-growth'){math=Math.min(.84,.55+d*.005);phase='slow-growth';}
+  else if(p.id==='noisy-student'){math=clamp(.72+Math.sin(d*1.7)*.10,.58,.84);phase='noisy-stable';}
+  return {accuracy:{'k-ma':math,'k-tr':.78,'k-ta':.74,'k-co':.72},completion,volume,feeling,phase};
 }
 const LF_EXTRA=[
   {id:'late-breakthrough',name:'Geç açılan öğrenci',seed:21,dailyMinutes:90,targetDays:120,exam:{'k-ma':.48,'k-tr':.76,'k-ta':.72,'k-co':.70},profileLevel:{'k-ma':1}},
@@ -683,7 +683,7 @@ const LF_PERSONAS=PERSONAS.map(function(p){return {...p,targetDays:Math.max(90,p
 function lfPersona(base,d){
   const x=lfPhase(base,d),exam={...(base.exam||{})},examHistory=[{day:0,scores:{...(base.exam||{})}}];
   if(base.id==='exam-refresh'){examHistory.push({day:25,scores:{...(base.exam||{}),'k-ma':.84,'k-tr':.82,'k-ta':.78,'k-co':.76}});if(d>=25)exam['k-ma']=.84;}
-  return {...base,accuracy:x.accuracy,completion:x.completion,volume:x.volume,feeling:x.feeling,trend:{},exam,examHistory,dailyMinutes:base.dailyMinutes||120};
+  return {...base,accuracy:x.accuracy,completion:x.completion,volume:x.volume,feeling:x.feeling,phase:x.phase,trend:{},exam,examHistory,dailyMinutes:base.dailyMinutes||120};
 }
 function lfMini(space,p,date,d){
   if(![3,7,11,18,25,33,42,52].includes(d))return;
@@ -696,62 +696,100 @@ function lfFirst(days,mode,enter){
   return null;
 }
 function lfFinite(v){return Number.isFinite(v)?v:null;}
-function lfProject(days,index,key,horizon,min=0,max=100){
-  const base=lfFinite(days[index]?.[key]);if(base===null)return null;
-  const xs=[];
-  for(let j=Math.max(0,index-6);j<=index;j++){const v=lfFinite(days[j]?.[key]);if(v!==null)xs.push({index:j,value:v});}
-  if(xs.length<2)return base;
-  const first=xs[0],last=xs.at(-1),span=Math.max(1,last.index-first.index),rawSlope=(last.value-first.value)/span,slope=Math.max(-2.5,Math.min(2.5,rawSlope));
-  return Math.max(min,Math.min(max,base+slope*horizon));
+function lfBenefit(base,actual,lowerBetter=false){
+  if(!Number.isFinite(base)||!Number.isFinite(actual))return null;
+  return lowerBetter?base-actual:actual-base;
 }
-function lfOutcomeMetric(days,index,horizon,key,lowerBetter=false,min=0,max=100){
-  const base=lfFinite(days[index]?.[key]),futureIndex=index+horizon;
-  if(base===null||futureIndex>=days.length)return {known:false,base,actual:null,projected:null,delta:null,lift:null};
-  const actual=lfFinite(days[futureIndex]?.[key]);if(actual===null)return {known:false,base,actual:null,projected:null,delta:null,lift:null};
-  const projected=lfProject(days,index,key,horizon,min,max),delta=lowerBetter?base-actual:actual-base,lift=projected===null?null:(lowerBetter?projected-actual:actual-projected);
-  return {known:true,base,actual,projected,delta,lift};
-}
-function lfHorizonOutcome(days,index,mode,horizon){
-  const performance=lfOutcomeMetric(days,index,horizon,'performance',false,0,100),learningNeed=lfOutcomeMetric(days,index,horizon,'learningNeed',true,0,100),risk=lfOutcomeMetric(days,index,horizon,'risk',true,0,100),execution=lfOutcomeMetric(days,index,horizon,'execution',false,0,100),completion=lfOutcomeMetric(days,index,horizon,'behaviorCompletion',false,0,1),retention=lfOutcomeMetric(days,index,horizon,'retention',false,0,100),mistakes=lfOutcomeMetric(days,index,horizon,'openMistakes',true,0,99);
-  let score=0,known=0,harmful=false,success=false,reasons=[];
-  if(mode==='repair'){
-    if(performance.known){known++;score+=performance.delta+(performance.lift||0)*.5;if(performance.delta>=4||performance.lift>=4)reasons.push('performans toparlandı');if(performance.delta<=-7&&performance.lift<=-4)harmful=true;}
-    if(learningNeed.known){known++;score+=learningNeed.delta*.45+(learningNeed.lift||0)*.25;if(learningNeed.delta>=6)reasons.push('öğrenme ihtiyacı düştü');if(learningNeed.delta<=-10)harmful=true;}
-    if(risk.known){known++;score+=risk.delta*.25+(risk.lift||0)*.15;if(risk.delta>=6)reasons.push('risk düştü');}
-    if(mistakes.known){known++;score+=mistakes.delta*6;if(mistakes.delta>0)reasons.push('açık yanlış azaldı');if(mistakes.delta<0)harmful=true;}
-    success=!harmful&&known>=2&&score>=5;
-  }else if(mode==='ease'){
-    if(execution.known){known++;score+=execution.delta*.65+(execution.lift||0)*.35;if(execution.delta>=6||execution.lift>=5)reasons.push('uygulanabilirlik arttı');}
-    if(completion.known){known++;score+=completion.delta*45+(completion.lift||0)*25;if(completion.delta>=.10||completion.lift>=.08)reasons.push('tamamlama arttı');}
-    if(learningNeed.known){known++;score+=learningNeed.delta*.20;}
-    if(risk.known){known++;score+=risk.delta*.10;}
-    if(performance.known&&performance.delta<=-10){harmful=true;reasons.push('performans fazla düştü');}
-    if((execution.known&&execution.delta<=-12)||(completion.known&&completion.delta<=-.18))harmful=true;
-    success=!harmful&&known>=1&&score>=5;
-  }else if(mode==='progress'){
-    if(performance.known){known++;score+=performance.delta+(performance.lift||0)*.5+3;if(performance.delta>=2||performance.lift>=3)reasons.push('yük artışını performans taşıdı');if(performance.delta<=-8)harmful=true;}
-    if(retention.known){known++;score+=retention.delta*.20;if(retention.delta<=-12)harmful=true;}
-    if(learningNeed.known){known++;score+=learningNeed.delta*.20;if(learningNeed.delta<=-12)harmful=true;}
-    if(risk.known){known++;score+=risk.delta*.12;if(risk.delta<=-15)harmful=true;}
-    if(execution.known&&execution.delta<=-15)harmful=true;
-    success=!harmful&&known>=2&&score>=3;
+function lfStateDistance(a,b){
+  const defs=[['performance',100,2],['learningNeed',100,1.5],['risk',100,1],['behaviorCompletion',1,1.2],['retention',100,.8],['openMistakes',3,.8],['confidence',100,.5]];
+  let sum=0,weight=0,count=0;
+  for(const [key,scale,w] of defs){
+    const av=lfFinite(a?.[key]),bv=lfFinite(b?.[key]);if(av===null||bv===null)continue;
+    sum+=Math.min(2,Math.abs(av-bv)/scale)*w;weight+=w;count++;
   }
-  const insufficient=known===0,label=insufficient?'insufficient':harmful?'harmful':success?'success':'neutral';
-  return {horizon,label,score:Math.round(score*10)/10,knownSignals:known,reasons,metrics:{performance,learningNeed,risk,execution,completion,retention,mistakes}};
+  return {known:count>=4,count,distance:weight?sum/weight:99};
 }
-function lfBacktest(days){
-  const horizons=[7,14,30],out={success:0,neutral:0,harmful:0,insufficientEvidence:0,events:[],byMode:{repair:{success:0,neutral:0,harmful:0,insufficient:0},ease:{success:0,neutral:0,harmful:0,insufficient:0},progress:{success:0,neutral:0,harmful:0,insufficient:0}},byHorizon:{7:{success:0,neutral:0,harmful:0,insufficient:0},14:{success:0,neutral:0,harmful:0,insufficient:0},30:{success:0,neutral:0,harmful:0,insufficient:0}}};
+function lfControlMatches(results,targetResult,index,horizon){
+  const target=targetResult.days[index],candidates=[];
+  for(const r of results){
+    for(let j=1;j+horizon<r.days.length;j++){
+      if(r===targetResult&&Math.abs(j-index)<=horizon+7)continue;
+      const base=r.days[j],future=r.days[j+horizon],prev=r.days[j-1];
+      if(base.appliedMode!=='steady'||prev.appliedMode!=='steady'||base.recovery)continue;
+      if(base.personaPhase!==future.personaPhase)continue;
+      const window=r.days.slice(j,j+horizon+1);
+      if(window.some(function(x){return x.recovery||['repair','ease','progress'].includes(x.appliedMode);} ))continue;
+      const dist=lfStateDistance(target,base);if(!dist.known)continue;
+      candidates.push({result:r,index:j,distance:dist.distance,comparable:dist.count});
+    }
+  }
+  return candidates.sort(function(a,b){return a.distance-b.distance||b.comparable-a.comparable;}).slice(0,5);
+}
+function lfMatchedMetric(targetResult,index,horizon,key,lowerBetter,controls){
+  const base=lfFinite(targetResult.days[index]?.[key]),futureIndex=index+horizon;
+  if(base===null||futureIndex>=targetResult.days.length)return {known:false,base,actual:null,delta:null,controlDelta:null,lift:null,controls:0};
+  const actual=lfFinite(targetResult.days[futureIndex]?.[key]);if(actual===null)return {known:false,base,actual:null,delta:null,controlDelta:null,lift:null,controls:0};
+  const delta=lfBenefit(base,actual,lowerBetter),controlDeltas=[];
+  for(const m of controls){
+    const cb=lfFinite(m.result.days[m.index]?.[key]),cf=lfFinite(m.result.days[m.index+horizon]?.[key]),d=lfBenefit(cb,cf,lowerBetter);
+    if(d!==null)controlDeltas.push(d);
+  }
+  const controlDelta=controlDeltas.length?controlDeltas.reduce(function(n,x){return n+x;},0)/controlDeltas.length:null,lift=controlDelta===null?null:delta-controlDelta;
+  return {known:true,base,actual,delta,controlDelta,lift,controls:controlDeltas.length};
+}
+function lfHorizonOutcome(results,targetResult,index,mode,horizon){
+  const baseDay=targetResult.days[index],future=targetResult.days[index+horizon];
+  if(!future)return {horizon,label:'insufficient',score:0,knownSignals:0,reasons:['takip ufku henüz yok'],controls:0,metrics:{}};
+  const phaseChanged=baseDay.personaPhase!==future.personaPhase;
+  const controls=lfControlMatches(results,targetResult,index,horizon);
+  const performance=lfMatchedMetric(targetResult,index,horizon,'performance',false,controls),learningNeed=lfMatchedMetric(targetResult,index,horizon,'learningNeed',true,controls),risk=lfMatchedMetric(targetResult,index,horizon,'risk',true,controls),execution=lfMatchedMetric(targetResult,index,horizon,'execution',false,controls),completion=lfMatchedMetric(targetResult,index,horizon,'behaviorCompletion',false,controls),retention=lfMatchedMetric(targetResult,index,horizon,'retention',false,controls),mistakes=lfMatchedMetric(targetResult,index,horizon,'openMistakes',true,controls);
+  const metrics={performance,learningNeed,risk,execution,completion,retention,mistakes};
+  let score=0,known=0,harmful=false,success=false,reasons=[];
+  const add=function(m,w){if(!m.known)return;known++;score+=(m.lift??m.delta??0)*w;};
+  if(mode==='repair'){
+    add(performance,1);add(learningNeed,.35);add(risk,.25);add(mistakes,5);
+    const objectiveGain=(performance.known&&(performance.delta>=4||(performance.lift??-99)>=4))+(risk.known&&(risk.delta>=6||(risk.lift??-99)>=5))+(mistakes.known&&mistakes.delta>0);
+    if(performance.known&&(performance.delta<=-7&&(performance.lift===null||performance.lift<=-3)))harmful=true;
+    if(risk.known&&(risk.delta<=-12&&(risk.lift===null||risk.lift<=-6))&&(!performance.known||performance.delta<=0))harmful=true;
+    if(mistakes.known&&mistakes.delta<0&&(!performance.known||performance.delta<=0))harmful=true;
+    if(performance.known&&performance.delta>=4)reasons.push('performans toparlandı');
+    if(learningNeed.known&&learningNeed.delta>=6)reasons.push('öğrenme ihtiyacı düştü');
+    if(risk.known&&risk.delta>=6)reasons.push('risk düştü');
+    if(mistakes.known&&mistakes.delta>0)reasons.push('açık yanlış azaldı');
+    success=!harmful&&known>=2&&(objectiveGain>=2||score>=6);
+  }else if(mode==='ease'){
+    add(execution,.65);add(completion,35);add(learningNeed,.15);add(risk,.10);add(performance,.20);
+    if(execution.known&&execution.delta<=-12&&(execution.lift===null||execution.lift<=-6))harmful=true;
+    if(completion.known&&completion.delta<=-.18&&(completion.lift===null||completion.lift<=-.10))harmful=true;
+    if(performance.known&&performance.delta<=-10&&(performance.lift===null||performance.lift<=-5))harmful=true;
+    if(execution.known&&(execution.delta>=6||(execution.lift??-99)>=5))reasons.push('uygulanabilirlik arttı');
+    if(completion.known&&(completion.delta>=.10||(completion.lift??-99)>=.08))reasons.push('tamamlama arttı');
+    success=!harmful&&known>=1&&(score>=5||reasons.length>=1);
+  }else if(mode==='progress'){
+    add(performance,1);add(retention,.25);add(learningNeed,.18);add(risk,.12);add(execution,.12);
+    if(performance.known&&performance.delta<=-8&&(performance.lift===null||performance.lift<=-4))harmful=true;
+    if(retention.known&&retention.delta<=-12&&(retention.lift===null||retention.lift<=-6))harmful=true;
+    if(learningNeed.known&&learningNeed.delta<=-15&&performance.known&&performance.delta<0)harmful=true;
+    if(risk.known&&risk.delta<=-18&&performance.known&&performance.delta<0)harmful=true;
+    const carried=performance.known&&performance.delta>=-3&&(performance.lift===null||performance.lift>=-3),retained=!retention.known||retention.delta>=-6;
+    if(carried&&retained)reasons.push('yük artışı taşındı');
+    if(performance.known&&(performance.delta>=2||(performance.lift??-99)>=3))reasons.push('performans yükseldi');
+    success=!harmful&&known>=2&&carried&&retained&&score>=-1;
+  }
+  if(phaseChanged)return {horizon,label:'confounded',score:Math.round(score*10)/10,knownSignals:known,reasons:['öğrenci davranış/performans fazı değişti'].concat(reasons),controls:controls.length,phaseFrom:baseDay.personaPhase,phaseTo:future.personaPhase,metrics};
+  const insufficient=known===0||controls.length<2,label=insufficient?'insufficient':harmful?'harmful':success?'success':'neutral';
+  return {horizon,label,score:Math.round(score*10)/10,knownSignals:known,reasons,controls:controls.length,phaseFrom:baseDay.personaPhase,phaseTo:future.personaPhase,metrics};
+}
+function lfBacktest(results,targetResult){
+  const days=targetResult.days,horizons=[7,14,30],empty=function(){return {success:0,neutral:0,harmful:0,insufficient:0,confounded:0};},out={success:0,neutral:0,harmful:0,insufficientEvidence:0,confounded:0,events:[],byMode:{repair:empty(),ease:empty(),progress:empty()},byHorizon:{7:empty(),14:empty(),30:empty()}};
   for(let i=0;i<days.length;i++){
     const d=days[i],prev=i?days[i-1].appliedMode:'steady';
     if(!['repair','ease','progress'].includes(d.appliedMode)||d.appliedMode===prev)continue;
-    const results=horizons.map(function(h){return lfHorizonOutcome(days,i,d.appliedMode,h);}),evaluated=results.filter(function(x){return x.label!=='insufficient';}),harmful=evaluated.filter(function(x){return x.label==='harmful';}).length,success=evaluated.filter(function(x){return x.label==='success';}).length;
-    const label=!evaluated.length?'neutral':harmful?'harmful':success>=Math.ceil(evaluated.length/2)?'success':'neutral',insufficient=results.filter(function(x){return x.label==='insufficient';}).length;
-    out[label]++;out.insufficientEvidence+=insufficient;
-    for(const r of results){
-      const bucket=r.label==='insufficient'?'insufficient':r.label;
-      out.byMode[d.appliedMode][bucket]++;out.byHorizon[r.horizon][bucket]++;
-    }
-    out.events.push({day:d.day,date:d.date,mode:d.appliedMode,label,insufficientEvidence:insufficient,base:{performance:d.performance,learningNeed:d.learningNeed,risk:d.risk,execution:d.execution,completion:d.behaviorCompletion,retention:d.retention,openMistakes:d.openMistakes},horizons:results});
+    const resultsAtHorizon=horizons.map(function(h){return lfHorizonOutcome(results,targetResult,i,d.appliedMode,h);}),evaluated=resultsAtHorizon.filter(function(x){return !['insufficient','confounded'].includes(x.label);}),harmful=evaluated.filter(function(x){return x.label==='harmful';}).length,success=evaluated.filter(function(x){return x.label==='success';}).length,confounded=resultsAtHorizon.filter(function(x){return x.label==='confounded';}).length,insufficient=resultsAtHorizon.filter(function(x){return x.label==='insufficient';}).length;
+    const label=!evaluated.length?'neutral':harmful>=2?'harmful':success>=Math.ceil(evaluated.length/2)?'success':'neutral';
+    out[label]++;out.insufficientEvidence+=insufficient;out.confounded+=confounded;
+    for(const r of resultsAtHorizon){const bucket=r.label==='insufficient'?'insufficient':r.label;out.byMode[d.appliedMode][bucket]++;out.byHorizon[r.horizon][bucket]++;}
+    out.events.push({day:d.day,date:d.date,mode:d.appliedMode,label,insufficientEvidence:insufficient,confounded,base:{phase:d.personaPhase,performance:d.performance,learningNeed:d.learningNeed,risk:d.risk,execution:d.execution,completion:d.behaviorCompletion,retention:d.retention,openMistakes:d.openMistakes},horizons:resultsAtHorizon});
   }
   return out;
 }
@@ -790,11 +828,11 @@ function lfSim(base){
     const noExam=modelFor(space,p,'k-ma','m1',date,null,ad),prev=days.length?{mode:days.at(-1).appliedMode,hysteresisHeld:!!days.at(-1).hysteresisHeld,easeHysteresisHeld:!!days.at(-1).easeHysteresisHeld,easeEntryHeld:!!days.at(-1).easeEntryHeld}:null,applied=appliedDecisionFn(ad,model,built.recovery,prev),norm=personalNorm(space,'k-ma','m1');
     if(normStart===null&&d>=9&&Number.isFinite(norm.baselineAccuracy))normStart=norm.baselineAccuracy;
     const mastered=new Set(Object.entries(space.topicState).filter(function(x){return x[1].status===2;}).map(function(x){return x[0];})),masteryRegression=[...lastMastered].some(function(id){return !mastered.has(id);});lastMastered=mastered;
-    days.push({day:d+1,date,studentState:model.state,appliedMode:applied.mode,hysteresisHeld:!!applied.hysteresisHeld,easeHysteresisHeld:!!applied.easeHysteresisHeld,easeEntryHeld:!!applied.easeEntryHeld,adaptiveMode:ad.mode,adaptiveRepairScore:ad.repairScore,adaptiveProgressScore:ad.progressScore,adaptiveEvidence:ad.evidence,behaviorCompletion:ad.behavior?.completion??null,behaviorFriction:ad.behavior?.friction??null,attainmentRatio:ad.attainment?.weightedRatio??null,confidence:model.confidence,learningNeed:model.learningNeed,performance:model.performance,execution:model.execution,risk:risk.score,recovery:built.recovery.active,openMistakes:model.openMistakes,retention:model.retention,normBase:norm.baselineAccuracy,completedTopics:mastered.size,masteryRegression,forgettingRefreshes:events.filter(function(x){return x.source==='retention_refresh';}).length,staleEvidenceInfluence:(Number.isFinite(model.performance)&&Number.isFinite(noExam.performance))?Math.abs(model.performance-noExam.performance):0,examFreshness:weak['k-ma']?.freshness??null,oldExamWeight:weak['k-ma']?.oldestExamWeight??null,freshExamWeight:weak['k-ma']?.freshestExamWeight??null,examEvidenceCount:weak['k-ma']?.samples||0});
+    days.push({day:d+1,date,personaPhase:p.phase,studentState:model.state,appliedMode:applied.mode,hysteresisHeld:!!applied.hysteresisHeld,easeHysteresisHeld:!!applied.easeHysteresisHeld,easeEntryHeld:!!applied.easeEntryHeld,adaptiveMode:ad.mode,adaptiveRepairScore:ad.repairScore,adaptiveProgressScore:ad.progressScore,adaptiveEvidence:ad.evidence,behaviorCompletion:ad.behavior?.completion??null,behaviorFriction:ad.behavior?.friction??null,attainmentRatio:ad.attainment?.weightedRatio??null,confidence:model.confidence,learningNeed:model.learningNeed,performance:model.performance,execution:model.execution,risk:risk.score,recovery:built.recovery.active,openMistakes:model.openMistakes,retention:model.retention,normBase:norm.baselineAccuracy,completedTopics:mastered.size,masteryRegression,forgettingRefreshes:events.filter(function(x){return x.source==='retention_refresh';}).length,staleEvidenceInfluence:(Number.isFinite(model.performance)&&Number.isFinite(noExam.performance))?Math.abs(model.performance-noExam.performance):0,examFreshness:weak['k-ma']?.freshness??null,oldExamWeight:weak['k-ma']?.oldestExamWeight??null,freshExamWeight:weak['k-ma']?.freshestExamWeight??null,examEvidenceCount:weak['k-ma']?.samples||0});
   }
-  const r={persona:base,space,days,normStart};r.day30=lfCheckpoint(r,30);r.day60=lfCheckpoint(r,60);r.backtest=lfBacktest(days);return r;
+  const r={persona:base,space,days,normStart};r.day30=lfCheckpoint(r,30);r.day60=lfCheckpoint(r,60);return r;
 }
-const lfResults=LF_PERSONAS.map(lfSim),lfById=Object.fromEntries(lfResults.map(function(r){return [r.persona.id,r];}));
+const lfResults=LF_PERSONAS.map(lfSim);for(const r of lfResults)r.backtest=lfBacktest(lfResults,r);const lfById=Object.fromEntries(lfResults.map(function(r){return [r.persona.id,r];}));
 for(const r of lfResults)if(r.backtest.harmful)console.log('INTERVENTION-HARMFUL '+r.persona.id,JSON.stringify(r.backtest.events.filter(function(x){return x.label==='harmful';})));
 for(const r of lfResults){const ch=lfChurn(r.days);for(const b of ch.bounces)console.log('LIFECYCLE-BOUNCE '+r.persona.id,JSON.stringify({bounce:b,window:r.days.slice(Math.max(0,b.day-3),Math.min(r.days.length,b.day+2))}));}
 for(const r of lfResults){
@@ -871,6 +909,6 @@ const burn=lfById['burnout-after-success'];assert.ok(burn.days.find(function(d){
   assert.equal(newCycle.ready,false,'old retention evidence completed a fresh learning cycle');
 }
 assert.equal(lfFreshness(3),1,'freshness 3d');assert.equal(lfFreshness(21),.55,'freshness 21d');assert.equal(lfFreshness(45),.35,'freshness 45d');
-const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful,interventionInsufficientEvidence:r.backtest.insufficientEvidence,interventionByMode:r.backtest.byMode,interventionByHorizon:r.backtest.byHorizon};});
+const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful,interventionInsufficientEvidence:r.backtest.insufficientEvidence,interventionConfounded:r.backtest.confounded,interventionByMode:r.backtest.byMode,interventionByHorizon:r.backtest.byHorizon};});
 console.log('route-engine-lifecycle: '+LF_PERSONAS.length+' students x 60 days = '+(LF_PERSONAS.length*60)+' daily cycles; day 30 + day 60 checkpoints passed');
 console.log(JSON.stringify(lfSummary));

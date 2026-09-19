@@ -871,12 +871,35 @@ for(const marker of [
   assert.ok(build.indexOf('topics=routeTopicFrontier')<build.indexOf('routeTopicExamRisk(t.subjectId,t.id,student,riskContext)'),'Risk scoring must happen only after topic-frontier selection');
 }
 
+// 4) Every topic risk decision must expose a bounded evidence ledger and clearly flag sparse data.
+{
+  const src=between('function routeTopicEvidenceLedger','function routeTopicExamRisk');
+  const fn=new Function(src+';return routeTopicEvidenceLedger;')();
+  const rich=fn({
+    student:{performance:72,confidence:68,sourceCount:5,openMistakes:1,trend:{known:true,direction:'down'}},
+    mastery:{confidence:64,binary:{review3:true,review7:false}},
+    forgetting:{known:true,retained:61},
+    weak:{samples:2,ratio:.58,freshness:.55},
+    daysToTarget:40
+  });
+  assert.equal(rich.quality,'KANIT GÜÇLÜ');
+  assert.ok(rich.items.some(x=>x.key==='performance'&&x.value==='%72'));
+  assert.ok(rich.items.some(x=>x.key==='spacing'&&/3g ✓/.test(x.value)));
+  assert.ok(rich.items.some(x=>x.key==='exam'&&/Tazelik %55/.test(x.detail)));
+  assert.ok(rich.items.some(x=>x.key==='target'&&x.value==='40 gün'));
+  const sparse=fn({student:{confidence:10,sourceCount:1,trend:{known:false}},mastery:{confidence:0,binary:{}},forgetting:{known:false},weak:null,daysToTarget:null});
+  assert.equal(sparse.quality,'VERİ AZ');
+  assert.match(sparse.dataNote,/risk önceliğe çevrilmiyor/);
+}
+
 // 4) Risk map must be explainable UI and affect normal topic priority only through its bounded boost.
 for(const marker of [
   'function routeExamRiskMapCard()',
   'SINAV RİSK HARİTASI',
   'Risk puanı soru çıkma olasılığı değildir',
   '<strong>Neden:</strong>',
+  '<strong>Kanıt dökümü:</strong>',
+  'function routeTopicEvidenceLedger',
   'rawPriorityBoost',
   'risk.priorityBoost',
   'riskBoost=recovery.active?0:risk.priorityBoost',

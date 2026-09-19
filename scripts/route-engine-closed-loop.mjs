@@ -520,6 +520,7 @@ function simulatePersona(persona){
 }
 
 const results=PERSONAS.map(simulatePersona);
+console.log('closed-loop-trace weak-improver '+JSON.stringify(results.find(r=>r.persona.id==='weak-improver').days));
 const byId=Object.fromEntries(results.map(r=>[r.persona.id,r]));
 
 for(const r of results){

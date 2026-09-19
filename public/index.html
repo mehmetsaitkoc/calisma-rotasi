@@ -1553,7 +1553,7 @@ function routeDifficultyPrescription(subjectId,topicId,fallbackTitle,difficulty)
 }
 function routeSubjectAdaptiveState(subjectId,topicId=''){
  const realTopic=topicId&&R.topic(w(),topicId)?topicId:'';
- const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior,recentSubjectBehavior=routeBehaviorSignal(subjectId,'',7,today()),previousSubjectBehavior=routeBehaviorSignal(subjectId,'',7,R.dayAdd(today(),-7)),recentGlobalBehavior=routeBehaviorSignal('','',7,today()),previousGlobalBehavior=routeBehaviorSignal('','',7,R.dayAdd(today(),-7)),subjectCompletionCollapse=recentSubjectBehavior.known&&previousSubjectBehavior.known&&recentSubjectBehavior.total>=3&&previousSubjectBehavior.total>=3&&previousSubjectBehavior.completion>=.70&&recentSubjectBehavior.completion<=.55&&previousSubjectBehavior.completion-recentSubjectBehavior.completion>=.25,globalCompletionCollapse=recentGlobalBehavior.known&&previousGlobalBehavior.known&&recentGlobalBehavior.total>=3&&previousGlobalBehavior.total>=3&&previousGlobalBehavior.completion>=.70&&recentGlobalBehavior.completion<=.55&&previousGlobalBehavior.completion-recentGlobalBehavior.completion>=.25,completionCollapse=subjectCompletionCollapse||globalCompletionCollapse;
+ const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior,recentSubjectBehavior=routeBehaviorSignal(subjectId,'',7,today()),previousSubjectBehavior=routeBehaviorSignal(subjectId,'',7,R.dayAdd(today(),-7)),recentGlobalBehavior=routeBehaviorSignal('','',7,today()),previousGlobalBehavior=routeBehaviorSignal('','',7,R.dayAdd(today(),-7)),subjectCompletionCollapse=recentSubjectBehavior.known&&previousSubjectBehavior.known&&recentSubjectBehavior.total>=3&&previousSubjectBehavior.total>=3&&previousSubjectBehavior.completion>=.70&&recentSubjectBehavior.completion<=.55&&previousSubjectBehavior.completion-recentSubjectBehavior.completion>=.25,globalCompletionCollapse=recentGlobalBehavior.known&&previousGlobalBehavior.known&&recentGlobalBehavior.total>=3&&previousGlobalBehavior.total>=3&&previousGlobalBehavior.completion>=.70&&recentGlobalBehavior.completion<=.55&&previousGlobalBehavior.completion-recentGlobalBehavior.completion>=.25,completionCollapse=subjectCompletionCollapse||globalCompletionCollapse,globalLowCompletion=recentGlobalBehavior.known&&recentGlobalBehavior.total>=3&&recentGlobalBehavior.completion<=.55,globalVeryLowCompletion=recentGlobalBehavior.known&&recentGlobalBehavior.total>=3&&recentGlobalBehavior.completion<=.35;
  const topicOutcome=realTopic?routeOutcomeSignal(subjectId,realTopic):null,subjectOutcome=routeOutcomeSignal(subjectId),outcome=topicOutcome?.known?topicOutcome:subjectOutcome;
  const topicPractice=realTopic?routePracticeSignal(subjectId,realTopic):null,subjectPractice=routePracticeSignal(subjectId),practice=topicPractice?.known?topicPractice:subjectPractice;
  const topicCalibration=realTopic?routeFeedbackCalibrationSignal(subjectId,realTopic):null,subjectCalibration=routeFeedbackCalibrationSignal(subjectId),calibration=topicCalibration?.known?topicCalibration:subjectCalibration;
@@ -1580,8 +1580,9 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  const volumeStrain=attainment.known&&attainment.weightedRatio<.65,volumeStrong=attainment.known&&attainment.weightedRatio>=.95;
  if(volumeStrain)evidence.push('hedef hacmin altında');else if(volumeStrong)evidence.push('hedef hacmi karşılanıyor');
  if(completionCollapse)evidence.push('son 7 günde tamamlama belirgin düştü');
- const severeFriction=(behavior.known&&behavior.total>=4&&behavior.friction>=.60)||(completionCollapse&&recentSubjectBehavior.completion<=.35);
- const moderateFriction=(behavior.known&&behavior.total>=3&&behavior.friction>=.42)||completionCollapse;
+ if(globalLowCompletion&&!completionCollapse)evidence.push('son 7 günde genel tamamlama düşük');
+ const severeFriction=(behavior.known&&behavior.total>=4&&behavior.friction>=.60)||(completionCollapse&&recentSubjectBehavior.known&&recentSubjectBehavior.completion<=.35)||globalVeryLowCompletion;
+ const moderateFriction=(behavior.known&&behavior.total>=3&&behavior.friction>=.42)||completionCollapse||globalLowCompletion;
  if(behavior.known&&behavior.total>=4&&behavior.completion>=.80){progressScore+=2;evidence.push('yüksek tamamlama');}
  else if(behavior.known&&behavior.total>=3&&behavior.completion>=.75){progressScore+=1;evidence.push('iyi tamamlama');}
  if(outcome.total>=3&&outcome.trend>=.30&&outcome.recent!=='stuck'){progressScore+=2;evidence.push('rahat ilerleme tekrar ediyor');}
@@ -1597,7 +1598,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
   evidence.push('zorlanma hissi + yüksek doğruluk');
  }
  if(severeFriction){
-  mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note=completionCollapse?'Son 7 günlük tamamlama, önceki 7 güne göre belirgin düştü; yükü erken küçültüp tükenme büyümeden düzeni koruyoruz.':'Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama belirgin arttığı için önce görevi küçültüp düzeni koruyoruz.';
+  mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note=completionCollapse?'Son 7 günlük tamamlama, önceki 7 güne göre belirgin düştü; yükü erken küçültüp tükenme büyümeden düzeni koruyoruz.':globalVeryLowCompletion?'Son 7 günlük genel tamamlama çok düşük kaldığı için SÜRDÜRÜLEBİLİR dozu koruyoruz.':'Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama belirgin arttığı için önce görevi küçültüp düzeni koruyoruz.';
  }else if(repairScore>=3){
   mode='repair';label='ONARIM MODU';
   note=calibration.hiddenGap?'Görev rahat hissettirse bile doğru/yanlış verisi aynı şeyi söylemiyor; yeni yük eklemek yerine düşük doğruluğun nedenini onarıyoruz.':
@@ -1606,7 +1607,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
        outcome.total>=2&&outcome.stuckRate>=.5?'Zorlanma tekrarladığı ve başka sinyallerle desteklendiği için yeni yük eklemek yerine temeli onarıyoruz.':
        'Deneme, yanlış ve çalışma sinyalleri birlikte temel onarımını öne çıkarıyor.';
  }else if(moderateFriction||volumeStrain){
-  mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note=completionCollapse?'Son 7 günlük tamamlama önceki haftaya göre belirgin düştü; dozu geçici olarak küçültüp sürdürülebilirliği doğruluyoruz.':volumeStrain?'Planlanan soru hacmi son oturumlarda düzenli olarak tamamlanamadığı için hedefi küçültüp uygulanabilir seviyeye çekiyoruz.':'Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama artıyor; görevi biraz küçültüp tamamlanabilir tutuyoruz.';
+  mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note=completionCollapse?'Son 7 günlük tamamlama önceki haftaya göre belirgin düştü; dozu geçici olarak küçültüp sürdürülebilirliği doğruluyoruz.':globalLowCompletion?'Son 7 günlük genel tamamlama düşük kaldığı için görevi küçültülmüş ve tamamlanabilir tutuyoruz.':volumeStrain?'Planlanan soru hacmi son oturumlarda düzenli olarak tamamlanamadığı için hedefi küçültüp uygulanabilir seviyeye çekiyoruz.':'Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama artıyor; görevi biraz küçültüp tamamlanabilir tutuyoruz.';
  }else if(progressScore>=4&&repairScore<=1){
   mode='progress';label='GELİŞİM MODU';note='Birden fazla iyi sinyal aynı yönde: düzenli tamamlama ve performans yeterince güçlü olduğu için yük yalnız küçük bir adımla artırılıyor.';
  }else if(calibration.productiveStruggle>=2&&calibration.hiddenGap===0){
@@ -1617,7 +1618,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
   note='İyi sinyaller oluşuyor ama yük artırmak için biraz daha tutarlı veri bekliyoruz; mevcut doz korunuyor.';
  }
  const confidence=Math.min(100,Math.max(repairScore,progressScore)*20+(topicEvidence?10:0));
- return {mode,label,note,behavior,recentSubjectBehavior,previousSubjectBehavior,recentGlobalBehavior,previousGlobalBehavior,subjectCompletionCollapse,globalCompletionCollapse,completionCollapse,completionCollapseScope:globalCompletionCollapse?'global':subjectCompletionCollapse?'subject':'',outcome,practice,calibration,attainment,skillWeakness,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
+ return {mode,label,note,behavior,recentSubjectBehavior,previousSubjectBehavior,recentGlobalBehavior,previousGlobalBehavior,subjectCompletionCollapse,globalCompletionCollapse,completionCollapse,completionCollapseScope:globalCompletionCollapse?'global':subjectCompletionCollapse?'subject':'',globalLowCompletion,globalVeryLowCompletion,outcome,practice,calibration,attainment,skillWeakness,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
 }
 const ROUTE_ERROR_TYPES=Object.freeze({concept:'Bilgi / kavram eksiği',process:'Yöntem / işlem hatası',attention:'Dikkat hatası',speed:'Süre yönetimi',strategy:'Soruya yaklaşım',reading:'Soru kökü / anlama',recall:'Hatırlama / karıştırma',other:'Diğer'});
 function routeErrorTypeLabel(type){return ROUTE_ERROR_TYPES[type]||ROUTE_ERROR_TYPES.other;}

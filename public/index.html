@@ -660,7 +660,7 @@ function validateBackup(data){
   }):[];
   const modeHistory=Array.isArray(ro.modeHistory)?ro.modeHistory.slice(-160).map(x=>{
    const subjectId=sub(x.subjectId),topicId=x.topicId?ident(x.topicId):'';if(topicId){const t=topic(w,topicId);if(!topicIds.has(topicId)||!t||t.subjectId!==subjectId)throw Error('Rota karar geçmişi konu bağlantısı geçersiz.');}
-   return {date:checkedDate(x.date),subjectId,topicId,mode:['repair','ease','steady','progress'].includes(x.mode)?x.mode:'steady',studentState:['collect','repair','retention','sustainable','progress','steady'].includes(x.studentState)?x.studentState:'steady',confidence:int(Number.isInteger(x.confidence)?x.confidence:0,0,100,'rota karar güveni'),performance:Number.isFinite(x.performance)?Math.max(0,Math.min(100,Number(x.performance))):null,learningNeed:Number.isFinite(x.learningNeed)?Math.max(0,Math.min(100,Number(x.learningNeed))):null,hysteresisHeld:!!x.hysteresisHeld,created:Number.isFinite(x.created)?Math.max(0,x.created):0};
+   return {date:checkedDate(x.date),subjectId,topicId,mode:['repair','ease','steady','progress'].includes(x.mode)?x.mode:'steady',studentState:['collect','repair','retention','sustainable','progress','steady'].includes(x.studentState)?x.studentState:'steady',confidence:int(Number.isInteger(x.confidence)?x.confidence:0,0,100,'rota karar güveni'),performance:Number.isFinite(x.performance)?Math.max(0,Math.min(100,Number(x.performance))):null,learningNeed:Number.isFinite(x.learningNeed)?Math.max(0,Math.min(100,Number(x.learningNeed))):null,hysteresisHeld:!!x.hysteresisHeld,easeHysteresisHeld:!!x.easeHysteresisHeld,easeEntryHeld:!!x.easeEntryHeld,easeRecoveryHeld:!!x.easeRecoveryHeld,created:Number.isFinite(x.created)?Math.max(0,x.created):0};
   }):[];
   w.route={version:2,lastRun:ro.lastRun&&validDate(ro.lastRun)?ro.lastRun:'',lastAutoDate:ro.lastAutoDate&&validDate(ro.lastAutoDate)?ro.lastAutoDate:'',lastReason:text(ro.lastReason||'',500),lastChanged:int(Number.isInteger(ro.lastChanged)?ro.lastChanged:0,0,10000,'rota değişikliği'),decisions,interventions,modeHistory};
   w.taskEvents=Array.isArray(old.taskEvents)?old.taskEvents.slice(-300).map(ev=>({id:ident(ev.id),taskId:ident(ev.taskId),date:checkedDate(ev.date),action:['skip','later','complete','start'].includes(ev.action)?ev.action:'later',created:Number.isFinite(ev.created)?Math.max(0,ev.created):0})):[];
@@ -1805,6 +1805,13 @@ function routeEaseEntryHoldFromSignals(student,previous,recovery={active:false})
  if(Number.isFinite(student.learningNeed)&&student.learningNeed>=60)return false;
  return true;
 }
+function routeEaseRecoveryHoldFromSignals(student,previous,recovery={active:false}){
+ if(!previous||previous.mode!=='ease'||previous.easeRecoveryHeld||recovery.active)return false;
+ if((student?.state||'steady')!=='steady'||(student.confidence||0)<45)return false;
+ if(Number.isFinite(student.execution)&&student.execution>=85)return false;
+ if(Number.isFinite(student.learningNeed)&&student.learningNeed>=68)return false;
+ return true;
+}
 function routeEaseReentryHoldFromSignals(student,previous,recovery={active:false}){
  if(!previous||previous.mode!=='ease'||previous.easeHysteresisHeld||recovery.active)return false;
  if((student?.state||'steady')!=='progress'||(student.confidence||0)<45||(student.openMistakes||0)>0)return false;
@@ -1817,7 +1824,7 @@ function routeEaseReentryHoldFromSignals(student,previous,recovery={active:false
 function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false},previous=null){
  adaptive=adaptive||{mode:'steady',label:'DENGELİ TEMPO',note:'Görev dozu mevcut seviyene göre korunuyor.',evidence:[]};
  student=student||{state:'collect',label:'VERİ TOPLUYOR',nextAction:'Keskin karar verme; yeni gerçek veri topla.',confidence:0};
- const rawMode=adaptive.mode||'steady',rawLabel=adaptive.label||'DENGELİ TEMPO',state=student.state||'collect';let mode='steady',label=student.label||'DENGELİ İLERLEME',note=student.nextAction||adaptive.note||'Mevcut dozu koru.',hysteresisHeld=false,easeHysteresisHeld=false,easeEntryHeld=false;
+ const rawMode=adaptive.mode||'steady',rawLabel=adaptive.label||'DENGELİ TEMPO',state=student.state||'collect';let mode='steady',label=student.label||'DENGELİ İLERLEME',note=student.nextAction||adaptive.note||'Mevcut dozu koru.',hysteresisHeld=false,easeHysteresisHeld=false,easeEntryHeld=false,easeRecoveryHeld=false;
  if(state==='repair')mode='repair';
  else if(state==='sustainable')mode='ease';
  else if(state==='progress'&&!recovery.active)mode='progress';
@@ -1826,6 +1833,7 @@ function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false
  else if(state==='collect'){mode='steady';label=student.label||'VERİ TOPLUYOR';}
  else {mode='steady';label=student.label||'DENGELİ İLERLEME';}
  if(mode==='ease'&&routeEaseEntryHoldFromSignals(student,previous,recovery)){mode='steady';label='SÜRDÜRÜLEBİLİR DOZ DOĞRULANIYOR';note='Uygulanabilirlik sinyali bugün zayıfladı; ancak tek günlük orta düzey dalgalanmayla dozu hemen küçültmüyoruz. Aynı sinyal bir sonraki yeni kanıtta sürerse SÜRDÜRÜLEBİLİR moda geçilecek.';easeEntryHeld=true;}
+ if(mode==='steady'&&routeEaseRecoveryHoldFromSignals(student,previous,recovery)){mode='ease';label='SÜRDÜRÜLEBİLİR DOZ KORUNUYOR';note='Uygulanabilirlik toparlanma sinyali verdi; ancak SÜRDÜRÜLEBİLİR moddan tek günde çıkmıyoruz. Bir sonraki yeni kanıt toparlanmayı doğrularsa DENGELİ moda dönülecek.';easeRecoveryHeld=true;}
  if(mode==='steady'&&routeProgressHoldFromSignals(student,previous,recovery)){mode='progress';label='GELİŞİM KORUNUYOR';note='Önceki GELİŞİM kararı güçlüydü; bugünkü küçük dalgalanma tek başına seviye düşürmek için yeterli değil. Bir sonraki yeni kanıt kararı yeniden doğrulayacak.';hysteresisHeld=true;}
  if(mode==='progress'&&routeEaseReentryHoldFromSignals(student,previous,recovery)){mode='ease';label='SÜRDÜRÜLEBİLİR DOZ KORUNUYOR';note='Dün görev dozu uygulanabilirlik nedeniyle küçültüldü. Tek günlük güçlü sinyal hemen GELİŞİM moduna dönmek için yeterli sayılmıyor; bir sonraki yeni kanıt yeniden doğrulayacak.';easeHysteresisHeld=true;}
  if(state==='collect'&&rawMode!=='steady')note='Ham '+rawLabel+' sinyali var; ancak kalibre güven henüz düşük olduğu için motor keskin doz değişikliği yapmadan yeni kanıt bekliyor.';
@@ -1838,6 +1846,7 @@ function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false
  }
  const evidence=[...(adaptive.evidence||[])];
  if(hysteresisHeld)evidence.unshift('GELİŞİM bir günlük hysteresis tamponuyla korunuyor');
+ else if(easeRecoveryHeld)evidence.unshift('SÜRDÜRÜLEBİLİR moddan çıkış bir günlük toparlanma doğrulamasıyla korunuyor.');
  else if(easeEntryHeld)evidence.unshift('SÜRDÜRÜLEBİLİR moda giriş tek günlük orta düzey dalgalanmada doğrulama tamponuyla bekletiliyor.');
  else if(easeHysteresisHeld)evidence.unshift('SÜRDÜRÜLEBİLİR dozdan GELİŞİM’e dönüş bir günlük re-entry hysteresis tamponuyla doğrulanıyor.');
  else if(rawMode!==mode){
@@ -1845,7 +1854,7 @@ function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false
   evidence.unshift(rawMode==='steady'?'Öğrenci Modeli '+appliedName+' kararını ek kanıtlarla doğruladı.':'Ham '+rawLabel+' sinyali kalibre Öğrenci Modeli kararıyla sınırlandı.');
  }
  const confidence=Number.isFinite(student.confidence)?student.confidence:(adaptive.confidence||0);
- return {...adaptive,mode,label,note,confidence,evidence:evidence.slice(0,8),rawMode,rawLabel,studentState:state,studentLabel:student.label||'',hysteresisHeld,easeHysteresisHeld,easeEntryHeld};
+ return {...adaptive,mode,label,note,confidence,evidence:evidence.slice(0,8),rawMode,rawLabel,studentState:state,studentLabel:student.label||'',hysteresisHeld,easeHysteresisHeld,easeEntryHeld,easeRecoveryHeld};
 }
 function routeLatestModeDecision(subjectId,topicId=''){
  routeEnsure();const xs=(w().route.modeHistory||[]).filter(function(x){return x.subjectId===subjectId&&(!topicId||x.topicId===topicId);}).sort(function(a,b){return b.date.localeCompare(a.date)||b.created-a.created;});
@@ -2413,7 +2422,7 @@ function routeRecordModeHistory(tasks){
   if(p.date!==todayKey||!R.topic(space,p.topicId))continue;
   const key=p.subjectId+'|'+p.topicId;if(seen.has(key))continue;seen.add(key);
   const decision=routeAppliedDecision(p.subjectId,p.topicId),student=routeStudentModel(p.subjectId,p.topicId),existing=list.find(function(x){return x.date===todayKey&&x.subjectId===p.subjectId&&x.topicId===p.topicId;});
-  const row={date:todayKey,subjectId:p.subjectId,topicId:p.topicId,mode:decision.mode,studentState:student.state||'steady',confidence:student.confidence||decision.confidence||0,performance:Number.isFinite(student.performance)?student.performance:null,learningNeed:Number.isFinite(student.learningNeed)?student.learningNeed:null,hysteresisHeld:!!decision.hysteresisHeld,easeHysteresisHeld:!!decision.easeHysteresisHeld,easeEntryHeld:!!decision.easeEntryHeld,created:Date.now()};
+  const row={date:todayKey,subjectId:p.subjectId,topicId:p.topicId,mode:decision.mode,studentState:student.state||'steady',confidence:student.confidence||decision.confidence||0,performance:Number.isFinite(student.performance)?student.performance:null,learningNeed:Number.isFinite(student.learningNeed)?student.learningNeed:null,hysteresisHeld:!!decision.hysteresisHeld,easeHysteresisHeld:!!decision.easeHysteresisHeld,easeEntryHeld:!!decision.easeEntryHeld,easeRecoveryHeld:!!decision.easeRecoveryHeld,created:Date.now()};
   if(existing)Object.assign(existing,row);else list.push(row);
  }
  space.route.modeHistory=list.slice(-160);

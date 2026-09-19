@@ -167,6 +167,23 @@ async function setDay(page, date) {
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
 }
 
+async function settleTaskOnScheduledDay(page, findTask, label) {
+  let lastTask = null;
+  for (let hop = 0; hop < 6; hop++) {
+    const snapshot = await appState(page);
+    const space = snapshot.value.workspaces.kpss;
+    const task = findTask(space);
+    assert.ok(task, label + ' must remain in the plan while following its scheduled day');
+    lastTask = task;
+    const complete = page.locator('[data-action="complete-session"][data-id="' + task.id + '"]');
+    if (await complete.count() && await complete.isVisible()) return task;
+    await setDay(page, task.date);
+  }
+  const complete = page.locator('[data-action="complete-session"][data-id="' + lastTask.id + '"]');
+  assert.ok(await complete.count() && await complete.isVisible(), label + ' must become visible on its scheduled day; last date=' + lastTask.date);
+  return lastTask;
+}
+
 const server = spawn(process.execPath, ['server.mjs'], {
   cwd: process.cwd(),
   env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', OPENAI_API_KEY: '' },
@@ -341,23 +358,23 @@ try {
   await setDay(page, due3);
   snapshot = await appState(page);
   space = snapshot.value.workspaces.kpss;
-  const review3 = space.plan.find(p => !p.done && p.source === 'spaced_review' && p.reviewWave === 3 && p.reviewBaseTaskId === repair.id);
+  let review3 = space.plan.find(p => !p.done && p.source === 'spaced_review' && p.reviewWave === 3 && p.reviewBaseTaskId === repair.id);
   assert.ok(review3, '3-day exam-wrong retention review must materialize when due');
   assert.equal(review3.reviewBaseDate, repairLog.date, '3-day review must anchor to the real repair completion date');
   assert.ok(review3.date >= due3, '3-day review must never be scheduled before its real +3 due date');
   assert.match(review3.reason || '', /Denemeden gelen yanlış onarımını/i);
-  if (review3.date !== due3) await setDay(page, review3.date);
+  review3 = await settleTaskOnScheduledDay(page, s => s.plan.find(p => !p.done && p.source === 'spaced_review' && p.reviewWave === 3 && p.reviewBaseTaskId === repair.id), '3-day exam-wrong retention review');
   await completeTask(page, review3.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
 
   const due7 = addDays(repairLog.date, 7);
   await setDay(page, due7);
   snapshot = await appState(page);
   space = snapshot.value.workspaces.kpss;
-  const review7 = space.plan.find(p => !p.done && p.source === 'spaced_review' && p.reviewWave === 7 && p.reviewBaseTaskId === repair.id);
+  let review7 = space.plan.find(p => !p.done && p.source === 'spaced_review' && p.reviewWave === 7 && p.reviewBaseTaskId === repair.id);
   assert.ok(review7, '7-day exam-wrong retention review must materialize when due');
   assert.equal(review7.reviewBaseDate, repairLog.date, '7-day review must anchor to the real repair completion date');
   assert.ok(review7.date >= due7, '7-day review must never be scheduled before its real +7 due date');
-  if (review7.date !== due7) await setDay(page, review7.date);
+  review7 = await settleTaskOnScheduledDay(page, s => s.plan.find(p => !p.done && p.source === 'spaced_review' && p.reviewWave === 7 && p.reviewBaseTaskId === repair.id), '7-day exam-wrong retention review');
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 

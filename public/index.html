@@ -1553,7 +1553,7 @@ function routeDifficultyPrescription(subjectId,topicId,fallbackTitle,difficulty)
 }
 function routeSubjectAdaptiveState(subjectId,topicId=''){
  const realTopic=topicId&&R.topic(w(),topicId)?topicId:'';
- const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior;
+ const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior,frictionBehavior=subjectBehavior?.known&&subjectBehavior.total>=3&&(!behavior?.known||subjectBehavior.friction>behavior.friction+.08)?subjectBehavior:behavior;
  const topicOutcome=realTopic?routeOutcomeSignal(subjectId,realTopic):null,subjectOutcome=routeOutcomeSignal(subjectId),outcome=topicOutcome?.known?topicOutcome:subjectOutcome;
  const topicPractice=realTopic?routePracticeSignal(subjectId,realTopic):null,subjectPractice=routePracticeSignal(subjectId),practice=topicPractice?.known?topicPractice:subjectPractice;
  const topicCalibration=realTopic?routeFeedbackCalibrationSignal(subjectId,realTopic):null,subjectCalibration=routeFeedbackCalibrationSignal(subjectId),calibration=topicCalibration?.known?topicCalibration:subjectCalibration;
@@ -1579,8 +1579,8 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  if(skillWeakness.primary){const p=skillWeakness.primary,points=p.missed>=2&&p.weightedMissRate>=.50?2:1;repairScore+=points;evidence.push('mini: '+p.skill+' alt konusu');}
  const volumeStrain=attainment.known&&attainment.weightedRatio<.65,volumeStrong=attainment.known&&attainment.weightedRatio>=.95;
  if(volumeStrain)evidence.push('hedef hacmin altında');else if(volumeStrong)evidence.push('hedef hacmi karşılanıyor');
- const severeFriction=behavior.known&&behavior.total>=4&&behavior.friction>=.60;
- const moderateFriction=behavior.known&&behavior.total>=3&&behavior.friction>=.42;
+ const severeFriction=frictionBehavior?.known&&frictionBehavior.total>=4&&frictionBehavior.friction>=.60;
+ const moderateFriction=frictionBehavior?.known&&frictionBehavior.total>=3&&frictionBehavior.friction>=.42;
  if(behavior.known&&behavior.total>=4&&behavior.completion>=.80){progressScore+=2;evidence.push('yüksek tamamlama');}
  else if(behavior.known&&behavior.total>=3&&behavior.completion>=.75){progressScore+=1;evidence.push('iyi tamamlama');}
  if(outcome.total>=3&&outcome.trend>=.30&&outcome.recent!=='stuck'){progressScore+=2;evidence.push('rahat ilerleme tekrar ediyor');}
@@ -1616,7 +1616,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
   note='İyi sinyaller oluşuyor ama yük artırmak için biraz daha tutarlı veri bekliyoruz; mevcut doz korunuyor.';
  }
  const confidence=Math.min(100,Math.max(repairScore,progressScore)*20+(topicEvidence?10:0));
- return {mode,label,note,behavior,outcome,practice,calibration,attainment,skillWeakness,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
+ return {mode,label,note,behavior,frictionBehavior,frictionScope:frictionBehavior===subjectBehavior&&frictionBehavior!==behavior?'subject':'selected',outcome,practice,calibration,attainment,skillWeakness,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
 }
 const ROUTE_ERROR_TYPES=Object.freeze({concept:'Bilgi / kavram eksiği',process:'Yöntem / işlem hatası',attention:'Dikkat hatası',speed:'Süre yönetimi',strategy:'Soruya yaklaşım',reading:'Soru kökü / anlama',recall:'Hatırlama / karıştırma',other:'Diğer'});
 function routeErrorTypeLabel(type){return ROUTE_ERROR_TYPES[type]||ROUTE_ERROR_TYPES.other;}

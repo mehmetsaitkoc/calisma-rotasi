@@ -2516,14 +2516,6 @@ function routePilotInterventionEvaluationAt(intervention,cutoff){
  if(!horizons.length)return {status:'pending',horizons:[]};
  return {...routeInterventionAggregateEvaluations(horizons),horizons};
 }
-function routePilotInterventionEvaluationAt(intervention,cutoff){
- const age=routePilotDaysBetween(intervention.date,cutoff),horizons=[7,14,30].filter(function(h){return age>=h;}).map(function(h){
-  const start=R.dayAdd(intervention.date,h<=7?1:h-6),end=R.dayAdd(intervention.date,h),performance=routePerformanceWindow(intervention.subjectId,intervention.topicId,start,end),behavior=routeBehaviorWindow(intervention.subjectId,intervention.topicId,start,end),evaluation=routeEvaluateInterventionFromMetrics(intervention,{age:h,start,end,performance,behavior});
-  return {horizon:h,...evaluation};
- });
- if(!horizons.length)return {status:'pending'};
- return routeInterventionAggregateEvaluations(horizons);
-}
 function routePilotInterventionSummary(startDate,cutoff){
  const xs=(w().route?.interventions||[]).filter(function(x){return x.date>=startDate&&x.date<=cutoff;}),blank=function(){return {helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0};},out={total:xs.length,...blank(),horizons:{7:blank(),14:blank(),30:blank()}};
  const add=function(bucket,status){const key=Object.hasOwn(bucket,status)?status:'pending';bucket[key]++;};

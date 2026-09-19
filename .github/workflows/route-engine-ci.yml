@@ -36,5 +36,8 @@ jobs:
       - name: Syntax check longitudinal runner
         run: node --check scripts/route-engine-longitudinal.mjs
 
-      - name: Run route engine smoke, stress, route simulation and longitudinal tests
+      - name: Syntax check closed-loop runner
+        run: node --check scripts/route-engine-closed-loop.mjs
+
+      - name: Run route engine smoke, stress, route simulation, longitudinal and closed-loop tests
         run: npm test

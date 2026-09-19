@@ -1654,6 +1654,15 @@ for(const marker of [
 }
 
 
+// 5) Completion feedback must reflect recorded evidence and only announce a route-mode change when it really changed.
+for(const marker of [
+  '✓ Görev tamamlandı.',
+  'Rota bu çalışmayı öğrenci modeline ekledi.',
+  "+' doğruluk kaydedildi.'",
+  'beforeDecision.mode!==afterDecision.mode',
+  "'Rota güncellendi: '"
+]) assert.ok(html.includes(marker),`Missing completion feedback marker: ${marker}`);
+
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
 {
   const mini=between('function routeMiniRepairSignals','function routeBuildCandidates');

@@ -1108,9 +1108,9 @@ for(const marker of [
 // 4) A completed real-topic mistake repair must create its own 3/7-day retention cycle without replacing the normal mastery base.
 {
   const candidate=between('function routeCandidateFromPlan','function routeTopicFrontier');
-  assert.ok(candidate.includes("mistakeRepairBase=baseTask.source==='mistake'||!!baseTask.sourceMistakeId"),'Mistake-repair anchored spaced reviews must remain eligible');
+  assert.ok(candidate.includes("mistakeRepairBase=!!linkedMistake?.examId"),'Only exam-linked mistake repairs may anchor the dedicated 3/7 cycle');
   const build=between('function routeBuildCandidates','function routeConsistencySignal');
-  for(const marker of ['latestMistakeRepairByTopic','mistake-spaced:','Yanlış onarımını fiilî tamamlanma gününden','reviewBaseTaskId:p.id','reviewBaseDate:repairDate','if(due>today())continue'])
+  for(const marker of ['latestMistakeRepairByTopic','mistake-spaced:','Denemeden gelen yanlış onarımını fiilî tamamlanma gününden','return !!m?.examId','reviewBaseTaskId:p.id','reviewBaseDate:repairDate','if(due>today())continue'])
     assert.ok(build.includes(marker),`Missing mistake repair retention marker: ${marker}`);
 }
 
@@ -1154,7 +1154,8 @@ for(const marker of [
   assert.equal(ready.progress,4);
   assert.equal(ready.next,'Tamamlanmaya hazır');
 
-  // A newer mistake-repair cycle must reset the 3/7 retention requirement without becoming the normal mastery base.
+  // A newer exam-linked mistake-repair cycle must reset the 3/7 retention requirement without becoming the normal mastery base.
+  space.mistakes.push({id:'m1',topicId:'topic-1',examId:'exam-1',resolved:false});
   space.plan.push({id:'repair-base',date:'2026-09-18',done:true,topicId:'topic-1',source:'mistake',sourceMistakeId:'m1'});
   space.logs.push({id:'repair-log',sessionId:'repair-base',date:'2026-09-18'});
   const afterRepair=mastery('topic-1');
@@ -1168,10 +1169,11 @@ for(const marker of [
   assert.equal(mastery('topic-1').ready,false);
   space.plan.push({id:'repair-r7',date:'2026-09-25',done:true,topicId:'topic-1',source:'spaced_review',reviewWave:7,reviewBaseTaskId:'repair-base'});
   assert.equal(mastery('topic-1').review7,true);
-  space.mistakes=[]; // the student explicitly marked the linked mistake learned
-  assert.equal(mastery('topic-1').ready,true,'Resolved mistake + real 3/7 repair follow-ups may restore mastery readiness');
+  space.mistakes.find(m=>m.id==='m1').resolved=true; // the student explicitly marked the linked exam mistake learned
+  assert.equal(mastery('topic-1').ready,true,'Resolved exam mistake + real 3/7 repair follow-ups may restore mastery readiness');
   space.plan=space.plan.filter(p=>!p.id.startsWith('repair-'));
   space.logs=space.logs.filter(l=>l.id!=='repair-log');
+  space.mistakes=[];
 
   // A nominal "3-day review" completed before three real days passed must not count.
   space.plan.find(p=>p.id==='r3').date='2026-09-12';

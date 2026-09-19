@@ -1981,7 +1981,7 @@ function routeStudentModelCard(){
 }
 function routeTopicMasterySignal(topicId){
  const space=w(),t=R.topic(space,topicId);if(!t)return {ready:false,reason:'',progress:0,total:4,next:'Ana çalışma'};
- const done=space.plan.filter(function(p){return p.done&&p.topicId===topicId;}),baseTasks=done.filter(function(p){return !['mistake','mini_repair','retention_refresh','spaced_review','checkpoint','ai_teacher'].includes(p.source);}).map(function(p){return {task:p,date:routePlanEvidenceDate(p,space)};}).filter(function(x){return !!x.date;}).sort(function(a,b){return b.date.localeCompare(a.date);}),baseItem=baseTasks[0]||null,baseTask=baseItem?.task||null,base=!!baseTask,baseDate=baseItem?.date||'',repairItem=done.filter(function(p){return p.source==='mistake'||p.sourceMistakeId;}).map(function(p){return {task:p,date:routePlanEvidenceDate(p,space)};}).filter(function(x){return !!x.date&&(!baseDate||x.date>baseDate);}).sort(function(a,b){return b.date.localeCompare(a.date);})[0]||null,repairTask=repairItem?.task||null,repairDate=repairItem?.date||'';
+ const done=space.plan.filter(function(p){return p.done&&p.topicId===topicId;}),baseTasks=done.filter(function(p){return !['mistake','mini_repair','retention_refresh','spaced_review','checkpoint','ai_teacher'].includes(p.source);}).map(function(p){return {task:p,date:routePlanEvidenceDate(p,space)};}).filter(function(x){return !!x.date;}).sort(function(a,b){return b.date.localeCompare(a.date);}),baseItem=baseTasks[0]||null,baseTask=baseItem?.task||null,base=!!baseTask,baseDate=baseItem?.date||'',repairItem=done.filter(function(p){if(!(p.source==='mistake'||p.sourceMistakeId)||!p.sourceMistakeId)return false;const m=space.mistakes.find(function(x){return x.id===p.sourceMistakeId;});return !!m?.examId;}).map(function(p){return {task:p,date:routePlanEvidenceDate(p,space)};}).filter(function(x){return !!x.date&&(!baseDate||x.date>baseDate);}).sort(function(a,b){return b.date.localeCompare(a.date);})[0]||null,repairTask=repairItem?.task||null,repairDate=repairItem?.date||'';
  const reviewValid=function(p,wave){
   if(!base||p.source!=='spaced_review'||p.reviewWave!==wave)return false;
   if(p.reviewBaseTaskId&&p.reviewBaseTaskId!==baseTask.id)return false;
@@ -2266,7 +2266,7 @@ function routeLatestBaseCycle(topicId,space=w()){
 function routeCandidateFromPlan(p){
  if(p.source==='spaced_review'&&p.reviewBaseTaskId){
   const space=w(),baseTask=space.plan.find(function(x){return x.id===p.reviewBaseTaskId;});if(!baseTask?.done)return null;
-  const mistakeRepairBase=baseTask.source==='mistake'||!!baseTask.sourceMistakeId;
+  const linkedMistake=baseTask.sourceMistakeId?space.mistakes.find(function(m){return m.id===baseTask.sourceMistakeId;}):null,mistakeRepairBase=!!linkedMistake?.examId;
   if(!mistakeRepairBase){const latest=routeLatestBaseCycle(p.topicId,space);if(latest&&latest.task.id!==p.reviewBaseTaskId)return null;}
  }
  const miniAdaptive=p.source==='mini_repair'?routeSubjectAdaptiveState(p.subjectId,p.topicId):null,miniStudent=p.source==='mini_repair'?routeStudentModel(p.subjectId,p.topicId):null;
@@ -2342,7 +2342,7 @@ function routeBuildCandidates(){
   push({id:R.uid(),date:today(),subjectId:m.subjectId,topicId:m.topicId||('review-'+m.id),title:('Yanlış tekrarı · '+m.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceMistakeId:m.id,source:'mistake',priority:due?88:72,reason:due?'Yanlış defterindeki tekrar tarihi geldi.':'Yanlış defterindeki konu yeniden çalışılmalı.',earliest:due?today():m.reviewDate,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }
  const latestMistakeRepairByTopic=new Map();
- for(const p of space.plan.filter(function(p){return p.done&&p.topicId&&R.topic(space,p.topicId)&&(p.source==='mistake'||p.sourceMistakeId);})){
+ for(const p of space.plan.filter(function(p){if(!p.done||!p.topicId||!R.topic(space,p.topicId)||!(p.source==='mistake'||p.sourceMistakeId))return false;const m=p.sourceMistakeId?space.mistakes.find(function(x){return x.id===p.sourceMistakeId;}):null;return !!m?.examId;})){
   const evidenceDate=routePlanEvidenceDate(p,space);if(!evidenceDate)continue;const prior=latestMistakeRepairByTopic.get(p.topicId);if(!prior||evidenceDate>prior.evidenceDate)latestMistakeRepairByTopic.set(p.topicId,{task:p,evidenceDate});
  }
  for(const item of latestMistakeRepairByTopic.values()){
@@ -2353,7 +2353,7 @@ function routeBuildCandidates(){
    if(seenKeys.has(key)||space.plan.some(function(x){return x.source==='spaced_review'&&x.reviewWave===wave&&x.reviewBaseTaskId===p.id;}))continue;
    const due=R.dayAdd(repairDate,wave);if(due>today())continue;
    const topicTitle=R.topic(space,p.topicId)?.title||p.title.replace(/^Yanlış tekrarı · /,''),goal=routeReviewGoal(p.subjectId,p.topicId,topicTitle,wave===7?'long':'spaced');
-   push({id:R.uid(),date:today(),subjectId:p.subjectId,topicId:p.topicId,title:('Yanlış sonrası '+wave+' gün · '+topicTitle).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'spaced_review',reviewWave:wave,reviewBaseTaskId:p.id,reviewBaseDate:repairDate,priority:wave===3?74:68,reason:'Yanlış onarımını fiilî tamamlanma gününden '+wave+' gün sonra yeniden yoklayarak aynı hatanın geri dönüp dönmediğini kontrol ediyoruz.',earliest:due,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
+   push({id:R.uid(),date:today(),subjectId:p.subjectId,topicId:p.topicId,title:('Yanlış sonrası '+wave+' gün · '+topicTitle).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'spaced_review',reviewWave:wave,reviewBaseTaskId:p.id,reviewBaseDate:repairDate,priority:wave===3?74:68,reason:'Denemeden gelen yanlış onarımını fiilî tamamlanma gününden '+wave+' gün sonra yeniden yoklayarak aynı hatanın geri dönüp dönmediğini kontrol ediyoruz.',earliest:due,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
   }
  }
  try{for(const q of teacherQuestions().filter(function(q){return ['stuck','review'].includes(q.status);})){

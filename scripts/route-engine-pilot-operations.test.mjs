@@ -93,12 +93,15 @@ function payload(id,overrides={}){
   ],completed:true});
   const s=cohortSummary([p1,p2],'2026-10-01');
   assert.equal(s.students,2);
+  assert.equal(s.milestones.day7,0);
+  assert.equal(s.milestones.day14,0);
   assert.equal(s.milestones.day30,2);
   assert.equal(s.helpfulInterventions,3);
   assert.equal(s.harmfulInterventions,1);
   assert.equal(s.averageCompletionChange,17.5);
   assert.equal(s.averagePerformanceChange,11);
   assert.equal(s.modeTransitions,5);
+  assert.equal(s.counts.critical,1);
   assert.equal(s.rows.find(x=>x.participantId==='p-2').status,'critical');
 }
 

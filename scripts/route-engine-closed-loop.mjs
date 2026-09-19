@@ -508,7 +508,7 @@ function simulatePersona(persona){
 const results=PERSONAS.map(simulatePersona);
 const byId=Object.fromEntries(results.map(r=>[r.persona.id,r]));
 
-console.log('closed-loop-trace weak-improver '+JSON.stringify(byId['weak-improver'].days));
+for(const id of ['weak-improver','hidden-gap','fast-learner','plateau','regressing','recovery-comeback'])console.log('closed-loop-trace '+id+' '+JSON.stringify(byId[id].days));
 
 for(const r of results){
   assert.equal(r.days.length,14,`${r.persona.id} did not simulate 14 days`);

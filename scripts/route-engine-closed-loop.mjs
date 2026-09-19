@@ -834,6 +834,7 @@ function lfSim(base){
 }
 const lfResults=LF_PERSONAS.map(lfSim);for(const r of lfResults)r.backtest=lfBacktest(lfResults,r);const lfById=Object.fromEntries(lfResults.map(function(r){return [r.persona.id,r];}));
 for(const r of lfResults)if(r.backtest.harmful)console.log('INTERVENTION-HARMFUL '+r.persona.id,JSON.stringify(r.backtest.events.filter(function(x){return x.label==='harmful';})));
+for(const r of lfResults){const bad=[];for(const e of r.backtest.events)for(const h of e.horizons)if(h.label==='harmful')bad.push({day:e.day,mode:e.mode,horizon:h});if(bad.length)console.log('INTERVENTION-HORIZON-HARMFUL '+r.persona.id,JSON.stringify(bad));}
 for(const r of lfResults){const ch=lfChurn(r.days);for(const b of ch.bounces)console.log('LIFECYCLE-BOUNCE '+r.persona.id,JSON.stringify({bounce:b,window:r.days.slice(Math.max(0,b.day-3),Math.min(r.days.length,b.day+2))}));}
 for(const r of lfResults){
   assert.equal(r.days.length,60,r.persona.id+' lifecycle length');

@@ -1530,12 +1530,20 @@ function routeLearningSummaryItems(){
   return {subjectId:s.id,name:s.name,mode:a.mode,label:a.label,detail,score:(rank[a.mode]||0)*10+evidence,confidence:a.confidence||0};
  }).filter(Boolean).sort(function(a,b){return b.score-a.score||b.confidence-a.confidence||a.name.localeCompare(b.name,'tr');}).slice(0,3);
 }
+function routeExamFreshness(type){
+ const xs=[...w().exams].filter(function(x){return x.type===type;}).sort(function(a,b){return b.date.localeCompare(a.date);}),last=xs[0]||null;
+ if(!last)return {known:false,stale:false,last:null,age:null,studySince:0,label:C.TYPES[type]?.label||type};
+ const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(last.date+'T12:00:00'))/86400000)),studySince=w().logs.filter(function(l){return !!l.sessionId&&l.date>last.date;}).length,stale=age>=14&&studySince>=4;
+ return {known:true,stale,last,age,studySince,label:C.TYPES[type]?.label||type};
+}
 function routeEvidenceNextStep(){
  const planned=w().logs.filter(function(l){return !!l.sessionId;}),feedback=planned.filter(function(l){return ['stuck','ok','strong'].includes(l.outcome);}),practice=planned.filter(function(l){return Number.isInteger(l.correct)&&Number.isInteger(l.wrong)&&l.correct+l.wrong>=5;}),struggles=planned.filter(function(l){return l.outcome==='stuck';}),difficulty=planned.filter(function(l){return ['concept','process','speed','attention','strategy'].includes(l.difficulty);});
- const mainType=state.activeExam==='kpss'?'KPSS':'TYT',hasMainExam=w().exams.some(function(x){return x.type===mainType;});
- const stageType=state.activeExam==='yks'?yksStageExamType():'',stageNeeded=!!(stageType&&w().settings.track!=='tyt'),hasStageExam=stageNeeded?w().exams.some(function(x){return x.type===stageType;}):true;
+ const mainType=state.activeExam==='kpss'?'KPSS':'TYT',mainFresh=routeExamFreshness(mainType),hasMainExam=mainFresh.known;
+ const stageType=state.activeExam==='yks'?yksStageExamType():'',stageNeeded=!!(stageType&&w().settings.track!=='tyt'),stageFresh=stageNeeded?routeExamFreshness(stageType):{known:true,stale:false},hasStageExam=stageNeeded?stageFresh.known:true;
  if(planned.length>=4&&!hasMainExam)return {kind:'need',title:(state.activeExam==='kpss'?'KPSS':'TYT')+' deneme verisi eksik',text:'Rota çalışma davranışını öğrenmeye başladı; ders ağırlıklarını daha sağlam kurmak için gerçek bir deneme sonucu çok değerli.',button:'Denemelerime git',action:'nav',attrs:'data-view="exams"'};
  if(planned.length>=6&&stageNeeded&&!hasStageExam)return {kind:'need',title:yksStageLabel()+' deneme verisi eksik',text:'TYT ve çalışma davranışını biliyoruz; alan derslerini ayrı kişiselleştirmek için bir '+yksStageLabel()+' sonucu rotayı belirgin biçimde güçlendirir.',button:'Denemelerime git',action:'nav',attrs:'data-view="exams"'};
+ if(mainFresh.stale)return {kind:'need',title:mainFresh.label+' ölçümünü yenile',text:'Son '+mainFresh.label+' denemen '+mainFresh.age+' gün önceydi ve o tarihten sonra '+mainFresh.studySince+' planlı çalışma kaydı oluştu. Ders ağırlıklarının eski ölçüme fazla yaslanmaması için yeni bir deneme sonucu eklemek iyi bir kontrol noktası olur.',button:'Denemelerime git',action:'nav',attrs:'data-view="exams"'};
+ if(stageNeeded&&stageFresh.stale)return {kind:'need',title:stageFresh.label+' ölçümünü yenile',text:'Son '+stageFresh.label+' ölçümünden sonra '+stageFresh.studySince+' planlı çalışma yaptın. Alan derslerindeki değişimi görmek için yeni bir '+stageFresh.label+' sonucu rotayı daha güncel tutar.',button:'Denemelerime git',action:'nav',attrs:'data-view="exams"'};
  if(struggles.length&&!difficulty.length)return {kind:'hint',title:'Zorlanmanın nedenini de öğrenebiliriz',text:'Bir sonraki zorlandığın görevde istersen konu, işlem, süre, dikkat veya soru yaklaşımı seç. Rota sonraki görevin çalışma biçimini buna göre değiştirir.'};
  if(planned.length>=2&&!practice.length)return {kind:'hint',title:'Doğru/yanlış sinyali henüz yok',text:'Bir sonraki planlı görevi kaydederken istersen doğru ve yanlış sayısını da gir. Motor, çalışma hissinin gerçek soru performansıyla uyuşup uyuşmadığını kontrol eder.'};
  if(planned.length>=1&&feedback.length<2)return {kind:'hint',title:'Biraz daha çalışma geri bildirimi lazım',text:'İki–üç planlı görevde “Zorlandım / Normal / Rahat” verisi oluşunca rota tek bir oturuma aşırı tepki vermeden doz ayarlayabilir.'};

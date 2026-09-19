@@ -1758,10 +1758,10 @@ function routeStudentModelFromSignals(input){
  learningNeed=Math.max(0,Math.min(100,Math.round(learningNeed)));
  const priorityBoost=confidence<20?0:Math.max(-6,Math.min(10,Math.round(((learningNeed-50)/50)*10*(confidence/100))));
  let state='steady',label='DENGELİ İLERLEME',nextAction='Mevcut dozu koru; yeni gerçek verilerle modeli güncelle.';
- const improving=personalNorm.known&&personalNorm.confidence>=45?personalNorm.direction==='up':trend.known&&trend.direction==='up';
+ const improving=personalNorm.known&&personalNorm.confidence>=45?personalNorm.direction==='up':trend.known&&trend.direction==='up',repairStrength=Number.isFinite(adaptive.repairScore)?adaptive.repairScore:(adaptive.mode==='repair'?3:0);
  if(confidence<25){state='collect';label='VERİ TOPLUYOR';nextAction='Keskin karar verme; bir sonraki planlı çalışmada doğru/yanlış ve kısa geri bildirim topla.';}
  else if(openMistakes>=2){state='repair';label='AÇIK YANLIŞ ÖNCELİĞİ';nextAction=openMistakes+' açık yanlışı kapat; '+(skillWeakness.primary?'özellikle “'+skillWeakness.primary.skill+'” açığını aynı beceriden yeni sorularla doğrula.':'ardından aynı beceriden kısa doğrulama yapmadan yeni yükü artırma.');}
- else if(adaptive.mode==='repair'||learningNeed>=68){state='repair';label='ONARIM ÖNCELİĞİ';nextAction=skillWeakness.primary?'Önce “'+skillWeakness.primary.skill+'” açığını düzelt, ardından aynı beceriden yeni sorularla doğrula.':'Yeni konu yüklemeden önce düşük performansın nedenini onar ve kısa ölçümle doğrula.';}
+ else if((adaptive.mode==='repair'&&repairStrength>=4)||learningNeed>=68){state='repair';label='ONARIM ÖNCELİĞİ';nextAction=skillWeakness.primary?'Önce “'+skillWeakness.primary.skill+'” açığını düzelt, ardından aynı beceriden yeni sorularla doğrula.':'Yeni konu yüklemeden önce düşük performansın nedenini onar ve kısa ölçümle doğrula.';}
  else if(retention.known&&retention.score<60){state='retention';label='KALICILIK AÇIĞI';nextAction='Yeni yük eklemekten önce zamanı gelen 3/7 günlük tekrarları tamamla ve kalıcılığı yeniden ölç.';}
  else if(adaptive.mode==='ease'||(execution!==null&&execution<60)){state='sustainable';label='UYGULANABİLİR DOZ';nextAction='Görev hacmini küçült; önce düzenli tamamlamayı geri kazan.';}
  else if(improving&&performance!==null&&performance>=75&&confidence>=45&&sourceCount>=2){state='progress';label='GELİŞİM DOĞRULANIYOR';nextAction='Dozu sert artırma; küçük bir seviye yoklamasıyla yükselişin kalıcı olduğunu doğrula.';}

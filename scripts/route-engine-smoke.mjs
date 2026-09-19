@@ -833,6 +833,17 @@ for(const marker of [
   assert.ok(near.score>noTarget.score,'A real near target date may add urgency while a missing date may not');
 }
 
+// 4) Exam risk must decay stale full-exam evidence independently from otherwise fresh topic evidence.
+{
+  const src=between('function routeExamRiskFromSignals','function routeTopicExamRisk');
+  const fn=new Function(src+';return routeExamRiskFromSignals;')();
+  const fresh=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:60,status:1,examWeakRatio:.45,examFreshness:1});
+  const stale=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:60,status:1,examWeakRatio:.45,examFreshness:.35});
+  assert.ok(fresh.score>stale.score,'Old weak exam evidence must contribute less risk than equally weak fresh exam evidence');
+  assert.equal(stale.examFreshness,.35);
+  assert.ok(stale.reasons.some(x=>/eskidiği için etkisi azaltıldı/.test(x)),'Risk explanation must disclose stale-exam discounting');
+}
+
 // 4) Scheduler risk boost must be incremental, avoiding double-counting Student Model evidence.
 {
   const src=between('function routeExamRiskFromSignals','function routeExamRiskMap');
@@ -854,6 +865,7 @@ for(const marker of [
 // 4) Retention refresh and risk integration must stay duplicate-safe and recovery-safe.
 {
   const build=between('function routeBuildCandidates','function routeConsistencySignal');
+  assert.ok(build.includes("seenTopics.has(t.id)||seenKeys.has(key)"),'Retention refresh must coalesce into any already-open same-topic route work');
   assert.ok(build.includes("space.plan.some(function(p){return !p.done&&p.topicId===t.id&&p.source==='retention_refresh';})"),'An open retention refresh must block duplicate refresh creation');
   assert.ok(build.includes("riskBoost=recovery.active?0:risk.priorityBoost"),'Recovery mode must disable risk promotion of new normal topics');
   assert.ok(build.indexOf('topics=routeTopicFrontier')<build.indexOf('routeTopicExamRisk(t.subjectId,t.id,student,riskContext)'),'Risk scoring must happen only after topic-frontier selection');

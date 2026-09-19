@@ -287,7 +287,7 @@ sim('R10 actual study date anchors reviews',()=>{
 sim('R11 one-day repair wave',()=>{
   const space=baseSpace();
   space.plan.push({id:'base',date:'2026-09-18',done:true,subjectId:'k-ma',topicId:'m1',source:'curriculum',title:'Temel kavramlar'});
-  return makeBuild(space,{evidenceDates:{base:'2026-09-18'},adaptive:{m1:{mode:'repair',scope:'topic',confidence:70,skillWeakness:{primary:null}}}});
+  return makeBuild(space,{evidenceDates:{base:'2026-09-18'},adaptive:{m1:{mode:'repair',scope:'topic',confidence:70,skillWeakness:{primary:null}}},students:{m1:{state:'repair',confidence:80,priorityBoost:0}}});
 },cs=>{
   const r1=cs.find(x=>x.source==='spaced_review'&&x.reviewWave===1&&x.topicId==='m1');
   assert.ok(r1);

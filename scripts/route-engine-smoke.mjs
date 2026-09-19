@@ -782,9 +782,13 @@ for(const marker of [
   const fn=new Function(src+';return routeMasteryScoreFromSignals;')();
   const weak=fn({base:true,review3:false,review7:false,hasEvidence:true,ready:false,performanceAccuracy:58,retentionScore:45,trend:'down',openMistakes:2,skillMissed:3,errorRepeated:true});
   const strong=fn({base:true,review3:true,review7:true,hasEvidence:true,ready:true,performanceAccuracy:88,retentionScore:86,trend:'up',openMistakes:0,skillMissed:0,errorRepeated:false});
+  const oneStrongSession=fn({base:true,review3:true,review7:true,hasEvidence:false,ready:false,performanceAccuracy:96,retentionScore:92,trend:'up',openMistakes:0,skillMissed:0,errorRepeated:false});
+  const oneOpenMistake=fn({base:true,review3:true,review7:true,hasEvidence:true,ready:false,performanceAccuracy:94,retentionScore:94,trend:'up',openMistakes:1,skillMissed:0,errorRepeated:false});
   assert.ok(strong.score>weak.score+30);
   assert.ok(strong.score>=82,'Ready mastery must map to a strong numerical score');
   assert.ok(weak.score<55,'Repeated unresolved errors should keep mastery fragile');
+  assert.ok(oneStrongSession.score<=68,'A single strong session must not inflate mastery before repeated evidence exists');
+  assert.ok(oneOpenMistake.score<=68,'Any unresolved mistake must keep numerical mastery below the strong/ready range');
 }
 {
   const src=between('function routeForgettingProjection','function routeTopicForgettingSignal');
@@ -792,6 +796,7 @@ for(const marker of [
   const fresh=fn({mastery:88,daysSince:2,stabilityDays:24}),old=fn({mastery:88,daysSince:24,stabilityDays:24}),fragile=fn({mastery:70,daysSince:10,stabilityDays:8});
   assert.ok(fresh.retained>old.retained,'Retention estimate must decay as evidence gets older');
   assert.ok(old.retained>fragile.retained,'Higher stability must protect knowledge longer');
+  assert.equal(fresh.reviewDue,false,'Recent strong evidence must not immediately create a refresh task');
   assert.equal(fragile.reviewDue,true);
 }
 
@@ -813,15 +818,45 @@ for(const marker of [
   const weak=fn({confidence:85,masteryScore:42,retained:38,learningNeed:78,daysToTarget:30,openMistakes:2,trend:'down',examWeakRatio:.48,subjectPriority:true,forgettingDue:true,paceStatus:'overload',status:1});
   const uncertain=fn({confidence:10,masteryScore:20,retained:20,learningNeed:90,daysToTarget:30,openMistakes:0,trend:'unknown',subjectPriority:false,forgettingDue:false,status:0});
   assert.ok(weak.score>strong.score+30,'Weak, stale and urgent evidence should rank much higher');
-  assert.ok(weak.priorityBoost<=8&&weak.priorityBoost>=-2,'Risk may only make a bounded scheduler adjustment');
+  assert.ok(weak.priorityBoost<=8&&weak.priorityBoost>=-2,'Raw risk may only make a bounded adjustment');
   assert.equal(uncertain.priorityBoost,0,'Low-confidence risk must not silently dominate scheduling');
+  assert.ok(uncertain.score<=55,'Low-confidence risk must be visibly capped below high-risk bands');
   assert.ok(uncertain.score<weak.score,'Uncertain evidence should remain more conservative than repeated weakness');
+  assert.ok(uncertain.reasons.some(x=>/güveni düşük/i.test(x)),'Low-confidence risk must explain why scheduler priority is not raised');
 }
 {
   const src=between('function routeExamRiskFromSignals','function routeTopicExamRisk');
   const fn=new Function(src+';return routeExamRiskFromSignals;')();
-  const far=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:180,status:1}),near=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:14,status:1});
+  const far=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:180,status:1}),near=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:14,status:1}),noTarget=fn({confidence:80,masteryScore:55,retained:55,learningNeed:65,daysToTarget:null,status:1});
   assert.ok(near.score>far.score,'The same learning gap must become more urgent near the target date');
+  assert.equal(noTarget.urgency,0,'Missing targetDate must not invent exam urgency');
+  assert.ok(near.score>noTarget.score,'A real near target date may add urgency while a missing date may not');
+}
+
+// 4) Scheduler risk boost must be incremental, avoiding double-counting Student Model evidence.
+{
+  const src=between('function routeExamRiskFromSignals','function routeExamRiskMap');
+  const space={settings:{priorities:[]},topicState:{t1:{status:1}}};
+  const student={confidence:90,learningNeed:90,openMistakes:2,trend:{direction:'down'},priorityBoost:10};
+  const mastery={known:true,score:35,confidence:90,binary:{review3:true,review7:true},retentionSignal:{},latestDate:'2026-09-19'};
+  let forgetting={known:true,retained:30,reviewDue:true},targetDays=14;
+  const fn=new Function('w','routeStudentModel','routeTopicMasteryScore','routeTopicForgettingSignal','routeExamWeakness','routePaceSignal','routeDaysToTarget',
+    src+';return routeTopicExamRisk;'
+  )(()=>space,()=>student,()=>mastery,()=>forgetting,()=>({s1:{ratio:.40}}),()=>({known:true,status:'overload'}),()=>targetDays);
+  const overlapped=fn('s1','t1',student,{});
+  assert.ok(overlapped.rawPriorityBoost>=5,'Raw map risk may be high when several weakness signals align');
+  assert.ok(overlapped.priorityBoost<=2,'Scheduler must sharply cap risk when Student Model already contributes a large priority boost');
+  targetDays=null;forgetting={known:true,retained:70,reviewDue:false};
+  const noIncrement=fn('s1','t1',student,{});
+  assert.equal(noIncrement.priorityBoost,0,'Without target urgency or projected forgetting, risk must not re-add the same performance evidence');
+}
+
+// 4) Retention refresh and risk integration must stay duplicate-safe and recovery-safe.
+{
+  const build=between('function routeBuildCandidates','function routeConsistencySignal');
+  assert.ok(build.includes("space.plan.some(function(p){return !p.done&&p.topicId===t.id&&p.source==='retention_refresh';})"),'An open retention refresh must block duplicate refresh creation');
+  assert.ok(build.includes("riskBoost=recovery.active?0:risk.priorityBoost"),'Recovery mode must disable risk promotion of new normal topics');
+  assert.ok(build.indexOf('topics=routeTopicFrontier')<build.indexOf('routeTopicExamRisk(t.subjectId,t.id,student,riskContext)'),'Risk scoring must happen only after topic-frontier selection');
 }
 
 // 4) Risk map must be explainable UI and affect normal topic priority only through its bounded boost.
@@ -829,7 +864,10 @@ for(const marker of [
   'function routeExamRiskMapCard()',
   'SINAV RİSK HARİTASI',
   'Risk puanı soru çıkma olasılığı değildir',
+  '<strong>Neden:</strong>',
+  'rawPriorityBoost',
   'risk.priorityBoost',
+  'riskBoost=recovery.active?0:risk.priorityBoost',
   'Sınav risk haritası bu başlığı'
 ]) assert.ok(html.includes(marker),`Missing exam risk map marker: ${marker}`);
 

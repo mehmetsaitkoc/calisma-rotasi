@@ -131,14 +131,14 @@ function rebalance(space,candidates,opts={}){
   const routeBacklogDailyCountLimit=r=>r?.active?1:2;
   const routeReviewWeeklyLimit=t=>Math.max(30,Math.round((t*.45)/5)*5);
   const routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5));
-  const routeRecordInterventions=()=>{},toast=()=>{};
+  const routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{};
   const fn=new Function(
     'state','w','today','R','routeEnsure','routeRecoverySignal','routeBuildCandidates',
     'routeEffectiveDailyMinutes','routeTaskMethod','routeMethodLoad','routeIsQuantitativeHeavy',
     'routeIsReviewLike','routeIsCriticalReview','routeIsBacklog','routeHeavyLimit',
     'routeQuantitativeDailyLimit','routeReviewDailyLimit','routeBacklogDailyLimit',
     'routeBacklogDailyCountLimit','routeReviewWeeklyLimit','routeBacklogWeeklyLimit',
-    'routeRecordInterventions','toast',
+    'routeRecordModeHistory','routeRecordInterventions','toast',
     rebalanceSrc+';return routeRebalance;'
   );
   return fn(
@@ -147,7 +147,7 @@ function rebalance(space,candidates,opts={}){
     routeIsReviewLike,routeIsCriticalReview,routeIsBacklog,routeHeavyLimit,
     routeQuantitativeDailyLimit,routeReviewDailyLimit,routeBacklogDailyLimit,
     routeBacklogDailyCountLimit,routeReviewWeeklyLimit,routeBacklogWeeklyLimit,
-    routeRecordInterventions,toast
+    routeRecordModeHistory,routeRecordInterventions,toast
   )('route simulation',true);
 }
 function fullRoute(space,buildOpts={},scheduleOpts={}){

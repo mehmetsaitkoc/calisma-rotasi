@@ -1,0 +1,94 @@
+name: Route Engine CI
+
+on:
+  push:
+    branches:
+      - gpt/route-engine-evidence-balance
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Syntax check smoke runner
+        run: node --check scripts/route-engine-smoke.mjs
+
+      - name: Syntax check stress runner
+        run: node --check scripts/route-engine-stress.mjs
+
+      - name: Syntax check route simulation runner
+        run: node --check scripts/route-engine-route-sim.mjs
+
+      - name: Syntax check longitudinal runner
+        run: node --check scripts/route-engine-longitudinal.mjs
+
+      - name: Syntax check closed-loop runner
+        run: node --check scripts/route-engine-closed-loop.mjs
+
+      - name: Syntax check quality report runner
+        run: node --check scripts/route-engine-quality-report.mjs
+
+      - name: Syntax check critical persona audit
+        run: node --check scripts/route-engine-critical-personas.mjs
+
+      - name: Syntax check pilot telemetry fixture
+        run: node --check scripts/route-engine-pilot-telemetry.mjs
+
+      - name: Syntax check pilot cohort reporter
+        run: node --check scripts/route-engine-pilot-cohort.mjs
+
+      - name: Syntax check pilot cohort tests
+        run: node --check scripts/route-engine-pilot-cohort.test.mjs
+
+      - name: Syntax check pilot operations model
+        run: node --check scripts/route-engine-pilot-operations.mjs
+
+      - name: Syntax check pilot operations tests
+        run: node --check scripts/route-engine-pilot-operations.test.mjs
+
+      - name: Syntax check shared pilot operations model
+        run: node --check public/pilot-operations.js
+
+      - name: Syntax check pilot operations UI tests
+        run: node --check scripts/route-engine-pilot-operations-ui.test.mjs
+
+      - name: Run route engine smoke, stress, route simulation, longitudinal and closed-loop tests
+        run: npm test
+
+      - name: Generate 60-day motor quality report
+        run: npm run quality:report
+
+      - name: Run critical persona pilot-readiness audit
+        run: npm run critical:audit
+
+      - name: Run pilot telemetry fixture
+        run: npm run pilot:telemetry
+
+      - name: Run pilot cohort aggregation tests
+        run: npm run pilot:test
+
+      - name: Run pilot operations rules
+        run: npm run pilot:operations:test
+
+      - name: Guard pilot operations dashboard
+        run: npm run pilot:operations:ui:test
+
+      - name: Validate quality report sections
+        run: |
+          grep -q "## Yönetici özeti" reports/route-engine-quality-report.md
+          grep -q "## Persona özeti" reports/route-engine-quality-report.md
+          grep -q "## Pilot öncesi kalan açıklar" reports/route-engine-quality-report.md

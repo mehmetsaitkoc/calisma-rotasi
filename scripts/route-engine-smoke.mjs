@@ -1616,6 +1616,25 @@ for(const marker of [
 }
 
 
+// 5) Mobile completion sheet must shorten planned-task recording without dropping evidence fields.
+for(const marker of [
+  'Mobile Completion Sheet v1 — keep evidence fields, remove navigation friction.',
+  'log-completion-form',
+  'log-session-summary',
+  'PLANLI GÖREV',
+  'Görevi tamamla'
+]) assert.ok(html.includes(marker),`Missing mobile completion sheet marker: ${marker}`);
+{
+  const src=between('function openLog','function openSource');
+  assert.ok(src.includes("initial.sessionId?'log-completion-form':''"),'Completion sheet must only apply to linked plan tasks');
+  assert.ok(src.includes('name="minutes"'),'Completion must still collect actual minutes');
+  assert.ok(src.includes('name="questions"'),'Completion must still collect actual question count');
+  assert.ok(src.includes('name="correct"')&&src.includes('name="wrong"'),'Completion must preserve objective performance evidence');
+  assert.ok(src.includes('name="outcome"'),'Completion must preserve optional subjective outcome evidence');
+  assert.ok(src.includes('name="completeSession"'),'Completion must preserve explicit plan-completion consent');
+}
+
+
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
 {
   const mini=between('function routeMiniRepairSignals','function routeBuildCandidates');

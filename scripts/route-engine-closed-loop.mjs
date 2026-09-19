@@ -926,3 +926,5 @@ assert.equal(lfFreshness(3),1,'freshness 3d');assert.equal(lfFreshness(21),.55,'
 const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful,interventionInsufficientEvidence:r.backtest.insufficientEvidence,interventionConfounded:r.backtest.confounded,interventionByMode:r.backtest.byMode,interventionByHorizon:r.backtest.byHorizon};});
 console.log('route-engine-lifecycle: '+LF_PERSONAS.length+' students x 60 days = '+(LF_PERSONAS.length*60)+' daily cycles; day 30 + day 60 checkpoints passed');
 console.log(JSON.stringify(lfSummary));
+
+export { lfResults, lfSummary };

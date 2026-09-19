@@ -60,6 +60,12 @@ jobs:
       - name: Syntax check pilot operations tests
         run: node --check scripts/route-engine-pilot-operations.test.mjs
 
+      - name: Syntax check shared pilot operations model
+        run: node --check public/pilot-operations.js
+
+      - name: Syntax check pilot operations UI tests
+        run: node --check scripts/route-engine-pilot-operations-ui.test.mjs
+
       - name: Run route engine smoke, stress, route simulation, longitudinal and closed-loop tests
         run: npm test
 
@@ -77,6 +83,9 @@ jobs:
 
       - name: Run pilot operations rules
         run: npm run pilot:operations:test
+
+      - name: Guard pilot operations dashboard
+        run: npm run pilot:operations:ui:test
 
       - name: Validate quality report sections
         run: |

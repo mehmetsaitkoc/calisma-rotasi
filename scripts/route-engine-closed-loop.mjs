@@ -488,6 +488,20 @@ function dailySafety(space,persona,currentDate){
     const anchor=reviewAnchorDate(space,p);if(anchor&&[1,3,7].includes(p.reviewWave))assert.ok(p.date>=dayAdd(anchor,p.reviewWave),`${persona.id} review scheduled early`);
   }
 }
+function appliedModeForDay(day){
+  if(day.afterState==='repair')return 'repair';
+  if(day.afterState==='sustainable')return 'ease';
+  if(day.afterState==='progress'&&!day.recovery)return 'progress';
+  return 'steady';
+}
+function modeChurn(days){
+  const modes=days.map(appliedModeForDay),transitions=[];
+  for(let i=1;i<modes.length;i++)if(modes[i]!==modes[i-1])transitions.push({day:i+1,from:modes[i-1],to:modes[i]});
+  const bounces=[];
+  for(let i=1;i<modes.length-1;i++)if(modes[i-1]===modes[i+1]&&modes[i]!==modes[i-1])bounces.push({day:i+1,from:modes[i-1],via:modes[i],back:modes[i+1]});
+  return {modes,transitionCount:transitions.length,bounceCount:bounces.length,transitions,bounces};
+}
+
 function simulatePersona(persona){
   const space=makeSpace(persona),days=[],metrics={repairDays:0,sustainableDays:0,subjectSustainableDays:0,progressDays:0,recoveryDays:0,challengeTasks:0,mathTasks:0,otherTasks:0,miniAttempts:0,completed:0,skipped:0};
   for(let dayIndex=0;dayIndex<14;dayIndex++){
@@ -502,7 +516,7 @@ function simulatePersona(persona){
     metrics.miniAttempts=space.assessments.length;
     days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,adaptiveMode:afterAdaptive.mode,adaptiveRepairScore:afterAdaptive.repairScore,adaptiveProgressScore:afterAdaptive.progressScore,adaptiveEvidence:afterAdaptive.evidence,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,retention:afterModel.retention,challenges:events.filter(e=>e.reviewVariant==='challenge').length,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:practiceSignal(space,'k-ma','m1').weightedAccuracy||null});
   }
-  return {persona,space,days,metrics};
+  return {persona,space,days,metrics,churn:modeChurn(days)};
 }
 
 const results=PERSONAS.map(simulatePersona);
@@ -585,7 +599,8 @@ const summary=results.map(r=>({
   id:r.persona.id,completed:r.metrics.completed,skipped:r.metrics.skipped,repairDays:r.metrics.repairDays,
   sustainableDays:r.metrics.sustainableDays,subjectSustainableDays:r.metrics.subjectSustainableDays,progressDays:r.metrics.progressDays,recoveryDays:r.metrics.recoveryDays,challengeTasks:r.metrics.challengeTasks,
   mathTasks:r.metrics.mathTasks,finalConfidence:r.days.at(-1).confidence,finalNeed:r.days.at(-1).learningNeed,
-  finalRisk:r.days.at(-1).risk,completedTopics:Object.values(r.space.topicState).filter(x=>x.status===2).length
+  finalRisk:r.days.at(-1).risk,completedTopics:Object.values(r.space.topicState).filter(x=>x.status===2).length,
+  modeTransitions:r.churn.transitionCount,modeBounces:r.churn.bounceCount,appliedModes:r.churn.modes.join('>')
 }));
 
 console.log('route-engine-closed-loop: 10 students x 14 days = 140 daily decision cycles passed');

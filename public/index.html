@@ -1178,7 +1178,7 @@ function routeTaskSourceLabel(task){
 function routeExamEvidenceFactor(exam,subjectId=''){
  if(!exam?.date)return 1;
  const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(exam.date+'T12:00:00'))/86400000));
- const studySince=new Set(w().logs.filter(function(l){return !!l.sessionId&&l.date>exam.date&&(!subjectId||l.subjectId===subjectId);}).map(function(l){return l.sessionId;})).size;
+ const relevant=subjectId?null:new Set(Object.values(C.PART_SUBJECTS[exam.type]||{}).flat()),studySince=new Set(w().logs.filter(function(l){return !!l.sessionId&&l.date>exam.date&&(subjectId?l.subjectId===subjectId:(!relevant.size||relevant.has(l.subjectId)));}).map(function(l){return l.sessionId;})).size;
  if(age>=35&&studySince>=10)return .35;
  if(age>=21&&studySince>=6)return .55;
  if(age>=14&&studySince>=4)return .75;
@@ -1615,7 +1615,7 @@ function routeLearningSummaryItems(){
 function routeExamFreshness(type){
  const xs=[...w().exams].filter(function(x){return x.type===type;}).sort(function(a,b){return b.date.localeCompare(a.date);}),last=xs[0]||null;
  if(!last)return {known:false,stale:false,last:null,age:null,studySince:0,label:C.TYPES[type]?.label||type};
- const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(last.date+'T12:00:00'))/86400000)),studySince=new Set(w().logs.filter(function(l){return !!l.sessionId&&l.date>last.date;}).map(function(l){return l.sessionId;})).size,stale=age>=14&&studySince>=4;
+ const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(last.date+'T12:00:00'))/86400000)),relevant=new Set(Object.values(C.PART_SUBJECTS[type]||{}).flat()),studySince=new Set(w().logs.filter(function(l){return !!l.sessionId&&l.date>last.date&&(!relevant.size||relevant.has(l.subjectId));}).map(function(l){return l.sessionId;})).size,stale=age>=14&&studySince>=4;
  return {known:true,stale,last,age,studySince,label:C.TYPES[type]?.label||type};
 }
 function routeEvidenceNextStep(){

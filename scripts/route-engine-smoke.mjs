@@ -822,6 +822,31 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 }
 
 
+// 5) A low mini result must change the actual adaptive mode, not merely exist in practice storage.
+{
+  const signalSrc=between('function routeAssessmentSamples','function routeTargetAttainmentSignal');
+  const adaptiveSrc=between('function routeSubjectAdaptiveState','function routeTopicMasterySignal');
+  const space={
+    assessments:[{id:'mini-low',miniId:'kpss-problemler-01',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',correct:3,wrong:7,blank:0,created:1,skillBreakdown:[{skill:'Yüzde',total:4,correct:1,wrong:3,blank:0}]}],
+    plan:[],logs:[],mistakes:[]
+  };
+  const R={dayAdd:()=> '2026-08-29',topic:(_space,id)=>id==='t1'?{id:'t1',subjectId:'k-ma'}:null};
+  const noneBehavior=()=>({known:false,total:0,friction:0,completion:0});
+  const noneOutcome=()=>({known:false,total:0,stuck:0,ok:0,strong:0,stuckRate:0,trend:0,recent:''});
+  const noneCalibration=()=>({known:false,total:0,hiddenGap:0,productiveStruggle:0,alignedStrong:0,alignedStruggle:0});
+  const noneAttainment=()=>({known:false,sessions:0,weightedRatio:0,recentRatio:0});
+  const api=new Function('R','today','w','routeBehaviorSignal','routeOutcomeSignal','routeFeedbackCalibrationSignal','routeTargetAttainmentSignal','routeExamWeakness',
+    signalSrc+adaptiveSrc+';return {routePracticeSignal,routeSubjectAdaptiveState};'
+  )(R,()=> '2026-09-19',()=>space,noneBehavior,noneOutcome,noneCalibration,noneAttainment,()=>({}));
+  const practice=api.routePracticeSignal('k-ma','t1');
+  const adaptive=api.routeSubjectAdaptiveState('k-ma','t1');
+  assert.equal(practice.answered,10);
+  assert.equal(Math.round(practice.accuracy*100),30);
+  assert.equal(adaptive.mode,'repair','Low mini performance must drive ONARIM mode');
+  assert.ok(adaptive.repairScore>=3);
+  assert.ok(adaptive.evidence.some(x=>x.includes('soru doğruluğu')));
+}
+
 // 5) Blank mini answers count as missed practice evidence, not as invisible unanswered items.
 {
   const src=between('function routeAssessmentSamples','function routeFeedbackCalibrationSignal');

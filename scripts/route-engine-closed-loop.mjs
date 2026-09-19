@@ -31,6 +31,7 @@ const personalApi=new Function(
 )(()=>({plan:[],logs:[]}),()=>[],()=>[]);
 const masterySignalSrc=between('function routeTopicMasterySignal','function routeMasteryScoreFromSignals');
 const forgettingFn=new Function(between('function routeForgettingProjection','function routeTopicForgettingSignal')+';return routeForgettingProjection;')();
+const appliedDecisionFn=new Function(between('function routeProgressHoldFromSignals','function routeLatestModeDecision')+';return routeAppliedDecisionFromSignals;')();
 
 const SUBJECTS=[
   {id:'k-ma',name:'Matematik',method:'quant'},
@@ -113,7 +114,7 @@ function makeSpace(persona){
     configured:true,
     settings:{days:[0,1,2,3,4,5,6],dailyMinutes:persona.dailyMinutes,priorities:[...(persona.priorities||[])],targetDate:dayAdd(START,persona.targetDays)},
     profile:{subjectLevels:{...persona.profileLevel}},
-    topicState:{},plan:[],logs:[],mistakes:[],assessments:[],route:{decisions:[],interventions:[]},
+    topicState:{},plan:[],logs:[],mistakes:[],assessments:[],route:{decisions:[],interventions:[],modeHistory:[]},
     taskEvents:[],exams:[]
   };
 }
@@ -398,19 +399,19 @@ function buildCandidates(space,persona,currentDate){
   return {candidates,models,adaptives,risks,recovery:routeRecoverySignal(),weak};
 }
 function rebalance(space,persona,currentDate,candidates,recovery){
-  const state={activeExam:'kpss'},R={dayAdd},routeEnsure=()=>{},routeBuildCandidates=()=>candidates.map(x=>({...x})),routeEffectiveDailyMinutes=()=>persona.dailyMinutes,routeTaskMethod=p=>({key:taskMethod(p.subjectId)}),routeMethodLoad=k=>['quant','geometry','science','logic','ydt_reading'].includes(k)?2:['biology','paragraph','grammar','ydt_grammar'].includes(k)?1:0,routeIsQuantitativeHeavy=quantitative,routeIsReviewLike=isReviewLike,routeIsCriticalReview=isCriticalReview,routeIsBacklog=p=>p.source==='backlog',routeHeavyLimit=l=>l<=90?1:l<=180?2:3,routeQuantitativeDailyLimit=l=>l<=90?1:2,routeReviewDailyLimit=l=>Math.max(30,Math.round((l*.5)/5)*5),routeBacklogDailyLimit=(l,r)=>Math.min(l,Math.max(30,Math.round((l*(r?.active?(r.severe?.30:.35):.45))/5)*5)),routeBacklogDailyCountLimit=r=>r?.active?1:2,routeReviewWeeklyLimit=t=>Math.max(30,Math.round((t*.45)/5)*5),routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5)),routeRecordInterventions=()=>{},toast=()=>{},routeRecoverySignal=()=>recovery;
+  const state={activeExam:'kpss'},R={dayAdd},routeEnsure=()=>{},routeBuildCandidates=()=>candidates.map(x=>({...x})),routeEffectiveDailyMinutes=()=>persona.dailyMinutes,routeTaskMethod=p=>({key:taskMethod(p.subjectId)}),routeMethodLoad=k=>['quant','geometry','science','logic','ydt_reading'].includes(k)?2:['biology','paragraph','grammar','ydt_grammar'].includes(k)?1:0,routeIsQuantitativeHeavy=quantitative,routeIsReviewLike=isReviewLike,routeIsCriticalReview=isCriticalReview,routeIsBacklog=p=>p.source==='backlog',routeHeavyLimit=l=>l<=90?1:l<=180?2:3,routeQuantitativeDailyLimit=l=>l<=90?1:2,routeReviewDailyLimit=l=>Math.max(30,Math.round((l*.5)/5)*5),routeBacklogDailyLimit=(l,r)=>Math.min(l,Math.max(30,Math.round((l*(r?.active?(r.severe?.30:.35):.45))/5)*5)),routeBacklogDailyCountLimit=r=>r?.active?1:2,routeReviewWeeklyLimit=t=>Math.max(30,Math.round((t*.45)/5)*5),routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5)),routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{},routeRecoverySignal=()=>recovery;
   const fn=new Function(
     'state','w','today','R','routeEnsure','routeRecoverySignal','routeBuildCandidates','routeEffectiveDailyMinutes',
     'routeTaskMethod','routeMethodLoad','routeIsQuantitativeHeavy','routeIsReviewLike','routeIsCriticalReview',
     'routeIsBacklog','routeHeavyLimit','routeQuantitativeDailyLimit','routeReviewDailyLimit','routeBacklogDailyLimit',
-    'routeBacklogDailyCountLimit','routeReviewWeeklyLimit','routeBacklogWeeklyLimit','routeRecordInterventions','toast',
+    'routeBacklogDailyCountLimit','routeReviewWeeklyLimit','routeBacklogWeeklyLimit','routeRecordModeHistory','routeRecordInterventions','toast',
     rebalanceSrc+';return routeRebalance;'
   );
   return fn(
     state,()=>space,()=>currentDate,R,routeEnsure,routeRecoverySignal,routeBuildCandidates,routeEffectiveDailyMinutes,
     routeTaskMethod,routeMethodLoad,routeIsQuantitativeHeavy,routeIsReviewLike,routeIsCriticalReview,
     routeIsBacklog,routeHeavyLimit,routeQuantitativeDailyLimit,routeReviewDailyLimit,routeBacklogDailyLimit,
-    routeBacklogDailyCountLimit,routeReviewWeeklyLimit,routeBacklogWeeklyLimit,routeRecordInterventions,toast
+    routeBacklogDailyCountLimit,routeReviewWeeklyLimit,routeBacklogWeeklyLimit,routeRecordModeHistory,routeRecordInterventions,toast
   )('closed loop',true);
 }
 function completionRate(persona,dayIndex){
@@ -488,12 +489,7 @@ function dailySafety(space,persona,currentDate){
     const anchor=reviewAnchorDate(space,p);if(anchor&&[1,3,7].includes(p.reviewWave))assert.ok(p.date>=dayAdd(anchor,p.reviewWave),`${persona.id} review scheduled early`);
   }
 }
-function appliedModeForDay(day){
-  if(day.afterState==='repair')return 'repair';
-  if(day.afterState==='sustainable')return 'ease';
-  if(day.afterState==='progress'&&!day.recovery)return 'progress';
-  return 'steady';
-}
+function appliedModeForDay(day){return day.appliedMode||'steady';}
 function modeChurn(days){
   const modes=days.map(appliedModeForDay),transitions=[];
   for(let i=1;i<modes.length;i++)if(modes[i]!==modes[i-1])transitions.push({day:i+1,from:modes[i-1],to:modes[i]});
@@ -511,12 +507,12 @@ function simulatePersona(persona){
     dailySafety(space,persona,currentDate);
     const beforeModel=built.models.m1||modelFor(space,'k-ma','m1',currentDate,built.weak['k-ma']),events=simulateTasks(space,persona,currentDate,dayIndex);
     addMini(space,persona,currentDate,dayIndex);updateMasteryStatuses(space,currentDate);
-    const afterWeak=examWeakness(persona,dayIndex),afterAdaptive=adaptiveState(space,persona,'k-ma','m1',currentDate,afterWeak),afterModel=modelFor(space,persona,'k-ma','m1',currentDate,afterWeak['k-ma'],afterAdaptive),afterSubjectAdaptive=adaptiveState(space,persona,'k-ma','',currentDate,afterWeak),afterSubjectModel=modelFor(space,persona,'k-ma','',currentDate,afterWeak['k-ma'],afterSubjectAdaptive),afterRisk=riskFor(space,persona,'m1',currentDate,afterModel,afterWeak['k-ma']),recoveryAfter=recoverySignal(space,currentDate);
+    const afterWeak=examWeakness(persona,dayIndex),afterAdaptive=adaptiveState(space,persona,'k-ma','m1',currentDate,afterWeak),afterModel=modelFor(space,persona,'k-ma','m1',currentDate,afterWeak['k-ma'],afterAdaptive),afterSubjectAdaptive=adaptiveState(space,persona,'k-ma','',currentDate,afterWeak),afterSubjectModel=modelFor(space,persona,'k-ma','',currentDate,afterWeak['k-ma'],afterSubjectAdaptive),afterRisk=riskFor(space,persona,'m1',currentDate,afterModel,afterWeak['k-ma']),recoveryAfter=recoverySignal(space,currentDate),previousApplied=days.length?{mode:days.at(-1).appliedMode,hysteresisHeld:!!days.at(-1).hysteresisHeld}:null,appliedDecision=appliedDecisionFn(afterAdaptive,afterModel,built.recovery,previousApplied);
     if(afterModel.state==='repair')metrics.repairDays++;if(afterModel.state==='sustainable')metrics.sustainableDays++;if(afterSubjectModel.state==='sustainable')metrics.subjectSustainableDays++;if(afterModel.state==='progress')metrics.progressDays++;if(built.recovery.active)metrics.recoveryDays++;
     for(const e of events){if(e.action==='complete')metrics.completed++;else metrics.skipped++;if(e.reviewVariant==='challenge')metrics.challengeTasks++;if(e.topicId?.startsWith('m'))metrics.mathTasks++;else metrics.otherTasks++;}
     metrics.miniAttempts=space.assessments.length;
     const mathPractice=practiceSignal(space,'k-ma','m1');
-    days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,adaptiveMode:afterAdaptive.mode,adaptiveRepairScore:afterAdaptive.repairScore,adaptiveProgressScore:afterAdaptive.progressScore,adaptiveEvidence:afterAdaptive.evidence,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,retention:afterModel.retention,challenges:events.filter(e=>e.reviewVariant==='challenge').length,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:mathPractice.weightedAccuracy||null,mathRecentAccuracy:mathPractice.known?mathPractice.recentAccuracy:null});
+    days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,appliedMode:appliedDecision.mode,hysteresisHeld:!!appliedDecision.hysteresisHeld,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,adaptiveMode:afterAdaptive.mode,adaptiveRepairScore:afterAdaptive.repairScore,adaptiveProgressScore:afterAdaptive.progressScore,adaptiveEvidence:afterAdaptive.evidence,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,retention:afterModel.retention,challenges:events.filter(e=>e.reviewVariant==='challenge').length,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:mathPractice.weightedAccuracy||null,mathRecentAccuracy:mathPractice.known?mathPractice.recentAccuracy:null});
   }
   return {persona,space,days,metrics,churn:modeChurn(days)};
 }
@@ -532,6 +528,7 @@ for(const r of results){
   assert.equal(r.churn.bounceCount,0,`${r.persona.id} has repair/steady/progress mode oscillation`);
   assert.ok(r.churn.transitionCount<=3,`${r.persona.id} changed applied mode too often: ${r.churn.transitionCount}`);
   assert.ok(r.churn.stabilityScore>=85,`${r.persona.id} decision stability score too low: ${r.churn.stabilityScore}`);
+  assert.ok(r.days.every((d,i)=>!d.hysteresisHeld||(!d.recovery&&d.appliedMode==='progress'&&(i===0||!r.days[i-1].hysteresisHeld))),`${r.persona.id} has invalid or repeated progress hysteresis hold`);
 }
 
 {
@@ -614,7 +611,7 @@ const summary=results.map(r=>({
   sustainableDays:r.metrics.sustainableDays,subjectSustainableDays:r.metrics.subjectSustainableDays,progressDays:r.metrics.progressDays,recoveryDays:r.metrics.recoveryDays,challengeTasks:r.metrics.challengeTasks,
   mathTasks:r.metrics.mathTasks,finalConfidence:r.days.at(-1).confidence,finalNeed:r.days.at(-1).learningNeed,
   finalRisk:r.days.at(-1).risk,completedTopics:Object.values(r.space.topicState).filter(x=>x.status===2).length,
-  modeTransitions:r.churn.transitionCount,modeBounces:r.churn.bounceCount,stabilityScore:r.churn.stabilityScore,appliedModes:r.churn.modes.join('>')
+  modeTransitions:r.churn.transitionCount,modeBounces:r.churn.bounceCount,stabilityScore:r.churn.stabilityScore,progressHolds:r.days.filter(d=>d.hysteresisHeld).length,appliedModes:r.churn.modes.join('>')
 }));
 
 console.log('route-engine-closed-loop: 10 students x 14 days = 140 daily decision cycles passed');

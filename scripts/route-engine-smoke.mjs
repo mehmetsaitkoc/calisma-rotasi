@@ -487,6 +487,34 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(mastery('topic-1').ready,true,'Two consistent feedback records may validate mastery when practice detail is unavailable');
 }
 
+// 4) Spaced reviews must use actual study date and productive struggle must not trigger repair.
+{
+  const src=between('function routeSessionPerformanceSignal','function routeTopicFrontier');
+  const space={
+    plan:[
+      {id:'base',date:'2026-09-10',done:true,subjectId:'k-ma',topicId:'topic-1',source:'curriculum'},
+      {id:'review',date:'2026-09-13',done:false,subjectId:'k-ma',topicId:'topic-1',source:'spaced_review',kind:'review',reviewWave:3,priority:68,title:'3 gün tekrarı'}
+    ],
+    logs:[{id:'log-base',sessionId:'base',date:'2026-09-18',subjectId:'k-ma',correct:9,wrong:1,outcome:'stuck',updated:2}]
+  };
+  const R={dayAdd:(d,n)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);}};
+  const today=()=> '2026-09-19';
+  const routeIsReviewLike=p=>p.kind==='review'||p.source==='spaced_review';
+  const routeReviewGoal=()=>({minutes:20,questions:8,text:'review recipe'});
+  const routeSubjectAdaptiveState=()=>({mode:'steady',scope:'topic',confidence:50});
+  const routeBacklogDailyLimit=()=>30,routeEffectiveDailyMinutes=()=>120,routeStudyMethod=()=>({label:'SORU + YANLIŞ ANALİZİ'});
+  const api=new Function('w','R','today','routeIsReviewLike','routeReviewGoal','routeSubjectAdaptiveState','routeBacklogDailyLimit','routeEffectiveDailyMinutes','routeStudyMethod',src+';return {routeSessionPerformanceSignal,routePlanEvidenceDate,routeReviewAnchorDate,routeCandidateFromPlan};')(()=>space,R,today,routeIsReviewLike,routeReviewGoal,routeSubjectAdaptiveState,routeBacklogDailyLimit,routeEffectiveDailyMinutes,routeStudyMethod);
+
+  const perf=api.routeSessionPerformanceSignal(space.logs[0]);
+  assert.equal(perf.productiveStruggle,true);
+  assert.equal(perf.repair,false,'High-accuracy struggle must not create a 1-day repair');
+  assert.equal(api.routePlanEvidenceDate(space.plan[0],space),'2026-09-18','Actual logged study date must override the old planned date');
+  const candidate=api.routeCandidateFromPlan(space.plan[1]);
+  assert.equal(candidate.source,'spaced_review','An overdue-looking review must not degrade into a generic backlog task');
+  assert.equal(candidate.earliest,'2026-09-21','3-day review must be anchored to actual study date');
+  assert.equal(candidate.taskGoal,'review recipe');
+}
+
 // 4) Guard core personalization features against accidental removal.
 for(const marker of [
   'routeObservedNet',
@@ -500,6 +528,11 @@ for(const marker of [
   'routePracticeSignal',
   'weightedAccuracy',
   'routeFeedbackCalibrationSignal',
+  'routeSessionPerformanceSignal',
+  'routePlanEvidenceDate',
+  'routeReviewAnchorDate',
+  'reviewBaseTaskId',
+  'Fiilî çalışma gününden',
   'rahat hissetme + düşük doğruluk',
   'routeDifficultySignal',
   'routeDifficultyPrescription',
@@ -507,7 +540,7 @@ for(const marker of [
   "reviewVariant:'challenge'",
   'SEVİYE YOKLAMA',
   'challengeReady',
-  "practiceAnswered>=8&&practiceAccuracy>=.85",
+  "performance.challenge",
   'Zorlandıysan en çok nerede?',
   'Sinyal güveni',
   'const waves=needsRepair?[1,3,7]:[3,7]',

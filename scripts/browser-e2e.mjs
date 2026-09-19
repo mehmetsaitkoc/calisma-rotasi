@@ -50,17 +50,19 @@ async function assertCleanRender(page, label) {
 }
 
 async function navigate(page, view) {
-  const mobile = page.locator('.mobile-dock [data-action="nav"][data-view="' + view + '"]');
-  if (await mobile.count() && await mobile.isVisible()) {
-    await mobile.click();
+  const directMobile = page.locator('.mobile-dock [data-action="nav"][data-view="' + view + '"]');
+  if (await directMobile.count() && await directMobile.isVisible()) {
+    await directMobile.click();
   } else {
     const sidebar = page.locator('.sidebar [data-action="nav"][data-view="' + view + '"]').first();
-    if (!(await sidebar.isVisible())) {
-      const menus = page.locator('[data-action="menu"]');
-      for (let i = 0; i < await menus.count(); i++) {
-        const menu = menus.nth(i);
-        if (await menu.isVisible()) { await menu.click(); break; }
-      }
+    assert.ok(await sidebar.count(), 'Navigation target must exist: ' + view);
+    const mobileViewport = await page.evaluate(() => window.innerWidth <= 650);
+    if (mobileViewport) {
+      const menu = page.locator('.mobile-dock [data-action="menu"]').first();
+      await menu.waitFor({ state: 'visible' });
+      await menu.click();
+      await page.locator('body.menu-open').waitFor({ state: 'attached' });
+      await sidebar.waitFor({ state: 'visible' });
     }
     await sidebar.click();
   }

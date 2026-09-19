@@ -727,9 +727,22 @@ function lfChurn(days){
   }
   return {...base,bounceCount:bounces.length,bounces,stabilityScore:Math.max(0,100-base.transitionCount*5-bounces.length*25)};
 }
+function lfRefreshAudit(r){
+  const tasks=r.space.plan.filter(function(p){return p.done&&p.source==='retention_refresh';}),groups=new Map(),keys=new Set();let duplicateKeys=0;
+  for(const p of tasks){
+    if(p.routeKey){if(keys.has(p.routeKey))duplicateKeys++;keys.add(p.routeKey);}
+    const date=planEvidenceDate(r.space,p),xs=groups.get(p.topicId)||[];if(date)xs.push(date);groups.set(p.topicId,xs);
+  }
+  let minGap=null,maxPerTopic=0;
+  for(const xs of groups.values()){
+    xs.sort();maxPerTopic=Math.max(maxPerTopic,xs.length);
+    for(let i=1;i<xs.length;i++){const gap=daysBetween(xs[i],xs[i-1]);minGap=minGap===null?gap:Math.min(minGap,gap);}
+  }
+  return {total:tasks.length,topics:groups.size,minGap,maxPerTopic,duplicateKeys};
+}
 function lfCheckpoint(r,n){
-  const xs=r.days.slice(0,n),d=xs.at(-1),ch=lfChurn(xs);
-  return {day:n,finalState:d.studentState,confidence:d.confidence,learningNeed:d.learningNeed,risk:d.risk,modeTransitions:ch.transitionCount,modeBounces:ch.bounceCount,modeBounceDetails:ch.bounces,stabilityScore:ch.stabilityScore,longestRepairStreak:lfLongest(xs,'repair'),longestProgressStreak:lfLongest(xs,'progress'),firstRepairDay:lfFirst(xs,'repair',true),repairExitDay:lfFirst(xs,'repair',false),firstProgressDay:lfFirst(xs,'progress',true),progressExitDay:lfFirst(xs,'progress',false),recoveryDays:xs.filter(function(x){return x.recovery;}).length,sustainableDays:xs.filter(function(x){return x.studentState==='sustainable';}).length,completedTopics:d.completedTopics,masteryRegressions:xs.filter(function(x){return x.masteryRegression;}).length,forgettingRefreshCount:xs.reduce(function(a,x){return a+x.forgettingRefreshes;},0),staleEvidenceInfluence:d.staleEvidenceInfluence,personalNormChange:(Number.isFinite(d.normBase)&&Number.isFinite(r.normStart))?d.normBase-r.normStart:null,examFreshness:d.examFreshness,oldExamWeight:d.oldExamWeight,freshExamWeight:d.freshExamWeight,examEvidenceCount:d.examEvidenceCount};
+  const xs=r.days.slice(0,n),d=xs.at(-1),ch=lfChurn(xs),refreshAudit=lfRefreshAudit(r);
+  return {day:n,finalState:d.studentState,confidence:d.confidence,learningNeed:d.learningNeed,risk:d.risk,modeTransitions:ch.transitionCount,modeBounces:ch.bounceCount,modeBounceDetails:ch.bounces,stabilityScore:ch.stabilityScore,longestRepairStreak:lfLongest(xs,'repair'),longestProgressStreak:lfLongest(xs,'progress'),firstRepairDay:lfFirst(xs,'repair',true),repairExitDay:lfFirst(xs,'repair',false),firstProgressDay:lfFirst(xs,'progress',true),progressExitDay:lfFirst(xs,'progress',false),recoveryDays:xs.filter(function(x){return x.recovery;}).length,sustainableDays:xs.filter(function(x){return x.studentState==='sustainable';}).length,completedTopics:d.completedTopics,masteryRegressions:xs.filter(function(x){return x.masteryRegression;}).length,forgettingRefreshCount:xs.reduce(function(a,x){return a+x.forgettingRefreshes;},0),staleEvidenceInfluence:d.staleEvidenceInfluence,personalNormChange:(Number.isFinite(d.normBase)&&Number.isFinite(r.normStart))?d.normBase-r.normStart:null,examFreshness:d.examFreshness,oldExamWeight:d.oldExamWeight,freshExamWeight:d.freshExamWeight,examEvidenceCount:d.examEvidenceCount,refreshAudit};
 }
 function lfSim(base){
   const space=makeSpace({...base,targetDays:Math.max(90,base.targetDays||90)}),days=[];let normStart=null,lastMastered=new Set();
@@ -758,6 +771,9 @@ for(const r of lfResults){
   assert.ok(r.days.every(function(d,i){return !d.easeHysteresisHeld||(d.appliedMode==='ease'&&(i===0||!r.days[i-1].easeHysteresisHeld));}),r.persona.id+' unsafe repeated ease re-entry hold');
   assert.ok(r.days.every(function(d,i){return !d.easeEntryHeld||(d.appliedMode==='steady'&&(i===0||!r.days[i-1].easeEntryHeld));}),r.persona.id+' unsafe repeated sustainable entry hold');
   assert.ok(r.day60.staleEvidenceInfluence<=18,r.persona.id+' stale exam dominates current performance');
+  assert.equal(r.day60.refreshAudit.duplicateKeys,0,r.persona.id+' duplicated retention refresh route key');
+  assert.ok(r.day60.refreshAudit.minGap===null||r.day60.refreshAudit.minGap>=10,r.persona.id+' retention refresh rain: min gap '+r.day60.refreshAudit.minGap);
+  assert.ok(r.day60.refreshAudit.maxPerTopic<=5,r.persona.id+' too many retention refreshes for one topic: '+r.day60.refreshAudit.maxPerTopic);
 }
 assert.ok(lfById['late-breakthrough'].days.slice(0,20).some(function(d){return d.studentState==='repair';}),'late-breakthrough missed early repair');
 assert.ok(lfById['late-breakthrough'].days.slice(40).every(function(d){return d.studentState!=='repair';}),'late-breakthrough trapped in repair');
@@ -781,6 +797,42 @@ const burn=lfById['burnout-after-success'];assert.ok(burn.days.find(function(d){
 {
   const one=studentFn({practice:{known:true,sessions:20,answered:400,weightedAccuracy:.88,accuracy:.88},weak:null,behavior:{known:false,total:0},outcome:{known:false,total:0},retention:{known:false,score:null},trend:{known:false,direction:'unknown',delta:0},calibration:{known:false,hiddenGap:0,productiveStruggle:0,alignedStrong:0,alignedStruggle:0},skillWeakness:{known:false,weak:[],primary:null},adaptive:{mode:'steady'},openMistakes:0,practiceLogCount:20,miniDays:0,difficultyKnown:false,errorMemory:{known:false,repeated:false,primary:null,total:0},velocity:{known:false,key:'unknown',confidence:0},personalNorm:{known:false,direction:'unknown',confidence:0},latestDays:0,attainmentRatio:null});
   assert.ok(one.confidence<=35,'single evidence family inflated confidence '+one.confidence);
+}
+{
+  const fragile14=forgettingFn({mastery:82,daysSince:14,stabilityDays:16});
+  const standard14=forgettingFn({mastery:88,daysSince:14,stabilityDays:22});
+  const standard21=forgettingFn({mastery:88,daysSince:21,stabilityDays:22});
+  const strong21=forgettingFn({mastery:92,daysSince:21,stabilityDays:28});
+  const strong30=forgettingFn({mastery:92,daysSince:30,stabilityDays:28});
+  assert.equal(fragile14.reviewDue,true,'fragile mastered topic did not reopen near 14-day window');
+  assert.equal(standard14.reviewDue,false,'standard mastered topic refreshed too early before 21-day window');
+  assert.equal(standard21.reviewDue,true,'standard mastered topic did not reopen near 21-day window');
+  assert.equal(strong21.reviewDue,false,'strong mastered topic refreshed too early at 21 days');
+  assert.equal(strong30.reviewDue,true,'strong mastered topic did not reopen near 30-day window');
+}
+{
+  const p=LF_PERSONAS.find(function(x){return x.id==='strong-balanced';}),space=makeSpace(p);
+  const add=function(id,date,source,reviewWave,baseId,correct=9,wrong=1){
+    const task={id,date,subjectId:'k-ma',topicId:'m1',title:id,minutes:25,done:true,source,kind:source==='curriculum'?'study':'review',routeKey:id};
+    if(reviewWave)task.reviewWave=reviewWave;if(baseId){task.reviewBaseTaskId=baseId;task.reviewBaseDate=START;}
+    space.plan.push(task);space.logs.push({id:'log-'+id,sessionId:id,date,subjectId:'k-ma',title:id,minutes:25,questions:correct+wrong,correct,wrong,outcome:correct/(correct+wrong)>=.8?'strong':'ok',created:++uid,updated:uid});
+    return task;
+  };
+  add('cycle-old-base',START,'curriculum');
+  add('cycle-old-r3',dayAdd(START,3),'spaced_review',3,'cycle-old-base');
+  add('cycle-old-r7',dayAdd(START,7),'spaced_review',7,'cycle-old-base');
+  const oldMastery=masterySignal(space,'m1',dayAdd(START,8));assert.equal(oldMastery.ready,true,'old lifecycle fixture never reached mastery');
+  space.topicState.m1={status:2};
+  const dueBefore=forgettingFor(space,p,'m1',dayAdd(START,45));assert.equal(dueBefore.reviewDue,true,'mastered topic never reopened after long forgetting gap');
+  add('cycle-refresh',dayAdd(START,45),'retention_refresh');
+  const afterRefresh=forgettingFor(space,p,'m1',dayAdd(START,46));assert.equal(afterRefresh.reviewDue,false,'retention refresh did not reset forgetting clock');
+  add('cycle-new-base',dayAdd(START,50),'curriculum');
+  space.topicState.m1={status:1};
+  const newCycle=masterySignal(space,'m1',dayAdd(START,51));
+  assert.equal(newCycle.baseTaskId,'cycle-new-base','new learning cycle did not become mastery anchor');
+  assert.equal(newCycle.review3,false,'old 3-day review leaked into new learning cycle');
+  assert.equal(newCycle.review7,false,'old 7-day review leaked into new learning cycle');
+  assert.equal(newCycle.ready,false,'old retention evidence completed a fresh learning cycle');
 }
 assert.equal(lfFreshness(3),1,'freshness 3d');assert.equal(lfFreshness(21),.55,'freshness 21d');assert.equal(lfFreshness(45),.35,'freshness 45d');
 const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful,interventionInsufficientEvidence:r.backtest.insufficientEvidence};});

@@ -373,13 +373,15 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 
 // 4) Applied decision must never expose raw progress when calibrated progression is not actually applied.
 {
-  const src=between('function routeAppliedDecision','function routeStudentOverview');
-  let studentState='steady',recoveryActive=false;
+  const src=between('function routeProgressHoldFromSignals','function routeStudentOverview');
+  let studentState='steady',recoveryActive=false,previous=null;
   const routeSubjectAdaptiveState=()=>({mode:'progress',label:'GELİŞİM MODU',note:'raw',confidence:90,evidence:['yüksek doğruluk'],repairScore:0,progressScore:6});
-  const routeStudentModel=()=>({state:studentState,label:studentState==='progress'?'GELİŞİM DOĞRULANIYOR':'DENGELİ İLERLEME',nextAction:'dozu koru',confidence:88});
+  const routeStudentModel=()=>({state:studentState,label:studentState==='progress'?'GELİŞİM DOĞRULANIYOR':'DENGELİ İLERLEME',nextAction:'dozu koru',confidence:88,performance:82,learningNeed:12,openMistakes:0,retention:90,execution:90,trend:{known:false},personalNorm:{known:false}});
   const routeRecoverySignal=()=>({active:recoveryActive});
-  const fn=new Function('routeSubjectAdaptiveState','routeStudentModel','routeRecoverySignal',src+';return routeAppliedDecision;')(
-    routeSubjectAdaptiveState,routeStudentModel,routeRecoverySignal
+  const routeLatestModeDecision=()=>previous;
+  const routeEnsure=()=>{},w=()=>({route:{modeHistory:[]}});
+  const fn=new Function('routeSubjectAdaptiveState','routeStudentModel','routeRecoverySignal','routeLatestModeDecision','routeEnsure','w',src+';return routeAppliedDecision;')(
+    routeSubjectAdaptiveState,routeStudentModel,routeRecoverySignal,routeLatestModeDecision,routeEnsure,w
   );
   const held=fn('k-ma','m1');
   assert.equal(held.rawMode,'progress');
@@ -1442,7 +1444,7 @@ for(const marker of [
 
 // 5) Applied decisions must follow the calibrated Student Model across every adaptive state, not only progress.
 {
-  const src=between('function routeAppliedDecisionFromSignals','function routeAppliedDecision(subjectId');
+  const src=between('function routeProgressHoldFromSignals','function routeLatestModeDecision');
   const fn=new Function(src+';return routeAppliedDecisionFromSignals;')();
   const adaptive=(mode,label)=>({mode,label,note:'raw note',evidence:['raw'],confidence:90});
 
@@ -1469,6 +1471,36 @@ for(const marker of [
   assert.equal(x.label,'TOPARLANMA MODU');
 }
 
+// 5) Progress hysteresis may absorb one mild dip, but must never hide real regression.
+{
+  const src=between('function routeProgressHoldFromSignals','function routeLatestModeDecision');
+  const fn=new Function(src+';return routeAppliedDecisionFromSignals;')();
+  const adaptive={mode:'steady',label:'DENGELİ TEMPO',note:'raw',evidence:[],confidence:90};
+  const mild={state:'steady',label:'DENGELİ İLERLEME',nextAction:'dozu koru',confidence:88,performance:73,learningNeed:24,openMistakes:0,retention:82,execution:90,trend:{known:true,direction:'flat'},personalNorm:{known:true,direction:'flat',confidence:70}};
+  const previous={mode:'progress',hysteresisHeld:false};
+
+  const held=fn(adaptive,mild,{active:false},previous);
+  assert.equal(held.mode,'progress','One mild dip after progress should receive a one-day hysteresis buffer');
+  assert.equal(held.hysteresisHeld,true);
+  assert.equal(held.label,'GELİŞİM KORUNUYOR');
+
+  const second=fn(adaptive,mild,{active:false},{mode:'progress',hysteresisHeld:true});
+  assert.equal(second.mode,'steady','Hysteresis may not preserve progress for a second unconfirmed day');
+  assert.equal(second.hysteresisHeld,false);
+
+  const regressing={...mild,performance:69,trend:{known:true,direction:'down'}};
+  const exit=fn(adaptive,regressing,{active:false},previous);
+  assert.equal(exit.mode,'steady','Real regression must exit progress immediately');
+
+  const mistake={...mild,openMistakes:1};
+  assert.equal(fn(adaptive,mistake,{active:false},previous).mode,'steady','An open mistake must cancel progress hysteresis');
+
+  const recovered={...mild,state:'progress',performance:81};
+  const renewed=fn({mode:'progress',label:'GELİŞİM MODU',note:'raw',evidence:[]},recovered,{active:false},{mode:'progress',hysteresisHeld:true});
+  assert.equal(renewed.mode,'progress');
+  assert.equal(renewed.hysteresisHeld,false,'Fresh corroborated progress resets the hysteresis buffer');
+}
+
 // 5) User-facing route surfaces must read the applied decision rather than raw adaptive progress.
 {
   const todayTask=between('function routeTodayTask','function routeTodayPage');
@@ -1482,6 +1514,8 @@ for(const marker of [
   assert.ok(html.includes("adaptive.studentState==='retention'"),'Task prescription must explain retention priority');
   assert.ok(html.includes("adaptive.studentState==='collect'"),'Task prescription must explain low-confidence data collection');
   assert.ok(html.includes("state=a.studentState||'steady'"),'Learning summary must preserve calibrated Student Model state');
+  assert.ok(html.includes('function routeProgressHoldFromSignals'),'Progress hysteresis gate must exist');
+  assert.ok(html.includes('routeRecordModeHistory(scheduled)'),'Rebalance must persist applied mode history');
 }
 
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
@@ -1614,6 +1648,20 @@ for(const marker of [
   assert.equal(iv.baselineAccuracy,50);
   assert.equal(iv.confidence,72);
   assert.equal(iv.topicId,'k-ma-9');
+}
+
+// 5) Backup validation must preserve decision-mode history used by progress hysteresis.
+{
+  const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
+  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const backup=env.RotaCore.fresh();backup.activeExam='kpss';
+  backup.workspaces.kpss.route.modeHistory=[{date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'progress',studentState:'steady',confidence:88,performance:73,learningNeed:24,hysteresisHeld:true,created:1}];
+  const row=env.RotaCore.validateBackup(backup).workspaces.kpss.route.modeHistory[0];
+  assert.equal(row.mode,'progress');
+  assert.equal(row.studentState,'steady');
+  assert.equal(row.hysteresisHeld,true);
+  assert.equal(row.performance,73);
 }
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.

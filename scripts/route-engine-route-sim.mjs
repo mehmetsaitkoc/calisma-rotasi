@@ -275,15 +275,55 @@ sim('R11 one-day repair wave',()=>{
   assert.equal(r1.earliest,TODAY);
 });
 
-// R12 — earned progress changes the 3-day review into a challenge, not an extra task.
+// R12 — earned, corroborated progress changes the 3-day review into a challenge, not an extra task.
 sim('R12 challenge review substitution',()=>{
   const space=baseSpace();
   space.plan.push({id:'base',date:'2026-09-18',done:true,subjectId:'k-ma',topicId:'m1',source:'curriculum',title:'Temel kavramlar'});
-  return makeBuild(space,{evidenceDates:{base:'2026-09-18'},adaptive:{m1:{mode:'progress',scope:'topic',confidence:70,skillWeakness:{primary:null}}}});
+  return makeBuild(space,{
+    evidenceDates:{base:'2026-09-18'},
+    adaptive:{m1:{mode:'progress',scope:'topic',confidence:70,skillWeakness:{primary:null}}},
+    students:{m1:{state:'progress',confidence:80,priorityBoost:0}}
+  });
 },cs=>{
   const r3=cs.find(x=>x.source==='spaced_review'&&x.reviewWave===3&&x.topicId==='m1');
   assert.equal(r3.reviewVariant,'challenge');
   assert.match(r3.title,/Seviye yoklama/);
+});
+
+// R12b — raw adaptive progress alone cannot bypass the Student Model progression gate.
+sim('R12b unverified progress stays normal review',()=>{
+  const space=baseSpace();
+  space.plan.push({id:'base',date:'2026-09-18',done:true,subjectId:'k-ma',topicId:'m1',source:'curriculum',title:'Temel kavramlar'});
+  return makeBuild(space,{
+    evidenceDates:{base:'2026-09-18'},
+    adaptive:{m1:{mode:'progress',scope:'topic',confidence:70,skillWeakness:{primary:null}}},
+    students:{m1:{state:'steady',confidence:90,priorityBoost:0}}
+  });
+},cs=>{
+  const r3=cs.find(x=>x.source==='spaced_review'&&x.reviewWave===3&&x.topicId==='m1');
+  assert.ok(r3);
+  assert.equal(r3.reviewVariant,undefined);
+  assert.match(r3.title,/3 gün tekrarı/);
+});
+
+// R12c — an already-created challenge must downgrade if corroborated progression is no longer present.
+sim('R12c stale challenge downgrades after regression',()=>{
+  const space=baseSpace();
+  space.plan.push({
+    id:'r3',date:'2026-09-19',done:false,subjectId:'k-ma',topicId:'m1',source:'spaced_review',
+    title:'Seviye yoklama · Temel kavramlar',reviewWave:3,reviewVariant:'challenge',
+    reviewBaseTaskId:'base',reviewBaseDate:'2026-09-16',routeKey:'review:base:3'
+  });
+  space.plan.push({id:'base',date:'2026-09-16',done:true,subjectId:'k-ma',topicId:'m1',source:'curriculum',title:'Temel kavramlar'});
+  return makeBuild(space,{
+    evidenceDates:{base:'2026-09-16'},
+    adaptive:{m1:{mode:'progress',scope:'topic',confidence:70,skillWeakness:{primary:null}}},
+    students:{m1:{state:'steady',confidence:95,priorityBoost:0}}
+  });
+},cs=>{
+  const r3=cs.find(x=>x.id==='r3');
+  assert.ok(r3);
+  assert.equal(r3.reviewVariant,undefined);
 });
 
 // R13 — recovery disables exam-risk promotion of normal new topics.

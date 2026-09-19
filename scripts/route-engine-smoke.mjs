@@ -1654,6 +1654,13 @@ for(const marker of [
 }
 
 
+// 5) Rota Hoca must be grounded in the same live route state shown to the student.
+{
+  const src=between('function teacherStudentContext','function teacherRemoteText');
+  for(const marker of ['todayPlan','routeDecision','studentModel','learningNeed','examRisk','mastery','completion','routeSummary','routeAppliedDecision','routeStudentModel','routeTopicExamRisk','routeTopicMasterySignal'])
+    assert.ok(src.includes(marker),`Rota Hoca context is missing live route marker: ${marker}`);
+}
+
 // 5) Completion feedback must reflect recorded evidence and only announce a route-mode change when it really changed.
 for(const marker of [
   '✓ Görev tamamlandı.',

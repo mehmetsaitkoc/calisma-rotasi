@@ -138,6 +138,7 @@ assert.equal(d7.exam.latestDate,'2026-09-25');
 assert.equal(d7.interventions.neutral,1);
 assert.equal(d7.interventions.horizons[7].neutral,1);
 assert.equal(d7.interventions.horizons[14].neutral,0);
+assert.deepEqual(d7.interventions.latest,{date:'2026-09-19',mode:'repair',status:'neutral'});
 assert.equal(d7.dataQuality.capturedOnTime,true);
 
 space.logs.push({id:'l14',sessionId:'t14',date:'2026-10-03',subjectId:'k-ma',minutes:30,questions:12,correct:10,wrong:2});
@@ -174,6 +175,7 @@ assert.equal(payload.schema,'calisma-rotasi-pilot-v1');
 assert.equal(payload.participantId,'p-pilot-1');
 assert.equal(payload.exam,'kpss');
 assert.equal(payload.track,'lisans');
+assert.equal(payload.lastActiveDate,'2026-10-03');
 assert.deepEqual(payload.snapshots.map(x=>x.checkpoint),[0,7,14]);
 assert.ok(!JSON.stringify(payload).includes('name'),'Pilot export must not contain profile names');
 

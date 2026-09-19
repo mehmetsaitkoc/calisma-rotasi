@@ -518,6 +518,7 @@ for(const r of results){
 {
   const r=byId['weak-improver'],first=r.days.find(d=>d.mathAccuracy!==null),last=[...r.days].reverse().find(d=>d.mathAccuracy!==null);
   assert.ok(first&&last&&last.mathAccuracy>first.mathAccuracy,`weak improver did not improve: ${first?.mathAccuracy} -> ${last?.mathAccuracy}`);
+  assert.ok(r.days.at(-1).learningNeed<Math.max(...r.days.slice(0,5).map(d=>d.learningNeed)),'weak improver learning need did not fall as performance improved');
   assert.ok(r.metrics.mathTasks>=3,'weak improver received too little math work');
 }
 {
@@ -529,8 +530,13 @@ for(const r of results){
 {
   const r=byId['hidden-gap'];
   assert.ok(r.metrics.repairDays>=1,'hidden-gap student never entered repair');
+  assert.ok(r.days.slice(0,5).some(d=>d.afterState==='repair'),'hidden-gap student did not receive early repair');
   assert.ok(r.days.slice(0,5).every(d=>d.afterState!=='progress'),'hidden-gap student progressed too early');
+  assert.notEqual(r.days.at(-1).afterState,'repair','hidden-gap student stayed trapped in repair after accuracy recovered');
   assert.ok(r.days.at(-1).learningNeed<Math.max(...r.days.slice(0,5).map(d=>d.learningNeed)),'hidden-gap student did not recover');
+  const retakeDate=dayAdd(START,3);
+  assert.equal(r.space.assessments.filter(a=>a.date===retakeDate&&a.miniId==='sim-m1').length,2,'hidden-gap fixture must contain a same-day mini retake');
+  assert.equal(assessmentSamples(r.space,'k-ma','m1').filter(a=>a.date===retakeDate).length,1,'same-day mini retake inflated closed-loop evidence');
 }
 {
   const r=byId['productive-struggle'];

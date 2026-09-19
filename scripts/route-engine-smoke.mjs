@@ -721,11 +721,11 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 {
   const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition');
   const data=new Function(src+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES};')();
-  assert.equal(data.ROTA_MINI_EXAMS.length,2);
-  assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),['kpss-problemler-01','yks-paragraf-01']);
+  assert.equal(data.ROTA_MINI_EXAMS.length,7);
+  assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),['kpss-problemler-01','yks-paragraf-01','kpss-tarih-01','kpss-cografya-01','tyt-biyoloji-hucre-01','ayt-edebiyat-tanzimat-01','ydt-grammar-01']);
   for(const exam of data.ROTA_MINI_EXAMS){
-    assert.equal(exam.questions.length,10,exam.id+' should contain 10 pilot questions');
-    assert.equal(new Set(exam.questions.map(q=>q.id)).size,10,'Question ids must be unique');
+    assert.ok(exam.questions.length>=8,exam.id+' should contain at least 8 pilot questions');
+    assert.equal(new Set(exam.questions.map(q=>q.id)).size,exam.questions.length,'Question ids must be unique');
     for(const q of exam.questions){
       assert.equal(q.options.length,5);
       assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<q.options.length,'Answer key must point to an option');
@@ -737,6 +737,16 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(data.OFFICIAL_EXAM_RESOURCES.kpss.every(x=>/osym\.gov\.tr/.test(x.url)));
 }
 
+// 5) Recommendation scoring should favor unresolved repair needs and avoid same-day repetition.
+{
+  const src=between('function miniRecommendationScore','function miniExamDefinition');
+  const api=new Function('today',src+';return {miniRecommendationScore};')(()=> '2026-09-19');
+  const repair=api.miniRecommendationScore(null,{mode:'repair',repairScore:4},999);
+  const steady=api.miniRecommendationScore(null,{mode:'steady',repairScore:0},999);
+  assert.ok(repair>steady,'Repair mini should outrank a neutral unsolved mini');
+  const repeatedToday=api.miniRecommendationScore({total:10,correct:4},{mode:'repair',repairScore:4},0);
+  assert.ok(repeatedToday<repair,'Same-day repeat should be penalized');
+}
 // 5) Mini scoring must distinguish correct, wrong and blank answers.
 {
   const src=between('function scoreMiniExam','function latestMiniResult');
@@ -782,6 +792,15 @@ for(const marker of [
   'DENEME MERKEZİ · BETA',
   'KPSS Problemler Mini #01',
   'TYT Paragraf Mini #01',
+  'KPSS İnkılap Tarihi Mini #01',
+  "KPSS Türkiye'nin Konumu Mini #01",
+  'TYT Biyoloji Hücre Mini #01',
+  'AYT Tanzimat Edebiyatı Mini #01',
+  'YDT Grammar Mini #01',
+  'ROTA’NIN ÖNERİSİ',
+  'function miniRecommendationScore',
+  'function miniRecommendation',
+  'Rota kararı',
   'MEBİ 2026–2027 Türkiye Geneli YKS Denemeleri',
   'ÖSYM 2026 YKS Temel Soru Kitapçıkları',
   'Telifli soruları Çalışma Rotası içine kopyalamıyoruz'

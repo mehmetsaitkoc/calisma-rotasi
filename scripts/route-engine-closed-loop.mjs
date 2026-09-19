@@ -756,6 +756,7 @@ assert.ok(lfById['late-breakthrough'].days.slice(40).every(function(d){return d.
 assert.ok(lfById['high-skill-low-compliance'].days.slice(0,20).some(function(d){return d.studentState==='sustainable';}),'identity drift missed early low compliance');
 assert.ok(lfById['high-skill-low-compliance'].days.slice(40).some(function(d){return d.studentState!=='sustainable';}),'identity drift stayed stuck on old characterization');
 assert.ok(lfById['relapse'].days.slice(12,32).some(function(d){return d.studentState!=='repair';}),'relapse never recovered first phase');
+if(!lfById['relapse'].days.slice(32,50).some(function(d){return d.studentState==='repair';}))console.log('RELAPSE-DIAG',JSON.stringify(lfById['relapse'].days.slice(25,52)));
 assert.ok(lfById['relapse'].days.slice(32,50).some(function(d){return d.studentState==='repair';}),'relapse real decline was missed');
 assert.ok(lfById['false-confidence-corrected'].days.slice(0,15).some(function(d){return d.studentState==='repair';}),'false confidence hidden gap was missed');
 assert.ok(lfById['false-confidence-corrected'].days.slice(35).some(function(d){return d.studentState!=='repair';}),'false confidence correction never changed model');

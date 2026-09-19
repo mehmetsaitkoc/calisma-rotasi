@@ -651,9 +651,46 @@ for(const marker of ['ROUTE_ERROR_TYPES','function routeErrorMemorySignal','erro
 }
 for(const marker of ['function routeLearningVelocityRaw','function routeLearningVelocitySignal','velocityLabel','velocity.key===\'slow\'']) assert.ok(html.includes(marker),`Missing learning-velocity marker: ${marker}`);
 
+// 4) Personal norm must compare the student with their own history, never with a universal cutoff alone.
+{
+  const src=between('function routeAccuracyAcrossSamples','function routeEvidenceFreshness');
+  const api=new Function('w','routeAssessmentSamples','routeTopicPerformanceSamples',src+';return {routePersonalNormFromSamples,routeConfidenceCalibrationFromSignals};')(()=>({plan:[],logs:[]}),()=>[],()=>[]);
+  const S=(accuracy,answered=10)=>({accuracy,answered});
+  const own=api.routePersonalNormFromSamples([S(.55),S(.60),S(.73),S(.79)],[]);
+  assert.equal(own.known,true);
+  assert.equal(own.scope,'topic');
+  assert.equal(own.direction,'up');
+  assert.ok(own.delta>=.18,'Recent topic performance should be compared with the student\'s earlier topic baseline');
+
+  const fallback=api.routePersonalNormFromSamples([S(.72),S(.76)],[S(.58),S(.61),S(.63),S(.60)]);
+  assert.equal(fallback.known,true);
+  assert.equal(fallback.scope,'subject','When topic history is short, the student\'s same-subject history may be the fallback norm');
+  assert.equal(fallback.direction,'up');
+
+  const one=api.routePersonalNormFromSamples([S(.90)],[S(.55),S(.60),S(.65)]);
+  assert.equal(one.known,false,'One strong session must never create a personal-normal conclusion');
+
+  const singleSource=api.routeConfidenceCalibrationFromSignals({rawConfidence:80,sourceCount:1,practiceAccuracy:80});
+  assert.equal(singleSource.confidence,35,'One evidence family must not produce high confidence');
+  const agreeing=api.routeConfidenceCalibrationFromSignals({rawConfidence:78,sourceCount:4,practiceAccuracy:78,examAccuracy:74});
+  const conflicting=api.routeConfidenceCalibrationFromSignals({rawConfidence:78,sourceCount:4,practiceAccuracy:88,examAccuracy:50});
+  assert.equal(agreeing.confidence,78);
+  assert.ok(conflicting.confidence<agreeing.confidence,'Contradictory practice/exam evidence must reduce calibrated confidence');
+  assert.ok(conflicting.disagreementPenalty>=12);
+}
+for(const marker of [
+  'function routePersonalNormSignal',
+  'function routeConfidenceCalibrationFromSignals',
+  'Kendi normalinin üstünde',
+  'Kendi normalinin altında',
+  'ham %',
+  'kalibre %'
+]) assert.ok(html.includes(marker),`Missing personal-norm/calibration marker: ${marker}`);
+
+
 // 4) Student Model v2 must gate strong decisions by evidence quantity, diversity and freshness.
 {
-  const src=between('function routeEvidenceFreshness','function routeStudentModel(subjectId');
+  const src=between('function routeConfidenceCalibrationFromSignals','function routeStudentModel(subjectId');
   const api=new Function(src+';return {routeEvidenceFreshness,routeStudentModelFromSignals};')();
   assert.equal(api.routeEvidenceFreshness(2),1);
   assert.equal(api.routeEvidenceFreshness(10),.75);
@@ -699,6 +736,21 @@ for(const marker of ['function routeLearningVelocityRaw','function routeLearning
   assert.notEqual(productive.state,'repair','Hard-feeling but high-accuracy work must not be treated as failure');
   assert.match(productive.calibrationLabel,/Efor yüksek, performans güçlü/);
 
+  const normBase={
+    practice:{known:true,sessions:4,answered:40,weightedAccuracy:.72,accuracy:.72},
+    practiceLogCount:4,miniDays:2,latestDays:1,
+    behavior:{known:true,total:4,completion:.8},outcome:{known:true,total:3},
+    retention:{known:true,score:70},skillWeakness:{known:false,weak:[]},
+    weak:{ratio:.70,samples:2,freshness:1},adaptive:{mode:'steady'},openMistakes:0,difficultyKnown:true,
+    errorMemory:{known:false},velocity:{known:true,key:'steady'}
+  };
+  const normDown=api.routeStudentModelFromSignals({...normBase,trend:{known:true,direction:'down'},personalNorm:{known:true,direction:'down',confidence:70,delta:-.12,label:'Kendi normalinin altında'}});
+  const normDownFlatTrend=api.routeStudentModelFromSignals({...normBase,trend:{known:true,direction:'flat'},personalNorm:{known:true,direction:'down',confidence:70,delta:-.12,label:'Kendi normalinin altında'}});
+  const normUp=api.routeStudentModelFromSignals({...normBase,trend:{known:true,direction:'down'},personalNorm:{known:true,direction:'up',confidence:70,delta:.12,label:'Kendi normalinin üstünde'}});
+  assert.equal(normDown.learningNeed,normDownFlatTrend.learningNeed,'Personal norm must replace, not double-count, the short trend adjustment when reliable');
+  assert.ok(normDown.learningNeed>normUp.learningNeed,'The same raw performance should be interpreted differently relative to the student\'s own baseline');
+  assert.ok(normDown.confidence<=normDown.rawConfidence,'Calibration must never inflate confidence above the raw evidence score');
+
   const stale=api.routeStudentModelFromSignals({
     practice:{known:true,sessions:4,answered:50,weightedAccuracy:.85,accuracy:.85},
     practiceLogCount:4,miniDays:2,latestDays:45,
@@ -715,6 +767,9 @@ for(const marker of [
   'function routeStudentModel(subjectId',
   'function routeStudentModelCard()',
   'ÖĞRENCİ MODELİ v2',
+  'routePersonalNormSignal(subjectId,realTopic)',
+  '<strong>Kendi normalin:</strong>',
+  'confidenceCalibration',
   'student.priorityBoost',
   'Öğrenci Modeli v2 bu konu için',
   'veri eskidikçe güven otomatik düşer'

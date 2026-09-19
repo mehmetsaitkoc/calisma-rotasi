@@ -909,6 +909,20 @@ for(const marker of [
   assert.equal(fn(progress,{age:4,performance:{known:true,accuracy:.68},behavior:{known:false}}).status,'harmful');
 }
 
+// 4) Long-horizon intervention aggregation must not overreact to one short-window result.
+{
+  const src=between('function routeInterventionAggregateEvaluations','function routeInterventionFollowup');
+  const fn=new Function(src+';return routeInterventionAggregateEvaluations;')();
+  const h=(horizon,status,score)=>({horizon,status,score,label:status,reason:status});
+  assert.equal(fn([h(7,'harmful',-1)]).status,'pending','A single 7-day harmful result must remain provisional');
+  assert.equal(fn([h(7,'helpful',1)]).status,'pending','A single 7-day helpful result must remain provisional');
+  assert.equal(fn([h(7,'harmful',-1),h(14,'harmful',-1)]).status,'harmful','Repeated harmful horizons should be confirmed');
+  assert.equal(fn([h(7,'helpful',1),h(14,'helpful',1)]).status,'helpful','Repeated helpful horizons should be confirmed');
+  assert.equal(fn([h(7,'harmful',-1),h(14,'helpful',1)]).status,'neutral','Conflicting short and medium horizons must not overfit');
+  assert.equal(fn([h(7,'neutral',0),h(14,'neutral',0),h(30,'harmful',-1)]).status,'harmful','A mature 30-day harmful result with no helpful horizon should be respected');
+  assert.equal(fn([h(7,'neutral',0),h(14,'neutral',0),h(30,'helpful',1)]).status,'helpful','A mature 30-day helpful result with no harmful horizon should be respected');
+}
+
 // 4) Intervention audit must record the applied decision, not a raw progress signal that was withheld.
 {
   const src=between('function routeRecordInterventions','function routeInterventionEffectSignal');

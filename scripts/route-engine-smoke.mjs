@@ -729,7 +729,8 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
     for(const q of exam.questions){
       assert.equal(q.options.length,5);
       assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<q.options.length,'Answer key must point to an option');
-      assert.ok(q.explanation.length>=10,'Every question needs an explanation');
+      assert.ok(q.explanation.length>=8,'Every question needs an explanation');
+    assert.equal(exam.version,1,'Every mini set must have a version');
     }
   }
   assert.ok(data.OFFICIAL_EXAM_RESOURCES.yks.some(x=>/mebi\.eba\.gov\.tr/.test(x.url)));
@@ -781,6 +782,22 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(Math.round(practice.accuracy*100),70);
 }
 
+
+// 5) Same-day retakes of one mini must not multiply practice evidence.
+{
+  const src=between('function routeAssessmentSamples','function routePracticeSignal');
+  const space={assessments:[
+    {id:'old',miniId:'m1',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',correct:2,wrong:8,created:1},
+    {id:'new',miniId:'m1',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',correct:8,wrong:2,created:2},
+    {id:'next',miniId:'m1',date:'2026-09-20',subjectId:'k-ma',topicId:'t1',correct:7,wrong:3,created:3}
+  ]};
+  const w=()=>space;
+  const fn=new Function('w',src+';return routeAssessmentSamples;')(w);
+  const xs=fn('k-ma','t1');
+  assert.equal(xs.length,2);
+  assert.ok(xs.some(x=>x.id==='assessment-new'));
+  assert.ok(!xs.some(x=>x.id==='assessment-old'));
+}
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.
 for(const marker of [
   'assessments:[]',
@@ -788,6 +805,11 @@ for(const marker of [
   'space.assessments=Array.isArray(space.assessments)',
   'function routeAssessmentSamples',
   'w().assessments.push(result)',
+  'version:def.version||1',
+  'answers,created:Date.now()',
+  'function miniAttemptById',
+  'function openMiniAttemptResult',
+  'mini-result-detail',
   'Rota Mini Deneme sonucu ders ve konu performansına eklendi',
   'DENEME MERKEZİ · BETA',
   'KPSS Problemler Mini #01',

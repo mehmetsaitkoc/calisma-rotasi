@@ -616,3 +616,128 @@ const summary=results.map(r=>({
 
 console.log('route-engine-closed-loop: 10 students x 14 days = 140 daily decision cycles passed');
 console.log(JSON.stringify(summary));
+
+
+// --- 30/60-day closed-loop lifecycle ---------------------------------------
+// Keep the original 14-day regression intact. This second layer reuses the
+// production model functions extracted above, but lets behaviour and ability
+// change over 60 real calendar days.
+const lfFreshness=new Function(between('function routeEvidenceFreshness','function routePerformanceWindow')+';return routeEvidenceFreshness;')();
+const lfExamFactorSrc=between('function routeExamEvidenceFactor','function routeExamWeakness');
+function lfExamFactor(space,date,exam,subjectId){
+  const fn=new Function('today','w','C',lfExamFactorSrc+';return routeExamEvidenceFactor;');
+  return fn(function(){return date;},function(){return space;},{PART_SUBJECTS:{}})(exam,subjectId);
+}
+function lfPhase(p,d){
+  let math=.72,completion=.90,volume=.95,feeling='';
+  if(p.id==='weak-improver')math=Math.min(.86,.45+d*.010);
+  else if(p.id==='high-skill-low-compliance'){math=.88;completion=d<20?.38:.90;volume=d<20?.72:.95;}
+  else if(p.id==='hidden-gap'){math=Math.min(.82,.50+d*.007);feeling=d<14?'hidden-gap':'';}
+  else if(p.id==='productive-struggle'){math=.86;feeling=d<18?'productive-struggle':'';}
+  else if(p.id==='fast-learner')math=Math.min(.91,.58+d*.018);
+  else if(p.id==='plateau')math=.63+(d%9===0?.02:0);
+  else if(p.id==='regressing')math=d<18?.88:Math.max(.52,.88-(d-18)*.012);
+  else if(p.id==='recovery-comeback'){math=Math.min(.82,.70+d*.003);completion=d<6?.20:.90;volume=d<6?.70:.92;}
+  else if(p.id==='urgent-weak')math=Math.min(.76,.48+d*.006);
+  else if(p.id==='strong-balanced'){math=.88;completion=.96;volume=1;}
+  else if(p.id==='late-breakthrough')math=d<20?.50:d<40?Math.min(.84,.50+(d-19)*.017):.84;
+  else if(p.id==='burnout-after-success'){math=d<20?Math.min(.90,.78+d*.007):.78;completion=d<20?.96:.34;volume=d<20?1:.58;}
+  else if(p.id==='false-confidence-corrected'){math=d<15?.50:Math.min(.78,.56+(d-15)*.008);feeling=d<15?'hidden-gap':'';}
+  else if(p.id==='relapse')math=d<12?.50:d<32?Math.min(.82,.60+(d-12)*.012):d<44?.55:Math.min(.76,.58+(d-44)*.012);
+  else if(p.id==='exam-refresh')math=Math.min(.82,.58+d*.006);
+  else if(p.id==='long-stable'){math=.87;completion=.95;volume=1;}
+  else if(p.id==='slow-growth')math=Math.min(.84,.55+d*.005);
+  else if(p.id==='noisy-student')math=clamp(.72+Math.sin(d*1.7)*.10,.58,.84);
+  return {accuracy:{'k-ma':math,'k-tr':.78,'k-ta':.74,'k-co':.72},completion,volume,feeling};
+}
+const LF_EXTRA=[
+  {id:'late-breakthrough',name:'Geç açılan öğrenci',seed:21,dailyMinutes:90,targetDays:120,exam:{'k-ma':.48,'k-tr':.76,'k-ta':.72,'k-co':.70},profileLevel:{'k-ma':1}},
+  {id:'burnout-after-success',name:'Başarı sonrası tükenme',seed:22,dailyMinutes:120,targetDays:120,exam:{'k-ma':.80,'k-tr':.82,'k-ta':.78,'k-co':.76}},
+  {id:'false-confidence-corrected',name:'Yanlış güvenini düzelten',seed:23,dailyMinutes:90,targetDays:120,exam:{'k-ma':.50,'k-tr':.76,'k-ta':.72,'k-co':.70},profileLevel:{'k-ma':1}},
+  {id:'relapse',name:'Toparlanıp tekrar düşen',seed:24,dailyMinutes:90,targetDays:120,exam:{'k-ma':.50,'k-tr':.76,'k-ta':.72,'k-co':.70},profileLevel:{'k-ma':1}},
+  {id:'exam-refresh',name:'Eski kötü denemeyi yeni güçlü denemeyle güncelleyen',seed:25,dailyMinutes:120,targetDays:120,exam:{'k-ma':.48,'k-tr':.76,'k-ta':.72,'k-co':.70},profileLevel:{'k-ma':1}},
+  {id:'long-stable',name:'Uzun süre güçlü ve dengeli',seed:26,dailyMinutes:120,targetDays:120,exam:{'k-ma':.86,'k-tr':.88,'k-ta':.84,'k-co':.82}},
+  {id:'slow-growth',name:'Yavaş ama kalıcı gelişen',seed:27,dailyMinutes:90,targetDays:120,exam:{'k-ma':.55,'k-tr':.76,'k-ta':.72,'k-co':.70},profileLevel:{'k-ma':1}},
+  {id:'noisy-student',name:'Günlük dalgalı uzun dönem stabil',seed:28,dailyMinutes:90,targetDays:120,exam:{'k-ma':.72,'k-tr':.76,'k-ta':.72,'k-co':.70}}
+];
+const LF_PERSONAS=PERSONAS.map(function(p){return {...p,targetDays:Math.max(90,p.targetDays||90)};}).concat(LF_EXTRA);
+function lfPersona(base,d){
+  const x=lfPhase(base,d),exam={...(base.exam||{})};
+  if(base.id==='exam-refresh'&&d>=25)exam['k-ma']=.84;
+  return {...base,accuracy:x.accuracy,completion:x.completion,volume:x.volume,feeling:x.feeling,trend:{},exam,dailyMinutes:base.dailyMinutes||120};
+}
+function lfMini(space,p,date,d){
+  if(![3,7,11,18,25,33,42,52].includes(d))return;
+  const t=miniTarget(space),acc=p.accuracy[t.subjectId]??.72,total=10,correct=Math.round(total*acc);
+  space.assessments.push({id:'lf-ass-'+(++uid),miniId:'lf-'+t.id,date,subjectId:t.subjectId,topicId:t.id,title:'Lifecycle mini',total,correct,wrong:total-correct,blank:0,minutes:12,created:uid,skill:'Temel uygulama',skillBreakdown:[]});
+}
+function lfLongest(days,mode){let best=0,n=0;for(const d of days){if(d.appliedMode===mode){n++;best=Math.max(best,n);}else n=0;}return best;}
+function lfFirst(days,mode,enter){
+  for(let i=0;i<days.length;i++){const a=days[i].appliedMode===mode,b=i?days[i-1].appliedMode===mode:false;if(enter&&a&&!b)return days[i].day;if(!enter&&!a&&b)return days[i].day;}
+  return null;
+}
+function lfBacktest(days){
+  const out={success:0,neutral:0,harmful:0};
+  for(let i=0;i<days.length;i++){
+    const d=days[i],prev=i?days[i-1].appliedMode:'steady';
+    if(!['repair','ease','progress'].includes(d.appliedMode)||d.appliedMode===prev)continue;
+    const a=days[Math.min(days.length-1,i+14)],b=days[Math.min(days.length-1,i+30)];let score=0;
+    if(d.appliedMode==='repair')score=((a.performance??0)-(d.performance??0))+((b.performance??0)-(d.performance??0))*.5+(d.openMistakes-(b.openMistakes||0))*6;
+    else if(d.appliedMode==='ease')score=((a.execution??0)-(d.execution??0))+((b.execution??0)-(d.execution??0))*.5;
+    else score=Math.min((a.performance??d.performance??0)-(d.performance??0),(b.performance??d.performance??0)-(d.performance??0))+4;
+    if(score>=5)out.success++;else if(score<=-8)out.harmful++;else out.neutral++;
+  }
+  return out;
+}
+function lfCheckpoint(r,n){
+  const xs=r.days.slice(0,n),d=xs.at(-1),ch=modeChurn(xs);
+  return {day:n,finalState:d.studentState,confidence:d.confidence,learningNeed:d.learningNeed,risk:d.risk,modeTransitions:ch.transitionCount,modeBounces:ch.bounceCount,stabilityScore:ch.stabilityScore,longestRepairStreak:lfLongest(xs,'repair'),longestProgressStreak:lfLongest(xs,'progress'),firstRepairDay:lfFirst(xs,'repair',true),repairExitDay:lfFirst(xs,'repair',false),firstProgressDay:lfFirst(xs,'progress',true),progressExitDay:lfFirst(xs,'progress',false),recoveryDays:xs.filter(function(x){return x.recovery;}).length,sustainableDays:xs.filter(function(x){return x.studentState==='sustainable';}).length,completedTopics:d.completedTopics,masteryRegressions:xs.filter(function(x){return x.masteryRegression;}).length,forgettingRefreshCount:xs.reduce(function(a,x){return a+x.forgettingRefreshes;},0),staleEvidenceInfluence:d.staleEvidenceInfluence,personalNormChange:(Number.isFinite(d.normBase)&&Number.isFinite(r.normStart))?d.normBase-r.normStart:null};
+}
+function lfSim(base){
+  const space=makeSpace({...base,targetDays:Math.max(90,base.targetDays||90)}),days=[];let normStart=null,lastMastered=new Set();
+  for(let d=0;d<60;d++){
+    const date=dayAdd(START,d),p=lfPersona(base,d),built=buildCandidates(space,p,date);
+    rebalance(space,p,date,built.candidates,built.recovery);dailySafety(space,p,date);
+    const events=simulateTasks(space,p,date,d);lfMini(space,p,date,d);updateMasteryStatuses(space,date);
+    const weak=examWeakness(p,d),ad=adaptiveState(space,p,'k-ma','m1',date,weak),model=modelFor(space,p,'k-ma','m1',date,weak['k-ma'],ad),risk=riskFor(space,p,'m1',date,model,weak['k-ma']);
+    const noExam=modelFor(space,p,'k-ma','m1',date,null,ad),prev=days.length?{mode:days.at(-1).appliedMode,hysteresisHeld:!!days.at(-1).hysteresisHeld}:null,applied=appliedDecisionFn(ad,model,built.recovery,prev),norm=personalNorm(space,'k-ma','m1');
+    if(normStart===null&&d>=9&&Number.isFinite(norm.baselineAccuracy))normStart=norm.baselineAccuracy;
+    const mastered=new Set(Object.entries(space.topicState).filter(function(x){return x[1].status===2;}).map(function(x){return x[0];})),masteryRegression=[...lastMastered].some(function(id){return !mastered.has(id);});lastMastered=mastered;
+    days.push({day:d+1,date,studentState:model.state,appliedMode:applied.mode,hysteresisHeld:!!applied.hysteresisHeld,confidence:model.confidence,learningNeed:model.learningNeed,performance:model.performance,execution:model.execution,risk:risk.score,recovery:built.recovery.active,openMistakes:model.openMistakes,retention:model.retention,normBase:norm.baselineAccuracy,completedTopics:mastered.size,masteryRegression,forgettingRefreshes:events.filter(function(x){return x.source==='retention_refresh';}).length,staleEvidenceInfluence:(Number.isFinite(model.performance)&&Number.isFinite(noExam.performance))?Math.abs(model.performance-noExam.performance):0});
+  }
+  const r={persona:base,space,days,normStart};r.day30=lfCheckpoint(r,30);r.day60=lfCheckpoint(r,60);r.backtest=lfBacktest(days);return r;
+}
+const lfResults=LF_PERSONAS.map(lfSim),lfById=Object.fromEntries(lfResults.map(function(r){return [r.persona.id,r];}));
+for(const r of lfResults){
+  assert.equal(r.days.length,60,r.persona.id+' lifecycle length');
+  assert.ok(r.day30.confidence>=0&&r.day30.confidence<=100&&r.day60.confidence>=0&&r.day60.confidence<=100,r.persona.id+' invalid lifecycle confidence');
+  assert.ok(r.day60.modeBounces<=2,r.persona.id+' excessive lifecycle bounce '+r.day60.modeBounces);
+  assert.ok(r.day60.stabilityScore>=60,r.persona.id+' lifecycle stability collapsed '+r.day60.stabilityScore);
+  assert.ok(r.days.every(function(d,i){return !d.hysteresisHeld||(!d.recovery&&d.appliedMode==='progress'&&(i===0||!r.days[i-1].hysteresisHeld));}),r.persona.id+' unsafe repeated progress hold');
+  assert.ok(r.day60.staleEvidenceInfluence<=18,r.persona.id+' stale exam dominates current performance');
+}
+assert.ok(lfById['late-breakthrough'].days.slice(0,20).some(function(d){return d.studentState==='repair';}),'late-breakthrough missed early repair');
+assert.ok(lfById['late-breakthrough'].days.slice(40).every(function(d){return d.studentState!=='repair';}),'late-breakthrough trapped in repair');
+assert.ok(lfById['high-skill-low-compliance'].days.slice(0,20).some(function(d){return d.studentState==='sustainable';}),'identity drift missed early low compliance');
+assert.ok(lfById['high-skill-low-compliance'].days.slice(40).some(function(d){return d.studentState!=='sustainable';}),'identity drift stayed stuck on old characterization');
+assert.ok(lfById['relapse'].days.slice(12,32).some(function(d){return d.studentState!=='repair';}),'relapse never recovered first phase');
+assert.ok(lfById['relapse'].days.slice(32,50).some(function(d){return d.studentState==='repair';}),'relapse real decline was missed');
+assert.ok(lfById['false-confidence-corrected'].days.slice(0,15).some(function(d){return d.studentState==='repair';}),'false confidence hidden gap was missed');
+assert.ok(lfById['false-confidence-corrected'].days.slice(35).some(function(d){return d.studentState!=='repair';}),'false confidence correction never changed model');
+assert.ok(lfById['noisy-student'].day60.modeBounces<=1,'noisy student caused repeated mode chatter');
+const burn=lfById['burnout-after-success'];assert.ok(burn.days.find(function(d){return d.appliedMode==='progress';}),'burnout persona never reached progress');assert.ok(burn.days.slice(25).some(function(d){return d.appliedMode!=='progress';}),'progress stuck after burnout');
+{
+  const space={logs:[]},exam={date:START};
+  for(let i=1;i<=12;i++)space.logs.push({sessionId:'s'+i,date:dayAdd(START,i+35),subjectId:'k-ma'});
+  assert.equal(lfExamFactor(space,dayAdd(START,50),exam,'k-ma'),.35,'old exam did not decay after age + new study');
+  const fresh={date:dayAdd(START,25)},oldW=.82*lfExamFactor(space,dayAdd(START,50),exam,'k-ma'),freshW=1*lfExamFactor(space,dayAdd(START,50),fresh,'k-ma');
+  assert.ok(freshW>oldW,'fresh exam failed to outweigh stale exam');
+}
+{
+  const one=studentFn({practice:{known:true,sessions:20,answered:400,weightedAccuracy:.88,accuracy:.88},weak:null,behavior:{known:false,total:0},outcome:{known:false,total:0},retention:{known:false,score:null},trend:{known:false,direction:'unknown',delta:0},calibration:{known:false,hiddenGap:0,productiveStruggle:0,alignedStrong:0,alignedStruggle:0},skillWeakness:{known:false,weak:[],primary:null},adaptive:{mode:'steady'},openMistakes:0,practiceLogCount:20,miniDays:0,difficultyKnown:false,errorMemory:{known:false,repeated:false,primary:null,total:0},velocity:{known:false,key:'unknown',confidence:0},personalNorm:{known:false,direction:'unknown',confidence:0},latestDays:0,attainmentRatio:null});
+  assert.ok(one.confidence<=35,'single evidence family inflated confidence '+one.confidence);
+}
+assert.equal(lfFreshness(3),1,'freshness 3d');assert.equal(lfFreshness(21),.55,'freshness 21d');assert.equal(lfFreshness(45),.35,'freshness 45d');
+const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful};});
+console.log('route-engine-lifecycle: '+LF_PERSONAS.length+' students x 60 days = '+(LF_PERSONAS.length*60)+' daily cycles; day 30 + day 60 checkpoints passed');
+console.log(JSON.stringify(lfSummary));

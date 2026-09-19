@@ -712,6 +712,7 @@ for(const r of lfResults){
   assert.equal(r.days.length,60,r.persona.id+' lifecycle length');
   assert.ok(r.day30.confidence>=0&&r.day30.confidence<=100&&r.day60.confidence>=0&&r.day60.confidence<=100,r.persona.id+' invalid lifecycle confidence');
   assert.ok(r.day60.modeBounces<=2,r.persona.id+' excessive lifecycle bounce '+r.day60.modeBounces);
+  if(r.day60.stabilityScore<60)console.log('LIFECYCLE-DIAG '+r.persona.id,JSON.stringify({modes:r.days.map(function(d){return d.appliedMode;}),states:r.days.map(function(d){return d.studentState;}),confidence:r.days.map(function(d){return d.confidence;}),execution:r.days.map(function(d){return d.execution;}),performance:r.days.map(function(d){return d.performance;})}));
   assert.ok(r.day60.stabilityScore>=60,r.persona.id+' lifecycle stability collapsed '+r.day60.stabilityScore);
   assert.ok(r.days.every(function(d,i){return !d.hysteresisHeld||(!d.recovery&&d.appliedMode==='progress'&&(i===0||!r.days[i-1].hysteresisHeld));}),r.persona.id+' unsafe repeated progress hold');
   assert.ok(r.day60.staleEvidenceInfluence<=18,r.persona.id+' stale exam dominates current performance');

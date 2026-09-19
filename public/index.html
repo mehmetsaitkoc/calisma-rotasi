@@ -1443,8 +1443,8 @@ function routeProfileSignal(subjectId){
  return {level,boost:base+goalBoost,label:profileLevelLabel(level),goalBoost};
 }
 function routeLastLogDate(subjectId){return [...w().logs].filter(l=>l.subjectId===subjectId).sort((a,b)=>b.date.localeCompare(a.date))[0]?.date||'';}
-function routeBehaviorSignal(subjectId,topicId=''){
- const since=R.dayAdd(today(),-14),planMap=new Map(w().plan.map(function(p){return [p.id,p];})),raw=w().taskEvents.filter(function(ev){const p=planMap.get(ev.taskId);return p&&p.subjectId===subjectId&&(!topicId||p.topicId===topicId)&&ev.date>=since;}),groups=new Map();
+function routeBehaviorSignal(subjectId,topicId='',windowDays=null,endDate=today()){
+ const since=R.dayAdd(endDate,windowDays===null?-14:-(Math.max(1,windowDays)-1)),planMap=new Map(w().plan.map(function(p){return [p.id,p];})),raw=w().taskEvents.filter(function(ev){const p=planMap.get(ev.taskId);return p&&p.subjectId===subjectId&&(!topicId||p.topicId===topicId)&&ev.date>=since&&ev.date<=endDate;}),groups=new Map();
  for(const ev of raw){const key=ev.taskId+'|'+ev.date,actions=groups.get(key)||new Set();actions.add(ev.action);groups.set(key,actions);}
  let complete=0,skip=0,later=0,start=0;
  for(const actions of groups.values()){
@@ -1553,7 +1553,7 @@ function routeDifficultyPrescription(subjectId,topicId,fallbackTitle,difficulty)
 }
 function routeSubjectAdaptiveState(subjectId,topicId=''){
  const realTopic=topicId&&R.topic(w(),topicId)?topicId:'';
- const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior,frictionBehavior=subjectBehavior?.known&&subjectBehavior.total>=3&&(!behavior?.known||subjectBehavior.friction>behavior.friction+.08)?subjectBehavior:behavior;
+ const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior,recentSubjectBehavior=routeBehaviorSignal(subjectId,'',7,today()),previousSubjectBehavior=routeBehaviorSignal(subjectId,'',7,R.dayAdd(today(),-7)),completionCollapse=recentSubjectBehavior.known&&previousSubjectBehavior.known&&recentSubjectBehavior.total>=3&&previousSubjectBehavior.total>=3&&previousSubjectBehavior.completion>=.70&&recentSubjectBehavior.completion<=.55&&previousSubjectBehavior.completion-recentSubjectBehavior.completion>=.25;
  const topicOutcome=realTopic?routeOutcomeSignal(subjectId,realTopic):null,subjectOutcome=routeOutcomeSignal(subjectId),outcome=topicOutcome?.known?topicOutcome:subjectOutcome;
  const topicPractice=realTopic?routePracticeSignal(subjectId,realTopic):null,subjectPractice=routePracticeSignal(subjectId),practice=topicPractice?.known?topicPractice:subjectPractice;
  const topicCalibration=realTopic?routeFeedbackCalibrationSignal(subjectId,realTopic):null,subjectCalibration=routeFeedbackCalibrationSignal(subjectId),calibration=topicCalibration?.known?topicCalibration:subjectCalibration;
@@ -1579,8 +1579,9 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  if(skillWeakness.primary){const p=skillWeakness.primary,points=p.missed>=2&&p.weightedMissRate>=.50?2:1;repairScore+=points;evidence.push('mini: '+p.skill+' alt konusu');}
  const volumeStrain=attainment.known&&attainment.weightedRatio<.65,volumeStrong=attainment.known&&attainment.weightedRatio>=.95;
  if(volumeStrain)evidence.push('hedef hacmin altında');else if(volumeStrong)evidence.push('hedef hacmi karşılanıyor');
- const severeFriction=frictionBehavior?.known&&frictionBehavior.total>=4&&frictionBehavior.friction>=.60;
- const moderateFriction=frictionBehavior?.known&&frictionBehavior.total>=3&&frictionBehavior.friction>=.42;
+ if(completionCollapse)evidence.push('son 7 günde tamamlama belirgin düştü');
+ const severeFriction=(behavior.known&&behavior.total>=4&&behavior.friction>=.60)||(completionCollapse&&recentSubjectBehavior.completion<=.35);
+ const moderateFriction=(behavior.known&&behavior.total>=3&&behavior.friction>=.42)||completionCollapse;
  if(behavior.known&&behavior.total>=4&&behavior.completion>=.80){progressScore+=2;evidence.push('yüksek tamamlama');}
  else if(behavior.known&&behavior.total>=3&&behavior.completion>=.75){progressScore+=1;evidence.push('iyi tamamlama');}
  if(outcome.total>=3&&outcome.trend>=.30&&outcome.recent!=='stuck'){progressScore+=2;evidence.push('rahat ilerleme tekrar ediyor');}
@@ -1596,7 +1597,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
   evidence.push('zorlanma hissi + yüksek doğruluk');
  }
  if(severeFriction){
-  mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note='Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama belirgin arttığı için önce görevi küçültüp düzeni koruyoruz.';
+  mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note=completionCollapse?'Son 7 günlük tamamlama, önceki 7 güne göre belirgin düştü; yükü erken küçültüp tükenme büyümeden düzeni koruyoruz.':'Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama belirgin arttığı için önce görevi küçültüp düzeni koruyoruz.';
  }else if(repairScore>=3){
   mode='repair';label='ONARIM MODU';
   note=calibration.hiddenGap?'Görev rahat hissettirse bile doğru/yanlış verisi aynı şeyi söylemiyor; yeni yük eklemek yerine düşük doğruluğun nedenini onarıyoruz.':
@@ -1605,7 +1606,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
        outcome.total>=2&&outcome.stuckRate>=.5?'Zorlanma tekrarladığı ve başka sinyallerle desteklendiği için yeni yük eklemek yerine temeli onarıyoruz.':
        'Deneme, yanlış ve çalışma sinyalleri birlikte temel onarımını öne çıkarıyor.';
  }else if(moderateFriction||volumeStrain){
-  mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note=volumeStrain?'Planlanan soru hacmi son oturumlarda düzenli olarak tamamlanamadığı için hedefi küçültüp uygulanabilir seviyeye çekiyoruz.':'Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama artıyor; görevi biraz küçültüp tamamlanabilir tutuyoruz.';
+  mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note=completionCollapse?'Son 7 günlük tamamlama önceki haftaya göre belirgin düştü; dozu geçici olarak küçültüp sürdürülebilirliği doğruluyoruz.':volumeStrain?'Planlanan soru hacmi son oturumlarda düzenli olarak tamamlanamadığı için hedefi küçültüp uygulanabilir seviyeye çekiyoruz.':'Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama artıyor; görevi biraz küçültüp tamamlanabilir tutuyoruz.';
  }else if(progressScore>=4&&repairScore<=1){
   mode='progress';label='GELİŞİM MODU';note='Birden fazla iyi sinyal aynı yönde: düzenli tamamlama ve performans yeterince güçlü olduğu için yük yalnız küçük bir adımla artırılıyor.';
  }else if(calibration.productiveStruggle>=2&&calibration.hiddenGap===0){
@@ -1616,7 +1617,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
   note='İyi sinyaller oluşuyor ama yük artırmak için biraz daha tutarlı veri bekliyoruz; mevcut doz korunuyor.';
  }
  const confidence=Math.min(100,Math.max(repairScore,progressScore)*20+(topicEvidence?10:0));
- return {mode,label,note,behavior,frictionBehavior,frictionScope:frictionBehavior===subjectBehavior&&frictionBehavior!==behavior?'subject':'selected',outcome,practice,calibration,attainment,skillWeakness,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
+ return {mode,label,note,behavior,recentSubjectBehavior,previousSubjectBehavior,completionCollapse,outcome,practice,calibration,attainment,skillWeakness,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
 }
 const ROUTE_ERROR_TYPES=Object.freeze({concept:'Bilgi / kavram eksiği',process:'Yöntem / işlem hatası',attention:'Dikkat hatası',speed:'Süre yönetimi',strategy:'Soruya yaklaşım',reading:'Soru kökü / anlama',recall:'Hatırlama / karıştırma',other:'Diğer'});
 function routeErrorTypeLabel(type){return ROUTE_ERROR_TYPES[type]||ROUTE_ERROR_TYPES.other;}

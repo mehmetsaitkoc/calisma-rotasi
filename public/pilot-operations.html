@@ -70,7 +70,7 @@ const num=v=>Number.isFinite(v)?Math.round(v*10)/10:'—';
 const mode=v=>({repair:'ONARIM',ease:'SÜRDÜRÜLEBİLİR',steady:'DENGELİ',progress:'GELİŞİM'}[v]||v||'—');
 const statLabel=v=>({normal:'NORMAL',waiting:'VERİ BEKLİYOR',attention:'DİKKAT',critical:'KRİTİK'}[v]||v);
 const ivLabel=v=>({helpful:'helpful',harmful:'harmful',neutral:'neutral',insufficient:'insufficient',confounded:'confounded',pending:'pending'}[v]||'—');
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());};
 let payloads=[],selected='';
 
 function load(){
@@ -103,7 +103,8 @@ function cards(s){
     ['Harmful oranı',harmRate===null?'—':harmRate+'%'],
     ['Δ Completion',delta(s.averageCompletionChange)],
     ['Δ Performance',delta(s.averagePerformanceChange)],
-    ['Mod geçişi',s.modeTransitions]
+    ['Mod geçişi',s.modeTransitions],
+    ['Mode bounce',s.modeBounces]
   ].map(x=>'<article class="card metric"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></article>').join('');
 }
 function render(){

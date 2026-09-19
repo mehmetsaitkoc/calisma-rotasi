@@ -1698,7 +1698,7 @@ for(const marker of [
       modes:{steady:5,repair:2,ease:1,progress:0,transitions:2,current:'steady'},
       interventions:{total:2,helpful:1,neutral:0,harmful:0,pending:1},
       student:{performance:72,learningNeed:36,risk:44,confidence:81},
-      dataQuality:{openMistakesExact:true}
+      dataQuality:{capturedOnTime:true,plannedExact:true,openMistakesExact:true,modeHistoryExact:true,interventionHistoryExact:true,actualLogsExact:true}
     }]
   };
   const pilot=env.RotaCore.validateBackup(backup).workspaces.kpss.route.pilot,s=pilot.snapshots[0];
@@ -1710,6 +1710,11 @@ for(const marker of [
   assert.equal(s.modes.transitions,2);
   assert.equal(s.interventions.helpful,1);
   assert.equal(s.dataQuality.openMistakesExact,true);
+  assert.equal(s.dataQuality.capturedOnTime,true);
+  assert.equal(s.dataQuality.plannedExact,true);
+  assert.equal(s.dataQuality.modeHistoryExact,true);
+  assert.equal(s.dataQuality.interventionHistoryExact,true);
+  assert.equal(s.dataQuality.actualLogsExact,true);
 }
 for(const marker of [
   "pilot:{version:1,enabled:false",
@@ -1720,7 +1725,10 @@ for(const marker of [
   "case 'pilot-start'",
   "case 'pilot-export'",
   '[0,7,14,30]',
-  'openMistakesExact'
+  'openMistakesExact',
+  'plannedExact',
+  'modeHistoryExact',
+  'routePilotCurrentStudentSummary'
 ]) assert.ok(html.includes(marker),`Missing pilot telemetry marker: ${marker}`);
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.

@@ -68,6 +68,7 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const src=between('function routeSourceLabel','function routeExamWeakness');
   const api=new Function(src+';return {routeTaskSourceLabel};')();
   assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:1}),'1 GÜN ONARIMI');
+  assert.equal(api.routeTaskSourceLabel({source:'mini_repair'}),'MİNİ ONARIM');
   assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:3}),'3 GÜN TEKRARI');
   assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:3,reviewVariant:'challenge'}),'SEVİYE YOKLAMA');
 }
@@ -615,6 +616,7 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeIsCriticalReview({source:'spaced_review',reviewWave:1,priority:78}),true);
   assert.equal(api.routeIsCriticalReview({source:'spaced_review',reviewWave:3,priority:68}),false);
   assert.equal(api.routeIsCriticalReview({source:'mistake',priority:88}),true);
+  assert.equal(api.routeIsCriticalReview({source:'mini_repair',priority:84}),true);
   assert.equal(api.routeReviewDailyLimit(30),30);
   assert.equal(api.routeReviewDailyLimit(120),60);
   assert.equal(api.routeReviewWeeklyLimit(150),70);
@@ -716,6 +718,32 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(candidate.taskGoal,'review recipe');
 }
 
+
+// 4) Recent mini weakness must produce one repair signal per topic, with same-day retakes deduped to the newest attempt.
+{
+  const src=between('function routeMiniRepairSignals','function routeBuildCandidates');
+  const space={assessments:[
+    {id:'old-low',miniId:'m1',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',correct:2,wrong:6,created:1},
+    {id:'new-low',miniId:'m1',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',correct:3,wrong:5,created:2},
+    {id:'other-topic',miniId:'m2',date:'2026-09-18',subjectId:'k-ta',topicId:'t2',correct:7,wrong:1,created:3}
+  ]};
+  const R={dayAdd:()=> '2026-09-12',topic:(_space,id)=>['t1','t2'].includes(id)?{id}:null};
+  const routeSubjectAdaptiveState=(subjectId,topicId)=>topicId==='t1'?{mode:'repair',skillWeakness:{primary:{skill:'Yüzde'}}}:{mode:'steady',skillWeakness:{primary:null}};
+  const fn=new Function('w','R','today','routeSubjectAdaptiveState',src+';return routeMiniRepairSignals;')(()=>space,R,()=> '2026-09-19',routeSubjectAdaptiveState);
+  const signals=fn();
+  assert.equal(signals.length,1);
+  assert.equal(signals[0].assessment.id,'new-low','Same-day retake must replace the older attempt before route repair is derived');
+  assert.equal(signals[0].adaptive.mode,'repair');
+}
+
+// 4) Deneme-derived repair must be a first-class route source rather than only a hidden adaptive badge.
+for(const marker of [
+  "source==='mini_repair'",
+  "source:'mini_repair'",
+  "Mini onarım · ",
+  "routeMiniRepairSignals()",
+  "Mini denemede “"
+]) assert.ok(html.includes(marker),`Missing mini repair route integration marker: ${marker}`);
 
 // 5) Deneme Merkezi pilots must be original, internally valid and isolated from full-exam net records.
 {

@@ -1190,7 +1190,7 @@ function routeEnsure(space=w()){
  return space.route;
 }
 function routeEvent(taskId,action){routeEnsure();const date=today();if(w().taskEvents.some(function(ev){return ev.taskId===taskId&&ev.action===action&&ev.date===date;}))return;w().taskEvents.push({id:R.uid(),taskId,date,action,created:Date.now()});w().taskEvents=w().taskEvents.slice(-300);}
-function routeSourceLabel(source){return ({backlog:'AKSAYAN',mistake:'YANLIŞ TEKRARI',ai_teacher:'ROTA HOCA',exam:'DENEME SİNYALİ',profile:'SEVİYE PROFİLİ',priority:'ÖNCELİKLİ DERS',curriculum:'KONU ROTASI',review:'TEKRAR',spaced_review:'TEKRAR',checkpoint:'HAFTALIK KONTROL'}[source]||'ROTA');}
+function routeSourceLabel(source){return ({backlog:'AKSAYAN',mistake:'YANLIŞ TEKRARI',mini_repair:'MİNİ ONARIM',ai_teacher:'ROTA HOCA',exam:'DENEME SİNYALİ',profile:'SEVİYE PROFİLİ',priority:'ÖNCELİKLİ DERS',curriculum:'KONU ROTASI',review:'TEKRAR',spaced_review:'TEKRAR',checkpoint:'HAFTALIK KONTROL'}[source]||'ROTA');}
 function routeTaskSourceLabel(task){
  if(task?.source==='spaced_review'&&task.reviewVariant==='challenge')return 'SEVİYE YOKLAMA';
  return task?.source==='spaced_review'&&[1,3,7].includes(task.reviewWave)?(task.reviewWave===1?'1 GÜN ONARIMI':task.reviewWave+' GÜN TEKRARI'):routeSourceLabel(task?.source);
@@ -1303,8 +1303,8 @@ function routeQuantitativeDailyLimit(limit){return limit<=90?1:2;}
 function routeTaskMethod(task){return routeStudyMethod(task.subjectId,task.topicId,task.title);}
 function routeHeavyLimit(limit){return limit<=90?1:limit<=180?2:3;}
 function routeMaxTaskMinutes(space=w()){return Math.max(15,routeEffectiveDailyMinutes(space)-5);}
-function routeIsReviewLike(task){return !!task&&(task.kind==='review'||['mistake','ai_teacher','spaced_review','checkpoint'].includes(task.source));}
-function routeIsCriticalReview(task){return !!task&&(task.source==='mistake'||(task.source==='ai_teacher'&&(task.priority||0)>=80)||(task.source==='spaced_review'&&task.reviewWave===1));}
+function routeIsReviewLike(task){return !!task&&(task.kind==='review'||['mistake','mini_repair','ai_teacher','spaced_review','checkpoint'].includes(task.source));}
+function routeIsCriticalReview(task){return !!task&&(task.source==='mistake'||task.source==='mini_repair'||(task.source==='ai_teacher'&&(task.priority||0)>=80)||(task.source==='spaced_review'&&task.reviewWave===1));}
 function routeReviewDailyLimit(limit){return Math.max(30,Math.round((limit*.5)/5)*5);}
 function routeReviewWeeklyLimit(totalCapacity){return Math.max(30,Math.round((totalCapacity*.45)/5)*5);}
 function routeQuestionTarget(subjectId,topicId='',fallbackTitle=''){
@@ -1757,16 +1757,20 @@ function routeInvalidateBaseReviews(taskId,space=w()){
 }
 function routeCandidateFromPlan(p){
  if(p.source==='spaced_review'&&p.reviewBaseTaskId){const baseTask=w().plan.find(function(x){return x.id===p.reviewBaseTaskId;});if(!baseTask?.done)return null;}
+ const miniAdaptive=p.source==='mini_repair'?routeSubjectAdaptiveState(p.subjectId,p.topicId):null;
+ if(p.source==='mini_repair'&&miniAdaptive?.mode!=='repair')return null;
  const reviewAnchor=p.source==='spaced_review'?routeReviewAnchorDate(p):'',reviewDue=reviewAnchor&&[1,3,7].includes(p.reviewWave)?R.dayAdd(reviewAnchor,p.reviewWave):'',effectiveDate=reviewDue||p.date;
  const overdue=effectiveDate<today(),days=overdue?Math.max(1,Math.floor((new Date(today()+'T12:00:00')-new Date(effectiveDate+'T12:00:00'))/86400000)):0;
  let source=p.source||'curriculum',priority=Number.isFinite(p.priority)?p.priority:35,reason=p.reason||'Haftalık çalışma rotandaki görev.';
  if(p.sourceMistakeId){source='mistake';priority=Math.max(priority,78);reason='Yanlış defterindeki bir tekrar görevi.';}
  else if(p.sourceTeacherQuestionId){source='ai_teacher';priority=Math.max(priority,72);reason='Rota Hoca’da tekrar gerektiren bir sorudan geldi.';}
+ else if(source==='mini_repair'){const skill=miniAdaptive?.skillWeakness?.primary?.skill||'';priority=Math.max(priority,84);reason=skill?'Mini denemede “'+skill+'” alt alanında açık görüldü; bu görev yeni konu eklemek yerine o açığı kapatıyor.':'Mini deneme bu konuda ONARIM sinyali verdi; yeni konuya geçmeden önce kısa bir düzeltme turu gerekiyor.';}
  else if(overdue&&!routeIsReviewLike(p)){source='backlog';priority=Math.max(priority,82+Math.min(12,days*3));reason=days+' gün önce tamamlanmadığı için rota motoru yeniden yerleştiriyor.';}
  else if(overdue&&routeIsReviewLike(p)){priority=Math.max(priority,70+Math.min(12,days*2));reason=(p.reason||'Tekrar görevi.')+' Tekrar zamanı geçtiği için ilk uygun güne taşınıyor.';}
  const base={...p};let recipe=null,reviewVariant=p.reviewVariant==='challenge'?'challenge':'';
  if(p.sourceMistakeId)recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'mistake');
  else if(p.sourceTeacherQuestionId)recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'spaced');
+ else if(source==='mini_repair')recipe=routeTaskGoal(p.subjectId,p.topicId,p.title.replace(/^Mini onarım · /,''));
  else if(source==='spaced_review'){
   if(p.reviewWave===7){const adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId);reviewVariant=adaptive.mode==='progress'&&adaptive.scope==='topic'&&adaptive.confidence>=60?'challenge':'';}
   const mode=reviewVariant==='challenge'?'challenge':p.reviewWave===1?'mistake':p.reviewWave===7?'long':'spaced';
@@ -1785,6 +1789,7 @@ function routeCandidateFromPlan(p){
   }
  }
  if(reviewVariant)base.reviewVariant=reviewVariant;else delete base.reviewVariant;
+ if(source==='mini_repair'){base.kind='review';base.title=('Mini onarım · '+(R.topic(w(),p.topicId)?.title||p.title.replace(/^Mini onarım · /,''))).slice(0,180);}
  let earliest=today();if(reviewDue&&reviewDue>earliest)earliest=reviewDue;if(p.deferUntil&&p.deferUntil>earliest)earliest=p.deferUntil;
  return {...base,...(recipe?{minutes:recipe.minutes,targetQuestions:recipe.questions,taskGoal:recipe.text}:{}),source,priority:Math.min(100,priority),reason,earliest,routeKey:p.routeKey||('plan:'+p.id),taskState:p.taskState==='later'?'later':'open'};
 }
@@ -1801,6 +1806,19 @@ function routeTopicFrontier(space,eligibleTopics){
  }
  return out;
 }
+function routeMiniRepairSignals(){
+ const space=w(),since=R.dayAdd(today(),-7),perMiniDay=new Map(),byTopic=new Map();
+ for(const a of (space.assessments||[])){
+  if(!a?.miniId||!a.topicId||a.date<since||!R.topic(space,a.topicId))continue;
+  const key=a.miniId+'|'+a.date,prev=perMiniDay.get(key);
+  if(!prev||(a.created||0)>=(prev.created||0))perMiniDay.set(key,a);
+ }
+ for(const a of perMiniDay.values()){
+  const prev=byTopic.get(a.topicId);
+  if(!prev||a.date>prev.date||(a.date===prev.date&&(a.created||0)>=(prev.created||0)))byTopic.set(a.topicId,a);
+ }
+ return [...byTopic.values()].map(function(a){return {assessment:a,adaptive:routeSubjectAdaptiveState(a.subjectId,a.topicId)};}).filter(function(x){return x.adaptive.mode==='repair';});
+}
 function routeBuildCandidates(){
  const space=w(),weak=routeExamWeakness(),seenTopics=new Set(),seenKeys=new Set(),out=[];
  const push=function(c){if(!c||seenKeys.has(c.routeKey))return;seenKeys.add(c.routeKey);if(c.topicId&&R.topic(space,c.topicId))seenTopics.add(c.topicId);out.push(c);};
@@ -1815,6 +1833,16 @@ function routeBuildCandidates(){
   const title=R.topic(space,q.topicId)?.title||q.question||subName(q.subjectId),goal=routeReviewGoal(q.subjectId,q.topicId,title,'spaced');
   push({id:R.uid(),date:today(),subjectId:q.subjectId,topicId:q.topicId||('teacher-'+q.id),title:('Rota Hoca tekrar · '+title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceTeacherQuestionId:q.id,source:'ai_teacher',priority:q.status==='stuck'?82:72,reason:q.status==='stuck'?'Rota Hoca’da “Anlamadım” olarak işaretlediğin soru yeniden çalışılmalı.':'Rota Hoca’da tekrar bakılacak olarak işaretledin.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }}catch{}
+ for(const signal of routeMiniRepairSignals()){
+  const a=signal.assessment,adaptive=signal.adaptive,skill=adaptive.skillWeakness?.primary?.skill||'',topicTitle=R.topic(space,a.topicId)?.title||a.title||subName(a.subjectId),reason=skill?'Mini denemede “'+skill+'” alt alanında açık görüldü; yeni konu eklemek yerine önce bu eksiği kapatıyoruz.':'Mini deneme bu konuda ONARIM sinyali verdi; yeni konuya geçmeden önce kısa bir düzeltme turu ekleniyor.',goal=routeTaskGoal(a.subjectId,a.topicId,topicTitle);
+  const existingRepair=out.find(function(c){return c.topicId===a.topicId&&c.source==='mini_repair';});
+  if(existingRepair){existingRepair.priority=Math.max(existingRepair.priority||0,84);existingRepair.reason=reason;existingRepair.title=('Mini onarım · '+topicTitle).slice(0,180);existingRepair.kind='review';existingRepair.minutes=goal.minutes;existingRepair.targetQuestions=goal.questions;existingRepair.taskGoal=goal.text;continue;}
+  const promotable=out.find(function(c){return c.topicId===a.topicId&&!routeIsReviewLike(c)&&['curriculum','profile','priority','exam','backlog'].includes(c.source);});
+  if(promotable){promotable.source='mini_repair';promotable.kind='review';promotable.priority=Math.max(promotable.priority||0,84);promotable.reason=reason;promotable.title=('Mini onarım · '+topicTitle).slice(0,180);promotable.minutes=goal.minutes;promotable.targetQuestions=goal.questions;promotable.taskGoal=goal.text;continue;}
+  const key='mini-repair:'+a.miniId+':'+a.date;
+  if(seenKeys.has(key))continue;
+  push({id:R.uid(),date:today(),subjectId:a.subjectId,topicId:a.topicId,title:('Mini onarım · '+topicTitle).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'mini_repair',priority:84,reason,earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
+ }
  const latestBaseByTopic=new Map();
  for(const p of space.plan.filter(function(p){return p.done&&p.topicId&&R.topic(space,p.topicId)&&(space.topicState[p.topicId]?.status||0)!==2&&!['mistake','spaced_review','checkpoint'].includes(p.source); })){
   const evidenceDate=routePlanEvidenceDate(p,space),prev=latestBaseByTopic.get(p.topicId);
@@ -1987,7 +2015,7 @@ function routeLightenToday(){
  if(moved)routeRebalance('Öğrenci bugünü hafifletti; kritik görevler korundu, düşük öncelikli işler sonraki uygun güne taşındı. Bu işlem erteleme/atlama başarısızlığı olarak sayılmaz.',true);
  return {moved,kept:keep.size,target,used};
 }
-function routeTaskReason(p){return p.reason||({mistake:'Yanlış defterinden tekrar.',ai_teacher:'Rota Hoca tekrar sinyali.',exam:'Deneme performansından gelen öncelik.',profile:'Ders seviye profilinden gelen başlangıç önceliği.',backlog:'Kaçırılan görev yeniden yerleştirildi.',spaced_review:'Birkaç gün sonraki kısa geri çağırma tekrarı.',checkpoint:'Haftalık öğrenme kontrolü.'}[p.source]||'Kişisel çalışma rotandaki görev.');}
+function routeTaskReason(p){return p.reason||({mistake:'Yanlış defterinden tekrar.',mini_repair:'Mini denemede görülen konu/alt-konu açığını kapatmak için oluşturuldu.',ai_teacher:'Rota Hoca tekrar sinyali.',exam:'Deneme performansından gelen öncelik.',profile:'Ders seviye profilinden gelen başlangıç önceliği.',backlog:'Kaçırılan görev yeniden yerleştirildi.',spaced_review:'Birkaç gün sonraki kısa geri çağırma tekrarı.',checkpoint:'Haftalık öğrenme kontrolü.'}[p.source]||'Kişisel çalışma rotandaki görev.');}
 function routeTodayTask(p){
  const done=p.done,later=p.taskState==='later',goal=p.taskGoal||'',qs=Number.isInteger(p.targetQuestions)&&p.targetQuestions>0?p.targetQuestions:0,method=routeStudyMethod(p.subjectId,p.topicId,p.title),adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p);
  return '<article class="route-task '+(done?'is-done':'')+' '+(later?'is-later':'')+'">'+subIcon(p.subjectId)+'<div class="route-task-main"><div class="row wrap"><span class="route-source">'+esc(sourceLabel)+'</span><span class="route-method-pill">'+esc(method.label)+'</span><span class="route-adaptive-pill mode-'+esc(adaptive.mode)+'">'+esc(adaptive.label)+'</span><span class="tiny muted">'+esc(subName(p.subjectId,state.activeExam==='yks'))+'</span></div><h3>'+esc(p.title)+'</h3><div class="route-task-meta"><span>'+p.minutes+' dk</span>'+(qs?'<span>· ≈ '+qs+' soru</span>':'')+(later?'<span>· bugün daha sonra</span>':'')+'<button class="route-why" data-action="route-why" data-id="'+p.id+'">Neden bugün?</button></div>'+(goal?'<div class="route-task-goal">'+icon('target')+'<span>'+esc(goal)+'</span></div>':'')+'<p class="route-task-reason">'+esc(routeTaskReason(p))+'</p></div><div class="route-task-actions">'+(done?'<span class="pill">Tamamlandı</span>':btn(icon('play')+' Başla','focus-session','sm primary','data-id="'+p.id+'"')+btn('Daha sonra','route-later','sm ghost','data-id="'+p.id+'"')+btn('Atla','route-skip','sm ghost','data-id="'+p.id+'"')+'<button class="check-btn" data-action="complete-session" data-id="'+p.id+'" aria-label="Oturumu tamamla">'+icon('check')+'</button>')+'</div></article>';

@@ -1,0 +1,31 @@
+name: Route Engine CI
+
+on:
+  push:
+    branches:
+      - gpt/route-engine-evidence-balance
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Syntax check smoke runner
+        run: node --check scripts/route-engine-smoke.mjs
+
+      - name: Run route engine smoke and regression tests
+        run: npm test

@@ -1326,7 +1326,7 @@ function routeQuestionTarget(subjectId,topicId='',fallbackTitle=''){
  const adaptive=routeSubjectAdaptiveState(subjectId,topicId);
  if(adaptive.mode==='ease')count=Math.max(5,Math.round(count*.8));
  else if(adaptive.mode==='repair')count=Math.max(5,Math.round(count*.9));
- else if(adaptive.mode==='progress')count+=2;
+ else if(adaptive.mode==='progress'&&!routeRecoverySignal().active)count+=2;
  return Math.max(5,Math.min(30,count));
 }
 function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
@@ -1341,7 +1341,7 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
  const adaptive=routeSubjectAdaptiveState(subjectId,topicId);
  if(adaptive.mode==='ease')minutes=Math.max(20,minutes-10);
  else if(adaptive.mode==='repair')minutes=Math.max(25,minutes-5);
- else if(adaptive.mode==='progress')minutes=Math.min(45,minutes+5);
+ else if(adaptive.mode==='progress'&&!routeRecoverySignal().active)minutes=Math.min(45,minutes+5);
  const uncappedMinutes=minutes;minutes=Math.min(minutes,routeMaxTaskMinutes());if(minutes<uncappedMinutes)q=Math.max(5,Math.round(q*minutes/uncappedMinutes));
  let text='';
  if(method.key==='quant'){
@@ -1393,7 +1393,8 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
  if(difficulty.known){const rx=routeDifficultyPrescription(subjectId,topicId,fallbackTitle,difficulty.recent);if(rx)text+=' · Son zorlanma: '+difficulty.label+'. '+rx;}
  if(adaptive.mode==='ease')text+=' · Bugün hedefi küçük tut: bitirmek, yükü büyütmekten daha önemli.';
  else if(adaptive.mode==='repair')text+=' · Öncelik hız değil: yanlışın nedenini düzeltmeden yeni konuya koşma.';
- else if(adaptive.mode==='progress')text+=' · Son 5 dakikada 2 zorlayıcı ek soru ile seviyeni yokla.';
+ else if(adaptive.mode==='progress'&&!routeRecoverySignal().active)text+=' · Son 5 dakikada 2 zorlayıcı ek soru ile seviyeni yokla.';
+ else if(adaptive.mode==='progress'&&routeRecoverySignal().active)text+=' · Güçlü performans sinyali var; ancak toparlanma modu açıkken dozu büyütmeden mevcut yükü koru.';
  if(adaptive.calibration?.hiddenGap)text+=' · “Rahat” hissini tek başına ölçü sayma; set sonunda doğruluk oranını kontrol et ve düşük kalan soru tipini düzelt.';
  else if(adaptive.calibration?.productiveStruggle>=2)text+=' · Doğruluk iyi olsa da efor yüksek: bugün soru sayısını artırma, aynı yükte daha akıcı çözmeyi hedefle.';
  if(adaptive.skillWeakness?.primary)text+=' · Mini deneme odağı: “'+adaptive.skillWeakness.primary.skill+'” alt başlığında önce hatanın nedenini düzelt; ardından aynı beceriden en az 2 yeni soru ile doğrula.';
@@ -2073,12 +2074,12 @@ function routeCandidateFromPlan(p){
  else if(source==='mini_repair'){const skill=miniAdaptive?.skillWeakness?.primary?.skill||'';priority=Math.max(priority,84);reason=skill?'Mini denemede “'+skill+'” alt alanında açık görüldü; bu görev yeni konu eklemek yerine o açığı kapatıyor.':'Mini deneme bu konuda ONARIM sinyali verdi; yeni konuya geçmeden önce kısa bir düzeltme turu gerekiyor.';}
  else if(overdue&&!routeIsReviewLike(p)){source='backlog';priority=Math.max(priority,82+Math.min(12,days*3));reason=days+' gün önce tamamlanmadığı için rota motoru yeniden yerleştiriyor.';}
  else if(overdue&&routeIsReviewLike(p)){priority=Math.max(priority,70+Math.min(12,days*2));reason=(p.reason||'Tekrar görevi.')+' Tekrar zamanı geçtiği için ilk uygun güne taşınıyor.';}
- const base={...p};let recipe=null,reviewVariant=p.reviewVariant==='challenge'?'challenge':'';
+ const base={...p};let recipe=null,reviewVariant=p.reviewVariant==='challenge'&&!routeRecoverySignal().active?'challenge':'';
  if(p.sourceMistakeId)recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'mistake');
  else if(p.sourceTeacherQuestionId)recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'spaced');
  else if(source==='mini_repair')recipe=routeTaskGoal(p.subjectId,p.topicId,p.title.replace(/^Mini onarım · /,''));
  else if(source==='spaced_review'){
-  if(p.reviewWave===7){const adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId);reviewVariant=adaptive.mode==='progress'&&adaptive.scope==='topic'&&adaptive.confidence>=60?'challenge':'';}
+  if(p.reviewWave===7){const adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId);reviewVariant=!routeRecoverySignal().active&&adaptive.mode==='progress'&&adaptive.scope==='topic'&&adaptive.confidence>=60?'challenge':'';}
   const mode=reviewVariant==='challenge'?'challenge':p.reviewWave===1?'mistake':p.reviewWave===7?'long':'spaced';
   recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,mode);
  }
@@ -2164,7 +2165,7 @@ function routeBuildCandidates(){
  for(const base of latestBaseByTopic.values()){
   const p=base.task,baseDate=base.evidenceDate||p.date,linkedLog=space.logs.find(function(l){return l.sessionId===p.id;}),performance=routeSessionPerformanceSignal(linkedLog),adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId);
   const needsRepair=performance.repair||adaptive.mode==='repair';
-  const challengeReady=!needsRepair&&(performance.challenge||(adaptive.mode==='progress'&&adaptive.scope==='topic'&&adaptive.confidence>=60));
+  const challengeReady=!recovery.active&&!needsRepair&&(performance.challenge||(adaptive.mode==='progress'&&adaptive.scope==='topic'&&adaptive.confidence>=60));
   const waves=needsRepair?[1,3,7]:[3,7];
   for(const wave of waves){
    const legacyKey='spaced:'+p.topicId+':'+p.date,oldWaveKey='spaced:'+wave+':'+p.topicId+':'+p.date,key='spaced:'+wave+':'+p.topicId+':'+p.id+':'+baseDate;

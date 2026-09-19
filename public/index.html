@@ -638,6 +638,7 @@ function validateBackup(data){
     if(!skill||skillCorrect+skillWrong+skillBlank!==skillTotal)throw Error('Mini deneme alt konu dağılımı geçersiz.');
     return {skill,total:skillTotal,correct:skillCorrect,wrong:skillWrong,blank:skillBlank};
    }):[];
+   if(skillBreakdown.length&&skillBreakdown.reduce((n,x)=>n+x.total,0)!==total)throw Error('Mini deneme alt konu toplamı soru sayısıyla eşleşmiyor.');
    const weakSkills=Array.isArray(a.weakSkills)?a.weakSkills.slice(0,8).map(x=>text(x,80)).filter(Boolean):[];
    const rd=a.routeDecision&&typeof a.routeDecision==='object'&&!Array.isArray(a.routeDecision)?a.routeDecision:null;
    const routeDecision=rd&&['repair','ease','steady','progress'].includes(rd.mode)?{mode:rd.mode,label:text(rd.label||'',80),note:text(rd.note||'',500),confidence:int(Number.isInteger(rd.confidence)?rd.confidence:0,0,100,'mini rota güveni'),evidence:Array.isArray(rd.evidence)?rd.evidence.slice(0,8).map(x=>text(x,120)).filter(Boolean):[]}:null;
@@ -1449,7 +1450,7 @@ function routeAssessmentSamples(subjectId,topicId=''){
   const key=a.miniId+'|'+a.date,prev=grouped.get(key);
   if(!prev||(a.created||0)>=(prev.created||0))grouped.set(key,a);
  }
- return [...grouped.values()].map(function(a){return {id:'assessment-'+a.id,sessionId:'assessment-'+a.id,date:a.date,subjectId:a.subjectId,correct:a.correct,wrong:a.wrong,updated:a.created||0,assessment:true};});
+ return [...grouped.values()].map(function(a){return {id:'assessment-'+a.id,sessionId:'assessment-'+a.id,date:a.date,subjectId:a.subjectId,correct:a.correct,wrong:a.wrong+(a.blank||0),updated:a.created||0,assessment:true};});
 }
 function routeAssessmentWeakSkillSignal(subjectId,topicId=''){
  const since=R.dayAdd(today(),-21),grouped=new Map();
@@ -1467,7 +1468,7 @@ function routeAssessmentWeakSkillSignal(subjectId,topicId=''){
    prev.total+=x.total;prev.correct+=x.correct||0;prev.wrong+=x.wrong||0;prev.blank+=x.blank||0;prev.weightedMiss+=(((x.wrong||0)+(x.blank||0))/x.total)*recency;prev.weight+=recency;skills.set(x.skill,prev);
   }
  });
- const list=[...skills.values()].map(function(x){const answered=x.correct+x.wrong,accuracy=answered?x.correct/answered:0,missed=x.wrong+x.blank;return {...x,accuracy,missed,weightedMissRate:x.weight?x.weightedMiss/x.weight:0};}).sort(function(a,b){return b.weightedMissRate-a.weightedMissRate||b.missed-a.missed||a.skill.localeCompare(b.skill,'tr');});
+ const list=[...skills.values()].map(function(x){const accuracy=x.total?x.correct/x.total:0,missed=x.wrong+x.blank;return {...x,accuracy,missed,weightedMissRate:x.weight?x.weightedMiss/x.weight:0};}).sort(function(a,b){return b.weightedMissRate-a.weightedMissRate||b.missed-a.missed||a.skill.localeCompare(b.skill,'tr');});
  const weak=list.filter(function(x){return x.missed>0&&(x.accuracy<.75||x.weightedMissRate>=.34);}).slice(0,3);
  return {known:list.length>0,attempts:attempts.length,skills:list,weak,primary:weak[0]||null};
 }

@@ -720,6 +720,37 @@ for(const marker of [
   'veri eskidikçe güven otomatik düşer'
 ]) assert.ok(html.includes(marker),`Missing Student Model v2 marker: ${marker}`);
 
+// 4) Decision backtest must distinguish helpful, neutral, harmful and pending outcomes by intervention type.
+{
+  const src=between('function routeEvaluateInterventionFromMetrics','function routeInterventionFollowup');
+  const fn=new Function(src+';return routeEvaluateInterventionFromMetrics;')();
+  const repair={mode:'repair',baselineAccuracy:50};
+  assert.equal(fn(repair,{age:2,performance:{known:true,accuracy:.80},behavior:{known:false}}).status,'pending');
+  assert.equal(fn(repair,{age:4,performance:{known:true,accuracy:.62},behavior:{known:false}}).status,'helpful');
+  assert.equal(fn(repair,{age:4,performance:{known:true,accuracy:.40},behavior:{known:false}}).status,'harmful');
+  assert.equal(fn(repair,{age:4,performance:{known:true,accuracy:.54},behavior:{known:false}}).status,'neutral');
+
+  const ease={mode:'ease',baselineCompletion:45};
+  assert.equal(fn(ease,{age:4,performance:{known:false},behavior:{known:true,completion:.70}}).status,'helpful');
+  assert.equal(fn(ease,{age:4,performance:{known:false},behavior:{known:true,completion:.25}}).status,'harmful');
+
+  const progress={mode:'progress',baselineAccuracy:82};
+  assert.equal(fn(progress,{age:4,performance:{known:true,accuracy:.79},behavior:{known:false}}).status,'helpful');
+  assert.equal(fn(progress,{age:4,performance:{known:true,accuracy:.68},behavior:{known:false}}).status,'harmful');
+}
+
+// 4) Intervention history must survive backup and remain a bounded, explicit audit trail.
+for(const marker of [
+  'interventions:[]',
+  'const interventions=Array.isArray(ro.interventions)',
+  'function routeRecordInterventions',
+  'function routeInterventionEvaluation',
+  'function routeInterventionEffectSignal',
+  'function routeInterventionBacktestCard',
+  'routeRecordInterventions(scheduled)',
+  'KARAR GERİ TESTİ'
+]) assert.ok(html.includes(marker),`Missing intervention backtest marker: ${marker}`);
+
 // 4) Topic mastery suggestion requires correctly spaced reviews + repeated evidence.
 {
   const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');
@@ -1177,6 +1208,21 @@ for(const marker of [
   assert.equal(saved.routeDecision.mode,'repair');
   assert.equal(saved.routeDecision.confidence,70);
   assert.equal(validated.workspaces.kpss.exams.length,0,'Mini backup record must not leak into full exams');
+}
+
+// 5) Backup validation must preserve route intervention audit history.
+{
+  const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
+  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const backup=env.RotaCore.fresh();backup.activeExam='kpss';
+  backup.workspaces.kpss.route.interventions=[{id:'iv1',date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'repair',source:'mini_repair',method:'quant',taskId:'task1',taskDate:'2026-09-19',confidence:72,baselineAccuracy:50,baselineCompletion:60,baselineNeed:78,baselineAnswered:20,reason:'Mini açığı',created:1}];
+  const validated=env.RotaCore.validateBackup(backup),iv=validated.workspaces.kpss.route.interventions[0];
+  assert.equal(validated.workspaces.kpss.route.version,2);
+  assert.equal(iv.mode,'repair');
+  assert.equal(iv.baselineAccuracy,50);
+  assert.equal(iv.confidence,72);
+  assert.equal(iv.topicId,'k-ma-9');
 }
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.

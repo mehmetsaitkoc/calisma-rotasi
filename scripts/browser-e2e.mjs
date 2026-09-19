@@ -94,7 +94,7 @@ async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5,
   const wrongInput = form.locator('[name="wrong"]');
   if (await wrongInput.count()) await wrongInput.fill(String(wrong));
   const outcomeInput = form.locator(`[name="outcome"][value="${outcome}"]`);
-  if (await outcomeInput.count()) await outcomeInput.check();
+  if (await outcomeInput.count()) await outcomeInput.locator('..').click();
   const complete = form.locator('[name="completeSession"]');
   if (await complete.count() && !(await complete.isChecked())) await complete.check();
   await form.locator('button[type="submit"]').click();

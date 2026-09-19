@@ -2054,8 +2054,15 @@ function routeInvalidateBaseReviews(taskId,space=w()){
  space.plan=space.plan.filter(function(p){return p.done||p.reviewBaseTaskId!==taskId;});
  return before-space.plan.length;
 }
+function routeLatestBaseCycle(topicId,space=w()){
+ const bases=space.plan.filter(function(p){return p.done&&p.topicId===topicId&&!['mistake','mini_repair','retention_refresh','spaced_review','checkpoint','ai_teacher'].includes(p.source);}).map(function(p){return {task:p,date:routePlanEvidenceDate(p,space)};}).filter(function(x){return !!x.date;}).sort(function(a,b){return b.date.localeCompare(a.date)||String(b.task.id).localeCompare(String(a.task.id));});
+ return bases[0]||null;
+}
 function routeCandidateFromPlan(p){
- if(p.source==='spaced_review'&&p.reviewBaseTaskId){const baseTask=w().plan.find(function(x){return x.id===p.reviewBaseTaskId;});if(!baseTask?.done)return null;}
+ if(p.source==='spaced_review'&&p.reviewBaseTaskId){
+  const space=w(),baseTask=space.plan.find(function(x){return x.id===p.reviewBaseTaskId;});if(!baseTask?.done)return null;
+  const latest=routeLatestBaseCycle(p.topicId,space);if(latest&&latest.task.id!==p.reviewBaseTaskId)return null;
+ }
  const miniAdaptive=p.source==='mini_repair'?routeSubjectAdaptiveState(p.subjectId,p.topicId):null;
  if(p.source==='mini_repair'&&miniAdaptive?.mode!=='repair')return null;
  const reviewAnchor=p.source==='spaced_review'?routeReviewAnchorDate(p):'',reviewDue=reviewAnchor&&[1,3,7].includes(p.reviewWave)?R.dayAdd(reviewAnchor,p.reviewWave):'',effectiveDate=reviewDue||p.date;

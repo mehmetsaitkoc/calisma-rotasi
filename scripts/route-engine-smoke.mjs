@@ -720,9 +720,10 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 // 5) Deneme Merkezi pilots must be original, internally valid and isolated from full-exam net records.
 {
   const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition');
-  const data=new Function(src+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES};')();
-  assert.equal(data.ROTA_MINI_EXAMS.length,20);
-  assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),['kpss-problemler-01','yks-paragraf-01','kpss-tarih-01','kpss-cografya-01','tyt-biyoloji-hucre-01','ayt-edebiyat-tanzimat-01','ydt-grammar-01','ydt-vocab-01','ydt-reading-01','kpss-vatandaslik-01','tyt-matematik-temel-01','tyt-fizik-hareket-01','ayt-matematik-fonksiyon-01','tyt-kimya-atom-01','ayt-fizik-vektor-01','ayt-biyoloji-sinir-01','ayt-tarih1-ilkcag-01','ayt-kimya-modern-atom-01','ayt-cografya1-dogal-01','ayt-felsefe-tarih-01']);
+  const data=new Function(src+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES,MINI_SKILL_MAP};')();
+  assert.equal(data.ROTA_MINI_EXAMS.length,24);
+  assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),["kpss-problemler-01","yks-paragraf-01","kpss-tarih-01","kpss-cografya-01","tyt-biyoloji-hucre-01","ayt-edebiyat-tanzimat-01","ydt-grammar-01","ydt-vocab-01","ydt-reading-01","kpss-vatandaslik-01","tyt-matematik-temel-01","tyt-fizik-hareket-01","ayt-matematik-fonksiyon-01","tyt-kimya-atom-01","ayt-fizik-vektor-01","ayt-biyoloji-sinir-01","ayt-tarih1-ilkcag-01","ayt-kimya-modern-atom-01","ayt-cografya1-dogal-01","ayt-felsefe-tarih-01","kpss-turkce-paragraf-01","tyt-tarih-zaman-01","tyt-cografya-harita-01","ayt-geometri-ucgen-01"]);
+  assert.equal(new Set(data.ROTA_MINI_EXAMS.map(x=>x.id)).size,data.ROTA_MINI_EXAMS.length,'Mini ids must be unique');
   assert.deepEqual(data.ROTA_MINI_EXAMS.filter(x=>x.subjectId==='d-yd').map(x=>x.topicTitle).sort(),['Dil bilgisi','Kelime çalışması','Okuduğunu anlama'].sort(),'YDT must keep vocabulary, grammar and reading measurements separate');
   assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='k-va'&&x.topicTitle==='Hukukun temel kavramları'),'KPSS citizenship mini must exist');
   assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='t-ma'&&x.topicTitle==='Temel kavramlar'),'TYT math mini must exist');
@@ -732,15 +733,21 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='a-fi'&&x.topicTitle==='Vektörler'),'AYT physics mini must exist');
   assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='a-bi'&&x.topicTitle==='Sinir sistemi'),'AYT biology mini must exist');
   assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='a-t1'&&x.topicTitle==='İlk Çağ uygarlıkları'),'AYT history-1 mini must exist');
+  assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='k-tr'&&x.topicTitle==='Paragrafta anlam'),'KPSS Turkish paragraph mini must exist');
+  assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='t-ta'&&x.topicTitle==='Tarih ve zaman'),'TYT history mini must exist');
+  assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='t-co'&&x.topicTitle==='Harita bilgisi'),'TYT geography map mini must exist');
+  assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='a-ge'&&x.topicTitle==='Üçgenler ve çokgenler'),'AYT geometry mini must exist');
   assert.deepEqual(new Set(data.ROTA_MINI_EXAMS.filter(x=>x.exam==='yks'&&x.subjectId.startsWith('t-')).map(x=>x.subjectId)).has('t-ki'),true);
-  assert.ok(['a-ma','a-fi','a-ki','a-bi'].every(id=>data.ROTA_MINI_EXAMS.some(x=>x.subjectId===id)),'AYT SAY coverage must include math, physics, chemistry and biology');
-  assert.ok(['a-ma','a-ed','a-t1','a-c1'].every(id=>data.ROTA_MINI_EXAMS.some(x=>x.subjectId===id)),'AYT EA coverage must include math, literature, history-1 and geography-1');
+  assert.ok(['a-ma','a-ge','a-fi','a-ki','a-bi'].every(id=>data.ROTA_MINI_EXAMS.some(x=>x.subjectId===id)),'AYT SAY coverage must include math, geometry, physics, chemistry and biology');
+  assert.ok(['a-ma','a-ge','a-ed','a-t1','a-c1'].every(id=>data.ROTA_MINI_EXAMS.some(x=>x.subjectId===id)),'AYT EA coverage must include math, geometry, literature, history-1 and geography-1');
   assert.ok(['a-ed','a-t1','a-c1','a-fg'].every(id=>data.ROTA_MINI_EXAMS.some(x=>x.subjectId===id)),'AYT SOZ coverage must include literature, history-1, geography-1 and philosophy group');
   for(const exam of data.ROTA_MINI_EXAMS){
     assert.ok(exam.questions.length>=8,exam.id+' should contain at least 8 pilot questions');
     assert.equal(new Set(exam.questions.map(q=>q.id)).size,exam.questions.length,'Question ids must be unique');
+    assert.equal(data.MINI_SKILL_MAP[exam.id]?.length,exam.questions.length,'Every mini question must have one skill label');
     for(const q of exam.questions){
       assert.equal(q.options.length,5);
+      assert.equal(new Set(q.options).size,q.options.length,'Mini answer choices must be unique');
       assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<q.options.length,'Answer key must point to an option');
       assert.ok(q.explanation.length>=8,'Every question needs an explanation');
     assert.equal(exam.version,1,'Every mini set must have a version');
@@ -764,6 +771,22 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const repeatedSoon=api.miniRecommendationScore({total:10,correct:4},{mode:'repair',repairScore:4},2,{attempts7:2,attempts14:2});
   assert.ok(repeatedSoon<steady,'Very recent repeated attempts should lose to a fresh neutral measurement');
 }
+// 5) Same-day retakes must count as one attempt for recommendation cooldown windows.
+{
+  const src=between('function miniAttemptStats','function miniRecommendationContext');
+  const space={assessments:[
+    {id:'same-old',miniId:'m1',date:'2026-09-19',created:1},
+    {id:'same-new',miniId:'m1',date:'2026-09-19',created:2},
+    {id:'older',miniId:'m1',date:'2026-09-15',created:3},
+    {id:'outside',miniId:'m1',date:'2026-09-01',created:4}
+  ]};
+  const R={dayAdd:(_d,n)=>n===-6?'2026-09-13':'2026-09-06'};
+  const fn=new Function('R','today','w',src+';return miniAttemptStats;')(R,()=> '2026-09-19',()=>space);
+  const stats=fn('m1');
+  assert.equal(stats.attempts7,2);
+  assert.equal(stats.attempts14,2);
+}
+
 // 5) Mini scoring must distinguish correct, wrong and blank answers.
 {
   const src=between('function scoreMiniExam','function latestMiniResult');

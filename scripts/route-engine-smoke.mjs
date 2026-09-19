@@ -791,6 +791,21 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 }
 
 
+// 5) Blank mini answers count as missed practice evidence, not as invisible unanswered items.
+{
+  const src=between('function routeAssessmentSamples','function routeFeedbackCalibrationSignal');
+  const space={plan:[],logs:[],assessments:[
+    {id:'blanky',miniId:'m1',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',correct:6,wrong:0,blank:4,created:1}
+  ]};
+  const R={dayAdd:()=> '2026-08-29'},today=()=> '2026-09-19',w=()=>space;
+  const api=new Function('R','today','w',src+';return {routeAssessmentSamples,routePracticeSignal};')(R,today,w);
+  const sample=api.routeAssessmentSamples('k-ma','t1')[0];
+  assert.equal(sample.wrong,4);
+  const practice=api.routePracticeSignal('k-ma','t1');
+  assert.equal(practice.answered,10);
+  assert.equal(Math.round(practice.accuracy*100),60);
+}
+
 // 5) Same-day retakes of one mini must not multiply practice evidence.
 {
   const src=between('function routeAssessmentSamples','function routePracticeSignal');
@@ -828,6 +843,7 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 // 5) Mini evidence schema must preserve skill breakdown and the route decision snapshot across backup/import.
 for(const marker of [
   'const skillBreakdown=Array.isArray(a.skillBreakdown)',
+  'Mini deneme alt konu toplamı soru sayısıyla eşleşmiyor.',
   'const weakSkills=Array.isArray(a.weakSkills)',
   'const routeDecision=rd&&',
   'routeDecision=miniRouteDecisionSnapshot',
@@ -863,6 +879,29 @@ for(const marker of [
   adaptive.mode='progress';adaptive.evidence.push('c');
   assert.equal(snap.mode,'repair');
   assert.deepEqual(snap.evidence,['a','b']);
+}
+
+// 5) Automatic recommendation must prefer a fresh alternative over a very recent repair mini.
+{
+  const src=between('function miniRecommendation(){','function denemeCenterSection');
+  const defs=[
+    {id:'repair-mini',exam:'kpss',subjectId:'s1',title:'Repair'},
+    {id:'fresh-mini',exam:'kpss',subjectId:'s2',title:'Fresh'}
+  ];
+  let repairDays=1;
+  const fn=new Function('subjects','ROTA_MINI_EXAMS','state','miniTopicId','routeSubjectAdaptiveState','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
+    src+';return miniRecommendation;'
+  )(
+    ()=>[{id:'s1'},{id:'s2'}],defs,{activeExam:'kpss'},()=> '',
+    id=>id==='s1'?{mode:'repair',label:'ONARIM MODU',repairScore:5,skillWeakness:{weak:[]}}:{mode:'steady',label:'DENGELİ TEMPO',repairScore:0,skillWeakness:{weak:[]}},
+    id=>id==='repair-mini'?{miniId:id,total:10,correct:3,date:'2026-09-18'}:null,
+    last=>last?repairDays:999,
+    ()=>({attempts7:0,attempts14:0}),
+    (_last,adaptive)=>adaptive.mode==='repair'?100:60
+  );
+  assert.equal(fn().def.id,'fresh-mini','A repair signal cannot override the hard three-day recommendation cooldown');
+  repairDays=4;
+  assert.equal(fn().def.id,'repair-mini','After cooldown, the stronger repair need should regain recommendation priority');
 }
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.

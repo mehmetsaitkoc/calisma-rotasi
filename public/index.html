@@ -2066,12 +2066,25 @@ function miniRecommendationScore(last,adaptive,daysSince,stats={}){
  score-=Math.max(0,(stats.attempts7||0)-1)*24;
  score-=Math.max(0,(stats.attempts14||0)-2)*10;
  if(stats.weakCount)score+=Math.min(18,stats.weakCount*6);
+ if(stats.openTopic)score+=24;
+ if(stats.recentTopicWork)score+=14;
+ if(stats.topicStarted)score+=8;else score-=26;
+ if(stats.subjectDaysSince===0)score-=34;else if(stats.subjectDaysSince<=2)score-=14;
+ if(stats.stageDaysSince>=999)score+=8;else if(stats.stageDaysSince>=7)score+=4;
  return score;
 }
-function miniDaysSince(last){if(!last?.date)return 999;return Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(last.date+'T12:00:00'))/86400000));}
+function miniDaysSinceDate(date){if(!date)return 999;return Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(date+'T12:00:00'))/86400000));}
+function miniDaysSince(last){return miniDaysSinceDate(last?.date||'');}
 function miniAttemptStats(miniId){
  const since7=R.dayAdd(today(),-6),since14=R.dayAdd(today(),-13),xs=(w().assessments||[]).filter(function(a){return a.miniId===miniId;});
  return {attempts7:xs.filter(function(a){return a.date>=since7;}).length,attempts14:xs.filter(function(a){return a.date>=since14;}).length};
+}
+function miniRecommendationContext(def){
+ const topicId=miniTopicId(def),space=w(),plans=(space.plan||[]).filter(function(p){return p.subjectId===def.subjectId&&(!topicId||p.topicId===topicId);}),planIds=new Set(plans.map(function(p){return p.id;})),status=topicId?(space.topicState?.[topicId]?.status||0):0;
+ const openTopic=plans.some(function(p){return !p.done&&p.date<=R.dayAdd(today(),7);}),doneTopic=plans.some(function(p){return p.done;}),topicLogs=(space.logs||[]).filter(function(l){return planIds.has(l.sessionId);}).sort(function(a,b){return b.date.localeCompare(a.date);}),latestTopicLog=topicLogs[0]||null,last=latestMiniResult(def.id),topicStarted=status>0||doneTopic||!!latestTopicLog||!!last,recentTopicWork=!!latestTopicLog&&miniDaysSinceDate(latestTopicLog.date)<=7;
+ const subjectLast=[...(space.assessments||[])].filter(function(a){return a.subjectId===def.subjectId;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.created||0)-(a.created||0));})[0]||null,subjectDaysSince=miniDaysSinceDate(subjectLast?.date||'');
+ const subject=subjects().find(function(x){return x.id===def.subjectId;}),stage=subject?.stage||'',stageSubjects=new Set(subjects().filter(function(x){return x.stage===stage;}).map(function(x){return x.id;})),stageLast=[...(space.assessments||[])].filter(function(a){return stageSubjects.has(a.subjectId);}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.created||0)-(a.created||0));})[0]||null,stageDaysSince=miniDaysSinceDate(stageLast?.date||'');
+ return {topicId,topicStarted,openTopic,recentTopicWork,subjectDaysSince,stage,stageDaysSince};
 }
 const MINI_SKILL_MAP=Object.freeze({"kpss-problemler-01":["Yüzde","Oran-orantı","Yaş problemleri","Havuz problemleri","Hız problemleri","Kâr-zarar","Karışım","İşçi-havuz","Yüzde değişim","Denklem kurma"],"yks-paragraf-01":["Ana düşünce","Çıkarım","Ana düşünce","Yorum","Çıkarım","Ana düşünce","Ana düşünce","Anlam ilişkisi","Çıkarım","Bakış açısı"],"kpss-tarih-01":["Kronoloji","Kronoloji","Eğitim inkılapları","Hukuk inkılapları","Kültür inkılapları","Toplumsal inkılaplar","Ekonomi ve millîlik","Cumhuriyetçilik"],"kpss-cografya-01":["Enlem","Boylam","Yerel saat","Yarım küre","Göreceli konum","Boylam ve yerel saat","Orta kuşak","Matematik konum"],"tyt-biyoloji-hucre-01":["Ortak hücresel yapılar","Mitokondri","Hücre zarı","Bitki-hayvan farkları","Çekirdek","Lizozom","Kloroplast","Ribozom"],"ayt-edebiyat-tanzimat-01":["Şinasi – eser","Namık Kemal – eser","Recaizade Mahmut Ekrem – eser","Abdülhak Hamit Tarhan – eser","Samipaşazade Sezai – eser","Ahmet Mithat Efendi – eser","Tanzimat I özellikleri","Tanzimat II sanatçıları"],"ydt-grammar-01":["Present perfect","Conditionals","Passive voice","Relative clauses","Preposition / bağlaç","Modals","Gerund / infinitive","Past perfect"],"ydt-vocab-01":["Bağlamdan anlam","Kaynak koruma söz varlığı","Koruma fiilleri","Kapsam bildiren sıfat","Sağlık söz varlığı","Değişim ve istikrar","Bağlamdan sıfat","Fiil-edat kalıbı"],"ydt-reading-01":["Ana fikir","Çıkarım","Yazarın amacı","Çıkarım","Ana fikir","Gerekçe","Ana fikir","Çıkarım"],"kpss-vatandaslik-01":["Hukuk kuralının yaptırımı","Emredici hukuk kuralı","Tamamlayıcı hukuk kuralı","Özel hukuk","Kamu hukuku","Cebri icra","Hukuki olay","Hukuki işlem"],"tyt-matematik-temel-01":["Tek-çift","Ardışık sayılar","Çarpanlar ve en küçük toplam","Tek-çift","Negatif sayılarda sıralama","Ardışık tek sayılar","Tek-çift","Kalanlı bölme","Ardışık sayılar","Sabit toplamda en büyük çarpım"],"tyt-fizik-hareket-01":["Ortalama sürat","Yer değiştirme","Newton II","Net kuvvet","Etki-tepki","Sürtünme","Ağırlık","İvme"],"ayt-matematik-fonksiyon-01":["Fonksiyon değeri","Bileşke","Ters fonksiyon","Bire birlik","Tanım kümesi","Fonksiyonel eşitlik","Grafik dönüşümü","Doğrusal fonksiyon"],"tyt-kimya-atom-01":["Atom numarası","Nötr atom","İzotop","Periyot","Grup özellikleri","İyon oluşumu","Kütle numarası","Periyodik eğilim"],"ayt-fizik-vektor-01":["Vektör büyüklüğü","Zıt vektörler","Dik vektör bileşkesi","Birim vektör","Skaler çarpım","Vektör bileşenleri","Vektör farkı","Vektör toplama"],"ayt-biyoloji-sinir-01":["Nöron yapısı","Miyelin","Sinaps","Merkezî sinir sistemi","Refleks","Sempatik sistem","Parasempatik sistem","Duyu nöronu"],"ayt-tarih1-ilkcag-01":["Sümerler ve yazı","Babil ve hukuk","Hitit tarihçiliği","Fenike alfabesi","Roma hukuku","Mısır ve Nil","Pers yönetimi","Kral Yolu"]});
 function miniQuestionSkill(def,index){return MINI_SKILL_MAP[def.id]?.[index]||def.topicTitle||'Genel';}
@@ -2118,16 +2131,20 @@ function openMiniResult(def,result,score){
 function miniRecommendation(){
  const activeSubjects=new Set(subjects().map(function(s){return s.id;})),available=ROTA_MINI_EXAMS.filter(function(def){return def.exam===state.activeExam&&activeSubjects.has(def.subjectId);});
  const ranked=available.map(function(def){
-  const topicId=miniTopicId(def),adaptive=routeSubjectAdaptiveState(def.subjectId,topicId),last=latestMiniResult(def.id),daysSince=miniDaysSince(last),stats=miniAttemptStats(def.id),weakCount=adaptive.skillWeakness?.weak?.length||0,score=miniRecommendationScore(last,adaptive,daysSince,{...stats,weakCount});let reason='';
+  const context=miniRecommendationContext(def),topicId=context.topicId,adaptive=routeSubjectAdaptiveState(def.subjectId,topicId),last=latestMiniResult(def.id),daysSince=miniDaysSince(last),attempts=miniAttemptStats(def.id),weakCount=adaptive.skillWeakness?.weak?.length||0,stats={...attempts,...context,weakCount},score=miniRecommendationScore(last,adaptive,daysSince,stats);let reason='';
   const weak=adaptive.skillWeakness?.primary?.skill;
   if(weak)reason='Son mini verisinde özellikle “'+weak+'” alt alanında açık var; kısa ölçüm onarımın işe yarayıp yaramadığını gösterecek.';
+  else if(context.openTopic&&adaptive.mode==='repair')reason='Programında bu konu açık ve ONARIM sinyali var; mini ölçüm sonraki görevin dozunu netleştirir.';
+  else if(context.openTopic)reason='Bu konu zaten aktif programında; kısa ölçüm çalışmanın gerçekten yerleşip yerleşmediğini gösterecek.';
+  else if(context.recentTopicWork&&!last)reason='Bu konuyu yakın zamanda çalıştın ama henüz mini ölçüm yok; taze öğrenmeyi kısa bir kontrolle doğrula.';
   else if(adaptive.mode==='repair')reason='Bu ders/konuda ONARIM sinyali var; kısa bir ölçüm sonraki görevin dozunu netleştirir.';
   else if(adaptive.mode==='ease')reason='SÜRDÜRÜLEBİLİR mod açık; kısa mini deneme yükün gerçekten nerede zorlandığını gösterebilir.';
-  else if(!last)reason='Bu konuda henüz mini ölçümün yok; ilk gerçek performans verisini oluşturur.';
+  else if(!last&&context.topicStarted)reason='Çalışılmış bu konuda henüz mini ölçümün yok; ilk gerçek performans verisini oluşturur.';
+  else if(!last)reason='Bu başlık henüz öğrenme verisi üretmedi; diğer uygun ölçümler yoksa başlangıç tanılaması olarak kullanılabilir.';
   else if(last.total&&last.correct/last.total<.60)reason='Son mini sonuç düşük kaldı; yeniden ölçmek programın onarım kararını günceller.';
   else if(adaptive.mode==='progress')reason='GELİŞİM sinyali var; kısa deneme yeni seviyeyi doğrulamak için kullanılabilir.';
   else reason='Mevcut tempoyu doğrulamak için kısa ve konu odaklı bir kontrol.';
-  return {def,adaptive,last,daysSince,score,reason,stats};
+  return {def,adaptive,last,daysSince,score,reason,stats,context};
  }).sort(function(x,y){return y.score-x.score||x.def.title.localeCompare(y.def.title,'tr');});
  const eligible=ranked.filter(function(x){return !x.last||x.daysSince>=3;});
  return eligible[0]||null;

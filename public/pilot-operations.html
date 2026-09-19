@@ -86,14 +86,24 @@ function mileHtml(m){
 }
 function deltaClass(v,positiveGood=true){if(!Number.isFinite(v)||v===0)return '';return (positiveGood?v>0:v<0)?'up':'down';}
 function cards(s){
-  const totalIv=s.helpfulInterventions+s.harmfulInterventions,helpRate=totalIv?Math.round(s.helpfulInterventions/totalIv*1000)/10:null;
+  const totalIv=s.helpfulInterventions+s.harmfulInterventions;
+  const helpRate=totalIv?Math.round(s.helpfulInterventions/totalIv*1000)/10:null;
+  const harmRate=totalIv?Math.round(s.harmfulInterventions/totalIv*1000)/10:null;
+  const delta=v=>v===null?'—':(v>0?'+':'')+v+' puan';
   return [
     ['Öğrenci',s.students],
-    ['Normal / dikkat',s.counts.normal+' / '+s.counts.attention],
+    ['Normal',s.counts.normal],
+    ['Veri bekliyor',s.counts.waiting],
+    ['Dikkat',s.counts.attention],
     ['Kritik',s.counts.critical],
+    ['Gün 7',s.milestones.day7+'/'+s.students],
+    ['Gün 14',s.milestones.day14+'/'+s.students],
     ['Gün 30',s.milestones.day30+'/'+s.students],
     ['Helpful oranı',helpRate===null?'—':helpRate+'%'],
-    ['Δ Completion',s.averageCompletionChange===null?'—':(s.averageCompletionChange>0?'+':'')+s.averageCompletionChange+' puan']
+    ['Harmful oranı',harmRate===null?'—':harmRate+'%'],
+    ['Δ Completion',delta(s.averageCompletionChange)],
+    ['Δ Performance',delta(s.averagePerformanceChange)],
+    ['Mod geçişi',s.modeTransitions]
   ].map(x=>'<article class="card metric"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></article>').join('');
 }
 function render(){

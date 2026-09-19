@@ -371,6 +371,28 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.match(api.routeDifficultyPrescription('k-ma','','Problemler','process'),/adım|işlem/i);
 }
 
+// 4) Applied decision must never expose raw progress when calibrated progression is not actually applied.
+{
+  const src=between('function routeAppliedDecision','function routeStudentOverview');
+  let studentState='steady',recoveryActive=false;
+  const routeSubjectAdaptiveState=()=>({mode:'progress',label:'GELİŞİM MODU',note:'raw',confidence:90,evidence:['yüksek doğruluk'],repairScore:0,progressScore:6});
+  const routeStudentModel=()=>({state:studentState,label:studentState==='progress'?'GELİŞİM DOĞRULANIYOR':'DENGELİ İLERLEME',nextAction:'dozu koru',confidence:88});
+  const routeRecoverySignal=()=>({active:recoveryActive});
+  const fn=new Function('routeSubjectAdaptiveState','routeStudentModel','routeRecoverySignal',src+';return routeAppliedDecision;')(
+    routeSubjectAdaptiveState,routeStudentModel,routeRecoverySignal
+  );
+  const held=fn('k-ma','m1');
+  assert.equal(held.rawMode,'progress');
+  assert.equal(held.mode,'steady');
+  assert.equal(held.label,'DENGELİ TEMPO');
+  assert.match(held.note,/GELİŞİM kararını henüz doğrulamadığı/i);
+  assert.ok(held.evidence.some(x=>/doğrulaması bekliyor/i.test(x)));
+  studentState='progress';
+  assert.equal(fn('k-ma','m1').mode,'progress');
+  recoveryActive=true;
+  assert.equal(fn('k-ma','m1').mode,'steady');
+}
+
 // 4) Recovery must suppress progression load increases without erasing the strong-performance signal.
 {
   const src=between('function routeQuestionTarget','function routeReviewGoal');
@@ -378,8 +400,9 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const w=()=>({profile:{subjectLevels:{'k-ma':2}}});
   const routeSubjectGap=()=>({known:false,gap:0});
   const routeStudyMethod=()=>({key:'quant',label:'SORU + YANLIŞ ANALİZİ'});
-  const routeSubjectAdaptiveState=()=>({mode:'progress',calibration:{},skillWeakness:{primary:null}});
-  const routeStudentModel=()=>({state:studentState,confidence:90});
+  const routeAppliedDecision=()=>studentState==='progress'&&!recoveryActive
+    ?{mode:'progress',rawMode:'progress',label:'GELİŞİM MODU',calibration:{},skillWeakness:{primary:null}}
+    :{mode:'steady',rawMode:'progress',label:'DENGELİ TEMPO',calibration:{},skillWeakness:{primary:null}};
   const routeRecoverySignal=()=>({active:recoveryActive});
   const routeEffectiveDifficulty=()=>({known:false});
   const routeMaxTaskMinutes=()=>120;
@@ -387,12 +410,12 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const routeInterventionPolicyAdjustment=()=>({action:'hold'});
   const routeErrorMemorySignal=()=>({primary:null});
   const api=new Function(
-    'w','routeSubjectGap','routeStudyMethod','routeSubjectAdaptiveState','routeStudentModel','routeRecoverySignal',
+    'w','routeSubjectGap','routeStudyMethod','routeAppliedDecision','routeRecoverySignal',
     'routeEffectiveDifficulty','routeMaxTaskMinutes','routeDifficultyPrescription',
     'routeInterventionPolicyAdjustment','routeErrorMemorySignal',
     src+';return {routeQuestionTarget,routeTaskGoal};'
   )(
-    w,routeSubjectGap,routeStudyMethod,routeSubjectAdaptiveState,routeStudentModel,routeRecoverySignal,
+    w,routeSubjectGap,routeStudyMethod,routeAppliedDecision,routeRecoverySignal,
     routeEffectiveDifficulty,routeMaxTaskMinutes,routeDifficultyPrescription,
     routeInterventionPolicyAdjustment,routeErrorMemorySignal
   );
@@ -400,6 +423,7 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const unverifiedGoal=api.routeTaskGoal('k-ma','t1','x');
   assert.equal(unverifiedQuestions,16,'Raw adaptive progress must not add questions before Student Model progression is corroborated');
   assert.equal(unverifiedGoal.minutes,35,'Raw adaptive progress must not add minutes before Student Model progression is corroborated');
+  assert.match(unverifiedGoal.text,/doğrulanmış GELİŞİM kararı oluşmadan/i);
   studentState='progress';
   const normalQuestions=api.routeQuestionTarget('k-ma','t1','x');
   const normalGoal=api.routeTaskGoal('k-ma','t1','x');
@@ -870,6 +894,21 @@ for(const marker of [
   const progress={mode:'progress',baselineAccuracy:82};
   assert.equal(fn(progress,{age:4,performance:{known:true,accuracy:.79},behavior:{known:false}}).status,'helpful');
   assert.equal(fn(progress,{age:4,performance:{known:true,accuracy:.68},behavior:{known:false}}).status,'harmful');
+}
+
+// 4) Intervention audit must record the applied decision, not a raw progress signal that was withheld.
+{
+  const src=between('function routeRecordInterventions','function routeInterventionEffectSignal');
+  const space={route:{interventions:[]},plan:[],logs:[],mistakes:[]};
+  const w=()=>space,today=()=> '2026-09-19',R={uid:()=> 'iv1',topic:()=>({id:'m1',subjectId:'k-ma'})};
+  const routeEnsure=()=>{},routeAppliedDecision=()=>({mode:'steady',rawMode:'progress',confidence:90,note:'Doz korunuyor'}),
+    routeStudentModel=()=>({confidence:90,learningNeed:20}),routePracticeSignal=()=>({known:true,weightedAccuracy:.82,accuracy:.82,answered:20}),
+    routeBehaviorSignal=()=>({known:true,completion:.9}),routeStudyMethod=()=>({key:'quant'});
+  const fn=new Function('w','today','R','routeEnsure','routeAppliedDecision','routeStudentModel','routePracticeSignal','routeBehaviorSignal','routeStudyMethod',
+    src+';return routeRecordInterventions;'
+  )(w,today,R,routeEnsure,routeAppliedDecision,routeStudentModel,routePracticeSignal,routeBehaviorSignal,routeStudyMethod);
+  fn([{id:'task1',subjectId:'k-ma',topicId:'m1',source:'curriculum',title:'x',date:'2026-09-19'}]);
+  assert.equal(space.route.interventions.length,0,'Withheld raw progress must not be stored as a progress intervention');
 }
 
 // 4) Intervention history must survive backup and remain a bounded, explicit audit trail.
@@ -1389,6 +1428,19 @@ for(const marker of [
   assert.equal(xs[1].id,'day2');
 }
 
+// 5) User-facing route surfaces must read the applied decision rather than raw adaptive progress.
+{
+  const todayTask=between('function routeTodayTask','function routeView');
+  const planCard=between('function routePlanCard','function routePlanView');
+  const why=between("function routeWhy","function ");
+  assert.ok(todayTask.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Today task badge must use the applied decision');
+  assert.ok(planCard.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Plan task badge must use the applied decision');
+  assert.ok(html.includes('miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,topicId))'),'Mini result snapshot must persist the applied decision');
+  assert.ok(html.includes('adaptive=routeAppliedDecision(def.subjectId,topicId)'),'Mini recommendation must use the applied decision');
+  assert.ok(html.includes('const adaptive=routeAppliedDecision(p.subjectId,p.topicId),mode='),'Intervention audit must use the applied decision');
+  assert.ok(why.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Why modal must explain the applied decision');
+}
+
 // 5) Route-decision snapshots must be stable values, not references to the current adaptive state.
 {
   const src=between('function miniRouteDecisionSnapshot','function latestMiniResult');
@@ -1409,7 +1461,7 @@ for(const marker of [
     {id:'untouched-repair',exam:'kpss',subjectId:'s3',title:'Untouched repair'}
   ];
   let repairDays=1;
-  const fn=new Function('subjects','ROTA_MINI_EXAMS','state','miniRecommendationContext','routeSubjectAdaptiveState','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
+  const fn=new Function('subjects','ROTA_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
     src+';return miniRecommendation;'
   )(
     ()=>[{id:'s1'},{id:'s2'},{id:'s3'}],defs,{activeExam:'kpss'},

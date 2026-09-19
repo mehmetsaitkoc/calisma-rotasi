@@ -402,14 +402,14 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 {
   const src=between('function routeExamFreshness','function routeEvidenceNextStep');
   const today=()=> '2026-09-19';
-  const C={TYPES:{KPSS:{label:'KPSS · GY–GK'}}};
+  const C={TYPES:{KPSS:{label:'KPSS · GY–GK'}},PART_SUBJECTS:{KPSS:{Matematik:['k-ma'],Türkçe:['k-tr']}}};
   const space={
     exams:[{type:'KPSS',date:'2026-09-01'}],
     logs:[
-      {sessionId:'a',date:'2026-09-05'},
-      {sessionId:'b',date:'2026-09-07'},
-      {sessionId:'c',date:'2026-09-10'},
-      {sessionId:'d',date:'2026-09-12'}
+      {sessionId:'a',subjectId:'k-ma',date:'2026-09-05'},
+      {sessionId:'b',subjectId:'k-tr',date:'2026-09-07'},
+      {sessionId:'c',subjectId:'k-ma',date:'2026-09-10'},
+      {sessionId:'d',subjectId:'k-tr',date:'2026-09-12'}
     ]
   };
   const fn=new Function('w','today','C',src+';return routeExamFreshness;')(()=>space,today,C);
@@ -420,10 +420,10 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   space.logs=space.logs.slice(0,2);
   assert.equal(fn('KPSS').stale,false,'Old exam alone should not force a refresh before enough new study exists');
   space.logs=[
-    {sessionId:'a',date:'2026-09-05'},
-    {sessionId:'a',date:'2026-09-06'},
-    {sessionId:'b',date:'2026-09-10'},
-    {sessionId:'c',date:'2026-09-12'}
+    {sessionId:'a',subjectId:'k-ma',date:'2026-09-05'},
+    {sessionId:'a',subjectId:'k-ma',date:'2026-09-06'},
+    {sessionId:'b',subjectId:'k-tr',date:'2026-09-10'},
+    {sessionId:'c',subjectId:'k-ma',date:'2026-09-12'}
   ];
   assert.equal(fn('KPSS').studySince,3,'Duplicate logs for the same planned session must count once');
   assert.equal(fn('KPSS').stale,false);
@@ -447,6 +447,36 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const stale=api.routeExamWeakness()['k-ma'];
   assert.equal(stale.freshness,.35);
   assert.ok(stale.boost<fresh.boost,'Very stale deneme data must lose weight after enough relevant-subject study');
+}
+
+// 4) TYT and AYT/YDT evidence freshness must be driven by their own subject groups.
+{
+  const src=between('function routeExamFreshness','function routeEvidenceNextStep');
+  const today=()=> '2026-09-19';
+  const C={
+    TYPES:{TYT:{label:'TYT'},AYT_SAY:{label:'AYT · Sayısal'}},
+    PART_SUBJECTS:{
+      TYT:{'Temel matematik':['t-ma'],'Fen bilimleri':['t-fi']},
+      AYT_SAY:{Matematik:['a-ma'],Fizik:['a-fi']}
+    }
+  };
+  const space={exams:[{type:'TYT',date:'2026-09-01'}],logs:[
+    {sessionId:'a1',subjectId:'a-ma',date:'2026-09-05'},
+    {sessionId:'a2',subjectId:'a-fi',date:'2026-09-07'},
+    {sessionId:'a3',subjectId:'a-ma',date:'2026-09-10'},
+    {sessionId:'a4',subjectId:'a-fi',date:'2026-09-12'}
+  ]};
+  const fn=new Function('w','today','C',src+';return routeExamFreshness;')(()=>space,today,C);
+  assert.equal(fn('TYT').studySince,0,'AYT work must not stale TYT evidence');
+  assert.equal(fn('TYT').stale,false);
+  space.logs.push(
+    {sessionId:'t1',subjectId:'t-ma',date:'2026-09-13'},
+    {sessionId:'t2',subjectId:'t-fi',date:'2026-09-14'},
+    {sessionId:'t3',subjectId:'t-ma',date:'2026-09-15'},
+    {sessionId:'t4',subjectId:'t-fi',date:'2026-09-16'}
+  );
+  assert.equal(fn('TYT').studySince,4);
+  assert.equal(fn('TYT').stale,true);
 }
 
 // 4) Light-day action must preserve critical work and move low-priority tasks without recording friction.
@@ -662,7 +692,9 @@ for(const marker of [
   'Math.round(base*freshness)',
   'examFreshness=weak?.freshness??1',
   'function routeExamEvidenceFactor',
-  "(!subjectId||l.subjectId===subjectId)",
+  "C.PART_SUBJECTS[exam.type]",
+  "C.PART_SUBJECTS[type]",
+
   'freshness',
   'function routeExamFreshness',
   'ölçümünü yenile',

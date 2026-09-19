@@ -651,25 +651,92 @@ const fresh=()=>({version:1,activeExam:null,workspaces:{kpss:workspace('kpss'),y
 function courses(exam,track){return C.subjects.filter(s=>s.exam===exam&&(!s.tracks.length||s.tracks.includes(track)));}
 function allTopics(w,exam){return courses(exam,w.settings.track).flatMap(s=>s.topics).concat(w.customTopics.filter(t=>courses(exam,w.settings.track).some(s=>s.id===t.subjectId)));}
 function topic(w,id){return C.subjects.flatMap(s=>s.topics).find(t=>t.id===id)||w.customTopics.find(t=>t.id===id);}
+function planDaysBetween(later,earlier){
+ if(!validDate(later)||!validDate(earlier))return null;
+ return Math.max(0,Math.floor((new Date(later+'T12:00:00')-new Date(earlier+'T12:00:00'))/86400000));
+}
+function planSubjectLevel(w,subjectId){
+ const v=w.profile?.subjectLevels?.[subjectId];
+ return Number.isInteger(v)&&v>=0&&v<=3?v:2;
+}
+function planSubjectGap(w,exam,sub){
+ const p=w.profile||{},stage=exam==='yks'&&sub.stage!=='TYT',current=stage?p.currentStageNet:p.currentNet,target=stage?p.targetStageNet:p.targetNet,limit=stage?80:120,label=exam==='kpss'?'KPSS':sub.stage==='TYT'?'TYT':sub.stage==='YDT'?'YDT':'AYT';
+ const known=Number.isFinite(current)&&Number(target)>0;
+ return {known,current:known?Number(current):null,target:known?Number(target):Number(target)||0,gap:known?Math.max(0,Number(target)-Number(current)):0,limit,label};
+}
+function planLatestEvidenceDate(w,subjectId,topicId=''){
+ const planById=new Map((w.plan||[]).map(p=>[p.id,p])),dates=[];
+ for(const l of (w.logs||[])){if(l.subjectId!==subjectId)continue;const p=planById.get(l.sessionId);if(topicId&&p?.topicId!==topicId)continue;if(validDate(l.date))dates.push(l.date);}
+ for(const p of (w.plan||[])){if(!p.done||p.subjectId!==subjectId||(topicId&&p.topicId!==topicId)||!validDate(p.date))continue;dates.push(p.date);}
+ for(const a of (w.assessments||[])){if(a.subjectId!==subjectId||(topicId&&a.topicId!==topicId)||!validDate(a.date))continue;dates.push(a.date);}
+ return dates.sort((a,b)=>b.localeCompare(a))[0]||'';
+}
+function planExamWeakness(w,exam){
+ const out={},bySubject={},weights=[1,.82,.68,.55],recent=[...(w.exams||[])].filter(x=>C.TYPES[x.type]?.exam===exam).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
+ for(const x of recent)for(const part of (x.parts||[])){
+  let net;try{net=calcNet([part],x.penalty).net;}catch{continue;}
+  const ratio=Math.max(0,Math.min(1,net/Math.max(1,part.total))),ids=C.PART_SUBJECTS[x.type]?.[part.label]||[];
+  for(const id of ids){if(!C.subjects.some(s=>s.id===id&&s.exam===exam))continue;(bySubject[id]||(bySubject[id]=[])).push({ratio,date:x.date});}
+ }
+ for(const [id,rows] of Object.entries(bySubject)){
+  const xs=rows.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);let weighted=0,total=0;
+  xs.forEach((x,i)=>{const wt=weights[i]||.45;weighted+=x.ratio*wt;total+=wt;});
+  out[id]={ratio:total?weighted/total:1,samples:xs.length,date:xs[0]?.date||''};
+ }
+ return out;
+}
+function planTopicSignal(w,exam,sub,t,start,examWeakness){
+ const level=planSubjectLevel(w,sub.id),gap=planSubjectGap(w,exam,sub),status=w.topicState?.[t.id]?.status||0,priority=!!w.settings.priorities.includes(sub.id),examSignal=examWeakness[sub.id]||null,lastDate=planLatestEvidenceDate(w,sub.id,t.id),daysSince=lastDate?planDaysBetween(start,lastDate):null,openMistakes=(w.mistakes||[]).filter(m=>!m.resolved&&m.topicId===t.id).length;
+ const levelBoost=[30,22,10,2][level],gapBoost=gap.known?Math.min(18,Math.round(gap.gap/gap.limit*45)):0,examBoost=examSignal&&examSignal.ratio<.72?Math.min(18,Math.round((.72-examSignal.ratio)*45)):0,priorityBoost=priority?16:0,statusBoost=status===1?12:0,recencyBoost=daysSince===null?7:daysSince>=14?10:daysSince>=7?6:daysSince>=3?3:0,mistakeBoost=Math.min(14,openMistakes*7);
+ const score=20+levelBoost+gapBoost+examBoost+priorityBoost+statusBoost+recencyBoost+mistakeBoost;
+ const levelLabel=['çok zayıf','zayıf','orta','iyi'][level],reasons=[];
+ if(gap.known&&gap.gap>0)reasons.push(gap.label+' hedef netine '+Math.round(gap.gap*10)/10+' net uzaksın');
+ if(level<=1)reasons.push(sub.name+' “'+levelLabel+'” işaretlendi');
+ else if(level===3)reasons.push(sub.name+' seviyen iyi olduğu için görev dozu daha kısa tutuldu');
+ if(priority)reasons.push('bu dersi öncelikli seçtin');
+ if(examBoost>=5)reasons.push('son deneme verisi bu derste ek çalışma ihtiyacı gösteriyor');
+ if(status===1)reasons.push('bu konuya daha önce başladın; yarım bırakmamak için öne alındı');
+ if(openMistakes)reasons.push('bu konuda '+openMistakes+' açık yanlış var');
+ if(daysSince!==null&&daysSince>=7)reasons.push('son çalışma üzerinden '+daysSince+' gün geçti');
+ if(!reasons.length)reasons.push('sıradaki tamamlanmamış konu olduğu için plana alındı');
+ const source=examBoost>=5?'exam':level<=1||gapBoost>=6?'profile':priority?'priority':'curriculum';
+ return {score,level,gap,status,priority,examSignal,examBoost,daysSince,openMistakes,source,reason:(reasons.join(', ')+'.').replace(/^./,c=>c.toLocaleUpperCase('tr-TR'))};
+}
+function planTaskMinutes(w,signal){
+ let minutes=[35,30,25,20][signal.level];
+ if(signal.gap.known&&signal.gap.gap>=20&&signal.level<=1)minutes+=5;
+ if(signal.examBoost>=10)minutes+=5;
+ if(signal.status===1)minutes-=5;
+ const max=Math.max(20,Math.min(45,w.settings.dailyMinutes-5));
+ return Math.max(20,Math.min(max,Math.round(minutes/5)*5));
+}
+function planQuestionTarget(signal){
+ let q=[16,18,16,14][signal.level];
+ if(signal.examBoost>=10)q+=4;if(signal.openMistakes)q+=2;
+ return Math.max(8,Math.min(24,q));
+}
 function generatePlan(w,exam,start){
  if(!validDate(start))throw Error('Geçerli bir başlangıç tarihi seç.');
  const end=dayAdd(start,6),kept=w.plan.filter(p=>p.done||p.kind==='review'||p.date<start||p.date>end);
- const already=new Set(kept.filter(p=>!p.done).map(p=>p.topicId));
- const subs=courses(exam,w.settings.track), available=allTopics(w,exam).filter(t=>(w.topicState[t.id]?.status||0)!==2&&!already.has(t.id));
- const ring=subs.flatMap(s=>w.settings.priorities.includes(s.id)?[s.id,s.id]:[s.id]);
- const added=[];let cursor=0;
+ const already=new Set(kept.filter(p=>!p.done).map(p=>p.topicId)),subs=courses(exam,w.settings.track),subById=new Map(subs.map(s=>[s.id,s])),weak=planExamWeakness(w,exam),catalog=allTopics(w,exam);
+ const candidates=catalog.filter(t=>(w.topicState[t.id]?.status||0)!==2&&!already.has(t.id)&&subById.has(t.subjectId)).map((t,index)=>{const sub=subById.get(t.subjectId),signal=planTopicSignal(w,exam,sub,t,start,weak);return {t,sub,signal,index,minutes:planTaskMinutes(w,signal)};});
+ const added=[],weekSubjectCount=new Map();
  for(let day=0;day<7;day++){
   const date=dayAdd(start,day);if(!w.settings.days.includes(new Date(date+'T12:00:00').getDay()))continue;
-  const used=kept.filter(p=>p.date===date).reduce((n,p)=>n+p.minutes+5,0);
-  const slots=Math.max(0,Math.floor((w.settings.dailyMinutes-used)/30));
-  for(let slot=0;slot<slots;slot++){
-   let t;
-   for(let tries=0;tries<ring.length;tries++){const sub=ring[cursor++%ring.length];const idx=available.findIndex(a=>a.subjectId===sub);if(idx>=0){t=available.splice(idx,1)[0];break;}}
-   if(!t)break;
-   added.push({id:uid(),date,subjectId:t.subjectId,topicId:t.id,title:t.title,minutes:25,done:false});
+  let used=kept.filter(p=>p.date===date).reduce((n,p)=>n+p.minutes+5,0);const daySubjectCount=new Map();
+  while(true){
+   const fitting=candidates.filter(c=>c.minutes+5<=w.settings.dailyMinutes-used);if(!fitting.length)break;
+   fitting.sort((a,b)=>{
+    const as=a.signal.score-(daySubjectCount.get(a.sub.id)||0)*18-(weekSubjectCount.get(a.sub.id)||0)*4,bs=b.signal.score-(daySubjectCount.get(b.sub.id)||0)*18-(weekSubjectCount.get(b.sub.id)||0)*4;
+    return bs-as||a.index-b.index;
+   });
+   const pick=fitting[0],i=candidates.indexOf(pick);candidates.splice(i,1);
+   const questions=planQuestionTarget(pick.signal);
+   added.push({id:uid(),date,subjectId:pick.t.subjectId,topicId:pick.t.id,title:pick.t.title,minutes:pick.minutes,done:false,kind:'route',source:pick.signal.source,priority:Math.max(1,Math.min(100,Math.round(pick.signal.score))),reason:pick.signal.reason,targetQuestions:questions,taskGoal:pick.sub.name+' · '+pick.t.title+': '+pick.minutes+' dk odaklı çalışma, yaklaşık '+questions+' soru/uygulama ve kısa yanlış kontrolü.'});
+   used+=pick.minutes+5;daySubjectCount.set(pick.sub.id,(daySubjectCount.get(pick.sub.id)||0)+1);weekSubjectCount.set(pick.sub.id,(weekSubjectCount.get(pick.sub.id)||0)+1);
   }
  }
- return {plan:kept.concat(added).sort((a,b)=>a.date.localeCompare(b.date)),added:added.length};
+ return {plan:kept.concat(added).sort((a,b)=>a.date.localeCompare(b.date)||((b.priority||0)-(a.priority||0))),added:added.length};
 }
 function calcNet(parts,penalty=4){
  if(![0,3,4].includes(penalty))throw Error('Geçersiz net hesaplama kuralı.');
@@ -769,7 +836,7 @@ function validateBackup(data){
  }
  return out;
 }
-root.RotaCore={uid,iso,dayAdd,validDate,workspace,fresh,courses,allTopics,topic,generatePlan,calcNet,safeUrl,resourceUrl,validateBackup};
+root.RotaCore={uid,iso,dayAdd,validDate,workspace,fresh,courses,allTopics,topic,generatePlan,planSubjectGap,planSubjectLevel,planLatestEvidenceDate,planExamWeakness,planTopicSignal,planTaskMinutes,calcNet,safeUrl,resourceUrl,validateBackup};
 if(typeof module==='object')module.exports=root.RotaCore;
 })(typeof window!=='undefined'?window:globalThis);
 
@@ -1133,7 +1200,7 @@ function readProfile(form){
  if(!['yes','sometimes','no'].includes(studyHabit))throw Error('Düzenli çalışma durumunu seç.');
  return {version:4,completed:true,summaryConfirmed:true,currentNet,targetNet,currentStageNet:state.activeExam==='yks'&&track!=='tyt'?currentStageNet:null,targetStageNet:state.activeExam==='yks'&&track!=='tyt'?targetStageNet:0,targetScore:state.activeExam==='kpss'?score:0,targetRank:state.activeExam==='yks'?rank:0,studyHabit,subjectLevels:levels,updated:Date.now()};
 }
-function settingsFields(s,setup=false){return `<div class="form-grid"><label class="field">Sana nasıl hitap edelim?<input name="name" value="${esc(s.name)}" maxlength="60" placeholder="Adın (isteğe bağlı)" autocomplete="given-name"></label><label class="field">${state.activeExam==='yks'?'YKS alanın':'Sınav kapsamın'}${state.activeExam==='yks'?`<select name="track">${Object.entries(C.TRACKS).map(([k,v])=>`<option value="${k}" ${s.track===k?'selected':''}>${v}</option>`).join('')}</select>`:'<input value="KPSS Lisans · Genel Yetenek / Genel Kültür" readonly><input name="track" type="hidden" value="lisans">'}</label><label class="field">Çalışma günlerinde ayıracağın süre<select name="dailyMinutes">${[30,60,90,120,150,180,240,300,360].map(n=>`<option value="${n}" ${n===s.dailyMinutes?'selected':''}>${duration(n)} / gün</option>`).join('')}</select><span class="field-help">Her blok: 25 dakika çalışma + 5 dakika mola.</span></label><label class="field">Hedef tarihi (isteğe bağlı)<input name="targetDate" type="date" value="${esc(s.targetDate)}"><span class="field-help">Kendi hedefin; resmî sınav tarihi otomatik atanmaz.</span></label><label class="field full">Hedefin ne?<input name="target" maxlength="160" value="${esc(s.target)}" placeholder="Örneğin: Hedef bölümüm / düzenli hazırlanmak"></label><div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Hangi günler çalışabilirsin?</div><div class="check-group">${[[1,'Pzt'],[2,'Sal'],[3,'Çar'],[4,'Per'],[5,'Cum'],[6,'Cmt'],[0,'Paz']].map(([n,label])=>`<label class="check-chip"><input type="checkbox" name="days" value="${n}" ${s.days.includes(n)?'checked':''}>${label}</label>`).join('')}</div></div>${!setup?`<div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Öncelikli dersler <span class="muted tiny">· Daha çok oturum ayrılır</span></div><div class="check-group">${subjects().map(sub=>`<label class="check-chip"><input type="checkbox" name="priorities" value="${sub.id}" ${s.priorities.includes(sub.id)?'checked':''}>${esc((state.activeExam==='yks'?sub.stage+' ':'')+sub.name)}</label>`).join('')}</div></div>`:''}</div>`;}
+function settingsFields(s,setup=false){return `<div class="form-grid"><label class="field">Sana nasıl hitap edelim?<input name="name" value="${esc(s.name)}" maxlength="60" placeholder="Adın (isteğe bağlı)" autocomplete="given-name"></label><label class="field">${state.activeExam==='yks'?'YKS alanın':'Sınav kapsamın'}${state.activeExam==='yks'?`<select name="track">${Object.entries(C.TRACKS).map(([k,v])=>`<option value="${k}" ${s.track===k?'selected':''}>${v}</option>`).join('')}</select>`:'<input value="KPSS Lisans · Genel Yetenek / Genel Kültür" readonly><input name="track" type="hidden" value="lisans">'}</label><label class="field">Çalışma günlerinde ayıracağın süre<select name="dailyMinutes">${[30,60,90,120,150,180,240,300,360].map(n=>`<option value="${n}" ${n===s.dailyMinutes?'selected':''}>${duration(n)} / gün</option>`).join('')}</select><span class="field-help">Görev süresi konu ve ihtiyaca göre yaklaşık 20–45 dakika ayarlanır; bloklar arasında 5 dakika pay bırakılır.</span></label><label class="field">Hedef tarihi (isteğe bağlı)<input name="targetDate" type="date" value="${esc(s.targetDate)}"><span class="field-help">Kendi hedefin; resmî sınav tarihi otomatik atanmaz.</span></label><label class="field full">Hedefin ne?<input name="target" maxlength="160" value="${esc(s.target)}" placeholder="Örneğin: Hedef bölümüm / düzenli hazırlanmak"></label><div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Hangi günler çalışabilirsin?</div><div class="check-group">${[[1,'Pzt'],[2,'Sal'],[3,'Çar'],[4,'Per'],[5,'Cum'],[6,'Cmt'],[0,'Paz']].map(([n,label])=>`<label class="check-chip"><input type="checkbox" name="days" value="${n}" ${s.days.includes(n)?'checked':''}>${label}</label>`).join('')}</div></div>${!setup?`<div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Öncelikli dersler <span class="muted tiny">· Daha çok oturum ayrılır</span></div><div class="check-group">${subjects().map(sub=>`<label class="check-chip"><input type="checkbox" name="priorities" value="${sub.id}" ${s.priorities.includes(sub.id)?'checked':''}>${esc((state.activeExam==='yks'?sub.stage+' ':'')+sub.name)}</label>`).join('')}</div></div>`:''}</div>`;}
 
 function setupSteps(){if(state.activeExam!=='yks')return ['name','habit','currentNet','net','time','days','goal','levels'];const base=['name','track','habit','currentNet','net'];if(w().settings.track!=='tyt')base.push('stageNet');return base.concat(['time','days','goal','levels']);}
 function setupStepKey(){const steps=setupSteps();ui.setupStep=Math.max(0,Math.min(ui.setupStep,steps.length-1));return steps[ui.setupStep];}

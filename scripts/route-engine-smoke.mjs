@@ -73,6 +73,39 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:3,reviewVariant:'challenge'}),'SEVİYE YOKLAMA');
 }
 
+// 2b) Base generatePlan must turn onboarding profile, target gap, recency and exam evidence into real tasks.
+{
+  for(const marker of [
+    'function planSubjectGap','function planSubjectLevel','function planLatestEvidenceDate','function planExamWeakness',
+    'function planTopicSignal','function planTaskMinutes','targetQuestions:questions',
+    "kind:'route'","source:pick.signal.source","reason:pick.signal.reason","weekSubjectCount","daySubjectCount"
+  ]) assert.ok(html.includes(marker),`Missing generatePlan personalization marker: ${marker}`);
+  const core=between('function planDaysBetween','function safeUrl');
+  const C={
+    TYPES:{KPSS:{exam:'kpss'}},
+    PART_SUBJECTS:{KPSS:{Matematik:['k-ma'],Tarih:['k-ta']}},
+    subjects:[
+      {id:'k-ma',exam:'kpss',stage:'GY',name:'Matematik',tracks:[],topics:[{id:'m1',subjectId:'k-ma',title:'Temel kavramlar'},{id:'m2',subjectId:'k-ma',title:'Problemler'}]},
+      {id:'k-ta',exam:'kpss',stage:'GK',name:'Tarih',tracks:[],topics:[{id:'t1',subjectId:'k-ta',title:'İlk Türk devletleri'},{id:'t2',subjectId:'k-ta',title:'Osmanlı'}]}
+    ]
+  };
+  let seq=0;const uid=()=> 'g'+(++seq),validDate=v=>/^\\d{4}-\\d{2}-\\d{2}$/.test(v),dayAdd=(d,n)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);};
+  const courses=()=>C.subjects,allTopics=()=>C.subjects.flatMap(s=>s.topics);
+  const api=new Function('C','uid','validDate','dayAdd','courses','allTopics',core+';return {generatePlan,planSubjectGap,planTaskMinutes};')(C,uid,validDate,dayAdd,courses,allTopics);
+  const w={settings:{track:'lisans',dailyMinutes:90,days:[0,1,2,3,4,5,6],priorities:[]},profile:{currentNet:55,targetNet:85,subjectLevels:{'k-ma':0,'k-ta':3}},topicState:{},customTopics:[],plan:[],logs:[],assessments:[],mistakes:[],exams:[{id:'e1',type:'KPSS',date:'2026-09-18',penalty:4,parts:[{label:'Matematik',total:30,correct:10,wrong:8},{label:'Tarih',total:27,correct:22,wrong:2}]}]};
+  const out=api.generatePlan(w,'kpss','2026-09-20');
+  assert.ok(out.added>=2);
+  const math=out.plan.find(p=>p.subjectId==='k-ma'),history=out.plan.find(p=>p.subjectId==='k-ta');
+  assert.ok(math&&history);
+  assert.ok(math.priority>history.priority,'Weak subject + net gap + exam evidence must outrank strong subject');
+  assert.ok(math.minutes>history.minutes,'Weak subject must receive a larger initial dose than a strong subject');
+  assert.match(math.reason,/30 net|çok zayıf|deneme/i);
+  assert.ok(Number.isInteger(math.targetQuestions)&&math.targetQuestions>0);
+  for(const date of new Set(out.plan.map(p=>p.date))){
+    const used=out.plan.filter(p=>p.date===date).reduce((n,p)=>n+p.minutes+5,0);assert.ok(used<=w.settings.dailyMinutes,'generatePlan must preserve daily minute limit');
+  }
+}
+
 // 2c) TYT/KPSS main net and AYT/YDT stage net must stay separate.
 {
   const src=between('function routeObservedNet','function routeGapPressure');

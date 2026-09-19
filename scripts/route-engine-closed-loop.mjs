@@ -521,7 +521,7 @@ for(const r of results){
 {
   const r=byId['high-skill-low-compliance'];
   assert.ok(r.metrics.recoveryDays>=1,'low-compliance student never entered recovery');
-  assert.ok(r.metrics.sustainableDays>=1,'low-compliance student never received sustainable interpretation');
+  assert.equal(r.metrics.progressDays,0,'low-compliance student must not receive progression decisions while adherence is poor');
 }
 {
   const r=byId['hidden-gap'];

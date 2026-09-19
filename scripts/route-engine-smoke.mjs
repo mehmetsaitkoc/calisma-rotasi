@@ -1654,6 +1654,17 @@ for(const marker of [
 }
 
 
+// 5) The core exam -> mistake -> planned review loop must stay available without a Plus gate.
+{
+  const analysis=between('function analysisPanel','function denemeCenterSection');
+  const review=between('function openReview','function updateReviewCapacity');
+  const actions=between('function onAction','function onInput');
+  assert.ok(!analysis.includes("if(!isPlus())return plusGate('analysis')"),'Exam analysis must not be Plus-gated');
+  assert.ok(!review.includes("if(!isPlus())return openUpgrade('analysis')"),'Mistake review planning must not be Plus-gated');
+  assert.ok(!actions.includes("['note-from-exam','plan-review']"),'Exam-to-mistake actions must not be Plus-gated');
+  assert.ok(html.includes('Denemeden yanlışı konuya bağlama ve planlı tekrar'),'Free feature copy must describe the real core learning loop');
+}
+
 // 5) Rota Hoca must be grounded in the same live route state shown to the student.
 {
   const src=between('function teacherStudentContext','function teacherRemoteText');

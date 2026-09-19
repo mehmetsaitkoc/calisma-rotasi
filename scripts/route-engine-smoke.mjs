@@ -1185,7 +1185,8 @@ for(const marker of [
   ]};
   const R={dayAdd:()=> '2026-09-12',topic:(_space,id)=>['t1','t2'].includes(id)?{id}:null};
   const routeSubjectAdaptiveState=(subjectId,topicId)=>topicId==='t1'?{mode:'repair',skillWeakness:{primary:{skill:'Yüzde'}}}:{mode:'steady',skillWeakness:{primary:null}};
-  const fn=new Function('w','R','today','routeSubjectAdaptiveState',src+';return routeMiniRepairSignals;')(()=>space,R,()=> '2026-09-19',routeSubjectAdaptiveState);
+  const routeStudentModel=(subjectId,topicId)=>({state:topicId==='t1'?'repair':'steady',confidence:80});
+  const fn=new Function('w','R','today','routeSubjectAdaptiveState','routeStudentModel',src+';return routeMiniRepairSignals;')(()=>space,R,()=> '2026-09-19',routeSubjectAdaptiveState,routeStudentModel);
   const signals=fn();
   assert.equal(signals.length,1);
   assert.equal(signals[0].assessment.id,'new-low','Same-day retake must replace the older attempt before route repair is derived');

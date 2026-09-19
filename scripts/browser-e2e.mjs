@@ -177,7 +177,7 @@ try {
   await submitWizard(page);
   await assertCleanRender(page, 'post onboarding today');
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
-  assert.ok(await page.getByText('Rota Hoca · Bugünün Kararı').count(), 'Today must expose Rota Hoca decision');
+  assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must expose Rota Hoca decision');
   assert.ok(await page.getByText('Bu plan neden böyle?').count(), 'Today must explain route logic');
 
   await page.locator('.route-task [data-action="route-why"]').first().click();

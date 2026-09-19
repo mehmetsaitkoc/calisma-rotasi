@@ -1175,10 +1175,39 @@ function routeTaskSourceLabel(task){
  if(task?.source==='spaced_review'&&task.reviewVariant==='challenge')return 'SEVİYE YOKLAMA';
  return task?.source==='spaced_review'&&[1,3,7].includes(task.reviewWave)?(task.reviewWave===1?'1 GÜN ONARIMI':task.reviewWave+' GÜN TEKRARI'):routeSourceLabel(task?.source);
 }
+function routeExamEvidenceFactor(exam){
+ if(!exam?.date)return 1;
+ const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(exam.date+'T12:00:00'))/86400000));
+ const studySince=new Set(w().logs.filter(function(l){return !!l.sessionId&&l.date>exam.date;}).map(function(l){return l.sessionId;})).size;
+ if(age>=35&&studySince>=10)return .35;
+ if(age>=21&&studySince>=6)return .55;
+ if(age>=14&&studySince>=4)return .75;
+ return 1;
+}
 function routeExamWeakness(){
- const scores={};const xs=[...w().exams].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
- for(const x of xs){for(const p of x.parts){const n=R.calcNet([p],x.penalty),ratio=Math.max(0,Math.min(1,n.net/Math.max(1,p.total))),ids=C.PART_SUBJECTS[x.type]?.[p.label]||[];for(const id of ids){if(!subject(id)||subject(id).exam!==state.activeExam)continue;(scores[id]||(scores[id]=[])).push(ratio);}}}
- const out={};for(const [id,vals] of Object.entries(scores)){const avg=vals.reduce((a,b)=>a+b,0)/vals.length;out[id]={ratio:avg,boost:Math.round(Math.max(0,.78-avg)*55),samples:vals.length};}return out;
+ const scores={};const xs=[...w().exams].sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,10);
+ for(const x of xs){
+  const freshness=routeExamEvidenceFactor(x);
+  for(const p of x.parts){
+   const n=R.calcNet([p],x.penalty),ratio=Math.max(0,Math.min(1,n.net/Math.max(1,p.total))),ids=C.PART_SUBJECTS[x.type]?.[p.label]||[];
+   for(const id of ids){
+    if(!subject(id)||subject(id).exam!==state.activeExam)continue;
+    (scores[id]||(scores[id]=[])).push({ratio,date:x.date,freshness});
+   }
+  }
+ }
+ const out={},recency=[1,.82,.68,.55];
+ for(const [id,vals] of Object.entries(scores)){
+  const recent=[...vals].sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,4);
+  let weightedRatio=0,totalWeight=0,freshWeighted=0,baseWeight=0;
+  recent.forEach(function(v,i){
+   const rw=recency[i]||.45,ew=rw*v.freshness;
+   weightedRatio+=v.ratio*ew;totalWeight+=ew;freshWeighted+=v.freshness*rw;baseWeight+=rw;
+  });
+  const avg=totalWeight?weightedRatio/totalWeight:0,freshness=baseWeight?freshWeighted/baseWeight:1,rawBoost=Math.round(Math.max(0,.78-avg)*55),boost=Math.round(rawBoost*freshness);
+  out[id]={ratio:avg,boost,samples:recent.length,freshness};
+ }
+ return out;
 }
 
 function routeObservedNet(type){
@@ -1248,6 +1277,8 @@ function routeMethodLoad(methodKey){
  return ['quant','geometry','science','logic','ydt_reading'].includes(methodKey)?2:
         ['biology','paragraph','grammar','ydt_grammar'].includes(methodKey)?1:0;
 }
+function routeIsQuantitativeHeavy(methodKey){return ['quant','geometry','science'].includes(methodKey);}
+function routeQuantitativeDailyLimit(limit){return limit<=120?1:2;}
 function routeTaskMethod(task){return routeStudyMethod(task.subjectId,task.topicId,task.title);}
 function routeHeavyLimit(limit){return limit<=90?1:limit<=180?2:3;}
 function routeMaxTaskMinutes(space=w()){return Math.max(15,routeEffectiveDailyMinutes(space)-5);}
@@ -1336,6 +1367,8 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
  if(adaptive.mode==='ease')text+=' · Bugün hedefi küçük tut: bitirmek, yükü büyütmekten daha önemli.';
  else if(adaptive.mode==='repair')text+=' · Öncelik hız değil: yanlışın nedenini düzeltmeden yeni konuya koşma.';
  else if(adaptive.mode==='progress')text+=' · Son 5 dakikada 2 zorlayıcı ek soru ile seviyeni yokla.';
+ if(adaptive.calibration?.hiddenGap)text+=' · “Rahat” hissini tek başına ölçü sayma; set sonunda doğruluk oranını kontrol et ve düşük kalan soru tipini düzelt.';
+ else if(adaptive.calibration?.productiveStruggle>=2)text+=' · Doğruluk iyi olsa da efor yüksek: bugün soru sayısını artırma, aynı yükte daha akıcı çözmeyi hedefle.';
  return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label,adaptiveMode:adaptive.mode,adaptiveLabel:adaptive.label};
 }
 function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
@@ -1387,6 +1420,25 @@ function routePracticeSignal(subjectId,topicId=''){
  const answered=correct+wrong,accuracy=answered?correct/answered:0,recent=xs[0]||null,recentAnswered=recent?(recent.correct+recent.wrong):0,recentAccuracy=recentAnswered?recent.correct/recentAnswered:0,weightedAccuracy=weightTotal?weighted/weightTotal:0;
  return {known:xs.length>0,sessions:xs.length,correct,wrong,answered,accuracy,weightedAccuracy,recent,recentAccuracy,recentAnswered};
 }
+function routeFeedbackCalibrationSignal(subjectId,topicId=''){
+ const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];}));
+ const xs=w().logs.filter(function(l){
+  if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!['stuck','ok','strong'].includes(l.outcome)||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;
+  if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;
+ }).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,4);
+ let hiddenGap=0,productiveStruggle=0,alignedStrong=0,alignedStruggle=0;
+ const samples=xs.map(function(l){
+  const answered=l.correct+l.wrong,accuracy=answered?l.correct/answered:0;
+  let kind='neutral';
+  if(l.outcome==='strong'&&accuracy<.65){kind='hidden_gap';hiddenGap++;}
+  else if(l.outcome==='stuck'&&accuracy>=.80){kind='productive_struggle';productiveStruggle++;}
+  else if(l.outcome==='strong'&&accuracy>=.80){kind='aligned_strong';alignedStrong++;}
+  else if(l.outcome==='stuck'&&accuracy<.65){kind='aligned_struggle';alignedStruggle++;}
+  return {id:l.id||'',date:l.date,outcome:l.outcome,accuracy,answered,kind};
+ });
+ return {known:samples.length>0,total:samples.length,hiddenGap,productiveStruggle,alignedStrong,alignedStruggle,recent:samples[0]||null,samples};
+}
+
 function routeDifficultyLabel(value){return ({concept:'Konu / kavram eksiği',process:'İşlem / uygulama hatası',speed:'Süre yetişmedi',attention:'Dikkat hatası',strategy:'Soruya yaklaşım'}[value]||'');}
 function routeDifficultySignal(subjectId,topicId=''){
  const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),allowed=['concept','process','speed','attention','strategy'];
@@ -1412,7 +1464,8 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  const topicBehavior=realTopic?routeBehaviorSignal(subjectId,realTopic):null,subjectBehavior=routeBehaviorSignal(subjectId),behavior=topicBehavior?.known?topicBehavior:subjectBehavior;
  const topicOutcome=realTopic?routeOutcomeSignal(subjectId,realTopic):null,subjectOutcome=routeOutcomeSignal(subjectId),outcome=topicOutcome?.known?topicOutcome:subjectOutcome;
  const topicPractice=realTopic?routePracticeSignal(subjectId,realTopic):null,subjectPractice=routePracticeSignal(subjectId),practice=topicPractice?.known?topicPractice:subjectPractice;
- const topicEvidence=!!(realTopic&&(topicBehavior?.known||topicOutcome?.known||topicPractice?.known));
+ const topicCalibration=realTopic?routeFeedbackCalibrationSignal(subjectId,realTopic):null,subjectCalibration=routeFeedbackCalibrationSignal(subjectId),calibration=topicCalibration?.known?topicCalibration:subjectCalibration;
+ const topicEvidence=!!(realTopic&&(topicBehavior?.known||topicOutcome?.known||topicPractice?.known||topicCalibration?.known));
  const weak=routeExamWeakness()[subjectId],openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId&&(!realTopic||m.topicId===realTopic);}).length,practiceAccuracy=practice.known?(practice.weightedAccuracy||practice.accuracy):0;
  let mode='steady',label='DENGELİ TEMPO',note='Görev dozu mevcut seviyene göre korunuyor.',repairScore=0,progressScore=0,evidence=[];
  if(weak&&weak.ratio<.52){repairScore+=3;evidence.push('deneme belirgin zayıf');}
@@ -1426,6 +1479,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  if(practice.known&&practice.answered>=12&&practiceAccuracy<.50){repairScore+=3;evidence.push('soru doğruluğu çok düşük');}
  else if(practice.known&&practice.answered>=10&&practiceAccuracy<.62){repairScore+=2;evidence.push('soru doğruluğu düşük');}
  else if(practice.known&&practice.answered>=8&&practiceAccuracy<.70){repairScore+=1;evidence.push('soru doğruluğu sınırda');}
+ if(calibration.hiddenGap>=1){repairScore+=2;evidence.push('rahat hissetme + düşük doğruluk');}
  const severeFriction=behavior.known&&behavior.total>=4&&behavior.friction>=.60;
  const moderateFriction=behavior.known&&behavior.total>=3&&behavior.friction>=.42;
  if(behavior.known&&behavior.total>=4&&behavior.completion>=.80){progressScore+=2;evidence.push('yüksek tamamlama');}
@@ -1436,24 +1490,32 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  else if(practice.known&&practice.answered>=12&&practiceAccuracy>=.78){progressScore+=1;evidence.push('iyi soru doğruluğu');}
  if(weak&&weak.ratio>=.78){progressScore+=1;evidence.push('deneme güçlü');}
  if(openMistakes===0)progressScore+=1;else progressScore=Math.max(0,progressScore-1);
+ if(calibration.productiveStruggle>=2&&calibration.hiddenGap===0&&practiceAccuracy>=.80){
+  repairScore=Math.max(0,repairScore-2);
+  progressScore=Math.min(progressScore,3);
+  evidence.push('zorlanma hissi + yüksek doğruluk');
+ }
  if(severeFriction){
   mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note='Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama belirgin arttığı için önce görevi küçültüp düzeni koruyoruz.';
  }else if(repairScore>=3){
   mode='repair';label='ONARIM MODU';
-  note=practice.known&&practiceAccuracy<.62?'Birden fazla sinyal soru doğruluğu ve temel üzerinde onarım gerektiğini gösteriyor; yükü büyütmeden yanlış nedenine dönüyoruz.':
+  note=calibration.hiddenGap?'Görev rahat hissettirse bile doğru/yanlış verisi aynı şeyi söylemiyor; yeni yük eklemek yerine düşük doğruluğun nedenini onarıyoruz.':
+       practice.known&&practiceAccuracy<.62?'Birden fazla sinyal soru doğruluğu ve temel üzerinde onarım gerektiğini gösteriyor; yükü büyütmeden yanlış nedenine dönüyoruz.':
        outcome.total>=2&&outcome.stuckRate>=.5?'Zorlanma tekrarladığı ve başka sinyallerle desteklendiği için yeni yük eklemek yerine temeli onarıyoruz.':
        'Deneme, yanlış ve çalışma sinyalleri birlikte temel onarımını öne çıkarıyor.';
  }else if(moderateFriction){
   mode='ease';label='SÜRDÜRÜLEBİLİR MOD';note='Bu '+(topicEvidence?'konuda':'derste')+' erteleme/atlama artıyor; görevi biraz küçültüp tamamlanabilir tutuyoruz.';
  }else if(progressScore>=4&&repairScore<=1){
   mode='progress';label='GELİŞİM MODU';note='Birden fazla iyi sinyal aynı yönde: düzenli tamamlama ve performans yeterince güçlü olduğu için yük yalnız küçük bir adımla artırılıyor.';
+ }else if(calibration.productiveStruggle>=2&&calibration.hiddenGap===0){
+  note='Görevler zor hissettirdi ama doğru/yanlış verisi güçlü. Bunu başarısızlık saymıyoruz; soru sayısını artırmadan aynı yükte akıcılığı güçlendiriyoruz.';
  }else if(repairScore===2){
   note='Bazı zorlanma sinyalleri var ama henüz dozu değiştirecek kadar güçlü değil; bir sonraki gerçek sonucu bekleyip mevcut tempoyu koruyoruz.';
  }else if(progressScore>=2){
   note='İyi sinyaller oluşuyor ama yük artırmak için biraz daha tutarlı veri bekliyoruz; mevcut doz korunuyor.';
  }
  const confidence=Math.min(100,Math.max(repairScore,progressScore)*20+(topicEvidence?10:0));
- return {mode,label,note,behavior,outcome,practice,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,5)};
+ return {mode,label,note,behavior,outcome,practice,calibration,weak,openMistakes,scope:topicEvidence?'topic':'subject',repairScore,progressScore,confidence,evidence:evidence.slice(0,6)};
 }
 function routeTopicMasterySignal(topicId){
  const t=R.topic(w(),topicId);if(!t)return {ready:false,reason:'',progress:0,total:4,next:'Ana çalışma'};
@@ -1509,7 +1571,8 @@ function routeLearningSummaryItems(){
   if(!hasEvidence)return null;
   let detail='Gerçek çalışma verin birikiyor; doz şimdilik dengede tutuluyor.';
   if(a.mode==='repair'){
-   if(difficulty.known)detail='Son zorlanma nedeni “'+difficulty.label+'”; sonraki reçetede çalışma biçimi buna göre değiştiriliyor.';
+   if(a.calibration?.hiddenGap)detail='Görev rahat hissettirse de son doğru/yanlış kaydı düşük kaldı; motor his yerine performans verisini öne alıp onarım veriyor.';
+   else if(difficulty.known)detail='Son zorlanma nedeni “'+difficulty.label+'”; sonraki reçetede çalışma biçimi buna göre değiştiriliyor.';
    else if(a.practice.known&&practiceAccuracy<.62)detail='Yakın dönem ağırlıklı soru pratiği %'+Math.round(practiceAccuracy*100)+' doğrulukta; yeni yük eklemek yerine temel ve yanlış nedeni öne alındı.';
    else if(a.outcome.recent==='stuck')detail='Son geri bildirimin “Zorlandım”; sonraki görev daha onarıcı hazırlanıyor.';
    else if(a.openMistakes)detail=a.openMistakes+' açık yanlış bu dersin tekrar ağırlığını artırıyor.';
@@ -1519,6 +1582,8 @@ function routeLearningSummaryItems(){
   }else if(a.mode==='progress'){
    if(a.practice.known)detail='Yakın dönem ağırlıklı pratik doğruluğu %'+Math.round(practiceAccuracy*100)+'; düzenli tamamlama ile yük kontrollü artırılıyor.';
    else detail='Görevleri düzenli ve rahat tamamladığın için yük kontrollü artırılıyor.';
+  }else if(a.calibration?.productiveStruggle>=2){
+   detail='Son görevler zor hissettirse de doğruluk yüksek kaldı; motor bunu başarısızlık saymıyor ve yükü artırmadan akıcılığı koruyor.';
   }else if(difficulty.known){
    detail='Son zorlanma nedeni “'+difficulty.label+'”; mevcut doz korunurken sonraki görev yöntemi buna göre ince ayarlanıyor.';
   }else if(a.practice.known){
@@ -1533,7 +1598,7 @@ function routeLearningSummaryItems(){
 function routeExamFreshness(type){
  const xs=[...w().exams].filter(function(x){return x.type===type;}).sort(function(a,b){return b.date.localeCompare(a.date);}),last=xs[0]||null;
  if(!last)return {known:false,stale:false,last:null,age:null,studySince:0,label:C.TYPES[type]?.label||type};
- const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(last.date+'T12:00:00'))/86400000)),studySince=w().logs.filter(function(l){return !!l.sessionId&&l.date>last.date;}).length,stale=age>=14&&studySince>=4;
+ const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(last.date+'T12:00:00'))/86400000)),studySince=new Set(w().logs.filter(function(l){return !!l.sessionId&&l.date>last.date;}).map(function(l){return l.sessionId;})).size,stale=age>=14&&studySince>=4;
  return {known:true,stale,last,age,studySince,label:C.TYPES[type]?.label||type};
 }
 function routeEvidenceNextStep(){
@@ -1732,12 +1797,12 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  const days=[];
  for(let i=0;i<21;i++){
   const date=R.dayAdd(start,i),dow=new Date(date+'T12:00:00').getDay();if(!space.settings.days.includes(dow))continue;
-  const dayKept=kept.filter(function(p){return p.date===date;}),limit=routeEffectiveDailyMinutes(space),methods=new Set(),subjectsSet=new Set();let heavy=0,reviewUsed=0,backlogUsed=0,backlogCount=0;
+  const dayKept=kept.filter(function(p){return p.date===date;}),limit=routeEffectiveDailyMinutes(space),methods=new Set(),subjectsSet=new Set();let heavy=0,quantHeavy=0,reviewUsed=0,backlogUsed=0,backlogCount=0;
   for(const p of dayKept){
-   subjectsSet.add(p.subjectId);const method=routeTaskMethod(p);methods.add(method.key);if(routeMethodLoad(method.key)===2)heavy++;
+   subjectsSet.add(p.subjectId);const method=routeTaskMethod(p);methods.add(method.key);if(routeMethodLoad(method.key)===2)heavy++;if(routeIsQuantitativeHeavy(method.key))quantHeavy++;
    if(routeIsReviewLike(p)&&!routeIsCriticalReview(p))reviewUsed+=(p.minutes||25)+5;if(routeIsBacklog(p)){backlogUsed+=(p.minutes||25)+5;backlogCount++;}
   }
-  days.push({date,week:Math.floor(i/7),used:dayKept.reduce(function(n,p){return n+(p.minutes||25)+5;},0),limit,subjects:subjectsSet,methods,heavy,heavyLimit:routeHeavyLimit(limit),reviewUsed,reviewLimit:routeReviewDailyLimit(limit),backlogUsed,backlogCount,backlogLimit:routeBacklogDailyLimit(limit,recovery),backlogCountLimit:routeBacklogDailyCountLimit(recovery)});
+  days.push({date,week:Math.floor(i/7),used:dayKept.reduce(function(n,p){return n+(p.minutes||25)+5;},0),limit,subjects:subjectsSet,methods,heavy,heavyLimit:routeHeavyLimit(limit),quantHeavy,quantHeavyLimit:routeQuantitativeDailyLimit(limit),reviewUsed,reviewLimit:routeReviewDailyLimit(limit),backlogUsed,backlogCount,backlogLimit:routeBacklogDailyLimit(limit,recovery),backlogCountLimit:routeBacklogDailyCountLimit(recovery)});
  }
  const weekState=new Map();
  for(const day of days){
@@ -1748,7 +1813,7 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  function fits(day,candidate,mode){
   const cost=(candidate.minutes||25)+5;
   if(day.date<candidate.earliest||day.used+cost>day.limit)return false;
-  const method=routeTaskMethod(candidate),isHeavy=routeMethodLoad(method.key)===2,normalReview=routeIsReviewLike(candidate)&&!routeIsCriticalReview(candidate),backlog=routeIsBacklog(candidate);
+  const method=routeTaskMethod(candidate),isHeavy=routeMethodLoad(method.key)===2,quantHeavy=routeIsQuantitativeHeavy(method.key),critical=routeIsCriticalReview(candidate),normalReview=routeIsReviewLike(candidate)&&!critical,backlog=routeIsBacklog(candidate);
   if(normalReview){
    const ws=weekState.get(day.week);
    if(day.reviewUsed+cost>day.reviewLimit||ws&&ws.reviewUsed+cost>ws.reviewLimit)return false;
@@ -1757,7 +1822,8 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
    const ws=weekState.get(day.week);
    if(day.backlogCount>=day.backlogCountLimit||day.backlogUsed+cost>day.backlogLimit||ws&&ws.backlogUsed+cost>ws.backlogLimit)return false;
   }
-  if(mode<=2&&isHeavy&&day.heavy>=day.heavyLimit)return false;
+  if(!critical&&isHeavy&&day.heavy>=day.heavyLimit)return false;
+  if(!critical&&quantHeavy&&day.quantHeavy>=day.quantHeavyLimit)return false;
   if(mode===0&&(day.subjects.has(candidate.subjectId)||day.methods.has(method.key)))return false;
   if(mode===1&&day.subjects.has(candidate.subjectId))return false;
   return true;
@@ -1767,14 +1833,14 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
   let slot=null;for(let mode=0;mode<4&&!slot;mode++)slot=days.find(function(day){return fits(day,candidate,mode);});
   if(!slot)continue;
   const task={...candidate,date:slot.date,done:false,taskState:candidate.taskState==='later'&&slot.date===today()?'later':'open'};delete task.earliest;
-  const cost=task.minutes+5;slot.used+=cost;slot.subjects.add(task.subjectId);const method=routeTaskMethod(task);slot.methods.add(method.key);if(routeMethodLoad(method.key)===2)slot.heavy++;
+  const cost=task.minutes+5;slot.used+=cost;slot.subjects.add(task.subjectId);const method=routeTaskMethod(task);slot.methods.add(method.key);if(routeMethodLoad(method.key)===2)slot.heavy++;if(routeIsQuantitativeHeavy(method.key))slot.quantHeavy++;
   if(routeIsReviewLike(task)&&!routeIsCriticalReview(task)){slot.reviewUsed+=cost;const ws=weekState.get(slot.week);if(ws)ws.reviewUsed+=cost;}if(routeIsBacklog(task)){slot.backlogUsed+=cost;slot.backlogCount++;const ws=weekState.get(slot.week);if(ws)ws.backlogUsed+=cost;}
   scheduled.push(task);
  }
  const oldMap=new Map(space.plan.filter(function(p){return !p.done;}).map(function(p){return [p.id,p.date];}));let changed=0;for(const p of scheduled)if(oldMap.get(p.id)!==p.date)changed++;
  space.plan=kept.concat(scheduled).sort(function(a,b){return a.date.localeCompare(b.date)||((b.priority||0)-(a.priority||0));});
  space.route.lastRun=today();
- space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Normal tekrarlar günün yaklaşık yarısını ve haftalık kapasitenin yaklaşık %45’ini aşmayacak şekilde yayılır; kritik yanlış ve onarım görevleri gerektiğinde bu sınırı aşabilir. Aksayan eski görevler de günün ve haftanın tamamını işgal etmez; toparlanma modunda aynı güne en fazla bir normal backlog görevi taşınır. Her derste yalnız sıradaki 2–3 uygun konu aktif cepheye alınır; ileri başlıklar temel sıra atlanarak programa doldurulmaz. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
+ space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Normal tekrarlar günün yaklaşık yarısını ve haftalık kapasitenin yaklaşık %45’ini aşmayacak şekilde yayılır; kritik yanlış ve onarım görevleri gerektiğinde bu sınırı aşabilir. Sayısal-ağır matematik/geometri/fen görevleri kritik onarım dışında günlük sert sınıra takılır; program yer bulamadığı için aynı güne üçüncü ağır sayısal işi sıkıştırmaz. Aksayan eski görevler de günün ve haftanın tamamını işgal etmez; toparlanma modunda aynı güne en fazla bir normal backlog görevi taşınır. Her derste yalnız sıradaki 2–3 uygun konu aktif cepheye alınır; ileri başlıklar temel sıra atlanarak programa doldurulmaz. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
  space.route.lastChanged=changed;
  space.route.decisions=scheduled.slice(0,80).map(function(p){return {taskId:p.id,date:p.date,source:p.source||'curriculum',priority:p.priority||0,reason:p.reason||''};});
  if(!silent)toast(changed?changed+' görev kapasite, tekrar payı ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');

@@ -1389,6 +1389,7 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
  else if(adaptive.mode==='progress')text+=' · Son 5 dakikada 2 zorlayıcı ek soru ile seviyeni yokla.';
  if(adaptive.calibration?.hiddenGap)text+=' · “Rahat” hissini tek başına ölçü sayma; set sonunda doğruluk oranını kontrol et ve düşük kalan soru tipini düzelt.';
  else if(adaptive.calibration?.productiveStruggle>=2)text+=' · Doğruluk iyi olsa da efor yüksek: bugün soru sayısını artırma, aynı yükte daha akıcı çözmeyi hedefle.';
+ if(adaptive.skillWeakness?.primary)text+=' · Mini deneme odağı: “'+adaptive.skillWeakness.primary.skill+'” alt başlığında önce hatanın nedenini düzelt; ardından aynı beceriden en az 2 yeni soru ile doğrula.';
  return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label,adaptiveMode:adaptive.mode,adaptiveLabel:adaptive.label};
 }
 function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
@@ -1413,6 +1414,7 @@ function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
  const difficulty=routeEffectiveDifficulty(subjectId,topicId);if(difficulty.known){const rx=routeDifficultyPrescription(subjectId,topicId,fallbackTitle,difficulty.recent);if(rx)text+=' · Tekrar odağı: '+difficulty.label+'. '+rx;}
  if(mode==='challenge')text='Seviye yoklama: '+text+' · Son bölümde 2 daha seçici veya karma soru çöz; amaç daha çok soru değil, bilgiyi farklı biçimde kullanabildiğini görmek.';
  if(['spaced','long'].includes(mode)&&adaptive.mode==='progress')text='Kısa tut: amaç yükü büyütmek değil kalıcılığı yoklamak. '+text;
+ if(adaptive.skillWeakness?.primary)text+=' · Mini denemede açık kalan “'+adaptive.skillWeakness.primary.skill+'” alt başlığından 2 doğrulama sorusu çöz.';
  return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label};
 }
 function routeProfileSignal(subjectId){
@@ -1657,6 +1659,7 @@ function routeLearningSummaryItems(){
   let detail='Gerçek çalışma verin birikiyor; doz şimdilik dengede tutuluyor.';
   if(a.mode==='repair'){
    if(a.calibration?.hiddenGap)detail='Görev rahat hissettirse de son doğru/yanlış kaydı düşük kaldı; motor his yerine performans verisini öne alıp onarım veriyor.';
+   else if(a.skillWeakness?.primary)detail='Mini denemede “'+a.skillWeakness.primary.skill+'” alt başlığında hata kümelendi; sonraki görev bu alt alanı özellikle doğrulayacak.';
    else if(difficulty.known)detail='Son zorlanma nedeni “'+difficulty.label+'”; sonraki reçetede çalışma biçimi buna göre değiştiriliyor.';
    else if(a.practice.known&&practiceAccuracy<.62)detail='Yakın dönem ağırlıklı soru pratiği %'+Math.round(practiceAccuracy*100)+' doğrulukta; yeni yük eklemek yerine temel ve yanlış nedeni öne alındı.';
    else if(a.outcome.recent==='stuck')detail='Son geri bildirimin “Zorlandım”; sonraki görev daha onarıcı hazırlanıyor.';

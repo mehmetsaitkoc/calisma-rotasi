@@ -65,6 +65,8 @@ for(const id of IDS){
 
 assert.equal(byId['recovery-comeback'].day60.modeBounces,0,'recovery comeback must not bounce');
 assert.ok(byId['relapse'].days.slice(32,50).some(d=>d.studentState==='repair'),'relapse decline must reopen repair');
+const relapseReentry=transitions(byId['relapse'].days).find(x=>x.day>=33&&x.to==='repair');
+assert.ok(relapseReentry&&relapseReentry.day<=38,'relapse repair re-entry must occur within 6 days of sustained decline; got '+(relapseReentry?.day||'never'));
 assert.equal(byId['burnout-after-success'].day60.finalState,'sustainable','burnout must end in sustainable mode while adherence remains poor');
 assert.ok(byId['urgent-weak'].day60.risk>=45,'urgent weak risk must remain elevated near target while weakness persists');
 

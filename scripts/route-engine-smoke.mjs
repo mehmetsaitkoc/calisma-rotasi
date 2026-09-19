@@ -885,6 +885,24 @@ for(const marker of [
 ]) assert.ok(html.includes(marker),`Missing new mini evidence marker: ${marker}`);
 
 
+// 5) Version-mismatched mini history must keep aggregate evidence without exposing stale question details.
+{
+  const src=between('function openMiniAttemptResult','function miniResultSummary');
+  const result={id:'old-1',miniId:'m1',version:1,title:'Arşiv Mini',correct:5,total:8,wrong:2,blank:1,minutes:11,answers:[0,0,0,0,0,0,0,0],weakSkills:['Yüzde','Oran-orantı'],routeDecision:{mode:'repair',label:'ONARIM MODU',note:'Alt konu açığı sürüyor.',confidence:70,evidence:[]}};
+  const def={id:'m1',version:2,questions:Array.from({length:8},(_,i)=>({id:'q'+i,answer:0,options:['A','B','C','D','E']}))};
+  let modal='',detailed=false;
+  const fn=new Function('miniAttemptById','miniExamDefinition','openMiniResult','scoreMiniExam','openModal','esc',src+';return openMiniAttemptResult;')(
+    ()=>result,()=>def,()=>{detailed=true;},()=>({}),(_title,body)=>{modal=body;},v=>String(v)
+  );
+  fn('old-1');
+  assert.equal(detailed,false,'Stale question details must not open across versions');
+  assert.ok(modal.includes('Kaydedilen set v1 · güncel set v2'));
+  assert.ok(modal.includes('ONARIM MODU'));
+  assert.ok(modal.includes('Alt konu açığı sürüyor.'));
+  assert.ok(modal.includes('Yüzde · Oran-orantı'));
+  assert.ok(!modal.includes('Soru 1'),'Historical mismatch must not render stale question-level review');
+}
+
 // 5) Mini development charts must collapse same-day retakes before comparing different days.
 {
   const src=between('function miniDistinctAttempts','function miniProgressSvg');

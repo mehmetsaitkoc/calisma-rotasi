@@ -2104,9 +2104,12 @@ function latestMiniResult(miniId){return [...(w().assessments||[])].filter(funct
 function miniAttemptById(id){return (w().assessments||[]).find(function(a){return a.id===id;})||null;}
 function openMiniAttemptResult(id){
  const result=miniAttemptById(id);if(!result)return;
- const def=miniExamDefinition(result.miniId);
- if(def&&Array.isArray(result.answers)&&result.answers.length===def.questions.length&&(result.version||1)===(def.version||1)){openMiniResult(def,result,scoreMiniExam(def,result.answers));return;}
- openModal(result.title||'Mini deneme sonucu',`<div class="mini-result-hero"><div><div class="eyebrow">GEÇMİŞ SONUÇ</div><h2>${result.correct} / ${result.total} doğru</h2><p>${result.wrong} yanlış · ${result.blank} boş · ${result.minutes} dk</p></div><strong>%${Math.round(result.correct/Math.max(1,result.total)*100)}</strong></div><div class="notice">Bu kayıt eski bir soru seti sürümünden geldiği için soru bazlı cevaplar gösterilmiyor. Toplam performans kaydı rotada korunuyor.</div>`);
+ const def=miniExamDefinition(result.miniId),savedVersion=result.version||1,currentVersion=def?.version||null;
+ if(def&&Array.isArray(result.answers)&&result.answers.length===def.questions.length&&savedVersion===currentVersion){openMiniResult(def,result,scoreMiniExam(def,result.answers));return;}
+ const archivedDecision=result.routeDecision?'<div class="mini-route-decision"><span class="route-adaptive-pill mode-'+esc(result.routeDecision.mode)+'">'+esc(result.routeDecision.label||'Rota kararı')+'</span><div><strong>Kaydedilmiş Rota kararı</strong><p>'+esc(result.routeDecision.note||'Bu sonuç işlendiğinde rota kararı kaydedildi.')+'</p></div></div>':'';
+ const archivedWeak=Array.isArray(result.weakSkills)&&result.weakSkills.length?'<div class="notice mb"><strong>Kaydedilmiş alt konu sinyali:</strong> '+result.weakSkills.map(esc).join(' · ')+'</div>':'';
+ const versionText=currentVersion?'Kaydedilen set v'+savedVersion+' · güncel set v'+currentVersion:'Kaydedilen set v'+savedVersion+' · güncel soru seti artık katalogda yok';
+ openModal(result.title||'Mini deneme sonucu',`<div class="mini-result-hero"><div><div class="eyebrow">GEÇMİŞ SONUÇ · ${esc(versionText)}</div><h2>${result.correct} / ${result.total} doğru</h2><p>${result.wrong} yanlış · ${result.blank} boş · ${result.minutes} dk</p></div><strong>%${Math.round(result.correct/Math.max(1,result.total)*100)}</strong></div>${archivedDecision}${archivedWeak}<div class="notice">Bu kayıt farklı veya artık mevcut olmayan bir soru seti sürümünden geldiği için soru bazlı cevaplar gösterilmiyor. Toplam performans, kaydedilmiş Rota kararı ve alt konu özeti güvenli biçimde korunuyor.</div>`);
 }
 function miniResultSummary(result){if(!result)return 'Henüz çözülmedi';return result.correct+'/'+result.total+' doğru · '+result.wrong+' yanlış · '+result.blank+' boş';}
 function miniDistinctAttempts(miniId){

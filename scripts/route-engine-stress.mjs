@@ -319,6 +319,29 @@ profile('P30 same score different student',()=>{
   assert.equal(x.up.performance,x.down.performance);
 });
 
+// Marginal adaptive repair at the exact threshold must not create a one-day mode flip without stronger corroboration.
+{
+  const marginal=student({
+    practice:{known:true,sessions:4,answered:40,weightedAccuracy:.64,accuracy:.64},
+    retention:{known:true,score:84},
+    adaptive:{mode:'repair',repairScore:3},
+    openMistakes:0,
+    personalNorm:{known:true,direction:'flat',confidence:70,delta:0,label:'Kendi normaline yakın'},
+    trend:{known:true,direction:'flat',delta:0}
+  });
+  assert.notEqual(marginal.state,'repair','Repair score 3 alone should stay inside the hysteresis deadband');
+
+  const confirmed=student({
+    practice:{known:true,sessions:4,answered:40,weightedAccuracy:.64,accuracy:.64},
+    retention:{known:true,score:84},
+    adaptive:{mode:'repair',repairScore:4},
+    openMistakes:0,
+    personalNorm:{known:true,direction:'flat',confidence:70,delta:0,label:'Kendi normaline yakın'},
+    trend:{known:true,direction:'flat',delta:0}
+  });
+  assert.equal(confirmed.state,'repair','Repair score 4 should still enter repair when evidence is corroborated');
+}
+
 // Cross-cutting mastery, forgetting, intervention, and scheduler invariants.
 {
   const oneStrong=masteryFn({base:true,review3:true,review7:true,hasEvidence:false,ready:false,performanceAccuracy:96,retentionScore:92,trend:'up',openMistakes:0,skillMissed:0,errorRepeated:false});

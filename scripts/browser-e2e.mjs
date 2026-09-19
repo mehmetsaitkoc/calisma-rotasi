@@ -159,7 +159,7 @@ async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5,
 
 async function setDay(page, date) {
   await page.clock.setFixedTime(new Date(date + 'T09:00:00+03:00'));
-  await page.reload();
+  await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   await page.locator('#app').waitFor({ state: 'visible' });
 }
 

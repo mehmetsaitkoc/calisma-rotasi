@@ -295,12 +295,25 @@ function modelFor(space,persona,subjectId,topicId,currentDate,weak,adaptiveOverr
   const dates=performanceSamples(space,subjectId,topicId).map(x=>x.date).sort((a,b)=>b.localeCompare(a)),latestDate=dates[0]||'',latestDays=latestDate?daysBetween(currentDate,latestDate):999;
   return studentFn({practice,weak,behavior,outcome,retention,trend,calibration,skillWeakness:skill,adaptive,openMistakes:mistakes,practiceLogCount,miniDays,difficultyKnown:space.logs.some(l=>l.subjectId===subjectId&&(!topicId||planMap.get(l.sessionId)?.topicId===topicId)&&l.difficulty),errorMemory:errors,velocity,personalNorm:norm,latestDays,attainmentRatio:att});
 }
-function examWeakness(persona,dayIndex){
+function examWeakness(persona,dayIndex,space=null){
   const out={};
   for(const s of SUBJECTS){
+    if(space&&Array.isArray(persona.examHistory)&&persona.examHistory.length){
+      const currentDate=dayAdd(START,dayIndex),recency=[1,.82,.68,.55],events=persona.examHistory.filter(function(e){return e.day<=dayIndex&&Number.isFinite(e.scores?.[s.id]);}).sort(function(a,b){return b.day-a.day;}).slice(0,4);
+      if(events.length){
+        const weighted=events.map(function(e,i){
+          const examDate=dayAdd(START,e.day),age=Math.max(0,dayIndex-e.day),studySince=new Set(space.logs.filter(function(l){return !!l.sessionId&&l.subjectId===s.id&&l.date>examDate&&l.date<=currentDate;}).map(function(l){return l.sessionId;})).size;
+          const freshness=age>=35&&studySince>=10?.35:age>=21&&studySince>=6?.55:age>=14&&studySince>=4?.75:1,rw=recency[i]||.45;
+          return {day:e.day,date:examDate,ratio:clamp(e.scores[s.id],.25,.95),age,studySince,freshness,recencyWeight:rw,weight:rw*freshness};
+        });
+        const totalWeight=weighted.reduce(function(n,x){return n+x.weight;},0),baseWeight=weighted.reduce(function(n,x){return n+x.recencyWeight;},0),ratio=weighted.reduce(function(n,x){return n+x.ratio*x.weight;},0)/Math.max(.001,totalWeight),freshness=weighted.reduce(function(n,x){return n+x.freshness*x.recencyWeight;},0)/Math.max(.001,baseWeight),rawBoost=Math.round(Math.max(0,.78-ratio)*55),oldest=weighted.at(-1),freshest=weighted[0];
+        out[s.id]={ratio,boost:Math.round(rawBoost*freshness),samples:weighted.length,freshness,examWeights:weighted,oldestExamWeight:oldest?.weight??null,freshestExamWeight:weighted.length>1?(freshest?.weight??null):null,oldestExamFreshness:oldest?.freshness??null,freshestExamFreshness:weighted.length>1?(freshest?.freshness??null):null};
+        continue;
+      }
+    }
     const ratio=clamp((persona.exam?.[s.id]??.75)+((persona.trend?.[s.id]||0)*Math.max(0,dayIndex-8)*.35),.25,.95);
     const freshness=dayIndex<10?1:.75,rawBoost=Math.round(Math.max(0,.78-ratio)*55);
-    out[s.id]={ratio,boost:Math.round(rawBoost*freshness),samples:1,freshness};
+    out[s.id]={ratio,boost:Math.round(rawBoost*freshness),samples:1,freshness,examWeights:[],oldestExamWeight:null,freshestExamWeight:null};
   }
   return out;
 }
@@ -373,7 +386,7 @@ function sessionPerformance(log){
   return {known:!!(outcome||answered),outcome,answered,accuracy,measured,productiveStruggle,hiddenGap,repair,challenge};
 }
 function buildCandidates(space,persona,currentDate){
-  const weak=examWeakness(persona,daysBetween(currentDate,START)),models={},adaptives={},risks={};
+  const weak=examWeakness(persona,daysBetween(currentDate,START),space),models={},adaptives={},risks={};
   for(const t of CATALOG){
     adaptives[t.id]=adaptiveState(space,persona,t.subjectId,t.id,currentDate,weak);
     models[t.id]=modelFor(space,persona,t.subjectId,t.id,currentDate,weak[t.subjectId],adaptives[t.id]);
@@ -662,9 +675,9 @@ const LF_EXTRA=[
 ];
 const LF_PERSONAS=PERSONAS.map(function(p){return {...p,targetDays:Math.max(90,p.targetDays||90)};}).concat(LF_EXTRA);
 function lfPersona(base,d){
-  const x=lfPhase(base,d),exam={...(base.exam||{})};
-  if(base.id==='exam-refresh'&&d>=25)exam['k-ma']=.84;
-  return {...base,accuracy:x.accuracy,completion:x.completion,volume:x.volume,feeling:x.feeling,trend:{},exam,dailyMinutes:base.dailyMinutes||120};
+  const x=lfPhase(base,d),exam={...(base.exam||{})},examHistory=[{day:0,scores:{...(base.exam||{})}}];
+  if(base.id==='exam-refresh'){examHistory.push({day:25,scores:{...(base.exam||{}),'k-ma':.84,'k-tr':.82,'k-ta':.78,'k-co':.76}});if(d>=25)exam['k-ma']=.84;}
+  return {...base,accuracy:x.accuracy,completion:x.completion,volume:x.volume,feeling:x.feeling,trend:{},exam,examHistory,dailyMinutes:base.dailyMinutes||120};
 }
 function lfMini(space,p,date,d){
   if(![3,7,11,18,25,33,42,52].includes(d))return;
@@ -710,7 +723,7 @@ function lfChurn(days){
 }
 function lfCheckpoint(r,n){
   const xs=r.days.slice(0,n),d=xs.at(-1),ch=lfChurn(xs);
-  return {day:n,finalState:d.studentState,confidence:d.confidence,learningNeed:d.learningNeed,risk:d.risk,modeTransitions:ch.transitionCount,modeBounces:ch.bounceCount,stabilityScore:ch.stabilityScore,longestRepairStreak:lfLongest(xs,'repair'),longestProgressStreak:lfLongest(xs,'progress'),firstRepairDay:lfFirst(xs,'repair',true),repairExitDay:lfFirst(xs,'repair',false),firstProgressDay:lfFirst(xs,'progress',true),progressExitDay:lfFirst(xs,'progress',false),recoveryDays:xs.filter(function(x){return x.recovery;}).length,sustainableDays:xs.filter(function(x){return x.studentState==='sustainable';}).length,completedTopics:d.completedTopics,masteryRegressions:xs.filter(function(x){return x.masteryRegression;}).length,forgettingRefreshCount:xs.reduce(function(a,x){return a+x.forgettingRefreshes;},0),staleEvidenceInfluence:d.staleEvidenceInfluence,personalNormChange:(Number.isFinite(d.normBase)&&Number.isFinite(r.normStart))?d.normBase-r.normStart:null};
+  return {day:n,finalState:d.studentState,confidence:d.confidence,learningNeed:d.learningNeed,risk:d.risk,modeTransitions:ch.transitionCount,modeBounces:ch.bounceCount,stabilityScore:ch.stabilityScore,longestRepairStreak:lfLongest(xs,'repair'),longestProgressStreak:lfLongest(xs,'progress'),firstRepairDay:lfFirst(xs,'repair',true),repairExitDay:lfFirst(xs,'repair',false),firstProgressDay:lfFirst(xs,'progress',true),progressExitDay:lfFirst(xs,'progress',false),recoveryDays:xs.filter(function(x){return x.recovery;}).length,sustainableDays:xs.filter(function(x){return x.studentState==='sustainable';}).length,completedTopics:d.completedTopics,masteryRegressions:xs.filter(function(x){return x.masteryRegression;}).length,forgettingRefreshCount:xs.reduce(function(a,x){return a+x.forgettingRefreshes;},0),staleEvidenceInfluence:d.staleEvidenceInfluence,personalNormChange:(Number.isFinite(d.normBase)&&Number.isFinite(r.normStart))?d.normBase-r.normStart:null,examFreshness:d.examFreshness,oldExamWeight:d.oldExamWeight,freshExamWeight:d.freshExamWeight,examEvidenceCount:d.examEvidenceCount};
 }
 function lfSim(base){
   const space=makeSpace({...base,targetDays:Math.max(90,base.targetDays||90)}),days=[];let normStart=null,lastMastered=new Set();
@@ -718,11 +731,11 @@ function lfSim(base){
     const date=dayAdd(START,d),p=lfPersona(base,d),built=buildCandidates(space,p,date);
     rebalance(space,p,date,built.candidates,built.recovery);dailySafety(space,p,date);
     const events=simulateTasks(space,p,date,d);lfMini(space,p,date,d);updateMasteryStatuses(space,date);
-    const weak=examWeakness(p,d),ad=adaptiveState(space,p,'k-ma','m1',date,weak),model=modelFor(space,p,'k-ma','m1',date,weak['k-ma'],ad),risk=riskFor(space,p,'m1',date,model,weak['k-ma']);
+    const weak=examWeakness(p,d,space),ad=adaptiveState(space,p,'k-ma','m1',date,weak),model=modelFor(space,p,'k-ma','m1',date,weak['k-ma'],ad),risk=riskFor(space,p,'m1',date,model,weak['k-ma']);
     const noExam=modelFor(space,p,'k-ma','m1',date,null,ad),prev=days.length?{mode:days.at(-1).appliedMode,hysteresisHeld:!!days.at(-1).hysteresisHeld,easeHysteresisHeld:!!days.at(-1).easeHysteresisHeld}:null,applied=appliedDecisionFn(ad,model,built.recovery,prev),norm=personalNorm(space,'k-ma','m1');
     if(normStart===null&&d>=9&&Number.isFinite(norm.baselineAccuracy))normStart=norm.baselineAccuracy;
     const mastered=new Set(Object.entries(space.topicState).filter(function(x){return x[1].status===2;}).map(function(x){return x[0];})),masteryRegression=[...lastMastered].some(function(id){return !mastered.has(id);});lastMastered=mastered;
-    days.push({day:d+1,date,studentState:model.state,appliedMode:applied.mode,hysteresisHeld:!!applied.hysteresisHeld,easeHysteresisHeld:!!applied.easeHysteresisHeld,confidence:model.confidence,learningNeed:model.learningNeed,performance:model.performance,execution:model.execution,risk:risk.score,recovery:built.recovery.active,openMistakes:model.openMistakes,retention:model.retention,normBase:norm.baselineAccuracy,completedTopics:mastered.size,masteryRegression,forgettingRefreshes:events.filter(function(x){return x.source==='retention_refresh';}).length,staleEvidenceInfluence:(Number.isFinite(model.performance)&&Number.isFinite(noExam.performance))?Math.abs(model.performance-noExam.performance):0});
+    days.push({day:d+1,date,studentState:model.state,appliedMode:applied.mode,hysteresisHeld:!!applied.hysteresisHeld,easeHysteresisHeld:!!applied.easeHysteresisHeld,confidence:model.confidence,learningNeed:model.learningNeed,performance:model.performance,execution:model.execution,risk:risk.score,recovery:built.recovery.active,openMistakes:model.openMistakes,retention:model.retention,normBase:norm.baselineAccuracy,completedTopics:mastered.size,masteryRegression,forgettingRefreshes:events.filter(function(x){return x.source==='retention_refresh';}).length,staleEvidenceInfluence:(Number.isFinite(model.performance)&&Number.isFinite(noExam.performance))?Math.abs(model.performance-noExam.performance):0,examFreshness:weak['k-ma']?.freshness??null,oldExamWeight:weak['k-ma']?.oldestExamWeight??null,freshExamWeight:weak['k-ma']?.freshestExamWeight??null,examEvidenceCount:weak['k-ma']?.samples||0});
   }
   const r={persona:base,space,days,normStart};r.day30=lfCheckpoint(r,30);r.day60=lfCheckpoint(r,60);r.backtest=lfBacktest(days);return r;
 }
@@ -747,6 +760,7 @@ assert.ok(lfById['relapse'].days.slice(32,50).some(function(d){return d.studentS
 assert.ok(lfById['false-confidence-corrected'].days.slice(0,15).some(function(d){return d.studentState==='repair';}),'false confidence hidden gap was missed');
 assert.ok(lfById['false-confidence-corrected'].days.slice(35).some(function(d){return d.studentState!=='repair';}),'false confidence correction never changed model');
 assert.ok(lfById['noisy-student'].day60.modeBounces<=1,'noisy student caused repeated mode chatter');
+const examRefresh60=lfById['exam-refresh'].day60;assert.ok(Number.isFinite(examRefresh60.oldExamWeight)&&Number.isFinite(examRefresh60.freshExamWeight)&&examRefresh60.freshExamWeight>examRefresh60.oldExamWeight,'fresh exam did not outweigh stale exam inside lifecycle');assert.ok(examRefresh60.examEvidenceCount>=2,'exam refresh lifecycle did not preserve both old and fresh exam evidence');
 const burn=lfById['burnout-after-success'];assert.ok(burn.days.find(function(d){return d.appliedMode==='progress';}),'burnout persona never reached progress');assert.ok(burn.days.slice(25).some(function(d){return d.appliedMode!=='progress';}),'progress stuck after burnout');
 {
   const space={logs:[]},exam={date:START};

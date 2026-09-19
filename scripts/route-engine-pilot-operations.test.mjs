@@ -9,7 +9,7 @@ function snap(checkpoint,overrides={}){
     actual:{completedTasks:8,skippedTasks:1,laterTasks:0,minutes:220,questions:90,correct:70,wrong:20,accuracy:77.8,completion:80,questionAttainmentRatio:.9},
     mistakes:{openAtCapture:2,created:3,resolved:1},
     mastery:{completedTopics:4,mastery:70,forgettingDue:1,retentionRefresh:1},
-    modes:{steady:5,repair:0,ease:0,progress:0,transitions:1,current:'steady'},
+    modes:{steady:5,repair:0,ease:0,progress:0,transitions:1,bounces:0,repairDays:0,sustainableDays:0,steadyDays:5,progressDays:0,current:'steady'},
     interventions:{total:1,helpful:1,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0,latest:{date,mode:'repair',status:'helpful'}},
     student:{state:'steady',performance:72,learningNeed:36,risk:44,confidence:81,execution:78,retention:71,trend:'up',personalNorm:'flat',velocity:'steady'}
   };
@@ -85,11 +85,11 @@ function payload(id,overrides={}){
 {
   const p1=payload('p-1',{snapshots:[
     snap(0,{actual:{completion:60},student:{performance:60}}),
-    snap(30,{actual:{completion:85},student:{performance:75},interventions:{helpful:2,harmful:0},modes:{transitions:2}})
+    snap(30,{actual:{completion:85},student:{performance:75},interventions:{helpful:2,harmful:0},modes:{transitions:2,bounces:1}})
   ],completed:true});
   const p2=payload('p-2',{exam:'yks',snapshots:[
     snap(0,{actual:{completion:70},student:{performance:65}}),
-    snap(30,{actual:{completion:80},student:{performance:72},interventions:{helpful:1,harmful:1},modes:{transitions:3}})
+    snap(30,{actual:{completion:80},student:{performance:72},interventions:{helpful:1,harmful:1},modes:{transitions:3,bounces:2}})
   ],completed:true});
   const s=cohortSummary([p1,p2],'2026-10-01');
   assert.equal(s.students,2);
@@ -101,6 +101,7 @@ function payload(id,overrides={}){
   assert.equal(s.averageCompletionChange,17.5);
   assert.equal(s.averagePerformanceChange,11);
   assert.equal(s.modeTransitions,5);
+  assert.equal(s.modeBounces,3);
   assert.equal(s.counts.critical,1);
   assert.equal(s.rows.find(x=>x.participantId==='p-2').status,'critical');
 }

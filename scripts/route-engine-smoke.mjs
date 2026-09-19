@@ -639,6 +639,18 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 }
 for(const marker of ['ROUTE_ERROR_TYPES','function routeErrorMemorySignal','errorType,note:','created:old?.created||Date.now()','errorPattern']) assert.ok(html.includes(marker),`Missing error-memory marker: ${marker}`);
 
+// 4) Learning velocity must compare a topic with the student's own evidence history.
+{
+  const src=between('function routeTopicPerformanceSamples','function routeEvidenceFreshness');
+  const api=new Function('w','R','state','routeAssessmentSamples',src+';return {routeVelocityClassify};')(()=>({plan:[],logs:[]}),{allTopics:()=>[]},{activeExam:'kpss'},()=>[]);
+  const fast=api.routeVelocityClassify({known:true,samples:3,sessionsToCompetency:2,gainPerEvidence:.15,lastAccuracy:.84},[4,5,4]);
+  const slow=api.routeVelocityClassify({known:true,samples:5,sessionsToCompetency:6,gainPerEvidence:.03,lastAccuracy:.79},[3,4,3]);
+  assert.equal(fast.key,'fast');
+  assert.equal(fast.relative,true);
+  assert.equal(slow.key,'slow');
+}
+for(const marker of ['function routeLearningVelocityRaw','function routeLearningVelocitySignal','velocityLabel','velocity.key===\'slow\'']) assert.ok(html.includes(marker),`Missing learning-velocity marker: ${marker}`);
+
 // 4) Student Model v2 must gate strong decisions by evidence quantity, diversity and freshness.
 {
   const src=between('function routeEvidenceFreshness','function routeStudentModel(subjectId');

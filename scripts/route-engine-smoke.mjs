@@ -1662,7 +1662,7 @@ for(const marker of ['function routeDayPlanSummary','route-day-summary-chips','d
 {
   const analysis=between('function analysisPanel','function denemeCenterSection');
   const review=between('function openReview','function updateReviewCapacity');
-  const actions=between('function onAction','function onInput');
+  const actions=between('function onAction','function studyClock');
   assert.ok(!analysis.includes("if(!isPlus())return plusGate('analysis')"),'Exam analysis must not be Plus-gated');
   assert.ok(!review.includes("if(!isPlus())return openUpgrade('analysis')"),'Mistake review planning must not be Plus-gated');
   assert.ok(!actions.includes("['note-from-exam','plan-review']"),'Exam-to-mistake actions must not be Plus-gated');

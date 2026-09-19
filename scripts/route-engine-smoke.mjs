@@ -1430,15 +1430,14 @@ for(const marker of [
 
 // 5) User-facing route surfaces must read the applied decision rather than raw adaptive progress.
 {
-  const todayTask=between('function routeTodayTask','function routeView');
-  const planCard=between('function routePlanCard','function routePlanView');
-  const why=between("function routeWhy","function ");
+  const todayTask=between('function routeTodayTask','function routeTodayPage');
+  const planCard=between('function routePlanCard','function planPage');
   assert.ok(todayTask.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Today task badge must use the applied decision');
   assert.ok(planCard.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Plan task badge must use the applied decision');
   assert.ok(html.includes('miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,topicId))'),'Mini result snapshot must persist the applied decision');
   assert.ok(html.includes('adaptive=routeAppliedDecision(def.subjectId,topicId)'),'Mini recommendation must use the applied decision');
   assert.ok(html.includes('const adaptive=routeAppliedDecision(p.subjectId,p.topicId),mode='),'Intervention audit must use the applied decision');
-  assert.ok(why.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Why modal must explain the applied decision');
+  assert.ok(html.split('adaptive=routeAppliedDecision(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p);').length-1>=2,'Today task and Why modal must both explain the applied decision');
 }
 
 // 5) Route-decision snapshots must be stable values, not references to the current adaptive state.

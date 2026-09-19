@@ -2081,7 +2081,7 @@ const MINI_SKILL_MAP=Object.freeze({
 function miniQuestionSkill(def,index){return MINI_SKILL_MAP[def.id]?.[index]||def.topicTitle||'Genel';}
 function miniExamDefinition(id){return ROTA_MINI_EXAMS.find(function(x){return x.id===id;})||null;}
 function miniTopicId(def){return R.allTopics(w(),state.activeExam).find(function(t){return t.subjectId===def.subjectId&&t.title===def.topicTitle;})?.id||'';}
-function scoreMiniExam(def,answers){let correct=0,wrong=0,blank=0;const details=[];def.questions.forEach(function(q,i){const picked=Number.isInteger(answers[i])?answers[i]:-1,status=picked<0?'blank':picked===q.answer?'correct':'wrong';if(status==='correct')correct++;else if(status==='wrong')wrong++;else blank++;details.push({question:q,index:i,picked,status,skill:miniQuestionSkill(def,i)});});return {total:def.questions.length,correct,wrong,blank,accuracy:def.questions.length?correct/def.questions.length:0,details};}
+function scoreMiniExam(def,answers){let correct=0,wrong=0,blank=0;const details=[];def.questions.forEach(function(q,i){const picked=Number.isInteger(answers[i])?answers[i]:-1,status=picked<0?'blank':picked===q.answer?'correct':'wrong';if(status==='correct')correct++;else if(status==='wrong')wrong++;else blank++;details.push({question:q,index:i,picked,status});});return {total:def.questions.length,correct,wrong,blank,accuracy:def.questions.length?correct/def.questions.length:0,details};}
 function miniSkillBreakdown(def,score){
  const grouped=new Map();
  for(const d of score.details){const skill=d.skill||miniQuestionSkill(def,d.index),x=grouped.get(skill)||{skill,total:0,correct:0,wrong:0,blank:0};x.total++;x[d.status]++;grouped.set(skill,x);}

@@ -177,6 +177,10 @@ assert.equal(payload.exam,'kpss');
 assert.equal(payload.track,'lisans');
 assert.equal(payload.lastActiveDate,'2026-10-03');
 assert.deepEqual(payload.snapshots.map(x=>x.checkpoint),[0,7,14]);
+assert.equal(payload.interventionHistory.length,1);
+assert.equal(payload.interventionHistory[0].mode,'repair');
+assert.equal(payload.interventionHistory[0].status,'neutral');
+assert.deepEqual(payload.interventionHistory[0].horizons.map(x=>x.horizon),[7,14]);
 assert.ok(!JSON.stringify(payload).includes('name'),'Pilot export must not contain profile names');
 
 console.log('route-engine-pilot-telemetry: richer 0/7/14 snapshot semantics, behavior, unknowns and delayed-capture quality flags passed');

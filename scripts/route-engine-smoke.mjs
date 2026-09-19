@@ -1654,6 +1654,10 @@ for(const marker of [
 }
 
 
+// 5) Weekly plan must expose day-level route semantics and stack cleanly on mobile.
+for(const marker of ['function routeDayPlanSummary','route-day-summary-chips','deneme sinyali','.week-grid{grid-template-columns:1fr}','grid-column:1/-1;min-height:46px'])
+  assert.ok(html.includes(marker),`Missing weekly/mobile clarity marker: ${marker}`);
+
 // 5) The core exam -> mistake -> planned review loop must stay available without a Plus gate.
 {
   const analysis=between('function analysisPanel','function denemeCenterSection');

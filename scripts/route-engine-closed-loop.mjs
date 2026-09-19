@@ -521,7 +521,6 @@ function simulatePersona(persona){
 }
 
 const results=PERSONAS.map(simulatePersona);
-console.log('closed-loop-trace weak-improver '+JSON.stringify(results.find(r=>r.persona.id==='weak-improver').days));
 const byId=Object.fromEntries(results.map(r=>[r.persona.id,r]));
 
 for(const r of results){
@@ -535,7 +534,15 @@ for(const r of results){
   const r=byId['weak-improver'],first=r.days.find(d=>d.mathAccuracy!==null),last=[...r.days].reverse().find(d=>d.mathAccuracy!==null);
   assert.ok(first&&last&&last.mathAccuracy>first.mathAccuracy,`weak improver did not improve: ${first?.mathAccuracy} -> ${last?.mathAccuracy}`);
   assert.ok(r.days.at(-1).learningNeed<Math.max(...r.days.slice(0,5).map(d=>d.learningNeed)),'weak improver learning need did not fall as performance improved');
-  const objectivelyRecovered=r.days.find(d=>d.mathAccuracy!==null&&d.mathAccuracy>=.78&&d.openMistakes===0);
+  const firstRepair=r.days.find(d=>d.afterState==='repair');
+  assert.ok(firstRepair&&firstRepair.adaptiveRepairScore>=4,'weak improver entered repair without corroborated repair strength');
+  const repairExit=r.days.find((d,i)=>i>0&&r.days[i-1].afterState==='repair'&&d.afterState!=='repair');
+  assert.ok(repairExit,'weak improver never exited repair');
+  assert.equal(repairExit.openMistakes,0,'weak improver exited repair with an unresolved mistake');
+  assert.ok(repairExit.adaptiveRepairScore<=3,'weak improver exited repair before entering the hysteresis deadband');
+  assert.ok(repairExit.mathRecentAccuracy>=.70,'weak improver exited repair before current performance showed recovery');
+  assert.ok(r.days.slice(repairExit.day-1).every(d=>d.afterState!=='repair'||d.adaptiveRepairScore>=4),'weak improver bounced back into repair without renewed corroboration');
+  const objectivelyRecovered=r.days.find(d=>d.mathRecentAccuracy!==null&&d.mathRecentAccuracy>=.80&&d.mathAccuracy>=.72&&d.openMistakes===0);
   assert.ok(objectivelyRecovered,'weak improver never reached the objective recovery threshold');
   assert.ok(r.days.slice(objectivelyRecovered.day-1).every(d=>d.afterState!=='repair'),'weak improver remained or returned to repair after objective recovery');
   assert.ok(r.metrics.mathTasks>=3,'weak improver received too little math work');

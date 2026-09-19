@@ -2377,12 +2377,36 @@ function routeEvaluateInterventionFromMetrics(intervention,follow){
  }
  return {status:'pending',score:0,label:'Ölçüm bekleniyor',reason:'Bu karar tipi henüz geri test edilmiyor.'};
 }
-function routeInterventionFollowup(intervention){
- const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(intervention.date+'T12:00:00'))/86400000)),start=R.dayAdd(intervention.date,1),end=today()<R.dayAdd(intervention.date,7)?today():R.dayAdd(intervention.date,7);
- const performance=routePerformanceWindow(intervention.subjectId,intervention.topicId,start,end),behavior=routeBehaviorWindow(intervention.subjectId,intervention.topicId,start,end);
- return {age,start,end,performance,behavior};
+function routeInterventionAggregateEvaluations(horizons){
+ const ready=(horizons||[]).filter(function(x){return x&&x.status!=='pending';}).sort(function(a,b){return a.horizon-b.horizon;});
+ if(!ready.length)return {status:'pending',score:0,label:'Uzun dönem ölçüm bekleniyor',reason:'Müdahalenin etkisi 7, 14 ve 30 günlük gerçek kanıtlarla doğrulanacak.',maturity:0};
+ const helpful=ready.filter(function(x){return x.status==='helpful';}).length,harmful=ready.filter(function(x){return x.status==='harmful';}).length,neutral=ready.length-helpful-harmful,latest=ready.at(-1),weights={7:.20,14:.30,30:.50};let weighted=0,totalWeight=0;
+ for(const x of ready){const w=weights[x.horizon]||.20;weighted+=(x.score||0)*w;totalWeight+=w;}
+ const score=totalWeight?weighted/totalWeight:0,maturity=latest.horizon||0;
+ if(ready.length<2&&maturity<30)return {status:'pending',score,label:'İlk sonuç alındı; doğrulama sürüyor',reason:'İlk '+maturity+' günlük sonuç görüldü; motor yöntemini değiştirmeden önce en az bir uzun dönem ufku daha bekliyor.',maturity,helpful,neutral,harmful};
+ let status='neutral';
+ if(harmful>=2||(maturity>=30&&latest.status==='harmful'&&helpful===0))status='harmful';
+ else if(helpful>=2||(maturity>=30&&latest.status==='helpful'&&harmful===0))status='helpful';
+ const label=status==='helpful'?'Uzun vadede işe yaradı':status==='harmful'?'Uzun vadede ters etki':'Uzun dönem sonucu karışık';
+ const reason=status==='helpful'?'7/14/30 günlük takip aynı müdahalenin yararlı etkisini yeterince doğruladı.':status==='harmful'?'Kısa ve uzun dönem takipte olumsuz sonuç birden fazla ufukta doğrulandı; aynı yöntemi otomatik tekrarlama.':'Ufuklar aynı yönde yeterince birleşmedi; motor aşırı uyarlama yapmadan yeni kanıt bekleyecek.';
+ return {status,score,label,reason,maturity,helpful,neutral,harmful};
 }
-function routeInterventionEvaluation(intervention){const follow=routeInterventionFollowup(intervention);return {...routeEvaluateInterventionFromMetrics(intervention,follow),follow};}
+function routeInterventionFollowup(intervention,horizon=7){
+ const age=Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(intervention.date+'T12:00:00'))/86400000)),reached=age>=horizon,end=reached?R.dayAdd(intervention.date,horizon):today(),start=R.dayAdd(intervention.date,horizon<=7?1:Math.max(1,horizon-6));
+ if(!reached)return {age,horizon,reached:false,start,end,performance:{known:false},behavior:{known:false}};
+ const performance=routePerformanceWindow(intervention.subjectId,intervention.topicId,start,end),behavior=routeBehaviorWindow(intervention.subjectId,intervention.topicId,start,end);
+ return {age,horizon,reached:true,start,end,performance,behavior};
+}
+function routeInterventionHorizonEvaluation(intervention,horizon){
+ const follow=routeInterventionFollowup(intervention,horizon);
+ if(!follow.reached)return {horizon,status:'pending',score:0,label:horizon+' gün bekleniyor',reason:'Bu ufuk için henüz yeterli zaman geçmedi.',follow};
+ const evaluated=routeEvaluateInterventionFromMetrics(intervention,{...follow,age:horizon});
+ return {horizon,...evaluated,follow};
+}
+function routeInterventionEvaluation(intervention){
+ const horizons=[7,14,30].map(function(h){return routeInterventionHorizonEvaluation(intervention,h);}),aggregate=routeInterventionAggregateEvaluations(horizons),follow=horizons.find(function(x){return x.horizon===7;})?.follow||routeInterventionFollowup(intervention,7);
+ return {...aggregate,follow,horizons};
+}
 function routeRecordModeHistory(tasks){
  routeEnsure();const space=w(),list=space.route.modeHistory||[],todayKey=today(),seen=new Set();
  for(const p of tasks){
@@ -2421,8 +2445,8 @@ function routeInterventionPolicyAdjustment(subjectId,topicId,mode){
 }
 function routeInterventionBacktestCard(){
  const rows=(w().route?.interventions||[]).map(function(x){return {x,e:routeInterventionEvaluation(x)};}).filter(function(r){return r.e.status!=='pending';}).sort(function(a,b){return b.x.date.localeCompare(a.x.date)||b.x.created-a.x.created;}).slice(0,5),all=(w().route?.interventions||[]),evaluated=all.map(routeInterventionEvaluation).filter(function(e){return e.status!=='pending';}),helpful=evaluated.filter(function(e){return e.status==='helpful';}).length,harmful=evaluated.filter(function(e){return e.status==='harmful';}).length;
- if(!all.length)return '<section class="card"><div class="card-head"><div><div class="eyebrow">KARAR GERİ TESTİ</div><h3>Motor müdahalelerinin sonucu izlenecek</h3></div><span class="pill plain">Henüz karar deneyi yok</span></div><p class="muted small">Rota ONARIM, SÜRDÜRÜLEBİLİR veya GELİŞİM kararı verdiğinde başlangıç kanıtını kaydedecek; 3–7 gün sonraki gerçek sonucu bununla karşılaştıracak.</p></section>';
- return '<section class="card"><div class="card-head"><div><div class="eyebrow">KARAR GERİ TESTİ</div><h3>Rota verdiği kararların işe yarayıp yaramadığını kontrol ediyor</h3></div><span class="pill plain">'+evaluated.length+' değerlendirildi · '+helpful+' işe yaradı'+(harmful?' · '+harmful+' ters etki':'')+'</span></div>'+(rows.length?rows.map(function(r){const cls=r.e.status==='helpful'?'mode-progress':r.e.status==='harmful'?'mode-repair':'mode-steady',topicTitle=R.topic(w(),r.x.topicId)?.title||subName(r.x.subjectId);return '<div class="route-mini-row"><div class="row between"><strong>'+esc(subName(r.x.subjectId,true))+' · '+esc(topicTitle)+'</strong><span class="route-adaptive-pill '+cls+'">'+esc(r.e.label)+'</span></div><p>'+esc(r.e.reason)+'</p><span class="tiny muted">'+dateLabel(r.x.date)+' · '+({repair:'ONARIM',ease:'SÜRDÜRÜLEBİLİR',progress:'GELİŞİM'}[r.x.mode]||r.x.mode)+' · başlangıç güveni %'+r.x.confidence+'</span></div>';}).join(''):'<div class="notice">Kararlar kaydedildi. İlk anlamlı geri test için 3–7 günlük yeni çalışma kanıtı bekleniyor.</div>')+'<p class="route-learning-foot">Bu geri test nedensellik kanıtı değildir; aynı öğrencide karar öncesi ve sonrası yakın dönem sinyallerini karşılaştıran güvenli bir kalite kontrolüdür.</p></section>';
+ if(!all.length)return '<section class="card"><div class="card-head"><div><div class="eyebrow">KARAR GERİ TESTİ</div><h3>Motor müdahalelerinin sonucu izlenecek</h3></div><span class="pill plain">Henüz karar deneyi yok</span></div><p class="muted small">Rota ONARIM, SÜRDÜRÜLEBİLİR veya GELİŞİM kararı verdiğinde başlangıç kanıtını kaydedecek; 7, 14 ve 30 günlük gerçek sonuçları ayrı ayrı izleyip uzun dönem sonucu doğrulayacak.</p></section>';
+ return '<section class="card"><div class="card-head"><div><div class="eyebrow">KARAR GERİ TESTİ</div><h3>Rota verdiği kararların işe yarayıp yaramadığını kontrol ediyor</h3></div><span class="pill plain">'+evaluated.length+' değerlendirildi · '+helpful+' işe yaradı'+(harmful?' · '+harmful+' ters etki':'')+'</span></div>'+(rows.length?rows.map(function(r){const cls=r.e.status==='helpful'?'mode-progress':r.e.status==='harmful'?'mode-repair':'mode-steady',topicTitle=R.topic(w(),r.x.topicId)?.title||subName(r.x.subjectId);return '<div class="route-mini-row"><div class="row between"><strong>'+esc(subName(r.x.subjectId,true))+' · '+esc(topicTitle)+'</strong><span class="route-adaptive-pill '+cls+'">'+esc(r.e.label)+'</span></div><p>'+esc(r.e.reason)+'</p><span class="tiny muted">'+dateLabel(r.x.date)+' · '+({repair:'ONARIM',ease:'SÜRDÜRÜLEBİLİR',progress:'GELİŞİM'}[r.x.mode]||r.x.mode)+' · başlangıç güveni %'+r.x.confidence+'</span></div>';}).join(''):'<div class="notice">Kararlar kaydedildi. 7 günlük ilk sinyalden sonra 14 ve 30 günlük doğrulama ufukları tamamlandıkça motorun müdahale hafızası güncellenecek.</div>')+'<p class="route-learning-foot">Bu geri test nedensellik kanıtı değildir; aynı öğrencide 7/14/30 günlük takip sinyallerini birleştiren, tek kısa dönem sonucuyla yöntem değiştirmeyen güvenli bir kalite kontrolüdür.</p></section>';
 }
 function routeRebalance(reason='Rota güncellendi',silent=false){
  if(!state.activeExam||!w().configured)return {changed:0,scheduled:0};

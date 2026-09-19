@@ -1652,7 +1652,7 @@ function routeLearningVelocitySignal(subjectId,topicId=''){
 }
 function routeAccuracyAcrossSamples(samples){
  let correct=0,answered=0;
- for(const x of samples||[]){const n=Number(x.answered)||0,a=Number(x.accuracy);if(n<=0||!Number.isFinite(a))continue;correct+=a*n;answered+=n;}
+ for(const x of samples||[]){const n=Math.min(30,Number(x.answered)||0),a=Number(x.accuracy);if(n<=0||!Number.isFinite(a))continue;correct+=a*n;answered+=n;}
  return answered?correct/answered:null;
 }
 function routeSubjectPerformanceSamples(subjectId,excludeTopicId=''){
@@ -1664,7 +1664,7 @@ function routeSubjectPerformanceSamples(subjectId,excludeTopicId=''){
 function routePersonalNormFromSamples(currentSamples,peerSamples=[]){
  const current=(currentSamples||[]).filter(function(x){return Number.isFinite(x.accuracy)&&(x.answered||0)>=5;}),peers=(peerSamples||[]).filter(function(x){return Number.isFinite(x.accuracy)&&(x.answered||0)>=5;});
  if(current.length<2)return {known:false,direction:'unknown',label:'Kişisel normal ölçülüyor',delta:0,recentAccuracy:null,baselineAccuracy:null,recentSamples:current.length,baselineSamples:0,scope:'none',confidence:0};
- const recent=current.slice(-2),ownBaseline=current.slice(0,-2),useOwn=ownBaseline.length>=2,baseline=useOwn?ownBaseline:peers;
+ const recent=current.slice(-2),ownBaseline=current.slice(Math.max(0,current.length-8),-2),useOwn=ownBaseline.length>=2,baseline=useOwn?ownBaseline:peers.slice(-6);
  if(baseline.length<3&&!useOwn)return {known:false,direction:'unknown',label:'Kişisel normal ölçülüyor',delta:0,recentAccuracy:routeAccuracyAcrossSamples(recent),baselineAccuracy:null,recentSamples:recent.length,baselineSamples:baseline.length,scope:'none',confidence:0};
  const recentAccuracy=routeAccuracyAcrossSamples(recent),baselineAccuracy=routeAccuracyAcrossSamples(baseline);
  if(!Number.isFinite(recentAccuracy)||!Number.isFinite(baselineAccuracy))return {known:false,direction:'unknown',label:'Kişisel normal ölçülüyor',delta:0,recentAccuracy,baselineAccuracy,recentSamples:recent.length,baselineSamples:baseline.length,scope:'none',confidence:0};
@@ -1676,10 +1676,10 @@ function routePersonalNormSignal(subjectId,topicId=''){
  const all=routeSubjectPerformanceSamples(subjectId);return routePersonalNormFromSamples(all,[]);
 }
 function routeConfidenceCalibrationFromSignals(input){
- const raw=Math.max(0,Math.min(100,Math.round(Number(input.rawConfidence)||0))),sourceCount=Math.max(0,Number(input.sourceCount)||0),practiceAccuracy=Number.isFinite(input.practiceAccuracy)?Math.max(0,Math.min(100,input.practiceAccuracy)):null,examAccuracy=Number.isFinite(input.examAccuracy)?Math.max(0,Math.min(100,input.examAccuracy)):null;
+ const raw=Math.max(0,Math.min(100,Math.round(Number(input.rawConfidence)||0))),sourceCount=Math.max(0,Number(input.sourceCount)||0),practiceAccuracy=Number.isFinite(input.practiceAccuracy)?Math.max(0,Math.min(100,input.practiceAccuracy)):null,examAccuracy=Number.isFinite(input.examAccuracy)?Math.max(0,Math.min(100,input.examAccuracy)):null,examFreshness=Number.isFinite(input.examFreshness)?Math.max(.35,Math.min(1,input.examFreshness)):1;
  let cap=100;if(sourceCount<=1)cap=35;else if(sourceCount===2)cap=55;else if(sourceCount===3)cap=78;
  let disagreementPenalty=0;const reasons=[];
- if(practiceAccuracy!==null&&examAccuracy!==null){const gap=Math.abs(practiceAccuracy-examAccuracy);if(gap>=30){disagreementPenalty=12;reasons.push('Çalışma performansı ile deneme kanıtı belirgin çelişiyor.');}else if(gap>=20){disagreementPenalty=7;reasons.push('Çalışma performansı ile deneme kanıtı kısmen ayrışıyor.');}}
+ if(practiceAccuracy!==null&&examAccuracy!==null){const gap=Math.abs(practiceAccuracy-examAccuracy),basePenalty=gap>=30?12:gap>=20?7:0;if(basePenalty){disagreementPenalty=Math.round(basePenalty*examFreshness);reasons.push(examFreshness<.75?'Çalışma performansı ile eski deneme kanıtı ayrışıyor; eski ölçümün cezası azaltıldı.':gap>=30?'Çalışma performansı ile deneme kanıtı belirgin çelişiyor.':'Çalışma performansı ile deneme kanıtı kısmen ayrışıyor.');}}
  if(input.personalNorm?.known&&input.trend?.known&&input.personalNorm.confidence>=50&&input.personalNorm.direction!=='flat'&&input.trend.direction!=='flat'&&input.personalNorm.direction!==input.trend.direction){disagreementPenalty+=5;reasons.push('Kısa trend ile daha geniş kişisel normal farklı yön gösteriyor.');}
  const confidence=Math.max(0,Math.min(raw,cap)-disagreementPenalty),band=confidence<25?'low':confidence<55?'medium':'high';
  if(cap<raw)reasons.push(sourceCount<=1?'Tek kanıt türüyle yüksek güvene çıkılmadı.':'Kanıt çeşitliliği sınırlı olduğu için güven tavanlandı.');
@@ -1734,7 +1734,7 @@ function routeStudentModelFromSignals(input){
  const samplePower=Math.min(34,Math.min(4,practiceLogCount)*4+Math.min(4,miniDays)*3+Math.min(5,behavior.total||0)*1.4+Math.min(4,outcome.total||0)*2+Math.min(3,weak?.samples||0)*3+(retention.known?4:0));
  const freshness=routeEvidenceFreshness(latestDays),rawConfidence=Math.round(Math.min(100,sourceCount*10+samplePower)*freshness);
  const practiceAccuracy=practice.known?(practice.weightedAccuracy||practice.accuracy):null,examAccuracy=examKnown?Math.max(0,Math.min(1,weak.ratio)):null;
- const confidenceCalibration=routeConfidenceCalibrationFromSignals({rawConfidence,sourceCount,practiceAccuracy:practiceAccuracy===null?null:practiceAccuracy*100,examAccuracy:examAccuracy===null?null:examAccuracy*100,personalNorm,trend}),confidence=confidenceCalibration.confidence;
+ const confidenceCalibration=routeConfidenceCalibrationFromSignals({rawConfidence,sourceCount,practiceAccuracy:practiceAccuracy===null?null:practiceAccuracy*100,examAccuracy:examAccuracy===null?null:examAccuracy*100,examFreshness:weak?.freshness,personalNorm,trend}),confidence=confidenceCalibration.confidence;
  let performance=null;
  if(practiceAccuracy!==null&&examAccuracy!==null){const pw=Math.min(.78,.48+(practice.sessions||0)*.06),ew=Math.max(.12,.30*(weak.freshness??1));performance=Math.round(100*(practiceAccuracy*pw+examAccuracy*ew)/(pw+ew));}
  else if(practiceAccuracy!==null)performance=Math.round(practiceAccuracy*100);

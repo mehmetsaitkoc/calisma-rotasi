@@ -1771,9 +1771,10 @@ function routeTopicMasterySignal(topicId){
  return {ready,reason,base,baseTaskId:baseTask?.id||'',baseDate,review3,review7,outcome,practice,openMistake,practiceEnough,outcomeEnough,hasEvidence,performanceOk,progress,total,next};
 }
 function routeMasteryScoreFromSignals(input){
- const performance=Number.isFinite(input.performanceAccuracy)?Math.max(0,Math.min(100,input.performanceAccuracy)):null,spacing=(input.base?25:0)+(input.review3?30:0)+(input.review7?45:0),retention=Number.isFinite(input.retentionScore)?Math.max(0,Math.min(100,input.retentionScore)):Math.round(spacing*.75),trendScore=input.trend==='up'?90:input.trend==='down'?45:input.trend==='flat'?75:60;
+ const performance=Number.isFinite(input.performanceAccuracy)?Math.max(0,Math.min(100,input.performanceAccuracy)):null,spacing=(input.base?25:0)+(input.review3?30:0)+(input.review7?45:0),retention=Number.isFinite(input.retentionScore)?Math.max(0,Math.min(100,input.retentionScore)):Math.round(spacing*.75),trendScore=input.trend==='up'?90:input.trend==='down'?45:input.trend==='flat'?75:60,unresolved=Math.max(0,Number(input.openMistakes)||0);
  let raw=performance===null?spacing*.55+retention*.30+trendScore*.15:performance*.42+spacing*.28+retention*.20+trendScore*.10;
- raw-=Math.min(18,(input.openMistakes||0)*6)+Math.min(10,(input.skillMissed||0)*2)+(input.errorRepeated?6:0);
+ raw-=Math.min(18,unresolved*6)+Math.min(10,(input.skillMissed||0)*2)+(input.errorRepeated?6:0);
+ if(unresolved)raw=Math.min(raw,unresolved>=2?60:68);
  if(!input.base)raw=Math.min(raw,45);
  else if(!input.hasEvidence)raw=Math.min(raw,68);
  if(input.ready)raw=Math.max(raw,82);
@@ -1818,6 +1819,7 @@ function routeExamRiskFromSignals(input){
  if(Number.isFinite(input.examWeakRatio)){if(input.examWeakRatio<.55)score+=8;else if(input.examWeakRatio<.65)score+=4;else if(input.examWeakRatio>=.82)score-=3;}
  if(input.subjectPriority)score+=5;if(input.forgettingDue)score+=6;if(input.paceStatus==='overload')score+=4;if(status===0)score+=6;if(status===2&&retained>=75)score-=8;
  score=Math.max(0,Math.min(100,Math.round(score)));
+ if(confidence<25)score=Math.min(score,55);else if(confidence<40)score=Math.min(score,68);
  const priorityBoost=confidence<25?0:score>=82?8:score>=70?5:score>=56?2:score<=25?-2:0,label=score>=82?'KRİTİK':score>=70?'YÜKSEK':score>=56?'ORTA':score>=40?'İZLE':'DÜŞÜK';
  let action='Mevcut rotayı koru.';
  if(status===0)action='Ana öğrenme oturumunu sıraya al.';
@@ -1825,12 +1827,29 @@ function routeExamRiskFromSignals(input){
  else if(input.forgettingDue)action='Kısa koruma tekrarıyla bilgiyi yeniden doğrula.';
  else if(score>=70&&mastery<60)action='Yeni konu yüklemeden önce bu konuyu güçlendir.';
  else if(input.trend==='down')action='Kısa ölçüm yap; düşüş sürerse onarıma dön.';
- return {score,label,priorityBoost,action,confidence,knowledgeGap,urgency,mastery,retained,learningNeed};
+ const reasons=[];
+ if(status===0)reasons.push('Konu henüz tamamlanmadı.');
+ if(openMistakes)reasons.push(openMistakes+' açık yanlış var.');
+ if(input.forgettingDue)reasons.push('Kalıcılık tazelemesi zamanı geldi.');
+ if(input.trend==='down')reasons.push('Yakın dönem performans trendi geriliyor.');
+ if(Number.isFinite(input.examWeakRatio)&&input.examWeakRatio<.65)reasons.push('Deneme kanıtı bu derste zayıflık gösteriyor.');
+ if(urgency)reasons.push('Hedef tarih yaklaştıkça zaman baskısı artıyor.');
+ if(confidence<25)reasons.push('Kanıt güveni düşük; rota önceliği artırılmıyor.');
+ if(!reasons.length)reasons.push('Mevcut kanıtlar belirgin ek risk göstermiyor.');
+ return {score,label,priorityBoost,action,reasons,confidenceBand:confidence<25?'low':confidence<55?'medium':'high',confidence,knowledgeGap,urgency,mastery,retained,learningNeed};
 }
 function routeTopicExamRisk(subjectId,topicId,studentInput=null,context={}){
  const space=w(),student=studentInput||routeStudentModel(subjectId,topicId),mastery=context.mastery||routeTopicMasteryScore(topicId),forgetting=context.forgetting||routeTopicForgettingSignal(topicId,mastery),weak=context.weakMap?.[subjectId]||routeExamWeakness()[subjectId]||null,pace=context.pace||routePaceSignal(space),daysToTarget=Number.isFinite(context.daysToTarget)?context.daysToTarget:routeDaysToTarget(),status=space.topicState[topicId]?.status||0,confidence=Math.max(student.confidence||0,mastery.confidence||0);
  const risk=routeExamRiskFromSignals({confidence,masteryScore:mastery.score||0,retained:forgetting.known?forgetting.retained:mastery.score||0,learningNeed:student.learningNeed,daysToTarget,openMistakes:student.openMistakes,trend:student.trend?.direction,examWeakRatio:weak?.ratio,subjectPriority:space.settings.priorities.includes(subjectId),forgettingDue:!!forgetting.reviewDue,paceStatus:pace.known?pace.status:'',status});
- return {...risk,subjectId,topicId,status,masterySignal:mastery,forgettingSignal:forgetting,student,daysToTarget};
+ let incrementalBoost=0;
+ if(confidence>=25){
+  if(daysToTarget!==null)incrementalBoost+=daysToTarget<=21?3:daysToTarget<=45?2:daysToTarget<=90?1:0;
+  if(forgetting.known&&forgetting.reviewDue&&(mastery.confidence||0)>=35)incrementalBoost+=2;
+  if(pace.known&&pace.status==='overload'&&daysToTarget!==null)incrementalBoost+=1;
+ }
+ if((student.priorityBoost||0)>=4)incrementalBoost=Math.min(incrementalBoost,2);
+ const schedulerBoost=Math.max(0,Math.min(5,Math.min(Math.max(0,risk.priorityBoost),incrementalBoost)));
+ return {...risk,rawPriorityBoost:risk.priorityBoost,priorityBoost:schedulerBoost,subjectId,topicId,status,masterySignal:mastery,forgettingSignal:forgetting,student,daysToTarget};
 }
 function routeExamRiskMap(limit=8){
  const space=w(),weakMap=routeExamWeakness(),pace=routePaceSignal(space),daysToTarget=routeDaysToTarget(),context={weakMap,pace,daysToTarget};
@@ -1840,7 +1859,7 @@ function routeExamRiskMap(limit=8){
 function routeExamRiskMapCard(){
  const rows=routeExamRiskMap(6),days=routeDaysToTarget(),target=days===null?'Hedef tarih yok':days+' gün kaldı';
  if(!rows.length)return '<section class="card"><div class="card-head"><div><div class="eyebrow">SINAV RİSK HARİTASI</div><h3>Henüz konu verisi yok</h3></div><span class="pill plain">'+esc(target)+'</span></div></section>';
- return '<section class="card"><div class="card-head"><div><div class="eyebrow">SINAV RİSK HARİTASI</div><h3>Şu an en çok dikkat isteyen başlıklar</h3></div><span class="pill plain">'+esc(target)+'</span></div>'+rows.map(function(row){const r=row.risk,m=r.masterySignal,f=r.forgettingSignal,mastery=m.known?'%'+m.score:'ölçüm yok',retain=f.known?'%'+f.retained:'ölçüm yok';return '<div class="route-mini-row"><div class="row between"><strong>'+esc(subName(row.topic.subjectId,true))+' · '+esc(row.topic.title)+'</strong><span class="route-adaptive-pill '+(r.score>=70?'mode-repair':r.score>=56?'mode-ease':'mode-steady')+'">'+r.score+'/100 · '+esc(r.label)+'</span></div><p>Mastery '+mastery+' · koruma tahmini '+retain+' · kanıt güveni %'+r.confidence+'.</p><p><strong>Hamle:</strong> '+esc(r.action)+'</p></div>';}).join('')+'<p class="route-learning-foot">Risk puanı soru çıkma olasılığı değildir. Hedef tarih, mastery, kanıt güncelliği, unutma tahmini, açık yanlışlar, trend ve ders önceliğini birleştiren çalışma önceliği göstergesidir.</p></section>';
+ return '<section class="card"><div class="card-head"><div><div class="eyebrow">SINAV RİSK HARİTASI</div><h3>Şu an en çok dikkat isteyen başlıklar</h3></div><span class="pill plain">'+esc(target)+'</span></div>'+rows.map(function(row){const r=row.risk,m=r.masterySignal,f=r.forgettingSignal,mastery=m.known?'%'+m.score:'ölçüm yok',retain=f.known?'%'+f.retained:'ölçüm yok',why=(r.reasons||[]).slice(0,2).join(' ');return '<div class="route-mini-row"><div class="row between"><strong>'+esc(subName(row.topic.subjectId,true))+' · '+esc(row.topic.title)+'</strong><span class="route-adaptive-pill '+(r.score>=70?'mode-repair':r.score>=56?'mode-ease':'mode-steady')+'">'+r.score+'/100 · '+esc(r.label)+'</span></div><p>Mastery '+mastery+' · koruma tahmini '+retain+' · kanıt güveni %'+r.confidence+'.</p><p><strong>Neden:</strong> '+esc(why)+'</p><p><strong>Hamle:</strong> '+esc(r.action)+'</p></div>';}).join('')+'<p class="route-learning-foot">Risk puanı soru çıkma olasılığı değildir. Hedef tarih, mastery, kanıt güncelliği, unutma tahmini, açık yanlışlar, trend ve ders önceliğini birleştiren çalışma önceliği göstergesidir. Scheduler etkisi yalnız hedef-zaman/unutma gibi ek sinyallerden gelir ve +5 puanla sınırlıdır; düşük güvenli risk öncelik artışı üretmez.</p></section>';
 }
 function routeRetentionRefreshCandidates(){
  const space=w(),items=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)===2;}).map(function(t){const mastery=routeTopicMasteryScore(t.id),forgetting=routeTopicForgettingSignal(t.id,mastery);return {topic:t,mastery,forgetting};}).filter(function(x){return x.forgetting.known&&x.forgetting.reviewDue&&x.mastery.confidence>=35;}).sort(function(a,b){return a.forgetting.retained-b.forgetting.retained||b.mastery.confidence-a.mastery.confidence;});
@@ -2043,7 +2062,7 @@ function routeMiniRepairSignals(){
  return [...byTopic.values()].map(function(a){return {assessment:a,adaptive:routeSubjectAdaptiveState(a.subjectId,a.topicId)};}).filter(function(x){return x.adaptive.mode==='repair';});
 }
 function routeBuildCandidates(){
- const space=w(),weak=routeExamWeakness(),seenTopics=new Set(),seenKeys=new Set(),out=[];
+ const space=w(),weak=routeExamWeakness(),recovery=routeRecoverySignal(space),seenTopics=new Set(),seenKeys=new Set(),out=[];
  const push=function(c){if(!c||seenKeys.has(c.routeKey))return;seenKeys.add(c.routeKey);if(c.topicId&&R.topic(space,c.topicId))seenTopics.add(c.topicId);out.push(c);};
  const horizon=R.dayAdd(today(),13);
  for(const p of space.plan.filter(function(p){return !p.done&&(p.date<=horizon||p.date<today());}))push(routeCandidateFromPlan(p));
@@ -2103,8 +2122,8 @@ function routeBuildCandidates(){
  const eligibleTopics=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)!==2&&!seenTopics.has(t.id)&&!recentWorkedTopics.has(t.id);}),topics=routeTopicFrontier(space,eligibleTopics);
  const riskContext={weakMap:weak,pace:routePaceSignal(space),daysToTarget:routeDaysToTarget()};
  for(const t of topics){
-  const isPriority=space.settings.priorities.includes(t.subjectId),wk=weak[t.subjectId],ps=routeProfileSignal(t.subjectId),last=routeLastLogDate(t.subjectId),goal=routeTaskGoal(t.subjectId,t.id,t.title),method=routeStudyMethod(t.subjectId,t.id,t.title),student=routeStudentModel(t.subjectId,t.id),risk=routeTopicExamRisk(t.subjectId,t.id,student,riskContext);
-  let priority=30+(isPriority?18:0)+(wk?.boost||0)+ps.boost+student.priorityBoost+risk.priorityBoost-(t.routeSequenceRank||0)*3;
+  const isPriority=space.settings.priorities.includes(t.subjectId),wk=weak[t.subjectId],ps=routeProfileSignal(t.subjectId),last=routeLastLogDate(t.subjectId),goal=routeTaskGoal(t.subjectId,t.id,t.title),method=routeStudyMethod(t.subjectId,t.id,t.title),student=routeStudentModel(t.subjectId,t.id),risk=routeTopicExamRisk(t.subjectId,t.id,student,riskContext),riskBoost=recovery.active?0:risk.priorityBoost;
+  let priority=30+(isPriority?18:0)+(wk?.boost||0)+ps.boost+student.priorityBoost+riskBoost-(t.routeSequenceRank||0)*3;
   let reason=isPriority?'Bu dersi öncelikli olarak seçtin.':'Tamamlanmamış konu rotandan geliyor.';
   let source=wk?.boost?'exam':isPriority?'priority':ps.level<=1?'profile':'curriculum';
   if(wk?.boost){reason='Son deneme verilerinde '+subName(t.subjectId)+' daha fazla çalışma sinyali veriyor. Görev biçimi '+method.label.toLocaleLowerCase('tr-TR')+' yöntemine göre ayarlandı.';}
@@ -2113,7 +2132,7 @@ function routeBuildCandidates(){
   reason+=' '+(t.routeSequenceRank===0?'Bu dersin sıradaki uygun konusu.':'Aynı derste daha ileri başlıklara atlamadan yakın konu cephesinde tutuluyor.');
   if(student.confidence>=25&&student.priorityBoost>=2)reason+=' Öğrenci Modeli v2 bu konu için %'+student.confidence+' güvenle ek öğrenme ihtiyacı görüyor.';
   else if(student.confidence>=35&&student.priorityBoost<=-2)reason+=' Öğrenci Modeli v2 güçlü güncel kanıt nedeniyle bu başlığın önceliğini kontrollü azaltıyor.';
-  if(risk.priorityBoost>=2)reason+=' Sınav risk haritası bu başlığı '+risk.score+'/100 çalışma riskiyle kontrollü biçimde yukarı taşıyor.';
+  if(riskBoost>=2)reason+=' Sınav risk haritası bu başlığı '+risk.score+'/100 çalışma riskiyle kontrollü biçimde yukarı taşıyor.';
   if(!last||last<R.dayAdd(today(),-7)){priority+=7;reason+=' Bu derste son 7 günde kayıtlı çalışma az.';}
   push({id:R.uid(),date:today(),subjectId:t.subjectId,topicId:t.id,title:t.title,minutes:goal.minutes,done:false,kind:'route',source,priority:Math.max(12,Math.min(96,priority)),reason,earliest:today(),routeKey:'topic:'+t.id,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }

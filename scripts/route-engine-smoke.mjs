@@ -371,6 +371,49 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.match(api.routeDifficultyPrescription('k-ma','','Problemler','process'),/adım|işlem/i);
 }
 
+// 4) Recovery must suppress progression load increases without erasing the strong-performance signal.
+{
+  const src=between('function routeQuestionTarget','function routeReviewGoal');
+  let recoveryActive=false;
+  const w=()=>({profile:{subjectLevels:{'k-ma':2}}});
+  const routeSubjectGap=()=>({known:false,gap:0});
+  const routeStudyMethod=()=>({key:'quant',label:'SORU + YANLIŞ ANALİZİ'});
+  const routeSubjectAdaptiveState=()=>({mode:'progress',calibration:{},skillWeakness:{primary:null}});
+  const routeRecoverySignal=()=>({active:recoveryActive});
+  const routeEffectiveDifficulty=()=>({known:false});
+  const routeMaxTaskMinutes=()=>120;
+  const routeDifficultyPrescription=()=> '';
+  const routeInterventionPolicyAdjustment=()=>({action:'hold'});
+  const routeErrorMemorySignal=()=>({primary:null});
+  const api=new Function(
+    'w','routeSubjectGap','routeStudyMethod','routeSubjectAdaptiveState','routeRecoverySignal',
+    'routeEffectiveDifficulty','routeMaxTaskMinutes','routeDifficultyPrescription',
+    'routeInterventionPolicyAdjustment','routeErrorMemorySignal',
+    src+';return {routeQuestionTarget,routeTaskGoal};'
+  )(
+    w,routeSubjectGap,routeStudyMethod,routeSubjectAdaptiveState,routeRecoverySignal,
+    routeEffectiveDifficulty,routeMaxTaskMinutes,routeDifficultyPrescription,
+    routeInterventionPolicyAdjustment,routeErrorMemorySignal
+  );
+  const normalQuestions=api.routeQuestionTarget('k-ma','t1','x');
+  const normalGoal=api.routeTaskGoal('k-ma','t1','x');
+  recoveryActive=true;
+  const recoveryQuestions=api.routeQuestionTarget('k-ma','t1','x');
+  const recoveryGoal=api.routeTaskGoal('k-ma','t1','x');
+  assert.ok(normalQuestions>recoveryQuestions,'Progress may add questions in normal mode');
+  assert.ok(normalGoal.minutes>recoveryGoal.minutes,'Progress may add minutes in normal mode');
+  assert.equal(recoveryQuestions,16,'Recovery must preserve the base question dose instead of progress +2');
+  assert.equal(recoveryGoal.minutes,35,'Recovery must preserve the base duration instead of progress +5');
+  assert.match(recoveryGoal.text,/toparlanma modu açıkken dozu büyütmeden/i);
+}
+{
+  const candidate=between('function routeCandidateFromPlan','function routeTopicFrontier');
+  const build=between('function routeBuildCandidates','function routeConsistencySignal');
+  assert.ok(candidate.includes("p.reviewVariant==='challenge'&&!routeRecoverySignal().active"),'Existing challenge review must downgrade in recovery');
+  assert.ok(candidate.includes("!routeRecoverySignal().active&&adaptive.mode==='progress'"),'7-day review may not become challenge during recovery');
+  assert.ok(build.includes("challengeReady=!recovery.active&&!needsRepair"),'New challenge review generation must be disabled during recovery');
+}
+
 // 4) Task duration must fit the student's effective daily capacity.
 {
   const src=between('function routeHeavyLimit','function routeQuestionTarget');

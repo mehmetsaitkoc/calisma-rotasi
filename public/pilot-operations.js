@@ -162,6 +162,7 @@ function cohortSummary(payloads,asOfDate){
     averageCompletionChange:avg(payloads.map(p=>changeFromDay0(p,s=>finite(s.actual?.completion)))),
     averagePerformanceChange:avg(payloads.map(p=>changeFromDay0(p,s=>finite(s.student?.performance)))),
     modeTransitions:latest.reduce((n,s)=>n+(s.modes?.transitions||0),0),
+    modeBounces:latest.reduce((n,s)=>n+(s.modes?.bounces||0),0),
     rows
   };
 }

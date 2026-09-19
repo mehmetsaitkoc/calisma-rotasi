@@ -1690,15 +1690,16 @@ for(const marker of [
   backup.workspaces.kpss.route.pilot={
     version:1,enabled:true,participantId:'p-test-001',startDate:'2026-09-19',startedAt:1,completedAt:0,
     snapshots:[{
-      checkpoint:7,targetDate:'2026-09-26',capturedDate:'2026-09-26',capturedAt:2,delayDays:0,
+      checkpoint:7,milestoneDay:7,actualDay:7,windowStart:'2026-09-19',windowEnd:'2026-09-26',targetDate:'2026-09-26',capturedDate:'2026-09-26',capturedAt:2,delayDays:0,
       planned:{tasks:12,minutes:300,questions:120},
-      actual:{completedTasks:10,minutes:260,questions:105,correct:80,wrong:25,accuracy:76.2,completion:83.3},
+      actual:{completedTasks:10,skippedTasks:1,laterTasks:1,minutes:260,questions:105,correct:80,wrong:25,accuracy:76.2,completion:83.3,questionAttainmentRatio:.875},
       exam:{count:1,latestDate:'2026-09-25',latestNet:63.5},
       mistakes:{openAtCapture:2,created:3,resolved:1},
+      mastery:{completedTopics:4,mastery:74,forgettingDue:1,retentionRefresh:1},
       modes:{steady:5,repair:2,ease:1,progress:0,transitions:2,current:'steady'},
-      interventions:{total:2,helpful:1,neutral:0,harmful:0,pending:1},
-      student:{performance:72,learningNeed:36,risk:44,confidence:81},
-      dataQuality:{capturedOnTime:true,plannedExact:true,openMistakesExact:true,modeHistoryExact:true,interventionHistoryExact:true,actualLogsExact:true}
+      interventions:{total:2,helpful:1,neutral:0,harmful:0,insufficient:0,confounded:0,pending:1,horizons:{7:{helpful:1,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0},14:{helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0},30:{helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0}}},
+      student:{state:'steady',performance:72,learningNeed:36,risk:44,confidence:81,execution:78,retention:71,trend:'up',personalNorm:'flat',velocity:'steady'},
+      dataQuality:{capturedOnTime:true,plannedExact:true,openMistakesExact:true,modeHistoryExact:true,interventionHistoryExact:true,studentModelExact:true,masteryExact:true,actualLogsExact:true}
     }]
   };
   const pilot=env.RotaCore.validateBackup(backup).workspaces.kpss.route.pilot,s=pilot.snapshots[0];
@@ -1706,15 +1707,43 @@ for(const marker of [
   assert.equal(pilot.enabled,true);
   assert.equal(pilot.startDate,'2026-09-19');
   assert.equal(s.checkpoint,7);
+  assert.equal(s.milestoneDay,7);
+  assert.equal(s.actualDay,7);
+  assert.equal(s.windowStart,'2026-09-19');
+  assert.equal(s.windowEnd,'2026-09-26');
   assert.equal(s.actual.accuracy,76.2);
+  assert.equal(s.actual.skippedTasks,1);
+  assert.equal(s.actual.laterTasks,1);
+  assert.equal(s.actual.questionAttainmentRatio,.875);
+  assert.equal(s.mastery.mastery,74);
   assert.equal(s.modes.transitions,2);
   assert.equal(s.interventions.helpful,1);
+  assert.equal(s.interventions.horizons[7].helpful,1);
+  assert.equal(s.student.state,'steady');
+  assert.equal(s.student.execution,78);
+  assert.equal(s.student.retention,71);
+  assert.equal(s.student.trend,'up');
   assert.equal(s.dataQuality.openMistakesExact,true);
-  assert.equal(s.dataQuality.capturedOnTime,true);
-  assert.equal(s.dataQuality.plannedExact,true);
-  assert.equal(s.dataQuality.modeHistoryExact,true);
-  assert.equal(s.dataQuality.interventionHistoryExact,true);
-  assert.equal(s.dataQuality.actualLogsExact,true);
+  assert.equal(s.dataQuality.studentModelExact,true);
+  assert.equal(s.dataQuality.masteryExact,true);
+
+  const unknown=JSON.parse(JSON.stringify(backup));
+  unknown.workspaces.kpss.route.pilot.snapshots[0].mistakes.openAtCapture=null;
+  unknown.workspaces.kpss.route.pilot.snapshots[0].mastery={completedTopics:null,mastery:null,forgettingDue:null,retentionRefresh:null};
+  unknown.workspaces.kpss.route.pilot.snapshots[0].student.execution=null;
+  unknown.workspaces.kpss.route.pilot.snapshots[0].student.retention=null;
+  const unknownSnap=env.RotaCore.validateBackup(unknown).workspaces.kpss.route.pilot.snapshots[0];
+  assert.equal(unknownSnap.mistakes.openAtCapture,null,'Unknown open mistakes must remain null');
+  assert.equal(unknownSnap.mastery.mastery,null,'Unknown mastery must remain null');
+  assert.equal(unknownSnap.student.execution,null,'Unknown execution must remain null');
+
+  const duplicate=JSON.parse(JSON.stringify(backup));
+  duplicate.workspaces.kpss.route.pilot.snapshots.push(JSON.parse(JSON.stringify(duplicate.workspaces.kpss.route.pilot.snapshots[0])));
+  assert.throws(()=>env.RotaCore.validateBackup(duplicate),/yinelenemez/,'Duplicate pilot checkpoints must be rejected');
+
+  const invalid=JSON.parse(JSON.stringify(backup));
+  invalid.workspaces.kpss.route.pilot.snapshots[0].windowEnd='2026-09-27';
+  assert.throws(()=>env.RotaCore.validateBackup(invalid),/penceresi geçersiz/,'Invalid pilot telemetry window must be rejected');
 }
 for(const marker of [
   "pilot:{version:1,enabled:false",
@@ -1728,7 +1757,12 @@ for(const marker of [
   'openMistakesExact',
   'plannedExact',
   'modeHistoryExact',
-  'routePilotCurrentStudentSummary'
+  'routePilotCurrentStudentSummary',
+  'routePilotMasterySummary',
+  'questionAttainmentRatio',
+  'studentModelExact',
+  'masteryExact',
+  'horizons:{7'
 ]) assert.ok(html.includes(marker),`Missing pilot telemetry marker: ${marker}`);
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.

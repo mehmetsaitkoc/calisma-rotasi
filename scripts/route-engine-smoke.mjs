@@ -210,6 +210,58 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.deepEqual(picked.filter(t=>t.subjectId==='k-ta').map(t=>t.id),['t1','t2']);
 }
 
+// 4) Recovery mode must cap old backlog instead of letting missed tasks consume the whole plan.
+{
+  const src=between('function routeRecoverySignal','function routeEffectiveDailyMinutes');
+  const today=()=> '2026-09-19';
+  const routeIsCriticalReview=()=>false;
+  let ratio=.25;
+  const routeConsistencySignal=()=>({known:true,ratio,active:1,expected:4});
+  const space={plan:[
+    {id:'a',done:false,date:'2026-09-15',source:'curriculum'},
+    {id:'b',done:false,date:'2026-09-16',source:'curriculum'},
+    {id:'c',done:false,date:'2026-09-17',source:'curriculum'}
+  ]};
+  const api=new Function('today','routeIsCriticalReview','routeConsistencySignal','w',src+';return {routeRecoverySignal,routeBacklogDailyLimit,routeBacklogWeeklyLimit,routeBacklogDailyCountLimit};')(today,routeIsCriticalReview,routeConsistencySignal,()=>space);
+  const recovery=api.routeRecoverySignal(space);
+  assert.equal(recovery.active,true);
+  assert.equal(recovery.severe,true);
+  assert.equal(api.routeBacklogDailyCountLimit(recovery),1);
+  assert.equal(api.routeBacklogDailyLimit(120,recovery),35);
+  assert.equal(api.routeBacklogWeeklyLimit(600,recovery),120);
+  ratio=.8;
+  const normal=api.routeRecoverySignal(space);
+  assert.equal(normal.active,false);
+  assert.equal(api.routeBacklogDailyCountLimit(normal),2);
+  assert.equal(api.routeBacklogDailyLimit(120,normal),55);
+}
+
+// 4) Weekly digest must explain recovery and compare recent study totals.
+{
+  const src=between('function routePeriodStats','function routeWeeklyDigestCard');
+  const R={dayAdd:(d,n)=>{
+    const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);
+  }};
+  const today=()=> '2026-09-19';
+  const space={
+    logs:[
+      {date:'2026-09-19',minutes:40,questions:20,correct:15,wrong:5,sessionId:'s1',outcome:'ok'},
+      {date:'2026-09-18',minutes:30,questions:10,correct:7,wrong:3,sessionId:'s2',outcome:'stuck'},
+      {date:'2026-09-11',minutes:20,questions:8,correct:6,wrong:2,sessionId:'p1',outcome:'ok'}
+    ],
+    taskEvents:[{date:'2026-09-19',taskId:'s1',action:'complete'}]
+  };
+  const routeRecoverySignal=()=>({active:true,severe:false,overdue:3});
+  const api=new Function('R','today','w','routeRecoverySignal','routeLearningSummaryItems',src+';return {routePeriodStats,routeWeeklyDigest};')(R,today,()=>space,routeRecoverySignal,()=>[]);
+  const d=api.routeWeeklyDigest([]);
+  assert.equal(d.current.minutes,70);
+  assert.equal(d.current.questions,30);
+  assert.equal(Math.round(d.current.accuracy*100),73);
+  assert.equal(d.current.activeDays,2);
+  assert.equal(d.title,'Toparlanma modu açık');
+  assert.match(d.decision,/backlog|Aksayan/i);
+}
+
 // 4) Normal review load is capped, while urgent repair work can bypass that cap.
 {
   const src=between('function routeIsReviewLike','function routeQuestionTarget');
@@ -289,6 +341,13 @@ for(const marker of [
   'routeSequenceRank',
   'routeReviewDailyLimit',
   'routeReviewWeeklyLimit',
+  'routeRecoverySignal',
+  'routeBacklogDailyLimit',
+  'routeBacklogWeeklyLimit',
+  'routeBacklogDailyCountLimit',
+  'function routeWeeklyDigest(',
+  'Rota kararı',
+  'TOPARLANMA MODU',
   'routeIsCriticalReview',
   'latestBaseByTopic',
   'recentWorkedTopics',

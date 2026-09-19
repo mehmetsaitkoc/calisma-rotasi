@@ -361,8 +361,8 @@ profile('P30 same score different student',()=>{
     {id:'new',miniId:'m1',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',correct:8,wrong:2,created:2}
   ]};
   const R={dayAdd:()=> '2026-09-12',topic:(_w,id)=>id==='t1'?{id}:null};
-  const mini=new Function('w','R','today','routeSubjectAdaptiveState',miniSrc+';return routeMiniRepairSignals;')(
-    ()=>space,R,()=> '2026-09-19',()=>({mode:'repair',skillWeakness:{primary:null}})
+  const mini=new Function('w','R','today','routeSubjectAdaptiveState','routeStudentModel',miniSrc+';return routeMiniRepairSignals;')(
+    ()=>space,R,()=> '2026-09-19',()=>({mode:'repair',skillWeakness:{primary:null}}),()=>({state:'repair',confidence:80})
   );
   const signals=mini();
   assert.equal(signals.length,1,'Same-day mini retakes count once for repair');

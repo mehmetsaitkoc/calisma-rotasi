@@ -692,7 +692,8 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
     ],
     taskEvents:[{date:'2026-09-19',taskId:'s1',action:'complete'}]
   };
-  const routeRecoverySignal=()=>({active:true,severe:false,overdue:3});
+  let recoveryActive=true;
+  const routeRecoverySignal=()=>({active:recoveryActive,severe:false,overdue:3});
   const api=new Function('R','today','w','routeRecoverySignal','routeLearningSummaryItems',src+';return {routePeriodStats,routeWeeklyDigest};')(R,today,()=>space,routeRecoverySignal,()=>[]);
   const d=api.routeWeeklyDigest([]);
   assert.equal(d.current.minutes,70);
@@ -701,6 +702,16 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(d.current.activeDays,2);
   assert.equal(d.title,'Toparlanma modu açık');
   assert.match(d.decision,/backlog|Aksayan/i);
+  recoveryActive=false;
+  const retention=api.routeWeeklyDigest([{name:'Matematik',mode:'steady',state:'retention'}]);
+  assert.equal(retention.title,'Kalıcılığı güçlendiriyoruz');
+  assert.match(retention.decision,/tekrar|geri çağırma/i);
+  const collect=api.routeWeeklyDigest([
+    {name:'Matematik',mode:'steady',state:'collect'},
+    {name:'Türkçe',mode:'steady',state:'collect'}
+  ]);
+  assert.equal(collect.title,'Veri topluyoruz');
+  assert.match(collect.decision,/doğru\/yanlış|kanıt/i);
 }
 
 // 4) Normal review load is capped, while urgent repair work can bypass that cap.
@@ -1468,6 +1479,9 @@ for(const marker of [
   assert.ok(html.includes('adaptive=routeAppliedDecision(def.subjectId,topicId)'),'Mini recommendation must use the applied decision');
   assert.ok(html.includes('const adaptive=routeAppliedDecision(p.subjectId,p.topicId),mode='),'Intervention audit must use the applied decision');
   assert.ok(html.split('adaptive=routeAppliedDecision(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p);').length-1>=2,'Today task and Why modal must both explain the applied decision');
+  assert.ok(html.includes("adaptive.studentState==='retention'"),'Task prescription must explain retention priority');
+  assert.ok(html.includes("adaptive.studentState==='collect'"),'Task prescription must explain low-confidence data collection');
+  assert.ok(html.includes("state=a.studentState||'steady'"),'Learning summary must preserve calibrated Student Model state');
 }
 
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.

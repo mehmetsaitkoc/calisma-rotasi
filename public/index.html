@@ -1781,19 +1781,35 @@ function routeStudentModel(subjectId,topicId=''){
  const planMap=realTopic?new Map(w().plan.map(function(p){return [p.id,p];})):null,practiceLogCount=w().logs.filter(function(l){if(l.subjectId!==subjectId||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;if(!realTopic)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===realTopic;}).length,miniDays=new Set((w().assessments||[]).filter(function(a){return a.subjectId===subjectId&&(!realTopic||a.topicId===realTopic);}).map(function(a){return a.date;})).size,dates=routeStudentEvidenceDates(subjectId,realTopic),latestDate=dates[0]||'',latestDays=latestDate?Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(latestDate+'T12:00:00'))/86400000)):999,openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId&&(!realTopic||m.topicId===realTopic);}).length;
  return {...routeStudentModelFromSignals({practice,weak,behavior,outcome,retention,trend,calibration,skillWeakness,adaptive,openMistakes,practiceLogCount,miniDays,difficultyKnown:difficulty.known,errorMemory,velocity,personalNorm,latestDays,attainmentRatio:attainment.known?attainment.weightedRatio:null}),subjectId,topicId:realTopic,latestDate,adaptive,evidenceDates:dates.slice(0,8)};
 }
-function routeAppliedDecision(subjectId,topicId=''){
- const adaptive=routeSubjectAdaptiveState(subjectId,topicId),student=routeStudentModel(subjectId,topicId),recovery=routeRecoverySignal();let mode=adaptive.mode,label=adaptive.label,note=adaptive.note;
- if(adaptive.mode==='progress'&&(student.state!=='progress'||recovery.active)){
-  mode='steady';label='DENGELİ TEMPO';
-  note=recovery.active?'Güçlü performans sinyali var; ancak toparlanma modu açıkken motor dozu artırmıyor.':
-       student.state==='retention'?'Güçlü performans sinyali var; ancak kalıcılık açığı kapanmadan motor dozu artırmıyor.':
-       student.state==='repair'?'Bazı güçlü sinyaller var; ancak Öğrenci Modeli onarım ihtiyacı gördüğü için motor dozu artırmıyor.':
-       student.state==='sustainable'?'Bazı güçlü sinyaller var; ancak uygulanabilirlik zayıf olduğu için motor dozu artırmıyor.':
+function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false}){
+ adaptive=adaptive||{mode:'steady',label:'DENGELİ TEMPO',note:'Görev dozu mevcut seviyene göre korunuyor.',evidence:[]};
+ student=student||{state:'collect',label:'VERİ TOPLUYOR',nextAction:'Keskin karar verme; yeni gerçek veri topla.',confidence:0};
+ const rawMode=adaptive.mode||'steady',rawLabel=adaptive.label||'DENGELİ TEMPO',state=student.state||'collect';let mode='steady',label=student.label||'DENGELİ İLERLEME',note=student.nextAction||adaptive.note||'Mevcut dozu koru.';
+ if(state==='repair')mode='repair';
+ else if(state==='sustainable')mode='ease';
+ else if(state==='progress'&&!recovery.active)mode='progress';
+ else if(state==='progress'&&recovery.active){mode='steady';label='TOPARLANMA MODU';note='GELİŞİM doğrulandı; ancak toparlanma modu açıkken motor dozu artırmıyor.';}
+ else if(state==='retention'){mode='steady';label=student.label||'KALICILIK AÇIĞI';}
+ else if(state==='collect'){mode='steady';label=student.label||'VERİ TOPLUYOR';}
+ else {mode='steady';label=student.label||'DENGELİ İLERLEME';}
+ if(state==='collect'&&rawMode!=='steady')note='Ham '+rawLabel+' sinyali var; ancak kalibre güven henüz düşük olduğu için motor keskin doz değişikliği yapmadan yeni kanıt bekliyor.';
+ else if(rawMode==='progress'&&mode!=='progress'&&state!=='collect'){
+  note=recovery.active?'GELİŞİM doğrulandı; ancak toparlanma modu açıkken motor dozu artırmıyor.':
+       state==='retention'?'Güçlü performans sinyali var; ancak kalıcılık açığı kapanmadan motor dozu artırmıyor.':
+       state==='repair'?'Bazı güçlü sinyaller var; ancak Öğrenci Modeli onarım ihtiyacı gördüğü için motor dozu artırmıyor.':
+       state==='sustainable'?'Bazı güçlü sinyaller var; ancak uygulanabilirlik zayıf olduğu için motor dozu artırmıyor.':
        'Güçlü performans sinyali var; ancak Öğrenci Modeli GELİŞİM kararını henüz doğrulamadığı için mevcut doz korunuyor.';
  }
- const evidence=[...(adaptive.evidence||[])];if(adaptive.mode==='progress'&&mode!=='progress')evidence.unshift('GELİŞİM yük artışı Öğrenci Modeli doğrulaması bekliyor');
+ const evidence=[...(adaptive.evidence||[])];
+ if(rawMode!==mode){
+  const appliedName=label||({repair:'ONARIM',ease:'SÜRDÜRÜLEBİLİR',progress:'GELİŞİM',steady:'DENGELİ'}[mode]||mode);
+  evidence.unshift(rawMode==='steady'?'Öğrenci Modeli '+appliedName+' kararını ek kanıtlarla doğruladı.':'Ham '+rawLabel+' sinyali kalibre Öğrenci Modeli kararıyla sınırlandı.');
+ }
  const confidence=Number.isFinite(student.confidence)?student.confidence:(adaptive.confidence||0);
- return {...adaptive,mode,label,note,confidence,evidence:evidence.slice(0,8),rawMode:adaptive.mode,rawLabel:adaptive.label,studentState:student.state,studentLabel:student.label};
+ return {...adaptive,mode,label,note,confidence,evidence:evidence.slice(0,8),rawMode,rawLabel,studentState:state,studentLabel:student.label||''};
+}
+function routeAppliedDecision(subjectId,topicId=''){
+ return routeAppliedDecisionFromSignals(routeSubjectAdaptiveState(subjectId,topicId),routeStudentModel(subjectId,topicId),routeRecoverySignal());
 }
 function routeStudentOverview(){
  return subjects().map(function(s){return {subject:s,model:routeStudentModel(s.id)};}).filter(function(x){return x.model.confidence>0;}).sort(function(a,b){const aa=a.model.learningNeed*(.35+.65*a.model.confidence/100),bb=b.model.learningNeed*(.35+.65*b.model.confidence/100);return bb-aa||b.model.confidence-a.model.confidence||a.subject.name.localeCompare(b.subject.name,'tr');});
@@ -2081,8 +2097,8 @@ function routeCandidateFromPlan(p){
   const space=w(),baseTask=space.plan.find(function(x){return x.id===p.reviewBaseTaskId;});if(!baseTask?.done)return null;
   const latest=routeLatestBaseCycle(p.topicId,space);if(latest&&latest.task.id!==p.reviewBaseTaskId)return null;
  }
- const miniAdaptive=p.source==='mini_repair'?routeSubjectAdaptiveState(p.subjectId,p.topicId):null;
- if(p.source==='mini_repair'&&miniAdaptive?.mode!=='repair')return null;
+ const miniAdaptive=p.source==='mini_repair'?routeSubjectAdaptiveState(p.subjectId,p.topicId):null,miniStudent=p.source==='mini_repair'?routeStudentModel(p.subjectId,p.topicId):null;
+ if(p.source==='mini_repair'&&(miniAdaptive?.mode!=='repair'||miniStudent?.state!=='repair'))return null;
  const reviewAnchor=p.source==='spaced_review'?routeReviewAnchorDate(p):'',reviewDue=reviewAnchor&&[1,3,7].includes(p.reviewWave)?R.dayAdd(reviewAnchor,p.reviewWave):'',effectiveDate=reviewDue||p.date;
  const overdue=effectiveDate<today(),days=overdue?Math.max(1,Math.floor((new Date(today()+'T12:00:00')-new Date(effectiveDate+'T12:00:00'))/86400000)):0;
  let source=p.source||'curriculum',priority=Number.isFinite(p.priority)?p.priority:35,reason=p.reason||'Haftalık çalışma rotandaki görev.';
@@ -2142,7 +2158,7 @@ function routeMiniRepairSignals(){
   const prev=byTopic.get(a.topicId);
   if(!prev||a.date>prev.date||(a.date===prev.date&&(a.created||0)>=(prev.created||0)))byTopic.set(a.topicId,a);
  }
- return [...byTopic.values()].map(function(a){return {assessment:a,adaptive:routeSubjectAdaptiveState(a.subjectId,a.topicId)};}).filter(function(x){return x.adaptive.mode==='repair';});
+ return [...byTopic.values()].map(function(a){return {assessment:a,adaptive:routeSubjectAdaptiveState(a.subjectId,a.topicId),student:routeStudentModel(a.subjectId,a.topicId)};}).filter(function(x){return x.adaptive.mode==='repair'&&x.student.state==='repair';});
 }
 function routeBuildCandidates(){
  const space=w(),weak=routeExamWeakness(),recovery=routeRecoverySignal(space),seenTopics=new Set(),seenKeys=new Set(),out=[];
@@ -2181,7 +2197,7 @@ function routeBuildCandidates(){
  }
  for(const base of latestBaseByTopic.values()){
   const p=base.task,baseDate=base.evidenceDate||p.date,linkedLog=space.logs.find(function(l){return l.sessionId===p.id;}),performance=routeSessionPerformanceSignal(linkedLog),adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId),student=routeStudentModel(p.subjectId,p.topicId);
-  const needsRepair=performance.repair||adaptive.mode==='repair';
+  const needsRepair=performance.repair||student.state==='repair';
   const challengeReady=!recovery.active&&!needsRepair&&student.state==='progress';
   const waves=needsRepair?[1,3,7]:[3,7];
   for(const wave of waves){

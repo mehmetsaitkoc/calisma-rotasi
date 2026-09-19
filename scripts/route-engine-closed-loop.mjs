@@ -677,7 +677,7 @@ function lfFirst(days,mode,enter){
   return null;
 }
 function lfBacktest(days){
-  const out={success:0,neutral:0,harmful:0};
+  const out={success:0,neutral:0,harmful:0,events:[]};
   for(let i=0;i<days.length;i++){
     const d=days[i],prev=i?days[i-1].appliedMode:'steady';
     if(!['repair','ease','progress'].includes(d.appliedMode)||d.appliedMode===prev)continue;
@@ -685,7 +685,7 @@ function lfBacktest(days){
     if(d.appliedMode==='repair')score=((a.performance??0)-(d.performance??0))+((b.performance??0)-(d.performance??0))*.5+(d.openMistakes-(b.openMistakes||0))*6;
     else if(d.appliedMode==='ease')score=((a.execution??0)-(d.execution??0))+((b.execution??0)-(d.execution??0))*.5;
     else score=Math.min((a.performance??d.performance??0)-(d.performance??0),(b.performance??d.performance??0)-(d.performance??0))+4;
-    if(score>=5)out.success++;else if(score<=-8)out.harmful++;else out.neutral++;
+    const label=score>=5?'success':score<=-8?'harmful':'neutral';out[label]++;out.events.push({day:d.day,mode:d.appliedMode,label,score:Math.round(score),basePerformance:d.performance,day14Performance:a.performance,day30Performance:b.performance,baseExecution:d.execution,day14Execution:a.execution,day30Execution:b.execution});
   }
   return out;
 }
@@ -716,6 +716,7 @@ function lfSim(base){
   const r={persona:base,space,days,normStart};r.day30=lfCheckpoint(r,30);r.day60=lfCheckpoint(r,60);r.backtest=lfBacktest(days);return r;
 }
 const lfResults=LF_PERSONAS.map(lfSim),lfById=Object.fromEntries(lfResults.map(function(r){return [r.persona.id,r];}));
+for(const r of lfResults)if(r.backtest.harmful)console.log('INTERVENTION-HARMFUL '+r.persona.id,JSON.stringify(r.backtest.events.filter(function(x){return x.label==='harmful';})));
 for(const r of lfResults){
   assert.equal(r.days.length,60,r.persona.id+' lifecycle length');
   assert.ok(r.day30.confidence>=0&&r.day30.confidence<=100&&r.day60.confidence>=0&&r.day60.confidence<=100,r.persona.id+' invalid lifecycle confidence');

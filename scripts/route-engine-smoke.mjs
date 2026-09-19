@@ -892,23 +892,38 @@ for(const marker of [
   const src=between('function miniRecommendation(){','function denemeCenterSection');
   const defs=[
     {id:'repair-mini',exam:'kpss',subjectId:'s1',title:'Repair'},
-    {id:'fresh-mini',exam:'kpss',subjectId:'s2',title:'Fresh'}
+    {id:'fresh-mini',exam:'kpss',subjectId:'s2',title:'Fresh'},
+    {id:'untouched-repair',exam:'kpss',subjectId:'s3',title:'Untouched repair'}
   ];
   let repairDays=1;
   const fn=new Function('subjects','ROTA_MINI_EXAMS','state','miniRecommendationContext','routeSubjectAdaptiveState','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
     src+';return miniRecommendation;'
   )(
-    ()=>[{id:'s1'},{id:'s2'}],defs,{activeExam:'kpss'},
-    def=>({topicId:'',topicStarted:true,openTopic:false,recentTopicWork:false,subjectDaysSince:999,stageDaysSince:999}),
-    id=>id==='s1'?{mode:'repair',label:'ONARIM MODU',repairScore:5,skillWeakness:{weak:[]}}:{mode:'steady',label:'DENGELİ TEMPO',repairScore:0,skillWeakness:{weak:[]}},
+    ()=>[{id:'s1'},{id:'s2'},{id:'s3'}],defs,{activeExam:'kpss'},
+    def=>({topicId:'',topicStarted:def.id!=='untouched-repair',openTopic:false,recentTopicWork:false,subjectDaysSince:999,stageDaysSince:999}),
+    id=>id==='s1'||id==='s3'?{mode:'repair',label:'ONARIM MODU',repairScore:5,skillWeakness:{weak:[]}}:{mode:'steady',label:'DENGELİ TEMPO',repairScore:0,skillWeakness:{weak:[]}},
     id=>id==='repair-mini'?{miniId:id,total:10,correct:3,date:'2026-09-18'}:null,
     last=>last?repairDays:999,
     ()=>({attempts7:0,attempts14:0}),
     (_last,adaptive)=>adaptive.mode==='repair'?100:60
   );
-  assert.equal(fn().def.id,'fresh-mini','A repair signal cannot override the hard three-day recommendation cooldown');
+  assert.equal(fn().def.id,'fresh-mini','A recent repair mini and an untouched repair topic cannot override a studied fresh alternative');
   repairDays=4;
   assert.equal(fn().def.id,'repair-mini','After cooldown, the stronger repair need should regain recommendation priority');
+}
+
+// 5) Every mini must resolve to a real catalog subject and exact topic so topic-based evidence cannot silently fall back to subject-only mode.
+{
+  const scriptBodies=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>m[2]||'').filter(Boolean);
+  const catalogJs=scriptBodies.find(x=>x.includes('root.RotaCatalog='));
+  assert.ok(catalogJs,'Catalog script missing');
+  const env={};new Function('window','globalThis',catalogJs)(env,env);
+  const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition'),data=new Function(src+';return ROTA_MINI_EXAMS;')();
+  for(const mini of data){
+    const subject=env.RotaCatalog.subjects.find(s=>s.id===mini.subjectId);
+    assert.ok(subject,'Mini subject missing from catalog: '+mini.id);
+    assert.ok(subject.topics.some(t=>t.title===mini.topicTitle),'Mini topic title must exactly match catalog: '+mini.id+' → '+mini.topicTitle);
+  }
 }
 
 // 5) Recommendation scoring must prefer active/recently studied topics over untouched topics when other signals are comparable.
@@ -1007,6 +1022,7 @@ for(const marker of [
   'function miniRecommendationContext',
   'stats.openTopic',
   'stats.topicStarted',
+  'started=eligible.filter',
   'stats.subjectDaysSince',
   'Rota kararı',
   'Rota kararı · bu sonuçtan sonra',

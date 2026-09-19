@@ -45,6 +45,15 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(method('t-fi','t-fi-4').key,'science');
 }
 
+// 2b) Review labels must distinguish repair, normal review and earned challenge.
+{
+  const src=between('function routeSourceLabel','function routeExamWeakness');
+  const api=new Function(src+';return {routeTaskSourceLabel};')();
+  assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:1}),'1 GÜN ONARIMI');
+  assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:3}),'3 GÜN TEKRARI');
+  assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:3,reviewVariant:'challenge'}),'SEVİYE YOKLAMA');
+}
+
 // 3) Adaptive dosage must react differently to struggle, strong performance and friction.
 {
   const src=between('function routeOutcomeSignal','function routeCandidateFromPlan');
@@ -264,6 +273,11 @@ for(const marker of [
   'weightedAccuracy',
   'routeDifficultySignal',
   'routeDifficultyPrescription',
+  'Tekrar odağı:',
+  "reviewVariant:'challenge'",
+  'SEVİYE YOKLAMA',
+  'challengeReady',
+  "practiceAnswered>=8&&practiceAccuracy>=.85",
   'Zorlandıysan en çok nerede?',
   'Sinyal güveni',
   'const waves=needsRepair?[1,3,7]:[3,7]',

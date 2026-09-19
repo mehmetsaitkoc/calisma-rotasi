@@ -210,6 +210,29 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.deepEqual(picked.filter(t=>t.subjectId==='k-ta').map(t=>t.id),['t1','t2']);
 }
 
+// 4) Light-day action must preserve critical work and move low-priority tasks without recording friction.
+{
+  const src=between('function routeLightenToday','function routeTaskReason');
+  const space={plan:[
+    {id:'critical',date:'2026-09-19',done:false,source:'mistake',priority:90,minutes:25},
+    {id:'normal-a',date:'2026-09-19',done:false,source:'curriculum',priority:60,minutes:30},
+    {id:'normal-b',date:'2026-09-19',done:false,source:'curriculum',priority:40,minutes:30}
+  ]};
+  const today=()=> '2026-09-19';
+  const R={dayAdd:()=> '2026-09-20'};
+  const routeEnsure=()=>{};
+  const routeEffectiveDailyMinutes=()=>90;
+  const routeIsCriticalReview=p=>p.source==='mistake';
+  let rebalanced=0;
+  const routeRebalance=()=>{rebalanced++;};
+  const fn=new Function('w','today','R','routeEnsure','routeEffectiveDailyMinutes','routeIsCriticalReview','routeRebalance',src+';return routeLightenToday;')(()=>space,today,R,routeEnsure,routeEffectiveDailyMinutes,routeIsCriticalReview,routeRebalance);
+  const out=fn();
+  assert.ok(out.moved>=1);
+  assert.equal(space.plan.find(p=>p.id==='critical').deferUntil,undefined,'Critical repair must stay today');
+  assert.equal(rebalanced,1);
+  assert.ok(space.plan.some(p=>p.id!=='critical'&&p.deferUntil==='2026-09-20'));
+}
+
 // 4) Pace signal must suggest a transparent capacity adjustment without changing settings.
 {
   const src=between('function routePaceSignal','function routeRebalance');
@@ -367,6 +390,9 @@ for(const marker of [
   'routeReviewDailyLimit',
   'routeReviewWeeklyLimit',
   'routeRecoverySignal',
+  'function routeLightenToday()',
+  'Bugünü hafiflet',
+  'erteleme/atlama başarısızlığı olarak sayılmaz',
   'routeBacklogDailyLimit',
   'routeBacklogWeeklyLimit',
   'routeBacklogDailyCountLimit',

@@ -2162,8 +2162,8 @@ function miniRecommendation(){
   else reason='Mevcut tempoyu doğrulamak için kısa ve konu odaklı bir kontrol.';
   return {def,adaptive,last,daysSince,score,reason,stats,context};
  }).sort(function(x,y){return y.score-x.score||x.def.title.localeCompare(y.def.title,'tr');});
- const eligible=ranked.filter(function(x){return !x.last||x.daysSince>=3;});
- return eligible[0]||null;
+ const eligible=ranked.filter(function(x){return !x.last||x.daysSince>=3;}),started=eligible.filter(function(x){return x.context.topicStarted;});
+ return (started.length?started[0]:eligible[0])||null;
 }
 function denemeCenterSection(){
  const activeSubjects=new Set(subjects().map(function(s){return s.id;})),minis=ROTA_MINI_EXAMS.filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId);}),resources=OFFICIAL_EXAM_RESOURCES[state.activeExam]||[],results=[...(w().assessments||[])].sort(function(a,b){return b.date.localeCompare(a.date)||b.created-a.created;}).slice(0,8),rec=miniRecommendation(),weakness=miniWeaknessOverview(minis),progress=miniProgressSection(minis);

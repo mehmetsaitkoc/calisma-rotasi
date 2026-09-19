@@ -210,6 +210,27 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.deepEqual(picked.filter(t=>t.subjectId==='k-ta').map(t=>t.id),['t1','t2']);
 }
 
+// 4) Pace signal must suggest a transparent capacity adjustment without changing settings.
+{
+  const src=between('function routePaceSignal','function routeRebalance');
+  const R={
+    validDate:()=>true,
+    dayAdd:(d,n)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);},
+    allTopics:()=>Array.from({length:80},(_,i)=>({id:'t'+i}))
+  };
+  const today=()=> '2026-09-19';
+  const state={activeExam:'kpss'};
+  const routeEffectiveDailyMinutes=()=>60;
+  const space={settings:{targetDate:'2026-10-31',days:[1,2,3,4,5]},topicState:{}};
+  const pace=new Function('R','today','state','routeEffectiveDailyMinutes','w',src+';return routePaceSignal;')(R,today,state,routeEffectiveDailyMinutes,()=>space)(space);
+  assert.equal(pace.known,true);
+  assert.equal(pace.status,'overload');
+  assert.ok(pace.extraSessionsPerWeek>=1);
+  assert.ok(pace.extraMinutesPerWorkDay>=5);
+  assert.match(pace.text,/Kararı sen ver/);
+  assert.match(pace.text,/kendiliğinden uygulamaz/);
+}
+
 // 4) Recovery mode must cap old backlog instead of letting missed tasks consume the whole plan.
 {
   const src=between('function routeRecoverySignal','function routeEffectiveDailyMinutes');
@@ -336,6 +357,10 @@ for(const marker of [
   'routeHeavyLimit',
   'routeMaxTaskMinutes',
   'routePaceSignal',
+  'extraSessionsPerWeek',
+  'extraMinutesPerWorkDay',
+  'Kararı sen ver:',
+  'Toparlanma telafisi',
   'TAKVİM SIKIŞIK',
   'routeTopicFrontier',
   'routeSequenceRank',

@@ -2558,8 +2558,14 @@ function routePilotLastActiveDate(startDate){
  }
  return dates.length?dates.sort(function(a,b){return b.localeCompare(a);})[0]:'';
 }
+function routePilotInterventionHistory(startDate,cutoff){
+ return (w().route?.interventions||[]).filter(function(x){return x.date>=startDate&&x.date<=cutoff;}).sort(function(a,b){return a.date.localeCompare(b.date)||(a.created||0)-(b.created||0);}).slice(-240).map(function(x){
+  const evaluation=routePilotInterventionEvaluationAt(x,cutoff),horizons=(evaluation.horizons||[]).map(function(h){return {horizon:h.horizon,status:h.status||'pending',score:Number.isFinite(h.score)?h.score:null,label:typeof h.label==='string'?h.label.slice(0,100):'',reason:typeof h.reason==='string'?h.reason.slice(0,500):''};});
+  return {date:x.date,subjectId:x.subjectId||'',topicId:x.topicId||'',mode:x.mode||'',confidence:Number.isFinite(x.confidence)?x.confidence:0,source:typeof x.source==='string'?x.source.slice(0,40):'',method:typeof x.method==='string'?x.method.slice(0,60):'',reason:typeof x.reason==='string'?x.reason.slice(0,500):'',baseline:{accuracy:Number.isFinite(x.baselineAccuracy)?x.baselineAccuracy:null,completion:Number.isFinite(x.baselineCompletion)?x.baselineCompletion:null,learningNeed:Number.isFinite(x.baselineNeed)?x.baselineNeed:null,answered:Number.isInteger(x.baselineAnswered)?x.baselineAnswered:0},status:evaluation.status||'pending',horizons};
+ });
+}
 function routePilotPayload(){
- routePilotAutoSnapshot();const p=routePilotConfig();return {schema:'calisma-rotasi-pilot-v1',participantId:p.participantId,exam:state.activeExam,track:w().settings.track,startDate:p.startDate,generatedDate:today(),lastActiveDate:routePilotLastActiveDate(p.startDate),completed:!!p.completedAt,snapshots:p.snapshots};
+ routePilotAutoSnapshot();const p=routePilotConfig();return {schema:'calisma-rotasi-pilot-v1',participantId:p.participantId,exam:state.activeExam,track:w().settings.track,startDate:p.startDate,generatedDate:today(),lastActiveDate:routePilotLastActiveDate(p.startDate),completed:!!p.completedAt,snapshots:p.snapshots,interventionHistory:routePilotInterventionHistory(p.startDate,today())};
 }
 function routePilotExport(){const p=routePilotConfig();if(!p.startDate)throw Error('Pilot kaydı henüz başlatılmadı.');const payload=routePilotPayload();download('calisma-rotasi-pilot-'+payload.participantId+'-'+today()+'.json',JSON.stringify(payload,null,2),'application/json');toast('Takma kimlikli pilot ölçüm dosyası hazırlandı.');}
 function routePilotConfig(){routeEnsure();return w().route.pilot;}

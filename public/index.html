@@ -1581,6 +1581,16 @@ function routeCandidateFromPlan(p){
  }
  else if(source==='checkpoint')recipe=routeReviewGoal(p.subjectId,p.topicId,p.title,'checkpoint');
  else if(['curriculum','profile','priority','exam','backlog'].includes(source))recipe=routeTaskGoal(p.subjectId,p.topicId,p.title);
+ if(source==='backlog'&&recipe){
+  const recovery=routeRecoverySignal();
+  if(recovery.active){
+   const maxMinutes=Math.max(20,routeBacklogDailyLimit(routeEffectiveDailyMinutes(),recovery)-5);
+   if(recipe.minutes>maxMinutes){
+    const scaledQuestions=Math.max(5,Math.round((recipe.questions||5)*maxMinutes/recipe.minutes)),method=routeStudyMethod(p.subjectId,p.topicId,p.title);
+    recipe={...recipe,minutes:maxMinutes,questions:scaledQuestions,text:'Toparlanma telafisi · '+maxMinutes+' dk. '+method.label.toLocaleLowerCase('tr-TR')+' biçiminde yalnız en kritik bölümü tamamla; yaklaşık '+scaledQuestions+' soru/uygulama ile bitir. Süre dolunca kalan yükü aynı güne yığma.'};
+   }
+  }
+ }
  if(reviewVariant)base.reviewVariant=reviewVariant;else delete base.reviewVariant;
  return {...base,...(recipe?{minutes:recipe.minutes,targetQuestions:recipe.questions,taskGoal:recipe.text}:{}),source,priority:Math.min(100,priority),reason,earliest:p.deferUntil&&p.deferUntil>today()?p.deferUntil:today(),routeKey:p.routeKey||('plan:'+p.id),taskState:p.taskState==='later'?'later':'open'};
 }
@@ -1695,12 +1705,16 @@ function routePaceSignal(space=w()){
  const capacity=routeEffectiveDailyMinutes(space),blockCost=Math.min(35,capacity),sessionsPerDay=Math.max(1,Math.floor(capacity/blockCost)),availableSessions=workingDays*sessionsPerDay,newTopicSlots=Math.max(1,Math.floor(availableSessions*.55));
  const remainingTopics=R.allTopics(space,state.activeExam).filter(function(t){return (space.topicState[t.id]?.status||0)!==2;}).length,ratio=remainingTopics/newTopicSlots;
  const status=ratio<=.80?'comfortable':ratio<=1.05?'tight':'overload',label=status==='comfortable'?'TAKVİMDE TAMPON VAR':status==='tight'?'TAKVİM SIKIŞIK':'TAKVİM YÜKLÜ';
+ const weeks=Math.max(1,diff/7),missingTopicSlots=Math.max(0,remainingTopics-newTopicSlots),extraSessionsTotal=Math.max(0,Math.ceil(missingTopicSlots/.55)),extraSessionsPerWeek=extraSessionsTotal?Math.max(1,Math.ceil(extraSessionsTotal/weeks)):0,extraMinutesPerWorkDay=extraSessionsTotal&&workingDays?Math.max(5,Math.ceil((extraSessionsTotal*blockCost/workingDays)/5)*5):0;
  let text='Kalan '+remainingTopics+' konu için hedef tarihe kadar yaklaşık '+newTopicSlots+' yeni-konu oturumu alanı hesaplanıyor.';
  if(status==='comfortable')text+=' Başlangıç için aksama payı var.';
  else if(status==='tight')text+=' Aksama payı düşük; öncelik sırası önemli olacak.';
  else text+=' Mevcut gün ve süre sınırları değişmeden tüm başlıklara en az bir ana oturum ayırmak zor görünüyor; rota kapasiteyi aşmak yerine zayıf ve öncelikli başlıkları öne alacak.';
+ if(extraSessionsTotal){
+  text+=' Kararı sen ver: takvimi yaklaşık dengelemek için haftada '+extraSessionsPerWeek+' ek 30–35 dk oturum veya mevcut çalışma günlerine ortalama +'+extraMinutesPerWorkDay+' dk benzeri bir kapasite artışı gerekir. Sistem bunu kendiliğinden uygulamaz.';
+ }
  text+=' Bu kaba bir kapasite kontrolüdür; konu boyları eşit değildir.';
- return {known:true,target,workingDays,capacity,sessionsPerDay,availableSessions,newTopicSlots,remainingTopics,ratio,status,label,text};
+ return {known:true,target,workingDays,capacity,sessionsPerDay,availableSessions,newTopicSlots,remainingTopics,ratio,status,label,text,weeks,missingTopicSlots,extraSessionsTotal,extraSessionsPerWeek,extraMinutesPerWorkDay};
 }
 function routeRebalance(reason='Rota güncellendi',silent=false){
  if(!state.activeExam||!w().configured)return {changed:0,scheduled:0};

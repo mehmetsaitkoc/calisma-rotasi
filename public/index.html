@@ -2545,8 +2545,20 @@ function routePilotAutoSnapshot(){
 function routePilotStart(){
  routeEnsure();const pilot=w().route.pilot;pilot.enabled=true;pilot.participantId='p-'+R.uid();pilot.startDate=today();pilot.startedAt=Date.now();pilot.completedAt=0;pilot.snapshots=[];routePilotAutoSnapshot();return pilot;
 }
+function routePilotLastActiveDate(startDate){
+ const dates=[];
+ for(const l of (w().logs||[]))if(l.date&&l.date>=startDate&&l.date<=today())dates.push(l.date);
+ for(const ev of (w().taskEvents||[]))if(ev.date&&ev.date>=startDate&&ev.date<=today())dates.push(ev.date);
+ for(const a of (w().assessments||[]))if(a.date&&a.date>=startDate&&a.date<=today())dates.push(a.date);
+ for(const x of (w().exams||[]))if(x.date&&x.date>=startDate&&x.date<=today())dates.push(x.date);
+ for(const m of (w().mistakes||[])){
+  const created=Number.isFinite(m.created)&&m.created>0?R.iso(new Date(m.created)):'';if(created&&created>=startDate&&created<=today())dates.push(created);
+  const resolved=Number.isFinite(m.resolvedAt)&&m.resolvedAt>0?R.iso(new Date(m.resolvedAt)):'';if(resolved&&resolved>=startDate&&resolved<=today())dates.push(resolved);
+ }
+ return dates.length?dates.sort(function(a,b){return b.localeCompare(a);})[0]:'';
+}
 function routePilotPayload(){
- routePilotAutoSnapshot();const p=routePilotConfig();return {schema:'calisma-rotasi-pilot-v1',participantId:p.participantId,exam:state.activeExam,track:w().settings.track,startDate:p.startDate,generatedDate:today(),completed:!!p.completedAt,snapshots:p.snapshots};
+ routePilotAutoSnapshot();const p=routePilotConfig();return {schema:'calisma-rotasi-pilot-v1',participantId:p.participantId,exam:state.activeExam,track:w().settings.track,startDate:p.startDate,generatedDate:today(),lastActiveDate:routePilotLastActiveDate(p.startDate),completed:!!p.completedAt,snapshots:p.snapshots};
 }
 function routePilotExport(){const p=routePilotConfig();if(!p.startDate)throw Error('Pilot kaydı henüz başlatılmadı.');const payload=routePilotPayload();download('calisma-rotasi-pilot-'+payload.participantId+'-'+today()+'.json',JSON.stringify(payload,null,2),'application/json');toast('Takma kimlikli pilot ölçüm dosyası hazırlandı.');}
 function routePilotConfig(){routeEnsure();return w().route.pilot;}

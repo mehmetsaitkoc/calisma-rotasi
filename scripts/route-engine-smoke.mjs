@@ -923,6 +923,53 @@ for(const marker of [
   assert.ok(sameSubjectToday<active,'Recent measurement in the same subject should encourage recommendation diversity');
 }
 
+// 5) Recent weakness overview must rank the strongest subtopic gaps across minis.
+{
+  const src=between('function miniWeaknessOverviewData','function miniWeaknessOverview(');
+  const minis=[
+    {id:'m1',subjectId:'s1',topicTitle:'Topic 1'},
+    {id:'m2',subjectId:'s2',topicTitle:'Topic 2'}
+  ];
+  const miniTopicId=def=>'t-'+def.id;
+  const routeAssessmentWeakSkillSignal=(subjectId)=>{
+    if(subjectId==='s1')return {attempts:2,weak:[
+      {skill:'A',total:4,correct:1,wrong:2,blank:1,weightedMissRate:.75},
+      {skill:'B',total:4,correct:3,wrong:1,blank:0,weightedMissRate:.25}
+    ]};
+    return {attempts:1,weak:[{skill:'C',total:4,correct:0,wrong:3,blank:1,weightedMissRate:1}]};
+  };
+  const fn=new Function('miniTopicId','routeAssessmentWeakSkillSignal',src+';return miniWeaknessOverviewData;')(miniTopicId,routeAssessmentWeakSkillSignal);
+  const items=fn(minis);
+  assert.equal(items[0].skill,'C');
+  assert.equal(items[0].missed,4);
+  assert.ok(items.some(x=>x.skill==='A'));
+}
+
+// 5) Backup validation must round-trip mini answers, subtopic evidence and the stored route decision.
+{
+  const scriptBodies=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>m[2]||'').filter(Boolean);
+  const catalogJs=scriptBodies.find(x=>x.includes('root.RotaCatalog='));
+  const coreJs=scriptBodies.find(x=>x.includes('root.RotaCore='));
+  assert.ok(catalogJs&&coreJs,'Catalog/core scripts must be available for backup round-trip test');
+  const env={};
+  new Function('window','globalThis',catalogJs)(env,env);
+  new Function('window','globalThis',coreJs)(env,env);
+  const backup=env.RotaCore.fresh();backup.activeExam='kpss';
+  backup.workspaces.kpss.assessments=[{
+    id:'mini-backup-1',miniId:'kpss-problemler-01',version:1,date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',title:'KPSS Problemler Mini #01',
+    total:10,correct:6,wrong:2,blank:2,minutes:12,answers:[2,3,-1,2,1,2,-1,2,0,3],
+    skillBreakdown:[{skill:'Yüzde',total:2,correct:1,wrong:0,blank:1},{skill:'Oran-orantı',total:8,correct:5,wrong:2,blank:1}],
+    weakSkills:['Yüzde'],routeDecision:{mode:'repair',label:'ONARIM MODU',note:'Yüzde açığı',confidence:70,evidence:['mini: Yüzde alt konusu']},created:1
+  }];
+  const validated=env.RotaCore.validateBackup(backup),saved=validated.workspaces.kpss.assessments[0];
+  assert.equal(saved.answers.length,10);
+  assert.equal(saved.skillBreakdown[0].skill,'Yüzde');
+  assert.deepEqual(saved.weakSkills,['Yüzde']);
+  assert.equal(saved.routeDecision.mode,'repair');
+  assert.equal(saved.routeDecision.confidence,70);
+  assert.equal(validated.workspaces.kpss.exams.length,0,'Mini backup record must not leak into full exams');
+}
+
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.
 for(const marker of [
   'assessments:[]',
@@ -968,6 +1015,10 @@ for(const marker of [
   'Rota aynı denemeyi sık sık önermek yerine en az 3 gün',
   'function miniDistinctAttempts',
   'function miniProgressSection',
+  'function miniWeaknessOverviewData',
+  'function miniWeaknessOverview',
+  'Son 21 gün · alt-konu açıkları',
+  'AKTİF KONU',
   'Mini gelişim grafikleri',
   'Aynı gün yapılan tekrarlar grafiği şişirmez',
   'MEBİ 2026–2027 Türkiye Geneli YKS Denemeleri',

@@ -159,7 +159,8 @@ async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5,
 
 async function setDay(page, date) {
   await page.clock.setFixedTime(new Date(date + 'T09:00:00+03:00'));
-  await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
+  assert.equal(new URL(page.url()).searchParams.get('fresh'), '1', 'Day simulation must stay inside the fresh-preview storage namespace');
+  await navigate(page, 'today');
   await page.getByRole('heading', { name: 'Bugünkü Rotan' }).waitFor({ state: 'visible' });
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
 }

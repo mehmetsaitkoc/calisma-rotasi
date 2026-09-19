@@ -1532,6 +1532,24 @@ for(const marker of [
   assert.ok(html.includes('routeRecordModeHistory(scheduled)'),'Rebalance must persist applied mode history');
 }
 
+// 5) Today's route must surface the next action and progress without changing route decisions.
+for(const marker of [
+  'route-now-label',
+  'ŞİMDİ BAŞLA',
+  'route-progress-summary',
+  'route-progress-track',
+  'BUGÜNÜN PLANI',
+  'route-list-status',
+  'Today Premium v1 — clarity-first shell; route engine behavior is unchanged.'
+]) assert.ok(html.includes(marker),`Missing clarity-first today UI marker: ${marker}`);
+{
+  const src=between('function routeTodayPage','function baseTodayPage');
+  assert.ok(src.includes("doneCount=tasks.filter(p=>p.done).length"),'Today progress must derive from real task completion');
+  assert.ok(src.includes("first=open.find(p=>p.taskState!=='later')||open[0]"),'Hero must preserve scheduler ordering for the next task');
+  assert.ok(src.includes("first?esc(first.title):'Bugünkü rotanı tamamladın.'"),'Hero must show the actual next task rather than inventing a recommendation');
+}
+
+
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
 {
   const mini=between('function routeMiniRepairSignals','function routeBuildCandidates');

@@ -1213,16 +1213,16 @@ function routeExamWeakness(){
 function routeObservedNet(type){
  const x=[...w().exams].filter(function(e){return e.type===type;}).sort(function(a,b){return b.date.localeCompare(a.date);})[0];
  if(!x)return null;
- try{const n=R.calcNet(x.parts,x.penalty);return {net:Math.max(0,Number(n.net)||0),date:x.date,label:C.TYPES[type]?.label||type};}catch{return null;}
+ try{const n=R.calcNet(x.parts,x.penalty),freshness=routeExamEvidenceFactor(x);return {net:Math.max(0,Number(n.net)||0),date:x.date,label:C.TYPES[type]?.label||type,freshness,stale:freshness<1};}catch{return null;}
 }
 function routeNetGap(){
  const type=state.activeExam==='kpss'?'KPSS':'TYT',p=w().profile||{},observed=routeObservedNet(type),reported=Number.isFinite(p.currentNet)?Number(p.currentNet):null,current=observed?observed.net:reported,target=Number(p.targetNet)||0;
- return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0,source:observed?'exam':reported!==null?'profile':'none',observed,label:C.TYPES[type]?.label||type};
+ return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0,source:observed?'exam':reported!==null?'profile':'none',observed,label:C.TYPES[type]?.label||type,freshness:observed?.freshness??1};
 }
 function routeStageGap(){
  if(state.activeExam!=='yks'||w().settings.track==='tyt')return {known:false,current:null,target:0,gap:0,source:'none',observed:null,label:''};
  const type=yksStageExamType(),p=w().profile||{},observed=type?routeObservedNet(type):null,reported=Number.isFinite(p.currentStageNet)?Number(p.currentStageNet):null,current=observed?observed.net:reported,target=Number(p.targetStageNet)||0,label=yksStageLabel();
- return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0,source:observed?'exam':reported!==null?'profile':'none',observed,label};
+ return {known:current!==null&&target>0,current,target,gap:current!==null&&target>0?Math.max(0,target-current):0,source:observed?'exam':reported!==null?'profile':'none',observed,label,freshness:observed?.freshness??1};
 }
 function routeSubjectGap(subjectId){
  const s=subject(subjectId);
@@ -1231,7 +1231,8 @@ function routeSubjectGap(subjectId){
 }
 function routeGapPressure(g){
  if(!g||!g.known)return 0;
- return g.gap>=40?10:g.gap>=25?8:g.gap>=15?6:g.gap>=7?4:g.gap>0?2:0;
+ const base=g.gap>=40?10:g.gap>=25?8:g.gap>=15?6:g.gap>=7?4:g.gap>0?2:0,freshness=Number.isFinite(g.freshness)?Math.max(.35,Math.min(1,g.freshness)):1;
+ return Math.round(base*freshness);
 }
 function routeGoalPressure(){
  const p=w().profile||{},g=routeNetGap(),sg=routeStageGap();let pressure=0;
@@ -1467,10 +1468,12 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  const topicPractice=realTopic?routePracticeSignal(subjectId,realTopic):null,subjectPractice=routePracticeSignal(subjectId),practice=topicPractice?.known?topicPractice:subjectPractice;
  const topicCalibration=realTopic?routeFeedbackCalibrationSignal(subjectId,realTopic):null,subjectCalibration=routeFeedbackCalibrationSignal(subjectId),calibration=topicCalibration?.known?topicCalibration:subjectCalibration;
  const topicEvidence=!!(realTopic&&(topicBehavior?.known||topicOutcome?.known||topicPractice?.known||topicCalibration?.known));
- const weak=routeExamWeakness()[subjectId],openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId&&(!realTopic||m.topicId===realTopic);}).length,practiceAccuracy=practice.known?(practice.weightedAccuracy||practice.accuracy):0;
+ const weak=routeExamWeakness()[subjectId],examFreshness=weak?.freshness??1,openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId&&(!realTopic||m.topicId===realTopic);}).length,practiceAccuracy=practice.known?(practice.weightedAccuracy||practice.accuracy):0;
  let mode='steady',label='DENGELİ TEMPO',note='Görev dozu mevcut seviyene göre korunuyor.',repairScore=0,progressScore=0,evidence=[];
- if(weak&&weak.ratio<.52){repairScore+=3;evidence.push('deneme belirgin zayıf');}
- else if(weak&&weak.ratio<.62){repairScore+=1;evidence.push('deneme zayıf');}
+ if(weak&&weak.ratio<.52){
+  const points=examFreshness>=.9?3:examFreshness>=.55?2:examFreshness>=.35?1:0;
+  repairScore+=points;if(points)evidence.push(points===1?'eski denemede zayıflık sinyali':'deneme belirgin zayıf');
+ }else if(weak&&weak.ratio<.62&&examFreshness>=.75){repairScore+=1;evidence.push('deneme zayıf');}
  if(openMistakes>=3){repairScore+=3;evidence.push(openMistakes+' açık yanlış');}
  else if(openMistakes>=2){repairScore+=2;evidence.push(openMistakes+' açık yanlış');}
  else if(openMistakes===1){repairScore+=1;evidence.push('1 açık yanlış');}
@@ -1489,7 +1492,7 @@ function routeSubjectAdaptiveState(subjectId,topicId=''){
  else if(outcome.total>=2&&outcome.trend>=.18&&outcome.recent!=='stuck'){progressScore+=1;evidence.push('rahat ilerleme');}
  if(practice.known&&practice.sessions>=2&&practice.answered>=15&&practiceAccuracy>=.85){progressScore+=2;evidence.push('yüksek soru doğruluğu');}
  else if(practice.known&&practice.answered>=12&&practiceAccuracy>=.78){progressScore+=1;evidence.push('iyi soru doğruluğu');}
- if(weak&&weak.ratio>=.78){progressScore+=1;evidence.push('deneme güçlü');}
+ if(weak&&weak.ratio>=.78&&examFreshness>=.75){progressScore+=1;evidence.push('deneme güçlü');}
  if(openMistakes===0)progressScore+=1;else progressScore=Math.max(0,progressScore-1);
  if(calibration.productiveStruggle>=2&&calibration.hiddenGap===0&&practiceAccuracy>=.80){
   repairScore=Math.max(0,repairScore-2);
@@ -2304,7 +2307,7 @@ function onAction(event){const b=event.target.closest('[data-action]');if(!b)ret
  const p=w().plan.find(function(x){return x.id===id;});
  if(p){
   const method=routeStudyMethod(p.subjectId,p.topicId,p.title),profile=routeProfileSignal(p.subjectId),gap=routeSubjectGap(p.subjectId),consistency=routeConsistencySignal(),capacity=routeEffectiveDailyMinutes(),adaptive=routeSubjectAdaptiveState(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p);
-  const netText=gap.current===null?(gap.label?gap.label+' mevcut net verisi yok':'Mevcut net verisi yok'):(gap.label?gap.label+' ':'')+format(gap.current,1)+' net'+(gap.source==='exam'?' · son denemeden':' · başlangıç beyanından')+(gap.target?' → '+format(gap.target,1)+' hedef':'');
+  const netText=gap.current===null?(gap.label?gap.label+' mevcut net verisi yok':'Mevcut net verisi yok'):(gap.label?gap.label+' ':'')+format(gap.current,1)+' net'+(gap.source==='exam'?' · son denemeden'+(gap.freshness<1?' · eskime payıyla':''):' · başlangıç beyanından')+(gap.target?' → '+format(gap.target,1)+' hedef':'');
   const consistencyText=consistency.known?Math.round(consistency.ratio*100)+'% · '+consistency.active+'/'+consistency.expected+' planlı gün':'Henüz yeterli geçmiş gün yok';
   openModal('Neden bugün bu görev?',`<div class="review-summary"><div class="eyebrow">${esc(sourceLabel)} · ÖNCELİK ${Math.round(p.priority||0)}/100</div><h3>${esc(p.title)}</h3><p>${esc(routeTaskReason(p))}</p></div><div class="route-why-grid"><div><small>ÇALIŞMA YÖNTEMİ</small><strong>${esc(method.label)}</strong><p>${esc(p.taskGoal||'Görev, dersin türüne ve seviyene göre oluşturuldu.')}</p></div><div><small>DERS SEVİYEN</small><strong>${esc(profile.label)}</strong><p>Başlangıç beyanın rota önceliğini etkiler; gerçek deneme ve çalışma verileri geldikçe ağırlığı azalır.</p></div><div><small>NET SİNYALİ</small><strong>${esc(netText)}</strong><p>${gap.known?'Mevcut–hedef farkı zayıf derslerin ağırlığını artırabilir.':'Net farkı bilinmediği için ders seviyesi ve gerçek performans sinyalleri daha çok kullanılır.'}</p></div><div><small>TEMPO</small><strong>${duration(capacity)} / çalışma günü</strong><p>Son 7 gün devamlılık: ${esc(consistencyText)}. Seçtiğin üst sınır ${duration(w().settings.dailyMinutes)}.</p></div><div><small>UYARLANAN DOZ</small><strong>${esc(adaptive.label)}</strong><p>${esc(adaptive.note)} <b>Sinyal güveni: %${adaptive.confidence}</b>. ${adaptive.evidence?.length?'Dayanak: '+esc(adaptive.evidence.join(' · '))+'. ':''}${adaptive.scope==='topic'?'Bu uyarlama öncelikle bu konudaki son çalışmalarından geliyor.':'Henüz konuya özel yeterli veri olmadığı için ders geneli kullanılıyor.'}${adaptive.behavior.known?' Son 14 gün görev tamamlanma oranı %'+Math.round(adaptive.behavior.completion*100)+'.':''}${adaptive.outcome?.known?' Son '+adaptive.outcome.total+' planlı çalışmada: '+adaptive.outcome.stuck+' zorlandım · '+adaptive.outcome.ok+' normal · '+adaptive.outcome.strong+' rahat.':''}${adaptive.practice?.known?' Soru pratiği doğruluğu %'+Math.round(adaptive.practice.accuracy*100)+' ('+adaptive.practice.answered+' cevap).':''}</p></div></div><div class="notice mt">Yerleştirme yalnız puana göre yapılmaz. Aynı güne mümkün olduğunca aynı ders/yöntem tekrarı ve aşırı sayısal yük bindirilmez; kapasite yetmezse düşük öncelikli görev daha sonraki uygun güne bırakılır.</div>`);
  }

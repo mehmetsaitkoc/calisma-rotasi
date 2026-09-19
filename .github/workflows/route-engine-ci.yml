@@ -39,5 +39,17 @@ jobs:
       - name: Syntax check closed-loop runner
         run: node --check scripts/route-engine-closed-loop.mjs
 
+      - name: Syntax check quality report runner
+        run: node --check scripts/route-engine-quality-report.mjs
+
       - name: Run route engine smoke, stress, route simulation, longitudinal and closed-loop tests
         run: npm test
+
+      - name: Generate 60-day motor quality report
+        run: npm run quality:report
+
+      - name: Validate quality report sections
+        run: |
+          grep -q "## Yönetici özeti" reports/route-engine-quality-report.md
+          grep -q "## Persona özeti" reports/route-engine-quality-report.md
+          grep -q "## Pilot öncesi kalan açıklar" reports/route-engine-quality-report.md

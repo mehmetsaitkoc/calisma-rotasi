@@ -116,7 +116,7 @@ async function submitWizard(page) {
   await page.locator('#setup-wizard-form [name="targetNet"]').fill('82');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
-  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="300"]').check();
+  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').check();
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   const dayBoxes = page.locator('#setup-wizard-form [name="days"]');

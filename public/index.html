@@ -1760,7 +1760,8 @@ function routeStudentModelFromSignals(input){
  else if(adaptive.mode==='repair'||learningNeed>=68){state='repair';label='ONARIM ÖNCELİĞİ';nextAction=skillWeakness.primary?'Önce “'+skillWeakness.primary.skill+'” açığını düzelt, ardından aynı beceriden yeni sorularla doğrula.':'Yeni konu yüklemeden önce düşük performansın nedenini onar ve kısa ölçümle doğrula.';}
  else if(retention.known&&retention.score<60){state='retention';label='KALICILIK AÇIĞI';nextAction='Yeni yük eklemekten önce zamanı gelen 3/7 günlük tekrarları tamamla ve kalıcılığı yeniden ölç.';}
  else if(adaptive.mode==='ease'||(execution!==null&&execution<60)){state='sustainable';label='UYGULANABİLİR DOZ';nextAction='Görev hacmini küçült; önce düzenli tamamlamayı geri kazan.';}
- else if(improving&&performance!==null&&performance>=75){state='progress';label='GELİŞİM DOĞRULANIYOR';nextAction='Dozu sert artırma; küçük bir seviye yoklamasıyla yükselişin kalıcı olduğunu doğrula.';}
+ else if(improving&&performance!==null&&performance>=75&&confidence>=45&&sourceCount>=2){state='progress';label='GELİŞİM DOĞRULANIYOR';nextAction='Dozu sert artırma; küçük bir seviye yoklamasıyla yükselişin kalıcı olduğunu doğrula.';}
+ else if(improving&&performance!==null&&performance>=75){nextAction='Yükseliş sinyali var; zorluğu artırmadan önce ikinci bir kanıt türü veya yeni doğrulama ölçümü bekle.';}
  if(state==='steady'&&openMistakes===1)nextAction='Mevcut dozu koru; tek açık yanlışı kapatıp kısa doğrulama yap.';
  else if(state==='steady'&&errorMemory.repeated&&errorMemory.primary)nextAction='Mevcut dozu koru; geçmişte tekrarlayan “'+errorMemory.primary.label+'” hata türünün yeni sette yeniden oluşup oluşmadığını özellikle kontrol et.';
  let calibrationLabel='Öz değerlendirme verisi yok';

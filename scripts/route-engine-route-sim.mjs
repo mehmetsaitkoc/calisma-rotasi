@@ -224,11 +224,23 @@ sim('R06 same-day mini dedupe',()=>{
     {id:'old',miniId:'mini',date:TODAY,subjectId:'k-tr',topicId:'t1',correct:2,wrong:8,created:1},
     {id:'new',miniId:'mini',date:TODAY,subjectId:'k-tr',topicId:'t1',correct:3,wrong:7,created:2}
   );
-  return makeBuild(space,{adaptive:{t1:{mode:'repair',scope:'topic',confidence:60,skillWeakness:{primary:{skill:'Ana düşünce'}}}}});
+  return makeBuild(space,{adaptive:{t1:{mode:'repair',scope:'topic',confidence:60,skillWeakness:{primary:{skill:'Ana düşünce'}}}},students:{t1:{state:'repair',confidence:70,priorityBoost:0}}});
 },cs=>{
   const repairs=cs.filter(x=>x.source==='mini_repair'&&x.topicId==='t1');
   assert.equal(repairs.length,1);
   assert.match(repairs[0].reason,/Ana düşünce/);
+});
+
+// R06b — one low-confidence bad mini may reveal weakness but cannot create a high-priority repair task before Student Model confirmation.
+sim('R06b low-confidence mini waits for corroboration',()=>{
+  const space=baseSpace();
+  space.assessments.push({id:'only',miniId:'mini',date:TODAY,subjectId:'k-tr',topicId:'t1',correct:2,wrong:8,created:1});
+  return makeBuild(space,{
+    adaptive:{t1:{mode:'repair',scope:'topic',confidence:20,skillWeakness:{primary:{skill:'Ana düşünce'}}}},
+    students:{t1:{state:'collect',confidence:18,priorityBoost:0}}
+  });
+},cs=>{
+  assert.ok(!cs.some(x=>x.source==='mini_repair'&&x.topicId==='t1'),'Uncorroborated single-mini weakness must not become a repair task');
 });
 
 // R07 — mini repair replaces the same topic's ordinary task rather than duplicating it.
@@ -236,7 +248,7 @@ sim('R07 mini repair replaces normal task',()=>{
   const space=baseSpace();
   space.plan.push({id:'open',date:TODAY,done:false,subjectId:'k-tr',topicId:'t1',source:'curriculum',minutes:30,priority:40});
   space.assessments.push({id:'a',miniId:'mini',date:TODAY,subjectId:'k-tr',topicId:'t1',correct:3,wrong:7,created:1});
-  return makeBuild(space,{adaptive:{t1:{mode:'repair',scope:'topic',confidence:60,skillWeakness:{primary:null}}}});
+  return makeBuild(space,{adaptive:{t1:{mode:'repair',scope:'topic',confidence:60,skillWeakness:{primary:null}}},students:{t1:{state:'repair',confidence:70,priorityBoost:0}}});
 },cs=>{
   assert.equal(cs.filter(x=>x.topicId==='t1').length,1);
   assert.equal(cs.find(x=>x.topicId==='t1').source,'mini_repair');
@@ -422,5 +434,5 @@ sim('R20 earliest and capacity safety',()=>{
 
 if(failures.length)console.error('Route simulation failures:',JSON.stringify(failures,null,2));
 assert.equal(failures.length,0,`${failures.length} route simulations failed`);
-assert.equal(passed,22,'Expected exactly 22 route simulations');
+assert.equal(passed,23,'Expected exactly 23 route simulations');
 console.log(`route-engine-route-sim: ${passed} real candidate/scheduler simulations passed`);

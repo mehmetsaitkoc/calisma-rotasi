@@ -210,6 +210,29 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.deepEqual(picked.filter(t=>t.subjectId==='k-ta').map(t=>t.id),['t1','t2']);
 }
 
+// 4) Exam evidence must become stale after enough new study, rather than anchoring the route forever.
+{
+  const src=between('function routeExamFreshness','function routeEvidenceNextStep');
+  const today=()=> '2026-09-19';
+  const C={TYPES:{KPSS:{label:'KPSS · GY–GK'}}};
+  const space={
+    exams:[{type:'KPSS',date:'2026-09-01'}],
+    logs:[
+      {sessionId:'a',date:'2026-09-05'},
+      {sessionId:'b',date:'2026-09-07'},
+      {sessionId:'c',date:'2026-09-10'},
+      {sessionId:'d',date:'2026-09-12'}
+    ]
+  };
+  const fn=new Function('w','today','C',src+';return routeExamFreshness;')(()=>space,today,C);
+  const stale=fn('KPSS');
+  assert.equal(stale.known,true);
+  assert.equal(stale.stale,true);
+  assert.equal(stale.studySince,4);
+  space.logs=space.logs.slice(0,2);
+  assert.equal(fn('KPSS').stale,false,'Old exam alone should not force a refresh before enough new study exists');
+}
+
 // 4) Light-day action must preserve critical work and move low-priority tasks without recording friction.
 {
   const src=between('function routeLightenToday','function routeTaskReason');
@@ -363,6 +386,9 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 // 4) Guard core personalization features against accidental removal.
 for(const marker of [
   'routeObservedNet',
+  'function routeExamFreshness',
+  'ölçümünü yenile',
+  'age>=14&&studySince>=4',
   'routeStageGap',
   'routeConsistencySignal',
   'routePracticeSignal',

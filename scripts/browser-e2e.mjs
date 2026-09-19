@@ -38,12 +38,65 @@ async function appState(page) {
 
 async function assertCleanRender(page, label) {
   const text = await page.locator('body').innerText();
+  for (const literal of ['${content}', '${icon(', '${ui.', '[object Object]']) {
+    assert.ok(!text.includes(literal), label + ': rendered literal leaked: ' + literal);
+  }
   assert.ok(!/\$\{[^}]+\}/.test(text), label + ': literal template interpolation leaked');
-  assert.ok(!text.includes('[object Object]'), label + ': [object Object] leaked');
-  assert.ok(!/\bundefined\b/.test(text), label + ': undefined leaked');
+  assert.ok(!/\bundefined\b/i.test(text), label + ': undefined leaked');
+  assert.ok(!/\bnull\b/i.test(text), label + ': null leaked');
   assert.ok(!/\bNaN\b/.test(text), label + ': NaN leaked');
   const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, inner: window.innerWidth }));
   assert.ok(width.scroll <= width.inner + 2, label + ': page overflows mobile viewport (' + width.scroll + ' > ' + width.inner + ')');
+}
+
+async function navigate(page, view) {
+  const mobile = page.locator('.mobile-dock [data-action="nav"][data-view="' + view + '"]');
+  if (await mobile.count() && await mobile.isVisible()) {
+    await mobile.click();
+  } else {
+    const sidebar = page.locator('.sidebar [data-action="nav"][data-view="' + view + '"]').first();
+    if (!(await sidebar.isVisible())) {
+      const menus = page.locator('[data-action="menu"]');
+      for (let i = 0; i < await menus.count(); i++) {
+        const menu = menus.nth(i);
+        if (await menu.isVisible()) { await menu.click(); break; }
+      }
+    }
+    await sidebar.click();
+  }
+  await page.locator('#app').waitFor({ state: 'visible' });
+}
+
+function latestTaskMode(space, task) {
+  const rows = (space.route?.modeHistory || [])
+    .filter(x => x.subjectId === task.subjectId && x.topicId === task.topicId)
+    .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || Number(b.created || 0) - Number(a.created || 0));
+  return rows[0]?.mode || null;
+}
+
+async function assertTodayContract(page) {
+  await page.getByRole('heading', { name: 'Bugünkü Rotan' }).waitFor({ state: 'visible' });
+  assert.ok(await page.getByText('ŞİMDİ', { exact: true }).count(), 'Today must show the ŞİMDİ priority marker');
+
+  const cards = page.locator('.route-task');
+  assert.ok((await cards.count()) > 0, 'Today must render at least one route task');
+  const card = cards.first();
+
+  const subject = (await card.locator('.tiny.muted').first().innerText()).trim();
+  const topic = (await card.locator('h3').first().innerText()).trim();
+  const meta = await card.locator('.route-task-meta').innerText();
+  const reason = (await card.locator('.route-task-reason').innerText()).trim();
+  assert.ok(subject, 'Today task must show a lesson/subject');
+  assert.ok(topic, 'Today task must show a topic/title');
+  assert.match(meta, /\d+\s*dk/, 'Today task must show minutes');
+  const allMeta = await page.locator('.route-task-meta').allInnerTexts();
+  assert.ok(allMeta.some(x => /≈\s*\d+\s*soru/i.test(x)), 'Today must show a question target on a planned practice task');
+  assert.match(meta, /Neden bugün\?/i, 'Today task must expose why it is scheduled today');
+  assert.ok(reason, 'Today task must render its route reason');
+
+  for (const label of ['Başla', 'Tamamla', 'Daha sonra', 'Atla']) {
+    assert.ok(await card.getByText(label, { exact: true }).count(), 'Today task must expose action: ' + label);
+  }
 }
 
 async function submitWizard(page) {
@@ -99,6 +152,9 @@ async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5,
   if (await complete.count() && !(await complete.isChecked())) await complete.check();
   await form.locator('button[type="submit"]').click();
   await form.waitFor({ state: 'detached' });
+  const toast = page.locator('#toasts .toast').last();
+  await toast.waitFor({ state: 'visible' });
+  return toast.innerText();
 }
 
 async function setDay(page, date) {
@@ -173,9 +229,12 @@ try {
 
   await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
   await assertCleanRender(page, 'fresh welcome');
+  assert.ok((await page.locator('#app').innerText()).trim().length > 20, 'Fresh app must not render a blank screen');
+  assert.deepEqual(pageErrors, [], 'Fresh page JavaScript errors:\n' + pageErrors.join('\n'));
 
   await submitWizard(page);
   await assertCleanRender(page, 'post onboarding today');
+  await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must expose Rota Hoca decision');
   assert.ok(await page.getByText('Bu plan neden böyle?').count(), 'Today must explain route logic');
@@ -189,13 +248,26 @@ try {
   const todayTask = space0.plan.find(p => p.date === FIXED_DAY && !p.done);
   assert.ok(todayTask, 'Today must have a task to complete');
 
-  await completeTask(page, todayTask.id);
+  const beforeMode = latestTaskMode(space0, todayTask);
+  const completionFeedback = await completeTask(page, todayTask.id);
   snapshot = await appState(page);
-  assert.ok(snapshot.value.workspaces.kpss.logs.some(l => l.sessionId === todayTask.id), 'Completion must create a study log');
-  assert.equal(snapshot.value.workspaces.kpss.plan.find(p => p.id === todayTask.id)?.done, true, 'Completion must mark task done');
+  const spaceAfterCompletion = snapshot.value.workspaces.kpss;
+  assert.ok(spaceAfterCompletion.logs.some(l => l.sessionId === todayTask.id), 'Completion must create a study log');
+  assert.equal(spaceAfterCompletion.plan.find(p => p.id === todayTask.id)?.done, true, 'Completion must mark task done');
+  assert.match(completionFeedback, /Görev tamamlandı/i, 'Completion feedback must say the task was completed');
+  assert.match(completionFeedback, /öğrenci modeline ekledi/i, 'Completion feedback must say Student Model was updated');
+  assert.match(completionFeedback, /%75 doğruluk/i, 'Completion feedback must show the recorded accuracy');
+
+  const afterMode = latestTaskMode(spaceAfterCompletion, todayTask);
+  if (beforeMode && afterMode && beforeMode === afterMode) {
+    assert.ok(!/Rota güncellendi:/i.test(completionFeedback), 'Completion must not claim a fake route-mode change');
+  }
+  if (beforeMode && afterMode && beforeMode !== afterMode) {
+    assert.match(completionFeedback, /Rota güncellendi: .* → .*/i, 'A real route-mode change must be shown as old → new');
+  }
   await assertCleanRender(page, 'after task completion');
 
-  await page.locator('[data-action="nav"][data-view="exams"]').first().click();
+  await navigate(page, 'exams');
   await page.locator('[data-action="add-exam"]').first().click();
   const examForm = page.locator('#exam-form');
   await examForm.locator('[name="name"]').fill('E2E Tam Deneme');
@@ -242,7 +314,7 @@ try {
   assert.ok(repair, 'Exam-linked wrong must create a repair task');
   if (repair.date !== FIXED_DAY) await setDay(page, repair.date);
   else {
-    await page.locator('[data-action="nav"][data-view="today"]').first().click();
+    await navigate(page, 'today');
   }
 
   snapshot = await appState(page);
@@ -250,7 +322,7 @@ try {
   repair = space.plan.find(p => !p.done && p.sourceMistakeId === mistake.id) || repair;
   await completeTask(page, repair.id, { questions: 18, correct: 15, wrong: 3, outcome: 'ok' });
 
-  await page.locator('[data-action="nav"][data-view="mistakes"]').first().click();
+  await navigate(page, 'mistakes');
   const resolve = page.locator(`[data-action="resolve-mistake"][data-id="${mistake.id}"]`);
   if (await resolve.count()) await resolve.click();
 
@@ -279,7 +351,7 @@ try {
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 
-  await page.locator('[data-action="nav"][data-view="teacher"]').first().click();
+  await navigate(page, 'teacher');
   await page.locator('#teacher-question').fill('Bugünkü görevlerimi neden bu şekilde seçtin?');
   await page.locator('#teacher-form button[type="submit"]').click();
   await page.getByText('E2E Rota Hoca cevabı').waitFor({ state: 'visible' });

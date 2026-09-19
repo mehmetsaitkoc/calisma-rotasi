@@ -1394,6 +1394,8 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
  if(adaptive.mode==='ease')text+=' · Bugün hedefi küçük tut: bitirmek, yükü büyütmekten daha önemli.';
  else if(adaptive.mode==='repair')text+=' · Öncelik hız değil: yanlışın nedenini düzeltmeden yeni konuya koşma.';
  else if(progressReady)text+=' · Son 5 dakikada 2 zorlayıcı ek soru ile seviyeni yokla.';
+ else if(adaptive.studentState==='retention')text+=' · Kalıcılık önceliği: yeni yükü büyütmeden zamanı gelen tekrarları tamamla ve aynı bilgiyi kaynaksız geri çağır.';
+ else if(adaptive.studentState==='collect')text+=' · Bugün amaç dozu değiştirmek değil veri toplamak: doğru/yanlış ve kısa çalışma hissini kaydet.';
  else if(adaptive.rawMode==='progress'&&routeRecoverySignal().active)text+=' · Güçlü performans sinyali var; ancak toparlanma modu açıkken dozu büyütmeden mevcut yükü koru.';
  else if(adaptive.rawMode==='progress'&&adaptive.mode==='steady')text+=' · Yükseliş sinyali var; ancak doğrulanmış GELİŞİM kararı oluşmadan mevcut yükü koru.';
  if(adaptive.calibration?.hiddenGap)text+=' · “Rahat” hissini tek başına ölçü sayma; set sonunda doğruluk oranını kontrol et ve düşük kalan soru tipini düzelt.';
@@ -1970,21 +1972,23 @@ function routePeriodStats(start,end){
 }
 function routeWeeklyDigest(learned=routeLearningSummaryItems()){
  const current=routePeriodStats(R.dayAdd(today(),-6),today()),previous=routePeriodStats(R.dayAdd(today(),-13),R.dayAdd(today(),-7)),recovery=routeRecoverySignal();
- const repair=learned.filter(function(x){return x.mode==='repair';}),ease=learned.filter(function(x){return x.mode==='ease';}),progress=learned.filter(function(x){return x.mode==='progress';});
+ const repair=learned.filter(function(x){return x.state==='repair'||x.mode==='repair';}),retention=learned.filter(function(x){return x.state==='retention';}),ease=learned.filter(function(x){return x.state==='sustainable'||x.mode==='ease';}),progress=learned.filter(function(x){return x.state==='progress'&&x.mode==='progress';}),collect=learned.filter(function(x){return x.state==='collect';});
  let title='Dengeli ilerleme',decision='Rota mevcut dozu koruyor; yeni gerçek veriler geldikçe ders bazında ayarlama yapacak.';
  if(recovery.active){title=recovery.severe?'Önce düzeni geri kuruyoruz':'Toparlanma modu açık';decision='Aksayan görevleri bir anda üst üste bindirmiyoruz. Normal backlog aynı güne en fazla bir görev ve haftalık kapasitenin sınırlı bir bölümü kadar taşınacak.';}
  else if(repair.length){title='Onarım önceliği';decision=repair.slice(0,2).map(function(x){return x.name;}).join(' ve ')+' için yeni yükten önce temel, yanlış nedeni ve kısa tekrar öne çıkıyor.';}
+ else if(retention.length){title='Kalıcılığı güçlendiriyoruz';decision=retention.slice(0,2).map(function(x){return x.name;}).join(' ve ')+' tarafında yeni yükten önce zamanı gelen tekrarlar ve kaynaksız geri çağırma öne çıkıyor.';}
  else if(ease.length){title='Yükü uygulanabilir tutuyoruz';decision=ease.slice(0,2).map(function(x){return x.name;}).join(' ve ')+' tarafında erteleme/atlama sinyali arttığı için görev dozu küçültülüyor.';}
  else if(progress.length){title='Kontrollü ilerleme';decision=progress.slice(0,2).map(function(x){return x.name;}).join(' ve ')+' tarafında birden fazla güçlü sinyal var; görevler küçük adımlarla zorlaşabilir.';}
+ else if(collect.length&&collect.length===learned.length){title='Veri topluyoruz';decision='Kalibre güven henüz düşük; Rota keskin doz değişikliği yapmak yerine yeni çalışma ve doğru/yanlış kanıtı bekliyor.';}
  const minutesDelta=previous.minutes?Math.round((current.minutes-previous.minutes)/previous.minutes*100):null,questionsDelta=previous.questions?Math.round((current.questions-previous.questions)/previous.questions*100):null;
- return {current,previous,recovery,repair,ease,progress,title,decision,minutesDelta,questionsDelta};
+ return {current,previous,recovery,repair,retention,ease,progress,collect,title,decision,minutesDelta,questionsDelta};
 }
 function routeWeeklyDigestCard(learned){
  const d=routeWeeklyDigest(learned),c=d.current,accuracy=c.accuracy===null?'—':'%'+Math.round(c.accuracy*100),minuteTrend=d.minutesDelta===null?'İlk karşılaştırma':(d.minutesDelta>=0?'+':'')+d.minutesDelta+'%',questionTrend=d.questionsDelta===null?'İlk karşılaştırma':(d.questionsDelta>=0?'+':'')+d.questionsDelta+'%';
  return '<section class="card route-weekly-digest"><div class="card-head"><div><div class="eyebrow">SON 7 GÜN</div><h3>'+esc(d.title)+'</h3></div><span class="pill '+(d.recovery.active?'orange':'plain')+'">'+(d.recovery.active?'Toparlanma':'Haftalık karar')+'</span></div><div class="route-weekly-metrics"><div><strong>'+duration(c.minutes)+'</strong><span>çalışma · '+esc(minuteTrend)+'</span></div><div><strong>'+c.questions+'</strong><span>soru · '+esc(questionTrend)+'</span></div><div><strong>'+accuracy+'</strong><span>'+c.answered+' cevap üzerinden</span></div><div><strong>'+c.activeDays+'</strong><span>aktif gün</span></div></div><div class="route-weekly-decision">'+icon('spark')+'<div><strong>Rota kararı</strong><p>'+esc(d.decision)+'</p></div></div><p class="route-learning-foot">Karşılaştırma son 7 gün ile önceki 7 günü kullanır. Tek bir iyi veya kötü güne göre yükü sert biçimde değiştirmez.</p></section>';
 }
 function routeLearningSummaryItems(){
- const rank={repair:4,ease:3,progress:2,steady:1};
+ const rank={repair:5,retention:4,sustainable:3,progress:2,collect:1,steady:1};
  return subjects().map(function(s){
   const a=routeAppliedDecision(s.id),difficulty=routeDifficultySignal(s.id),practiceAccuracy=a.practice.known?(a.practice.weightedAccuracy||a.practice.accuracy):0,hasEvidence=a.behavior.known||a.outcome.known||a.practice.known||a.attainment?.known||(a.weak?.samples||0)>0||a.openMistakes>0||difficulty.known;
   if(!hasEvidence)return null;
@@ -2002,6 +2006,10 @@ function routeLearningSummaryItems(){
   }else if(a.mode==='progress'){
    if(a.practice.known)detail='Yakın dönem ağırlıklı pratik doğruluğu %'+Math.round(practiceAccuracy*100)+'; düzenli tamamlama ile yük kontrollü artırılıyor.';
    else detail='Görevleri düzenli ve rahat tamamladığın için yük kontrollü artırılıyor.';
+  }else if(a.studentState==='retention'){
+   detail='Performans sinyali tek başına yeterli değil; kalıcılık ölçümü düşük kaldığı için yeni yükten önce zamanı gelen 3/7 tekrarları öne çıkıyor.';
+  }else if(a.studentState==='collect'){
+   detail='Ham sinyaller oluşuyor ancak kalibre güven henüz düşük; motor dozu değiştirmek yerine yeni doğru/yanlış ve çalışma geri bildirimi bekliyor.';
   }else if(a.rawMode==='progress'){
    detail='Yükseliş sinyali var; ancak Öğrenci Modeli henüz GELİŞİM kararını doğrulamadığı için görev dozu artırılmıyor.';
   }else if(a.calibration?.productiveStruggle>=2){
@@ -2013,8 +2021,8 @@ function routeLearningSummaryItems(){
   }else if(a.behavior.known){
    detail='Son görev davranışların dengeli; mevcut tempo korunuyor.';
   }
-  const evidence=(a.practice.known?3:0)+(a.outcome.known?2:0)+(a.behavior.known?2:0)+(a.weak?1:0)+Math.min(2,a.openMistakes)+(difficulty.known?1:0);
-  return {subjectId:s.id,name:s.name,mode:a.mode,label:a.label,detail,score:(rank[a.mode]||0)*10+evidence,confidence:a.confidence||0};
+  const evidence=(a.practice.known?3:0)+(a.outcome.known?2:0)+(a.behavior.known?2:0)+(a.weak?1:0)+Math.min(2,a.openMistakes)+(difficulty.known?1:0),state=a.studentState||'steady';
+  return {subjectId:s.id,name:s.name,mode:a.mode,state,label:a.label,detail,score:(rank[state]||rank[a.mode]||0)*10+evidence,confidence:a.confidence||0};
  }).filter(Boolean).sort(function(a,b){return b.score-a.score||b.confidence-a.confidence||a.name.localeCompare(b.name,'tr');}).slice(0,3);
 }
 function routeExamFreshness(type){

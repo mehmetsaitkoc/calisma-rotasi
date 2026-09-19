@@ -446,26 +446,34 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeReviewWeeklyLimit(150),70);
 }
 
-// 4) Topic mastery suggestion requires learning + both review waves + repeated evidence.
+// 4) Topic mastery suggestion requires correctly spaced reviews + repeated evidence.
 {
   const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');
   const space={
     plan:[
-      {id:'base',done:true,topicId:'topic-1',source:'curriculum'},
-      {id:'r3',done:true,topicId:'topic-1',source:'spaced_review',reviewWave:3},
-      {id:'r7',done:true,topicId:'topic-1',source:'spaced_review',reviewWave:7}
+      {id:'base',date:'2026-09-01',done:true,topicId:'topic-1',source:'curriculum'},
+      {id:'r3',date:'2026-09-13',done:true,topicId:'topic-1',source:'spaced_review',reviewWave:3,reviewBaseTaskId:'base'},
+      {id:'r7',date:'2026-09-17',done:true,topicId:'topic-1',source:'spaced_review',reviewWave:7,reviewBaseTaskId:'base'}
     ],
+    logs:[{id:'base-log',sessionId:'base',date:'2026-09-10'}],
     mistakes:[]
   };
-  const R={topic:(_w,id)=>id==='topic-1'?{id,subjectId:'k-ma'}:null};
+  const R={topic:(_w,id)=>id==='topic-1'?{id,subjectId:'k-ma'}:null,dayAdd:(d,n)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);}};
   const w=()=>space;
+  const routePlanEvidenceDate=(task,sp=space)=>{
+    const log=sp.logs.filter(l=>l.sessionId===task.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
+    return log?.date||task.date||'';
+  };
   let outcome={known:false,total:0,recent:'',trend:0,stuckRate:0};
   let practice={known:true,sessions:1,answered:20,weightedAccuracy:.90,accuracy:.90,recentAccuracy:.90};
   const routeOutcomeSignal=()=>outcome;
   const routePracticeSignal=()=>practice;
-  const mastery=new Function('R','w','routeOutcomeSignal','routePracticeSignal',src+';return routeTopicMasterySignal;')(R,w,routeOutcomeSignal,routePracticeSignal);
+  const mastery=new Function('R','w','routeOutcomeSignal','routePracticeSignal','routePlanEvidenceDate',src+';return routeTopicMasterySignal;')(R,w,routeOutcomeSignal,routePracticeSignal,routePlanEvidenceDate);
 
   const oneSet=mastery('topic-1');
+  assert.equal(oneSet.baseDate,'2026-09-10','Mastery must anchor to the actual logged study day');
+  assert.equal(oneSet.review3,true);
+  assert.equal(oneSet.review7,true);
   assert.equal(oneSet.ready,false,'One strong practice set must not be enough for mastery');
   assert.equal(oneSet.progress,3);
   assert.equal(oneSet.next,'En az 2 performans kaydı');
@@ -475,6 +483,23 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(ready.ready,true);
   assert.equal(ready.progress,4);
   assert.equal(ready.next,'Tamamlanmaya hazır');
+
+  // A nominal "3-day review" completed before three real days passed must not count.
+  space.plan.find(p=>p.id==='r3').date='2026-09-12';
+  const tooEarly=mastery('topic-1');
+  assert.equal(tooEarly.review3,false);
+  assert.equal(tooEarly.ready,false);
+  assert.equal(tooEarly.next,'3 gün tekrarı');
+  space.plan.find(p=>p.id==='r3').date='2026-09-13';
+
+  // A review linked to an older base cycle must not validate a newer base cycle.
+  space.plan.push({id:'new-base',date:'2026-09-15',done:true,topicId:'topic-1',source:'curriculum'});
+  const newCycle=mastery('topic-1');
+  assert.equal(newCycle.baseTaskId,'new-base');
+  assert.equal(newCycle.review3,false);
+  assert.equal(newCycle.review7,false);
+  assert.equal(newCycle.ready,false);
+  space.plan.pop();
 
   space.mistakes.push({topicId:'topic-1',resolved:false});
   const blocked=mastery('topic-1');
@@ -573,6 +598,8 @@ for(const marker of [
   'latestBaseByTopic',
   'recentWorkedTopics',
   'routeTopicMasterySignal',
+  'baseTaskId:baseTask?.id',
+  'completed>=due',
   'routeClearCompletedTopicQueue',
   "p.reviewWave===1?'mistake'",
   '(space.topicState[p.topicId]?.status||0)!==2',

@@ -572,6 +572,7 @@ for(const r of results){
   const r=byId['plateau'];
   assert.equal(r.metrics.progressDays,0,'plateau student incorrectly reached progress');
   assert.equal(r.metrics.challengeTasks,0,'plateau student received a challenge without corroborated progression');
+  assert.equal(r.churn.bounceCount,0,'plateau student has one-day repair/steady mode chatter');
 }
 {
   const r=byId['regressing'];

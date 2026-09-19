@@ -677,15 +677,26 @@ function lfFirst(days,mode,enter){
   return null;
 }
 function lfBacktest(days){
-  const out={success:0,neutral:0,harmful:0,events:[]};
+  const out={success:0,neutral:0,harmful:0,insufficientEvidence:0,events:[]};
   for(let i=0;i<days.length;i++){
     const d=days[i],prev=i?days[i-1].appliedMode:'steady';
     if(!['repair','ease','progress'].includes(d.appliedMode)||d.appliedMode===prev)continue;
-    const a=days[Math.min(days.length-1,i+14)],b=days[Math.min(days.length-1,i+30)];let score=0;
-    if(d.appliedMode==='repair')score=((a.performance??0)-(d.performance??0))+((b.performance??0)-(d.performance??0))*.5+(d.openMistakes-(b.openMistakes||0))*6;
-    else if(d.appliedMode==='ease')score=((a.execution??0)-(d.execution??0))+((b.execution??0)-(d.execution??0))*.5;
-    else score=Math.min((a.performance??d.performance??0)-(d.performance??0),(b.performance??d.performance??0)-(d.performance??0))+4;
-    const label=score>=5?'success':score<=-8?'harmful':'neutral';out[label]++;out.events.push({day:d.day,mode:d.appliedMode,label,score:Math.round(score),basePerformance:d.performance,day14Performance:a.performance,day30Performance:b.performance,baseExecution:d.execution,day14Execution:a.execution,day30Execution:b.execution});
+    const a=days[Math.min(days.length-1,i+14)],b=days[Math.min(days.length-1,i+30)];let score=0,insufficient=false;
+    if(d.appliedMode==='repair'){
+      const base=Number.isFinite(d.performance)?d.performance:null,future=[a,b].map(function(x){return x.performance;}).filter(Number.isFinite);
+      if(base===null||!future.length){insufficient=true;score=0;}
+      else {score=(future[0]-base)+(future.length>1?(future[1]-base)*.5:0)+(d.openMistakes-(b.openMistakes||0))*6;}
+    }else if(d.appliedMode==='ease'){
+      const base=Number.isFinite(d.execution)?d.execution:null,future=[a,b].map(function(x){return x.execution;}).filter(Number.isFinite);
+      if(base===null||!future.length){insufficient=true;score=0;}
+      else score=(future[0]-base)+(future.length>1?(future[1]-base)*.5:0);
+    }else{
+      const base=Number.isFinite(d.performance)?d.performance:null,future=[a,b].map(function(x){return x.performance;}).filter(Number.isFinite);
+      if(base===null||!future.length){insufficient=true;score=0;}
+      else score=Math.min.apply(null,future.map(function(x){return x-base;}))+4;
+    }
+    const label=insufficient?'neutral':score>=5?'success':score<=-8?'harmful':'neutral';out[label]++;if(insufficient)out.insufficientEvidence++;
+    out.events.push({day:d.day,mode:d.appliedMode,label,insufficientEvidence:insufficient,score:Math.round(score),basePerformance:d.performance,day14Performance:a.performance,day30Performance:b.performance,baseExecution:d.execution,day14Execution:a.execution,day30Execution:b.execution});
   }
   return out;
 }
@@ -749,6 +760,6 @@ const burn=lfById['burnout-after-success'];assert.ok(burn.days.find(function(d){
   assert.ok(one.confidence<=35,'single evidence family inflated confidence '+one.confidence);
 }
 assert.equal(lfFreshness(3),1,'freshness 3d');assert.equal(lfFreshness(21),.55,'freshness 21d');assert.equal(lfFreshness(45),.35,'freshness 45d');
-const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful};});
+const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful,interventionInsufficientEvidence:r.backtest.insufficientEvidence};});
 console.log('route-engine-lifecycle: '+LF_PERSONAS.length+' students x 60 days = '+(LF_PERSONAS.length*60)+' daily cycles; day 30 + day 60 checkpoints passed');
 console.log(JSON.stringify(lfSummary));

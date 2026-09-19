@@ -1550,6 +1550,22 @@ for(const marker of [
 }
 
 
+// 5) App shell must prioritize study flow and expose current context without changing navigation targets.
+for(const marker of [
+  'Product Shell v1 — clearer hierarchy around the study flow.',
+  'ANA ÇALIŞMA',
+  'KAYNAKLAR VE TAKİP',
+  'topbar-context',
+  'topbar-exam-pill'
+]) assert.ok(html.includes(marker),`Missing premium app shell marker: ${marker}`);
+{
+  const src=between('function shell(content)','function activeLogs');
+  assert.ok(src.includes("currentLabel=({lesson:'Video ders',membership:'Paketim',settings:'Ayarlar'})[ui.view]||nav.find"),'Topbar context must derive from the existing view/navigation state');
+  assert.ok(src.includes("id==='academy'?'<div class=\"nav-label nav-label-secondary\">KAYNAKLAR VE TAKİP</div>':''"),'Secondary navigation group must start at existing academy item');
+  assert.ok(src.includes('data-view="${id}"'),'Navigation targets must remain data-driven from the existing nav array');
+}
+
+
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
 {
   const mini=between('function routeMiniRepairSignals','function routeBuildCandidates');

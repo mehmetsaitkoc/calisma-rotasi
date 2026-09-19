@@ -30,6 +30,8 @@ const personalApi=new Function(
   personalSrc+';return {routePersonalNormFromSamples};'
 )(()=>({plan:[],logs:[]}),()=>[],()=>[]);
 const masterySignalSrc=between('function routeTopicMasterySignal','function routeMasteryScoreFromSignals');
+const masteryScoreFn=new Function(between('function routeMasteryScoreFromSignals','function routeTopicLatestEvidenceDate')+';return routeMasteryScoreFromSignals;')();
+const evidenceFreshnessFn=new Function(between('function routeEvidenceFreshness','function routePerformanceWindow')+';return routeEvidenceFreshness;')();
 const forgettingFn=new Function(between('function routeForgettingProjection','function routeTopicForgettingSignal')+';return routeForgettingProjection;')();
 const appliedDecisionFn=new Function(between('function routeProgressHoldFromSignals','function routeLatestModeDecision')+';return routeAppliedDecisionFromSignals;')();
 
@@ -340,9 +342,13 @@ function latestEvidenceDate(space,topicId){
   return dates.filter(Boolean).sort((a,b)=>b.localeCompare(a))[0]||'';
 }
 function forgettingFor(space,persona,topicId,currentDate){
-  const latest=latestEvidenceDate(space,topicId);if(!latest)return {known:false,retained:0,reviewDue:false,nextReviewIn:null,latestDate:''};
-  const p=practiceSignal(space,topic(topicId).subjectId,topicId),mastery=Math.max(70,Math.round((p.weightedAccuracy||.75)*100)),days=daysBetween(currentDate,latest),stability=persona.id==='fast-learner'?10:persona.id==='strong-balanced'?24:14;
-  return {known:true,latestDate:latest,confidence:70,...forgettingFn({mastery,daysSince:days,stabilityDays:stability})};
+  const latest=latestEvidenceDate(space,topicId),t=topic(topicId);if(!latest||!t)return {known:false,retained:0,reviewDue:false,nextReviewIn:null,latestDate:''};
+  const binary=masterySignal(space,topicId,currentDate),ret=retentionSignal(space,t.subjectId,topicId,currentDate),trend=trendSignal(space,t.subjectId,topicId,currentDate),skill=skillWeakness(space,t.subjectId,topicId,currentDate),errors=errorMemory(space,t.subjectId,topicId),openMistakes=openMistakeCount(space,t.subjectId,topicId),performanceAccuracy=binary.practice?.known?Math.round((binary.practice.weightedAccuracy||binary.practice.accuracy)*100):null,skillMissed=(skill.weak||[]).reduce(function(n,x){return n+(x.missed||0);},0);
+  const core=masteryScoreFn({base:binary.base,review3:binary.review3,review7:binary.review7,hasEvidence:binary.hasEvidence,ready:binary.ready,performanceAccuracy,retentionScore:ret.known?ret.score:null,trend:trend.direction,openMistakes,skillMissed,errorRepeated:errors.repeated});
+  const velocity=learningVelocity(space,t.subjectId,topicId),days=daysBetween(currentDate,latest),stability=3+(binary.review3?4:0)+(binary.review7?8:0)+(core.score>=80?5:core.score>=65?2:0)+(ret.known?Math.round(ret.score/20):0)+(velocity.key==='fast'?3:velocity.key==='slow'?-1:0);
+  let confidence=(binary.base?18:0)+(binary.review3?18:0)+(binary.review7?22:0)+Math.min(24,(binary.practice?.sessions||0)*6)+(ret.known?8:0)+(trend.known?5:0)+(skill.known?3:0)+(errors.known?3:0);
+  confidence=Math.round(Math.min(100,confidence)*evidenceFreshnessFn(days));
+  return {known:!!binary.base||binary.practice?.known||skill.known||errors.known,latestDate:latest,confidence,masteryScore:core.score,stabilityDays:stability,...forgettingFn({mastery:core.score,daysSince:days,stabilityDays:stability})};
 }
 function refreshCandidates(space,persona,currentDate){
   return CATALOG.filter(t=>(space.topicState[t.id]?.status||0)===2).map(t=>({topic:t,forgetting:forgettingFor(space,persona,t.id,currentDate)})).filter(x=>x.forgetting.known&&x.forgetting.reviewDue).sort((a,b)=>a.forgetting.retained-b.forgetting.retained).slice(0,2);
@@ -635,7 +641,7 @@ console.log(JSON.stringify(summary));
 // Keep the original 14-day regression intact. This second layer reuses the
 // production model functions extracted above, but lets behaviour and ability
 // change over 60 real calendar days.
-const lfFreshness=new Function(between('function routeEvidenceFreshness','function routePerformanceWindow')+';return routeEvidenceFreshness;')();
+const lfFreshness=evidenceFreshnessFn;
 const lfExamFactorSrc=between('function routeExamEvidenceFactor','function routeExamWeakness');
 function lfExamFactor(space,date,exam,subjectId){
   const fn=new Function('today','w','C',lfExamFactorSrc+';return routeExamEvidenceFactor;');

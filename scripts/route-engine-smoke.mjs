@@ -1681,6 +1681,48 @@ for(const marker of [
   assert.equal(row.performance,73);
 }
 
+// 5) Pilot telemetry must persist pseudonymous 0/7/14/30 checkpoint snapshots.
+{
+  const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
+  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const backup=env.RotaCore.fresh();backup.activeExam='kpss';
+  backup.workspaces.kpss.route.pilot={
+    version:1,enabled:true,participantId:'p-test-001',startDate:'2026-09-19',startedAt:1,completedAt:0,
+    snapshots:[{
+      checkpoint:7,targetDate:'2026-09-26',capturedDate:'2026-09-26',capturedAt:2,delayDays:0,
+      planned:{tasks:12,minutes:300,questions:120},
+      actual:{completedTasks:10,minutes:260,questions:105,correct:80,wrong:25,accuracy:76.2,completion:83.3},
+      exam:{count:1,latestDate:'2026-09-25',latestNet:63.5},
+      mistakes:{openAtCapture:2,created:3,resolved:1},
+      modes:{steady:5,repair:2,ease:1,progress:0,transitions:2,current:'steady'},
+      interventions:{total:2,helpful:1,neutral:0,harmful:0,pending:1},
+      student:{performance:72,learningNeed:36,risk:44,confidence:81},
+      dataQuality:{openMistakesExact:true}
+    }]
+  };
+  const pilot=env.RotaCore.validateBackup(backup).workspaces.kpss.route.pilot,s=pilot.snapshots[0];
+  assert.equal(pilot.participantId,'p-test-001');
+  assert.equal(pilot.enabled,true);
+  assert.equal(pilot.startDate,'2026-09-19');
+  assert.equal(s.checkpoint,7);
+  assert.equal(s.actual.accuracy,76.2);
+  assert.equal(s.modes.transitions,2);
+  assert.equal(s.interventions.helpful,1);
+  assert.equal(s.dataQuality.openMistakesExact,true);
+}
+for(const marker of [
+  "pilot:{version:1,enabled:false",
+  'function routePilotSnapshot',
+  'function routePilotAutoSnapshot',
+  'function routePilotSettingsCard',
+  "schema:'calisma-rotasi-pilot-v1'",
+  "case 'pilot-start'",
+  "case 'pilot-export'",
+  '[0,7,14,30]',
+  'openMistakesExact'
+]) assert.ok(html.includes(marker),`Missing pilot telemetry marker: ${marker}`);
+
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.
 for(const marker of [
   'assessments:[]',

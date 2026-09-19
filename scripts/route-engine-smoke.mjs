@@ -58,6 +58,8 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(src.includes("?initial.outcome:''"),'Missing feedback must stay missing');
   assert.ok(src.includes("existing?!!session?.done"),'Editing a log must reflect actual plan completion');
   assert.ok(!src.includes("outcome:'ok'}"),'Normal feedback must never be fabricated by default');
+  assert.ok(src.includes('questions:0'),'New session log must start actual question count at zero');
+  assert.ok(src.includes("Hedef ≈ '+session.targetQuestions"),'Planned question target should be shown only as a hint');
 }
 
 // 2b) Review labels must distinguish repair, normal review and earned challenge.
@@ -315,6 +317,35 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeOutcomeSignal('k-ma','topic-1','2026-09-10').total,2,'Old-cycle feedback must not validate the new cycle');
   assert.equal(api.routePracticeSignal('k-ma','topic-1','2026-09-10').sessions,2);
   assert.equal(api.routePracticeSignal('k-ma','topic-1','2026-09-10').answered,20);
+}
+
+// 4) Repeatedly missing the planned question volume should shrink the next dose.
+{
+  const src=between('function routeOutcomeSignal','function routeCandidateFromPlan');
+  const space={
+    plan:[
+      {id:'s1',subjectId:'k-ma',topicId:'m1',targetQuestions:20},
+      {id:'s2',subjectId:'k-ma',topicId:'m1',targetQuestions:20}
+    ],
+    logs:[
+      {id:'l1',subjectId:'k-ma',sessionId:'s1',date:'2026-09-18',questions:10,outcome:'strong',correct:9,wrong:1},
+      {id:'l2',subjectId:'k-ma',sessionId:'s2',date:'2026-09-17',questions:10,outcome:'strong',correct:9,wrong:1}
+    ],
+    mistakes:[]
+  };
+  const R={dayAdd:()=> '2026-08-29',topic:(_w,id)=>id==='m1'?{id}:null};
+  const today=()=> '2026-09-19';
+  const w=()=>space;
+  const routeBehaviorSignal=()=>({known:true,total:4,completion:1,friction:0});
+  const routeExamWeakness=()=>({'k-ma':{ratio:.8,freshness:1}});
+  const api=new Function('R','today','w','routeBehaviorSignal','routeExamWeakness',src+';return {routeTargetAttainmentSignal,routeSubjectAdaptiveState};')(R,today,w,routeBehaviorSignal,routeExamWeakness);
+  const attainment=api.routeTargetAttainmentSignal('k-ma','m1');
+  assert.equal(attainment.known,true);
+  assert.equal(attainment.sessions,2);
+  assert.equal(attainment.weightedRatio,.5);
+  const adaptive=api.routeSubjectAdaptiveState('k-ma','m1');
+  assert.equal(adaptive.mode,'ease','High accuracy must not trigger progress when planned volume is repeatedly unrealistic');
+  assert.match(adaptive.note,/soru hacmi/i);
 }
 
 // 4) Difficulty cause must be retrievable and must alter the study prescription.
@@ -707,6 +738,8 @@ for(const marker of [
   "existing?!!session?.done",
   "outcome:''",
   'routePracticeSignal',
+  'routeTargetAttainmentSignal',
+  'hedef hacmin altında',
   'weightedAccuracy',
   "routeOutcomeSignal(t.subjectId,topicId,baseDate)",
   "routePracticeSignal(t.subjectId,topicId,baseDate)",

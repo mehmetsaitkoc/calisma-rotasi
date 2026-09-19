@@ -770,9 +770,8 @@ function lfHorizonOutcome(results,targetResult,index,mode,horizon){
     success=!harmful&&known>=2&&(objectiveGain>=2||score>=6);
   }else if(mode==='ease'){
     add(execution,.65);add(completion,35);add(learningNeed,.15);add(risk,.10);add(performance,.20);
-    if(execution.known&&execution.delta<=-12&&(execution.lift===null||execution.lift<=-6))harmful=true;
-    if(completion.known&&completion.delta<=-.18&&(completion.lift===null||completion.lift<=-.10))harmful=true;
-    if(performance.known&&performance.delta<=-10&&(performance.lift===null||performance.lift<=-5))harmful=true;
+    const executionBad=execution.known&&execution.delta<=-12&&(execution.lift===null||execution.lift<=-6),completionBad=completion.known&&completion.delta<=-.18&&(completion.lift===null||completion.lift<=-.10),performanceBad=performance.known&&performance.delta<=-10&&(performance.lift===null||performance.lift<=-5),riskBad=risk.known&&risk.delta<=-10&&(risk.lift===null||risk.lift<=-5);
+    if(executionBad||performanceBad||(completionBad&&(riskBad||(performance.known&&performance.delta<=-5))))harmful=true;
     if(execution.known&&(execution.delta>=6||(execution.lift??-99)>=5))reasons.push('uygulanabilirlik arttı');
     if(completion.known&&(completion.delta>=.10||(completion.lift??-99)>=.08))reasons.push('tamamlama arttı');
     success=!harmful&&known>=1&&(score>=5||reasons.length>=1);
@@ -860,6 +859,9 @@ for(const r of lfResults){
   assert.equal(r.day60.refreshAudit.duplicateKeys,0,r.persona.id+' duplicated retention refresh route key');
   assert.ok(r.day60.refreshAudit.minGap===null||r.day60.refreshAudit.minGap>=10,r.persona.id+' retention refresh rain: min gap '+r.day60.refreshAudit.minGap);
   assert.ok(r.day60.refreshAudit.maxPerTopic<=5,r.persona.id+' too many retention refreshes for one topic: '+r.day60.refreshAudit.maxPerTopic);
+  assert.equal(r.backtest.byMode.repair.harmful,0,r.persona.id+' has harmful repair backtest horizon');
+  assert.equal(r.backtest.byMode.ease.harmful,0,r.persona.id+' has harmful sustainable backtest horizon');
+  assert.equal(r.backtest.byMode.progress.harmful,0,r.persona.id+' has harmful progress backtest horizon');
 }
 assert.ok(lfById['late-breakthrough'].days.slice(0,20).some(function(d){return d.studentState==='repair';}),'late-breakthrough missed early repair');
 assert.ok(lfById['late-breakthrough'].days.slice(40).every(function(d){return d.studentState!=='repair';}),'late-breakthrough trapped in repair');

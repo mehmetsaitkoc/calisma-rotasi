@@ -51,6 +51,15 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(method('t-fi','t-fi-4').key,'science');
 }
 
+// 2a) New planned logs must not silently create a "Normal" feedback signal.
+{
+  const src=between('function openLog','function openSource');
+  assert.ok(src.includes("outcome:''"),'New session log should start without an outcome');
+  assert.ok(src.includes("?initial.outcome:''"),'Missing feedback must stay missing');
+  assert.ok(src.includes("existing?!!session?.done"),'Editing a log must reflect actual plan completion');
+  assert.ok(!src.includes("outcome:'ok'}"),'Normal feedback must never be fabricated by default');
+}
+
 // 2b) Review labels must distinguish repair, normal review and earned challenge.
 {
   const src=between('function routeSourceLabel','function routeExamWeakness');
@@ -257,9 +266,9 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   ];
   const R2={dayAdd:()=> '2026-09-05'};
   const signal=new Function('R','today','w',behaviorSrc+';return routeBehaviorSignal;')(R2,today,w)('k-ma','m1');
-  assert.equal(signal.later,1);
+  assert.equal(signal.later,0,'Completing the same task/day should supersede a temporary later action');
   assert.equal(signal.complete,1);
-  assert.equal(signal.total,2);
+  assert.equal(signal.total,1);
 }
 
 // 4) Recent learning evidence must outweigh stale history without erasing it.
@@ -330,6 +339,20 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(!rebalance.includes('mode<=2&&isHeavy'),'Relaxation modes must not bypass the heavy-load ceiling');
   assert.ok(rebalance.includes('quantCeiling=day.quantHeavyLimit+(critical?1:0)'),'Critical repair may receive at most one extra quantitative-heavy slot');
   assert.ok(rebalance.includes('if(quantHeavy&&day.quantHeavy>=quantCeiling)return false'),'Quantitative-heavy cap must remain hard even for repeated critical tasks');
+}
+
+// 4) Reopening a base study must invalidate its still-open spaced reviews.
+{
+  const src=between('function routeInvalidateBaseReviews','function routeCandidateFromPlan');
+  const space={plan:[
+    {id:'base',done:false},
+    {id:'open-r3',done:false,reviewBaseTaskId:'base'},
+    {id:'done-r3',done:true,reviewBaseTaskId:'base'},
+    {id:'other',done:false,reviewBaseTaskId:'other-base'}
+  ]};
+  const fn=new Function('w',src+';return routeInvalidateBaseReviews;')(()=>space);
+  assert.equal(fn('base'),1);
+  assert.deepEqual(space.plan.map(p=>p.id),['base','done-r3','other']);
 }
 
 // 4) Topic frontier keeps curriculum order and prevents deep-topic flooding.
@@ -622,10 +645,15 @@ for(const marker of [
   'routeBehaviorSignal',
   "ev.taskId===taskId&&ev.action===action&&ev.date===date",
   "const wasDone=!!p.done",
+  "existing?!!session?.done",
+  "outcome:''",
   'routePracticeSignal',
   'weightedAccuracy',
   'routeFeedbackCalibrationSignal',
   'routeSessionPerformanceSignal',
+  'routeInvalidateBaseReviews',
+  "routeInvalidateBaseReviews(p.id)",
+  "Planlı görev kaydı değiştiği için bağlı tekrarlar",
   'routePlanEvidenceDate',
   'routeReviewAnchorDate',
   'reviewBaseTaskId',

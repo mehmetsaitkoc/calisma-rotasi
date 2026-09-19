@@ -7,6 +7,8 @@
     "start": "node server.mjs",
     "test": "node scripts/route-engine-smoke.mjs && node scripts/route-engine-stress.mjs && node scripts/route-engine-route-sim.mjs && node scripts/route-engine-longitudinal.mjs && node scripts/route-engine-closed-loop.mjs",
     "quality:report": "node scripts/route-engine-quality-report.mjs",
-    "critical:audit": "node scripts/route-engine-critical-personas.mjs"
+    "critical:audit": "node scripts/route-engine-critical-personas.mjs",
+    "pilot:report": "node scripts/route-engine-pilot-cohort.mjs",
+    "pilot:test": "node scripts/route-engine-pilot-cohort.test.mjs"
   }
 }

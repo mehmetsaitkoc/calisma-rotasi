@@ -107,7 +107,7 @@ async function submitWizard(page) {
   await page.locator('#setup-wizard-form [name="name"]').fill('E2E Öğrenci');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
-  await page.locator('#setup-wizard-form [name="studyHabit"][value="sometimes"]').check();
+  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').check();
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   await page.locator('#setup-wizard-form [name="currentNet"]').fill('48');
@@ -116,10 +116,13 @@ async function submitWizard(page) {
   await page.locator('#setup-wizard-form [name="targetNet"]').fill('82');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
-  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="90"]').check();
+  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="300"]').check();
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
-  assert.ok(await page.locator('#setup-wizard-form [name="days"]:checked').count() > 0, 'Working days must remain selected');
+  const dayBoxes = page.locator('#setup-wizard-form [name="days"]');
+  assert.equal(await dayBoxes.count(), 7, 'Working-day onboarding must expose all seven days');
+  for (let i = 0; i < await dayBoxes.count(); i++) await dayBoxes.nth(i).check();
+  assert.equal(await page.locator('#setup-wizard-form [name="days"]:checked').count(), 7, 'Retention fixture uses all seven working days so +3/+7 timing is not distorted by skipped days');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   await page.locator('#setup-wizard-form [name="targetScore"]').fill('88');

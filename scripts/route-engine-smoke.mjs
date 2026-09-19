@@ -622,6 +622,75 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeReviewWeeklyLimit(150),70);
 }
 
+// 4) Student Model v2 must gate strong decisions by evidence quantity, diversity and freshness.
+{
+  const src=between('function routeEvidenceFreshness','function routeStudentModel(subjectId');
+  const api=new Function(src+';return {routeEvidenceFreshness,routeStudentModelFromSignals};')();
+  assert.equal(api.routeEvidenceFreshness(2),1);
+  assert.equal(api.routeEvidenceFreshness(10),.75);
+  assert.equal(api.routeEvidenceFreshness(45),.35);
+
+  const oneMini=api.routeStudentModelFromSignals({
+    practice:{known:true,sessions:1,answered:10,weightedAccuracy:.30,accuracy:.30},
+    miniDays:1,practiceLogCount:0,latestDays:0,
+    behavior:{known:false,total:0},outcome:{known:false,total:0},
+    retention:{known:false,score:null},trend:{known:false,direction:'unknown'},
+    calibration:{known:false},skillWeakness:{known:true,weak:[{missed:7}],primary:{skill:'Yüzde'}},
+    adaptive:{mode:'repair'},openMistakes:0,difficultyKnown:false
+  });
+  assert.ok(oneMini.learningNeed>=65,'One bad mini may reveal a meaningful learning need');
+  assert.ok(oneMini.confidence<30,'One mini must not create high confidence');
+  assert.ok(oneMini.priorityBoost<=3,'Low-confidence evidence must not dominate scheduling');
+  assert.equal(oneMini.state,'collect','Low confidence must stay in data-collection state even when the result is poor');
+
+  const multi=api.routeStudentModelFromSignals({
+    practice:{known:true,sessions:4,answered:55,weightedAccuracy:.52,accuracy:.54},
+    miniDays:3,practiceLogCount:3,latestDays:1,
+    behavior:{known:true,total:5,completion:.8,friction:.1},
+    outcome:{known:true,total:4},retention:{known:true,score:55},
+    trend:{known:true,direction:'down',delta:-.10},
+    calibration:{known:true,hiddenGap:1,productiveStruggle:0,alignedStrong:0,alignedStruggle:1},
+    skillWeakness:{known:true,weak:[{missed:4},{missed:2}],primary:{skill:'Oran-orantı'}},
+    weak:{ratio:.50,samples:2,freshness:1},adaptive:{mode:'repair'},openMistakes:2,difficultyKnown:true,attainmentRatio:.8
+  });
+  assert.ok(multi.confidence>55,'Multiple independent fresh signals should raise confidence');
+  assert.ok(multi.learningNeed>oneMini.learningNeed-10);
+  assert.ok(multi.priorityBoost>oneMini.priorityBoost,'High-confidence repeated weakness should influence priority more');
+  assert.equal(multi.state,'repair');
+  assert.match(multi.nextAction,/Oran-orantı/);
+
+  const productive=api.routeStudentModelFromSignals({
+    practice:{known:true,sessions:3,answered:30,weightedAccuracy:.90,accuracy:.90},
+    miniDays:0,practiceLogCount:3,latestDays:1,
+    behavior:{known:true,total:4,completion:.9,friction:.05},outcome:{known:true,total:3},
+    retention:{known:true,score:85},trend:{known:true,direction:'flat',delta:.01},
+    calibration:{known:true,hiddenGap:0,productiveStruggle:2,alignedStrong:0,alignedStruggle:0},
+    skillWeakness:{known:false,weak:[],primary:null},adaptive:{mode:'steady'},openMistakes:0,difficultyKnown:true,attainmentRatio:1
+  });
+  assert.notEqual(productive.state,'repair','Hard-feeling but high-accuracy work must not be treated as failure');
+  assert.match(productive.calibrationLabel,/Efor yüksek, performans güçlü/);
+
+  const stale=api.routeStudentModelFromSignals({
+    practice:{known:true,sessions:4,answered:50,weightedAccuracy:.85,accuracy:.85},
+    practiceLogCount:4,miniDays:2,latestDays:45,
+    behavior:{known:true,total:5,completion:.9},outcome:{known:true,total:3},
+    retention:{known:true,score:85},trend:{known:false,direction:'unknown'},calibration:{known:false},
+    skillWeakness:{known:false,weak:[],primary:null},adaptive:{mode:'steady'},openMistakes:0,difficultyKnown:false
+  });
+  assert.ok(stale.confidence<productive.confidence,'Old evidence must lose confidence even when historic performance was strong');
+}
+
+// 4) Student Model v2 must be visible and must influence candidate priority only through a bounded boost.
+for(const marker of [
+  'function routeStudentModelFromSignals',
+  'function routeStudentModel(subjectId',
+  'function routeStudentModelCard()',
+  'ÖĞRENCİ MODELİ v2',
+  'student.priorityBoost',
+  'Öğrenci Modeli v2 bu konu için',
+  'veri eskidikçe güven otomatik düşer'
+]) assert.ok(html.includes(marker),`Missing Student Model v2 marker: ${marker}`);
+
 // 4) Topic mastery suggestion requires correctly spaced reviews + repeated evidence.
 {
   const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');

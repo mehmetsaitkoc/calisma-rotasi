@@ -49,6 +49,7 @@ function checkpointSummary(payloads,checkpoint){
     openMistakes:avg(rows,x=>finite(x.s.mistakes?.openAtCapture)),
     mastery:avg(rows,x=>finite(x.s.mastery?.mastery)),
     modeTransitions:avg(rows,x=>finite(x.s.modes.transitions)),
+    modeBounces:avg(rows,x=>finite(x.s.modes.bounces)),
     harmful:rows.reduce((n,x)=>n+(x.s.interventions.harmful||0),0),
     helpful:rows.reduce((n,x)=>n+(x.s.interventions.helpful||0),0),
     insufficient:rows.reduce((n,x)=>n+(x.s.interventions.insufficient||0),0),
@@ -95,7 +96,7 @@ function summarizeCohort(raw){
 function fmt(v,suffix=''){return Number.isFinite(v)?v+suffix:'—';}
 function deltaFmt(x,suffix=''){return x&&Number.isFinite(x.avg)?fmt(x.avg,suffix)+' (n='+x.n+')':'—';}
 function markdown(summary){
-  const rows=summary.checkpoints.map(x=>`| Gün ${x.checkpoint} | ${x.captured}/${summary.participants} | ${fmt(x.coverage,'%')} | ${fmt(x.completion,'%')} | ${fmt(x.accuracy,'%')} | ${fmt(x.questionAttainment)} | ${fmt(x.performance)} | ${fmt(x.execution)} | ${fmt(x.learningNeed)} | ${fmt(x.risk)} | ${fmt(x.openMistakes)} | ${fmt(x.mastery)} | ${x.helpful} / ${x.harmful} / ${x.insufficient} / ${x.confounded} / ${x.pending} |`).join('\n');
+  const rows=summary.checkpoints.map(x=>`| Gün ${x.checkpoint} | ${x.captured}/${summary.participants} | ${fmt(x.coverage,'%')} | ${fmt(x.completion,'%')} | ${fmt(x.accuracy,'%')} | ${fmt(x.questionAttainment)} | ${fmt(x.performance)} | ${fmt(x.execution)} | ${fmt(x.learningNeed)} | ${fmt(x.risk)} | ${fmt(x.openMistakes)} | ${fmt(x.mastery)} | ${fmt(x.modeBounces)} | ${x.helpful} / ${x.harmful} / ${x.insufficient} / ${x.confounded} / ${x.pending} |`).join('\n');
   const deltas=summary.comparisons.map(d=>`| Gün ${d.from} → ${d.to} | ${deltaFmt(d.completion,' puan')} | ${deltaFmt(d.accuracy,' puan')} | ${deltaFmt(d.questionAttainment)} | ${deltaFmt(d.performance,' puan')} | ${deltaFmt(d.execution,' puan')} | ${deltaFmt(d.learningNeed,' puan')} | ${deltaFmt(d.risk,' puan')} | ${deltaFmt(d.openMistakes)} | ${deltaFmt(d.mastery,' puan')} |`).join('\n');
   return `# Çalışma Rotası — Pilot Cohort Report
 
@@ -103,7 +104,7 @@ function markdown(summary){
 
 ## Checkpoint coverage ve ortalamalar
 
-| Checkpoint | Coverage | % | Completion | Accuracy | Soru hedef oranı | Performance | Execution | LearningNeed | Risk | Açık yanlış | Mastery | Müdahale + / − / yetersiz / karışmış / pending |
+| Checkpoint | Coverage | % | Completion | Accuracy | Soru hedef oranı | Performance | Execution | LearningNeed | Risk | Açık yanlış | Mastery | Mode bounce | Müdahale + / − / yetersiz / karışmış / pending |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 ${rows}
 

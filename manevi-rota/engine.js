@@ -47,10 +47,10 @@ function mrHistory(k){
 function mrDaysSince(k,id){for(let i=1;i<=7;i++){const d=MR.daily[mrOffset(k,-i)];if(d&&(d.done||[]).includes(id))return i}return 8}
 function mrBehaviorModel(k=mrToday()){
  const days=Array.from({length:30},(_,i)=>MR.daily[mrOffset(k,-(i+1))]).filter(d=>d?.route?.tasks?.length);
- const rates=[],byPeriod={},byDayType={},task={},taskPeriod={};
+ const rates=[],byPeriod={},byDayType={},task={},taskPeriod={},taskCompletionPeriod={},completionPeriod={morning:0,day:0,evening:0};
  ['morning','day','evening'].forEach(x=>byPeriod[x]={rates:[],samples:0});
  ['work','off','travel','normal'].forEach(x=>byDayType[x]={rates:[],samples:0});
- Object.keys(MR_TASKS).forEach(id=>{task[id]={planned:0,done:0};taskPeriod[id]={morning:{planned:0,done:0},day:{planned:0,done:0},evening:{planned:0,done:0}}});
+ Object.keys(MR_TASKS).forEach(id=>{task[id]={planned:0,done:0};taskPeriod[id]={morning:{planned:0,done:0},day:{planned:0,done:0},evening:{planned:0,done:0}};taskCompletionPeriod[id]={morning:0,day:0,evening:0}});
  days.forEach(d=>{
    const total=d.route.tasks.length,done=(d.done||[]).length,r=mrRate(done,total);rates.push(r);
    const per=d.checkin?.period,typ=d.checkin?.dayType;
@@ -59,20 +59,21 @@ function mrBehaviorModel(k=mrToday()){
    d.route.tasks.forEach(t=>{
      if(!task[t.id])return;task[t.id].planned++;
      if(per&&taskPeriod[t.id]?.[per])taskPeriod[t.id][per].planned++;
-     if((d.done||[]).includes(t.id)){task[t.id].done++;if(per&&taskPeriod[t.id]?.[per])taskPeriod[t.id][per].done++}
+     if((d.done||[]).includes(t.id)){task[t.id].done++;if(per&&taskPeriod[t.id]?.[per])taskPeriod[t.id][per].done++;const ap=d.doneMeta?.[t.id]?.period;if(ap&&taskCompletionPeriod[t.id]?.[ap]!==undefined){taskCompletionPeriod[t.id][ap]++;completionPeriod[ap]++}}
    });
  });
  Object.values(byPeriod).forEach(x=>x.rate=mrAvg(x.rates));
  Object.values(byDayType).forEach(x=>x.rate=mrAvg(x.rates));
  Object.keys(task).forEach(id=>{task[id].rate=task[id].planned?task[id].done/task[id].planned:null;Object.values(taskPeriod[id]).forEach(x=>x.rate=x.planned?x.done/x.planned:null)});
  const rankedPeriod=Object.entries(byPeriod).filter(([,x])=>x.samples>=2).sort((a,b)=>b[1].rate-a[1].rate);
+ const rankedCompletion=Object.entries(completionPeriod).sort((a,b)=>b[1]-a[1]);
  const rankedType=Object.entries(byDayType).filter(([,x])=>x.samples>=2).sort((a,b)=>b[1].rate-a[1].rate);
  const last7=rates.slice(0,7),prev7=rates.slice(7,14);
  const successfulMinutes=days.filter(d=>mrRate((d.done||[]).length,d.route.tasks.length)>=.75).map(d=>d.route.total||d.route.budget||0).filter(Boolean);
  return {
    samples:days.length,overall:mrAvg(rates),last7:mrAvg(last7),prev7:mrAvg(prev7),
-   byPeriod,byDayType,task,taskPeriod,
-   bestPeriod:rankedPeriod[0]?.[0]||null,bestDayType:rankedType[0]?.[0]||null,
+   byPeriod,byDayType,task,taskPeriod,taskCompletionPeriod,completionPeriod,
+   bestPeriod:rankedPeriod[0]?.[0]||null,bestCompletionPeriod:rankedCompletion[0]?.[1]>=2?rankedCompletion[0][0]:null,bestDayType:rankedType[0]?.[0]||null,
    stableMinutes:successfulMinutes.length?Math.round(mrAvg(successfulMinutes)):null
  }
 }
@@ -114,8 +115,11 @@ function mrScore(id,c,p,h,b,k){
  if(id==='quran'&&['beginner','rare'].includes(p.quranLevel)){s+=8;why.push('Kur’an düzenini güçlendirir')}
  if(id==='reading'&&p.reading==='none')s-=4;
  const ps=b.taskPeriod?.[id]?.[c.period];
+ const actual=b.taskCompletionPeriod?.[id];
+ const actualBest=actual?Object.entries(actual).sort((a,b)=>b[1]-a[1])[0]:null;
  if(ps?.planned>=2&&ps.rate>=.7){s+=10;why.push(mrPeriodLabel(c.period)+' bu görevde güçlü zamanın')}
  if(ps?.planned>=3&&ps.rate<.35)s-=6;
+ if(actualBest&&actualBest[1]>=2&&actualBest[0]===c.period){s+=7;why.push('bu görevi çoğunlukla '+mrPeriodLabel(c.period)+' tamamlıyorsun')}
  const long=b.task?.[id];
  if(long?.planned>=4&&long.rate<.45){s+=5;why.push('30 günlük modelde zorlandığın alan')}
  return {score:s,why}
@@ -148,6 +152,6 @@ function mrBuild(k=mrToday(),force=false){
  if(pp?.samples>=2&&pp.rate>=.7)why.push(mrPeriodLabel(c.period)+' saatlerinde geçmiş performansın güçlü.');
  if(dt?.samples>=2&&dt.rate<.5)why.push(mrDayTypeLabel(c.dayType)+' geçmişte daha zor geçtiği için yük azaltıldı.');
  if(b.samples>=5)why.push('30 günlük davranış modelinde '+b.samples+' geçmiş gün hesaba katıldı.');
- d.route={createdAt:Date.now(),budget,total:tasks.reduce((a,x)=>a+x.duration,0),factor,tasks,why,analysis:{avg3:h.avg3,avg7:h.avg7,energy:c.energy,load:c.load,mood:c.mood,context:c.context,period:c.period,dayType:c.dayType,behaviorSamples:b.samples,bestPeriod:b.bestPeriod,bestDayType:b.bestDayType,stableMinutes:b.stableMinutes}};
+ d.route={createdAt:Date.now(),budget,total:tasks.reduce((a,x)=>a+x.duration,0),factor,tasks,why,analysis:{avg3:h.avg3,avg7:h.avg7,energy:c.energy,load:c.load,mood:c.mood,context:c.context,period:c.period,dayType:c.dayType,behaviorSamples:b.samples,bestPeriod:b.bestPeriod,bestCompletionPeriod:b.bestCompletionPeriod,bestDayType:b.bestDayType,stableMinutes:b.stableMinutes}};
  mrSave();return d.route
 }

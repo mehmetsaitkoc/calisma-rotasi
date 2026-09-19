@@ -2461,6 +2461,63 @@ function routeInterventionPolicyAdjustment(subjectId,topicId,mode){
  if(effect.score>=.5)return {action:'repeat',label:'İşe yarayan çekirdeği koru',effect};
  return {action:'hold',label:'Karışık sonuç; aşırı uyarlama yapma',effect};
 }
+function routePilotDaysBetween(a,b){return Math.max(0,Math.floor((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000));}
+function routePilotLatestExamAt(cutoff){
+ const xs=(w().exams||[]).filter(function(x){return x.date<=cutoff;}).sort(function(a,b){return b.date.localeCompare(a.date);}),latest=xs[0]||null;
+ if(!latest)return {count:0,latestDate:'',latestNet:null};
+ try{return {count:xs.length,latestDate:latest.date,latestNet:Math.round(R.calcNet(latest.parts,latest.penalty).net*100)/100};}catch{return {count:xs.length,latestDate:latest.date,latestNet:null};}
+}
+function routePilotModeSummary(startDate,cutoff){
+ const rows=(w().route?.modeHistory||[]).filter(function(x){return x.date>=startDate&&x.date<=cutoff;}).sort(function(a,b){return a.date.localeCompare(b.date)||a.created-b.created;}),counts={steady:0,repair:0,ease:0,progress:0},groups=new Map();
+ for(const row of rows){if(Object.hasOwn(counts,row.mode))counts[row.mode]++;const key=row.subjectId+'|'+(row.topicId||'');const xs=groups.get(key)||[];xs.push(row);groups.set(key,xs);}
+ let transitions=0;const latest=[];
+ for(const xs of groups.values()){for(let i=1;i<xs.length;i++)if(xs[i].mode!==xs[i-1].mode)transitions++;if(xs.length)latest.push(xs.at(-1));}
+ const currentCounts={steady:0,repair:0,ease:0,progress:0};for(const row of latest)if(Object.hasOwn(currentCounts,row.mode))currentCounts[row.mode]++;
+ const current=Object.entries(currentCounts).sort(function(a,b){return b[1]-a[1];})[0];const avg=function(key){const vals=latest.map(function(x){return x[key];}).filter(Number.isFinite);return vals.length?Math.round(vals.reduce(function(n,x){return n+x;},0)/vals.length):null;};
+ return {...counts,transitions,current:current&&current[1]?current[0]:'',student:{performance:avg('performance'),learningNeed:avg('learningNeed'),risk:avg('risk'),confidence:avg('confidence')}};
+}
+function routePilotInterventionEvaluationAt(intervention,cutoff){
+ const age=routePilotDaysBetween(intervention.date,cutoff),horizons=[7,14,30].filter(function(h){return age>=h;}).map(function(h){
+  const start=R.dayAdd(intervention.date,h<=7?1:h-6),end=R.dayAdd(intervention.date,h),performance=routePerformanceWindow(intervention.subjectId,intervention.topicId,start,end),behavior=routeBehaviorWindow(intervention.subjectId,intervention.topicId,start,end),evaluation=routeEvaluateInterventionFromMetrics(intervention,{age:h,start,end,performance,behavior});
+  return {horizon:h,...evaluation};
+ });
+ if(!horizons.length)return {status:'pending'};
+ return routeInterventionAggregateEvaluations(horizons);
+}
+function routePilotInterventionSummary(startDate,cutoff){
+ const xs=(w().route?.interventions||[]).filter(function(x){return x.date>=startDate&&x.date<=cutoff;}),out={total:xs.length,helpful:0,neutral:0,harmful:0,pending:0};
+ for(const x of xs){const status=routePilotInterventionEvaluationAt(x,cutoff).status||'pending';if(Object.hasOwn(out,status))out[status]++;else out.pending++;}
+ return out;
+}
+function routePilotSnapshot(checkpoint){
+ routeEnsure();const pilot=w().route.pilot;if(!pilot.startDate)throw Error('Pilot başlangıç tarihi yok.');
+ const targetDate=R.dayAdd(pilot.startDate,checkpoint),capturedDate=today(),plannedTasks=(w().plan||[]).filter(function(p){return p.date>=pilot.startDate&&p.date<=targetDate;}),plannedIds=new Set(plannedTasks.map(function(p){return p.id;})),completedIds=new Set();
+ for(const ev of (w().taskEvents||[]))if(ev.action==='complete'&&ev.date<=targetDate&&plannedIds.has(ev.taskId))completedIds.add(ev.taskId);
+ for(const l of (w().logs||[]))if(l.sessionId&&l.date<=targetDate&&plannedIds.has(l.sessionId))completedIds.add(l.sessionId);
+ const logs=(w().logs||[]).filter(function(l){return l.date>=pilot.startDate&&l.date<=targetDate;}),correct=logs.reduce(function(n,l){return n+(Number.isInteger(l.correct)?l.correct:0);},0),wrong=logs.reduce(function(n,l){return n+(Number.isInteger(l.wrong)?l.wrong:0);},0),answered=correct+wrong,mode=routePilotModeSummary(pilot.startDate,targetDate),createdMistakes=(w().mistakes||[]).filter(function(m){const d=Number.isFinite(m.created)&&m.created>0?R.iso(new Date(m.created)):m.reviewDate;return d>=pilot.startDate&&d<=targetDate;}).length,resolvedMistakes=(w().mistakes||[]).filter(function(m){if(!Number.isFinite(m.resolvedAt)||m.resolvedAt<=0)return false;const d=R.iso(new Date(m.resolvedAt));return d>=pilot.startDate&&d<=targetDate;}).length,delayDays=routePilotDaysBetween(targetDate,capturedDate);
+ return {checkpoint,targetDate,capturedDate,capturedAt:Date.now(),delayDays,planned:{tasks:plannedTasks.length,minutes:plannedTasks.reduce(function(n,p){return n+(p.minutes||0);},0),questions:plannedTasks.reduce(function(n,p){return n+(Number.isInteger(p.targetQuestions)?p.targetQuestions:0);},0)},actual:{completedTasks:completedIds.size,minutes:logs.reduce(function(n,l){return n+(l.minutes||0);},0),questions:logs.reduce(function(n,l){return n+(l.questions||0);},0),correct,wrong,accuracy:answered?Math.round(correct/answered*1000)/10:null,completion:plannedTasks.length?Math.round(completedIds.size/plannedTasks.length*1000)/10:null},exam:routePilotLatestExamAt(targetDate),mistakes:{openAtCapture:(w().mistakes||[]).filter(function(m){return !m.resolved;}).length,created:createdMistakes,resolved:resolvedMistakes},modes:{steady:mode.steady,repair:mode.repair,ease:mode.ease,progress:mode.progress,transitions:mode.transitions,current:mode.current},interventions:routePilotInterventionSummary(pilot.startDate,targetDate),student:mode.student,dataQuality:{openMistakesExact:delayDays===0}};
+}
+function routePilotAutoSnapshot(){
+ routeEnsure();const pilot=w().route.pilot;if(!pilot.enabled||!pilot.startDate)return false;let changed=false;
+ for(const checkpoint of [0,7,14,30]){const target=R.dayAdd(pilot.startDate,checkpoint);if(target>today()||pilot.snapshots.some(function(x){return x.checkpoint===checkpoint;}))continue;pilot.snapshots.push(routePilotSnapshot(checkpoint));changed=true;}
+ pilot.snapshots=pilot.snapshots.sort(function(a,b){return a.checkpoint-b.checkpoint;}).slice(-8);if(pilot.snapshots.some(function(x){return x.checkpoint===30;})&&!pilot.completedAt){pilot.completedAt=Date.now();changed=true;}
+ return changed;
+}
+function routePilotStart(){
+ routeEnsure();const pilot=w().route.pilot;pilot.enabled=true;pilot.participantId='p-'+R.uid();pilot.startDate=today();pilot.startedAt=Date.now();pilot.completedAt=0;pilot.snapshots=[];routePilotAutoSnapshot();return pilot;
+}
+function routePilotPayload(){
+ routePilotAutoSnapshot();const p=routePilotConfig();return {schema:'calisma-rotasi-pilot-v1',participantId:p.participantId,exam:state.activeExam,track:w().settings.track,startDate:p.startDate,generatedDate:today(),completed:!!p.completedAt,snapshots:p.snapshots};
+}
+function routePilotExport(){const p=routePilotConfig();if(!p.startDate)throw Error('Pilot kaydı henüz başlatılmadı.');const payload=routePilotPayload();download('calisma-rotasi-pilot-'+payload.participantId+'-'+today()+'.json',JSON.stringify(payload,null,2),'application/json');toast('Takma kimlikli pilot ölçüm dosyası hazırlandı.');}
+function routePilotConfig(){routeEnsure();return w().route.pilot;}
+function routePilotSettingsCard(){
+ const p=routePilotConfig(),checkpoints=[0,7,14,30],done=new Set((p.snapshots||[]).map(function(x){return x.checkpoint;})),completed=!!p.completedAt;
+ if(!p.startDate)return '<section class="card"><div class="card-head"><div><div class="eyebrow">GERÇEK KULLANICI PİLOTU</div><h3>0 / 7 / 14 / 30 günlük ölçümü başlat</h3></div><span class="pill plain">Opt-in</span></div><p class="muted small">Pilot kaydı gerçek isim veya telefon tutmaz. Takma katılımcı kimliğiyle planlanan–gerçekleşen çalışma, soru sonucu, yanlışlar, rota modları ve müdahale sonuçlarının agregat snapshotlarını bu tarayıcıda saklar. Sunucuya otomatik gönderim yoktur.</p><div class="button-row" style="justify-content:flex-start">'+btn('Pilot takibini başlat','pilot-start','primary')+'</div></section>';
+ const chips=checkpoints.map(function(x){return '<span class="pill '+(done.has(x)?'':'plain')+'">'+(done.has(x)?'✓ ':'')+'Gün '+x+'</span>';}).join(' ');
+ return '<section class="card"><div class="card-head"><div><div class="eyebrow">GERÇEK KULLANICI PİLOTU</div><h3>'+(completed?'30 günlük pilot tamamlandı':'Pilot telemetry aktif')+'</h3></div><span class="pill '+(completed?'':'plain')+'">'+esc(p.participantId)+'</span></div><p class="muted small">Başlangıç: '+dateLabel(p.startDate,true)+' · Snapshotlar yalnız agregat ölçüm içerir. Gecikmeli açılışta plan/log geçmişi hedef tarihe göre geriye dönük hesaplanır; açık yanlış sayısının tamlığı ayrıca işaretlenir.</p><div class="row" style="gap:7px;flex-wrap:wrap;margin-top:12px">'+chips+'</div><div class="button-row" style="justify-content:flex-start;margin-top:14px">'+btn(icon('download')+' Pilot JSON indir','pilot-export','primary sm')+(p.enabled&&!completed?btn('Takibi durdur','pilot-stop','ghost sm'):'')+(completed?btn('Yeni pilot başlat','pilot-start','ghost sm'):'')+'</div></section>';
+}
+
 function routeInterventionBacktestCard(){
  const rows=(w().route?.interventions||[]).map(function(x){return {x,e:routeInterventionEvaluation(x)};}).filter(function(r){return r.e.status!=='pending';}).sort(function(a,b){return b.x.date.localeCompare(a.x.date)||b.x.created-a.x.created;}).slice(0,5),all=(w().route?.interventions||[]),evaluated=all.map(routeInterventionEvaluation).filter(function(e){return e.status!=='pending';}),helpful=evaluated.filter(function(e){return e.status==='helpful';}).length,harmful=evaluated.filter(function(e){return e.status==='harmful';}).length;
  if(!all.length)return '<section class="card"><div class="card-head"><div><div class="eyebrow">KARAR GERİ TESTİ</div><h3>Motor müdahalelerinin sonucu izlenecek</h3></div><span class="pill plain">Henüz karar deneyi yok</span></div><p class="muted small">Rota ONARIM, SÜRDÜRÜLEBİLİR veya GELİŞİM kararı verdiğinde başlangıç kanıtını kaydedecek; 7, 14 ve 30 günlük gerçek sonuçları ayrı ayrı izleyip uzun dönem sonucu doğrulayacak.</p></section>';
@@ -2526,7 +2583,7 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  if(!silent)toast(changed?changed+' görev kapasite, tekrar payı ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');
  return {changed,scheduled:scheduled.length};
 }
-function routeAutoSync(){if(!state.activeExam||!w().configured||sampleSaved)return;routeEnsure();const overdue=w().plan.some(p=>!p.done&&p.date<today());if(w().route.lastAutoDate!==today()||overdue){const message=overdue?'Kaçırılan görevler günlük kapasiteye göre yeniden dağıtıldı.':'Bugünün rotası güncel verilerle kontrol edildi.';routeRebalance(message,true);w().route.lastAutoDate=today();save();}}
+function routeAutoSync(){if(!state.activeExam||!w().configured||sampleSaved)return;routeEnsure();const overdue=w().plan.some(p=>!p.done&&p.date<today());if(w().route.lastAutoDate!==today()||overdue){const message=overdue?'Kaçırılan görevler günlük kapasiteye göre yeniden dağıtıldı.':'Bugünün rotası güncel verilerle kontrol edildi.';routeRebalance(message,true);w().route.lastAutoDate=today();}routePilotAutoSnapshot();save();}
 function routeLightenToday(){
  routeEnsure();const open=w().plan.filter(function(p){return p.date===today()&&!p.done;});
  if(open.length<=1)return {moved:0,kept:open.length,target:routeEffectiveDailyMinutes()};
@@ -2989,7 +3046,7 @@ document.addEventListener('input',event=>{if(event.target.id==='teacher-question
 document.addEventListener('change',event=>{const el=event.target;if(!(el instanceof HTMLSelectElement)||el.name!=='track')return;const form=el.closest('#setup-form,#settings-form'),box=form?.querySelector('[data-profile-levels]');if(!box)return;box.innerHTML=profileLevelsHtml(el.value);});
 
 function render(){leaveVideo();showStorageWarning();previewBar();if(state.activeExam&&w().configured&&!w().profile?.completed&&!['select','pricing','setup'].includes(ui.view)){ui.setupStep=0;ui.view='setup';}if(['today','plan'].includes(ui.view))routeAutoSync();let html;if(ui.view==='pricing')html=pricingView();else if(ui.view==='select')html=welcome();else if(ui.view==='setup')html=setup();else if(ui.view==='summary')html=onboardingSummaryView();else if(ui.view==='building')html=buildingView();else if(!state.activeExam){ui.view='select';html=welcome();}else{const fn={today:todayPage,plan:planPage,topics:topicsPage,teacher:teacherPage,exams:examsPage,mistakes:mistakesPage,log:logPage,report:reportPage,settings:settingsPage,membership:membershipPage,videos:videoLibraryPage,turkish:turkishPage,academy:academyPage,camp:campaignPage,lesson:lessonPage}[ui.view]||todayPage;html=shell(fn());}$('#app').innerHTML=html;document.title=(ui.view==='pricing'?'Paketler · Rota Plus':ui.view==='select'?'KPSS + YKS':ui.view==='summary'?'Kişisel rota özeti':ui.view==='building'?'Program hazırlanıyor':examLabel()+' · '+(nav.find(x=>x[0]===ui.view)?.[1]||'Rotam'))+' | Çalışma Rotası';mountVideoPage();mountCampaignPage();teacherAfterRender();}
-function commit(message){const ok=save();render();if(message)toast(ok?message:'Değişiklik bu oturumda uygulandı; kalıcı kayıt yapılamadı. Yedek indir.',!ok);}
+function commit(message){if(state.activeExam&&w()?.configured)routePilotAutoSnapshot();const ok=save();render();if(message)toast(ok?message:'Değişiklik bu oturumda uygulandı; kalıcı kayıt yapılamadı. Yedek indir.',!ok);}
 function readSettings(form){const f=new FormData(form),days=f.getAll('days').map(Number),dailyMinutes=Number(f.get('dailyMinutes')),track=String(f.get('track'));if(!days.length)throw Error('En az bir çalışma günü seç.');if(!Number.isInteger(dailyMinutes)||dailyMinutes<30||dailyMinutes>720)throw Error('Günlük süreyi kontrol et.');if(state.activeExam==='yks'&&!C.TRACKS[track])throw Error('Geçerli bir YKS alanı seç.');const targetDate=String(f.get('targetDate')||'');if(targetDate&&!R.validDate(targetDate))throw Error('Geçerli bir hedef tarihi seç.');return {name:String(f.get('name')||'').trim().slice(0,60),track:state.activeExam==='yks'?track:'lisans',dailyMinutes,days,priorities:f.getAll('priorities').filter(x=>subjects().some(s=>s.id===x)),target:String(f.get('target')||'').trim().slice(0,160),targetDate};}
 function openLog(existing=null,session=null,fromTimer=false){
  const t=timer();

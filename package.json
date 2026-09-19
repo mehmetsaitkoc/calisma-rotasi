@@ -5,6 +5,6 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node scripts/route-engine-smoke.mjs"
+    "test": "node scripts/route-engine-smoke.mjs && node scripts/route-engine-stress.mjs"
   }
 }

@@ -140,7 +140,7 @@ ${['repair','ease','progress'].map(mode=>{
 
 ## Evidence freshness / exam refresh
 
-Eski deneme kanıtı yaş ve yeni çalışma kanıtıyla zayıflıyor. `exam-refresh` personasında yeni deneme ayrı kanıt olarak tutuluyor ve eski denemeden daha yüksek ağırlık alması assertion ile korunuyor. 60 günlük bütün personelar içinde maksimum stale-evidence etkisi **${maxStale} puan**.
+Eski deneme kanıtı yaş ve yeni çalışma kanıtıyla zayıflıyor. 'exam-refresh' personasında yeni deneme ayrı kanıt olarak tutuluyor ve eski denemeden daha yüksek ağırlık alması assertion ile korunuyor. 60 günlük bütün personelar içinde maksimum stale-evidence etkisi **${maxStale} puan**.
 
 ## Pilot öncesi kalan açıklar
 
@@ -165,7 +165,7 @@ Sentetik kalite kapısı geçildikten sonraki doğru aşama, küçük kontrollü
 
 ---
 
-Bu rapor `npm run quality:report` ile yeniden üretilebilir.
+Bu rapor 'npm run quality:report' ile yeniden üretilebilir.
 `;
 
 fs.writeFileSync(outUrl,report);

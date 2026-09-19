@@ -27,5 +27,8 @@ jobs:
       - name: Syntax check smoke runner
         run: node --check scripts/route-engine-smoke.mjs
 
-      - name: Run route engine smoke and regression tests
+      - name: Syntax check stress runner
+        run: node --check scripts/route-engine-stress.mjs
+
+      - name: Run route engine smoke, regression and synthetic stress tests
         run: npm test

@@ -9,6 +9,7 @@
     "quality:report": "node scripts/route-engine-quality-report.mjs",
     "critical:audit": "node scripts/route-engine-critical-personas.mjs",
     "pilot:report": "node scripts/route-engine-pilot-cohort.mjs",
-    "pilot:test": "node scripts/route-engine-pilot-cohort.test.mjs"
+    "pilot:test": "node scripts/route-engine-pilot-cohort.test.mjs",
+    "pilot:telemetry": "node scripts/route-engine-pilot-telemetry.mjs"
   }
 }

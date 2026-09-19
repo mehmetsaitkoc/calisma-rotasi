@@ -20,6 +20,7 @@ function daysBetween(a,b){
 
 const buildSrc=between('function routeLatestBaseCycle','function routeConsistencySignal');
 const rebalanceSrc=between('function routeRebalance','function routeAutoSync');
+const adaptiveSrc=between('function routeSubjectAdaptiveState','const ROUTE_ERROR_TYPES');
 const studentSrc=between('function routeConfidenceCalibrationFromSignals','function routeStudentModel(subjectId');
 const studentFn=new Function(studentSrc+';return routeStudentModelFromSignals;')();
 const riskFn=new Function(between('function routeExamRiskFromSignals','function routeTopicExamRisk')+';return routeExamRiskFromSignals;')();
@@ -174,37 +175,39 @@ function practiceSignal(space,subjectId,topicId='',since=''){
   };
 }
 function behaviorSignal(space,subjectId,topicId='',currentDate){
-  const since=dayAdd(currentDate,-21),planMap=new Map(space.plan.map(p=>[p.id,p])),groups=new Map();
+  const since=dayAdd(currentDate,-14),planMap=new Map(space.plan.map(p=>[p.id,p])),groups=new Map();
   for(const ev of space.taskEvents){
     const p=planMap.get(ev.taskId);if(!p||p.subjectId!==subjectId||(topicId&&p.topicId!==topicId)||ev.date<since||ev.date>currentDate)continue;
     const key=ev.taskId+'|'+ev.date,set=groups.get(key)||new Set();set.add(ev.action);groups.set(key,set);
   }
-  let complete=0,skip=0,later=0;
-  for(const set of groups.values()){if(set.has('complete'))complete++;else if(set.has('skip'))skip++;else if(set.has('later'))later++;}
+  let complete=0,skip=0,later=0,start=0;
+  for(const actions of groups.values()){
+    if(actions.has('start'))start++;
+    if(actions.has('complete'))complete++;
+    else if(actions.has('skip'))skip++;
+    else if(actions.has('later'))later++;
+  }
   const total=complete+skip+later;
-  return {known:total>=2,total,complete,skip,later,completion:total?complete/total:0,friction:total?(skip+later)/total:0};
+  return {known:total>=3,total,complete,skip,later,start,completion:total?complete/total:0,friction:total?(skip+later*.5)/total:0};
 }
 function outcomeSignal(space,subjectId,topicId='',since=''){
-  const planMap=new Map(space.plan.map(p=>[p.id,p])),xs=space.logs.filter(l=>{
+  const planMap=topicId?new Map(space.plan.map(p=>[p.id,p])):null,xs=space.logs.filter(l=>{
     if(l.subjectId!==subjectId||(since&&l.date<since)||!['stuck','ok','strong'].includes(l.outcome))return false;
     if(!topicId)return true;return planMap.get(l.sessionId)?.topicId===topicId;
-  }).sort((a,b)=>a.date.localeCompare(b.date)||((a.updated||0)-(b.updated||0)));
-  const total=xs.length,stuck=xs.filter(x=>x.outcome==='stuck').length,ok=xs.filter(x=>x.outcome==='ok').length,strong=xs.filter(x=>x.outcome==='strong').length;
-  const recent=xs.at(-1)?.outcome||'',firstScore=xs.length?({stuck:0,ok:1,strong:2}[xs[0].outcome]??1):1,lastScore=xs.length?({stuck:0,ok:1,strong:2}[recent]??1):1;
-  return {known:total>=2,total,stuck,ok,strong,stuckRate:total?stuck/total:0,recent,trend:total>=2?(lastScore-firstScore)/(total-1):0};
+  }).sort((a,b)=>b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))).slice(0,6);
+  const weights=[1,.82,.68,.55,.45,.36];let stuck=0,ok=0,strong=0,weighted=0,weightTotal=0;
+  xs.forEach((l,i)=>{if(l.outcome==='stuck')stuck++;else if(l.outcome==='strong')strong++;else ok++;const w=weights[i]||.3,score=l.outcome==='strong'?1:l.outcome==='stuck'?-1:0;weighted+=score*w;weightTotal+=w;});
+  const total=xs.length,recent=xs[0]?.outcome||'';
+  return {known:total>0,total,stuck,ok,strong,recent,stuckRate:total?stuck/total:0,strongRate:total?strong/total:0,trend:weightTotal?weighted/weightTotal:0};
 }
 function calibrationSignal(space,subjectId,topicId='',currentDate){
-  const since=dayAdd(currentDate,-21),planMap=new Map(space.plan.map(p=>[p.id,p]));let hiddenGap=0,productiveStruggle=0,alignedStrong=0,alignedStruggle=0,total=0;
-  for(const l of space.logs){
-    if(l.subjectId!==subjectId||l.date<since||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||!['stuck','ok','strong'].includes(l.outcome))continue;
-    if(topicId&&planMap.get(l.sessionId)?.topicId!==topicId)continue;
-    const n=l.correct+l.wrong;if(n<8)continue;const acc=l.correct/n;total++;
-    if(l.outcome==='strong'&&acc<.65)hiddenGap++;
-    else if(l.outcome==='stuck'&&acc>=.80)productiveStruggle++;
-    else if(l.outcome==='strong'&&acc>=.75)alignedStrong++;
-    else if(l.outcome==='stuck'&&acc<.65)alignedStruggle++;
-  }
-  return {known:total>=2,total,hiddenGap,productiveStruggle,alignedStrong,alignedStruggle};
+  const since=dayAdd(currentDate,-21),planMap=topicId?new Map(space.plan.map(p=>[p.id,p])):null,xs=space.logs.filter(l=>{
+    if(l.subjectId!==subjectId||l.date<since||!['stuck','ok','strong'].includes(l.outcome)||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;
+    if(!topicId)return true;return planMap.get(l.sessionId)?.topicId===topicId;
+  }).sort((a,b)=>b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))).slice(0,4);
+  let hiddenGap=0,productiveStruggle=0,alignedStrong=0,alignedStruggle=0;
+  for(const l of xs){const n=l.correct+l.wrong,acc=n?l.correct/n:0;if(l.outcome==='strong'&&acc<.65)hiddenGap++;else if(l.outcome==='stuck'&&acc>=.80)productiveStruggle++;else if(l.outcome==='strong'&&acc>=.80)alignedStrong++;else if(l.outcome==='stuck'&&acc<.65)alignedStruggle++;}
+  return {known:xs.length>0,total:xs.length,hiddenGap,productiveStruggle,alignedStrong,alignedStruggle};
 }
 function trendSignal(space,subjectId,topicId,currentDate){
   function window(start,end){
@@ -225,11 +228,16 @@ function retentionSignal(space,subjectId,topicId,currentDate){
   const practice=practiceSignal(space,subjectId,topicId),completion=total?earned/total:0,pa=practice.known?practice.weightedAccuracy:null;
   return {known:true,score:Math.round(100*(pa===null?completion:completion*.65+pa*.35)),due:due.length,completed:due.filter(p=>p.done).length};
 }
-function skillWeakness(space,subjectId,topicId,currentDate){
-  const attempts=space.assessments.filter(a=>a.subjectId===subjectId&&a.topicId===topicId&&a.date>=dayAdd(currentDate,-21)).sort((a,b)=>b.date.localeCompare(a.date)||((b.created||0)-(a.created||0))).slice(0,4);
-  if(!attempts.length)return {known:false,weak:[],primary:null};
-  const latest=attempts[0],n=latest.correct+latest.wrong+(latest.blank||0),missed=(latest.wrong||0)+(latest.blank||0),acc=n?latest.correct/n:0;
-  const primary=missed>0&&acc<.75?{skill:latest.skill||'Konu becerisi',missed,accuracy:acc}:null;
+function skillWeakness(space,subjectId,topicId='',currentDate){
+  const grouped=new Map();
+  for(const a of space.assessments){
+    if(a.subjectId!==subjectId||a.date<dayAdd(currentDate,-21)||(topicId&&a.topicId!==topicId))continue;
+    const key=a.miniId+'|'+a.date,prev=grouped.get(key);if(!prev||(a.created||0)>=(prev.created||0))grouped.set(key,a);
+  }
+  const attempts=[...grouped.values()].sort((a,b)=>b.date.localeCompare(a.date)||((b.created||0)-(a.created||0))).slice(0,4);
+  if(!attempts.length)return {known:false,attempts:0,weak:[],primary:null};
+  const latest=attempts[0],n=latest.correct+latest.wrong+(latest.blank||0),missed=(latest.wrong||0)+(latest.blank||0),acc=n?latest.correct/n:0,missRate=n?missed/n:0;
+  const primary=missed>0&&(acc<.75||missRate>=.34)?{skill:latest.skill||'Konu becerisi',missed,accuracy:acc,weightedMissRate:missRate}:null;
   return {known:true,attempts:attempts.length,weak:primary?[primary]:[],primary};
 }
 function personalNorm(space,subjectId,topicId){
@@ -239,27 +247,31 @@ function personalNorm(space,subjectId,topicId){
 function openMistakeCount(space,subjectId,topicId){
   return space.mistakes.filter(m=>!m.resolved&&m.subjectId===subjectId&&m.topicId===topicId).length;
 }
-function attainmentRatio(space,subjectId,topicId,currentDate){
+function targetAttainmentSignal(space,subjectId,topicId='',currentDate){
   const planMap=new Map(space.plan.map(p=>[p.id,p])),xs=space.logs.filter(l=>{
     if(l.subjectId!==subjectId||l.date<dayAdd(currentDate,-21)||!Number.isInteger(l.questions)||l.questions<=0)return false;
-    const p=planMap.get(l.sessionId);return p&&p.topicId===topicId&&Number.isInteger(p.targetQuestions)&&p.targetQuestions>=5;
-  }).slice(-6);
-  if(xs.length<2)return null;
-  return xs.reduce((sum,l)=>{const p=planMap.get(l.sessionId);return sum+Math.min(1.5,l.questions/p.targetQuestions);},0)/xs.length;
+    const p=planMap.get(l.sessionId);if(!p||!Number.isInteger(p.targetQuestions)||p.targetQuestions<5)return false;
+    return !topicId||p.topicId===topicId;
+  }).sort((a,b)=>b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))).slice(0,6);
+  const weights=[1,.82,.68,.55,.45,.36];let weighted=0,weightTotal=0;
+  xs.forEach((l,i)=>{const p=planMap.get(l.sessionId),ratio=Math.max(0,Math.min(1.5,l.questions/p.targetQuestions)),w=weights[i]||.3;weighted+=ratio*w;weightTotal+=w;});
+  const weightedRatio=weightTotal?weighted/weightTotal:0;
+  return {known:xs.length>=2,sessions:xs.length,weightedRatio,recentRatio:xs.length?Math.min(1.5,xs[0].questions/planMap.get(xs[0].sessionId).targetQuestions):0};
 }
-function adaptiveState(space,subjectId,topicId,currentDate){
-  const practice=practiceSignal(space,subjectId,topicId),behavior=behaviorSignal(space,subjectId,topicId,currentDate),cal=calibrationSignal(space,subjectId,topicId,currentDate),mistakes=openMistakeCount(space,subjectId,topicId),skill=skillWeakness(space,subjectId,topicId,currentDate),att=attainmentRatio(space,subjectId,topicId,currentDate);
-  const acc=practice.known?practice.weightedAccuracy:null;let repairScore=0;
-  if(acc!==null&&acc<.62)repairScore+=3;
-  if(cal.hiddenGap)repairScore+=2;
-  if(mistakes>=2)repairScore+=2;
-  if(skill.primary)repairScore+=1;
-  let mode='steady';
-  if(repairScore>=3)mode='repair';
-  else if((behavior.known&&behavior.completion<.55)||(Number.isFinite(att)&&att<.65))mode='ease';
-  else if(practice.sessions>=2&&acc>=.82&&(!behavior.known||behavior.completion>=.70)&&mistakes===0)mode='progress';
-  const confidence=Math.min(100,20+practice.sessions*10+(behavior.known?20:0)+(skill.known?10:0));
-  return {mode,scope:'topic',confidence,repairScore,skillWeakness:skill};
+function attainmentRatio(space,subjectId,topicId,currentDate){
+  const s=targetAttainmentSignal(space,subjectId,topicId,currentDate);return s.known?s.weightedRatio:null;
+}
+function adaptiveState(space,persona,subjectId,topicId,currentDate,weakMap){
+  const R={topic:(_w,id)=>topic(id)},w=()=>space,today=()=>currentDate;
+  const routeBehaviorSignal=(sid,tid='')=>behaviorSignal(space,sid,tid,currentDate);
+  const routeOutcomeSignal=(sid,tid='',since='')=>outcomeSignal(space,sid,tid,since);
+  const routePracticeSignal=(sid,tid='',since='')=>practiceSignal(space,sid,tid,since);
+  const routeFeedbackCalibrationSignal=(sid,tid='')=>calibrationSignal(space,sid,tid,currentDate);
+  const routeTargetAttainmentSignal=(sid,tid='')=>targetAttainmentSignal(space,sid,tid,currentDate);
+  const routeAssessmentWeakSkillSignal=(sid,tid='')=>skillWeakness(space,sid,tid,currentDate);
+  const routeExamWeakness=()=>weakMap;
+  const fn=new Function('R','w','today','routeBehaviorSignal','routeOutcomeSignal','routePracticeSignal','routeFeedbackCalibrationSignal','routeTargetAttainmentSignal','routeAssessmentWeakSkillSignal','routeExamWeakness',adaptiveSrc+';return routeSubjectAdaptiveState;');
+  return fn(R,w,today,routeBehaviorSignal,routeOutcomeSignal,routePracticeSignal,routeFeedbackCalibrationSignal,routeTargetAttainmentSignal,routeAssessmentWeakSkillSignal,routeExamWeakness)(subjectId,topicId);
 }
 function errorMemory(space,subjectId,topicId){
   const xs=space.mistakes.filter(m=>m.subjectId===subjectId&&m.topicId===topicId);
@@ -274,8 +286,8 @@ function learningVelocity(space,subjectId,topicId){
   const key=last>=.78&&xs.length<=3?'fast':xs.length>=4&&last<.70?'slow':gain>=.08?'fast':'steady';
   return {known:true,key,label:key==='fast'?'Hızlı oturuyor':key==='slow'?'Daha fazla temas istiyor':'Normal hızda oturuyor',confidence:Math.min(100,xs.length*14)};
 }
-function modelFor(space,subjectId,topicId,currentDate,weak){
-  const practice=practiceSignal(space,subjectId,topicId),behavior=behaviorSignal(space,subjectId,topicId,currentDate),outcome=outcomeSignal(space,subjectId,topicId),retention=retentionSignal(space,subjectId,topicId,currentDate),trend=trendSignal(space,subjectId,topicId,currentDate),calibration=calibrationSignal(space,subjectId,topicId,currentDate),skill=skillWeakness(space,subjectId,topicId,currentDate),adaptive=adaptiveState(space,subjectId,topicId,currentDate),norm=personalNorm(space,subjectId,topicId),mistakes=openMistakeCount(space,subjectId,topicId),errors=errorMemory(space,subjectId,topicId),velocity=learningVelocity(space,subjectId,topicId),att=attainmentRatio(space,subjectId,topicId,currentDate);
+function modelFor(space,persona,subjectId,topicId,currentDate,weak,adaptiveOverride=null){
+  const practice=practiceSignal(space,subjectId,topicId),behavior=behaviorSignal(space,subjectId,topicId,currentDate),outcome=outcomeSignal(space,subjectId,topicId),retention=retentionSignal(space,subjectId,topicId,currentDate),trend=trendSignal(space,subjectId,topicId,currentDate),calibration=calibrationSignal(space,subjectId,topicId,currentDate),skill=skillWeakness(space,subjectId,topicId,currentDate),weakMap={[subjectId]:weak},adaptive=adaptiveOverride||adaptiveState(space,persona,subjectId,topicId,currentDate,weakMap),norm=personalNorm(space,subjectId,topicId),mistakes=openMistakeCount(space,subjectId,topicId),errors=errorMemory(space,subjectId,topicId),velocity=learningVelocity(space,subjectId,topicId),att=attainmentRatio(space,subjectId,topicId,currentDate);
   const planMap=new Map(space.plan.map(p=>[p.id,p])),practiceLogCount=space.logs.filter(l=>l.subjectId===subjectId&&Number.isInteger(l.correct)&&Number.isInteger(l.wrong)&&l.correct+l.wrong>=5&&planMap.get(l.sessionId)?.topicId===topicId).length,miniDays=new Set(space.assessments.filter(a=>a.subjectId===subjectId&&a.topicId===topicId).map(a=>a.date)).size;
   const dates=performanceSamples(space,subjectId,topicId).map(x=>x.date).sort((a,b)=>b.localeCompare(a)),latestDate=dates[0]||'',latestDays=latestDate?daysBetween(currentDate,latestDate):999;
   return studentFn({practice,weak,behavior,outcome,retention,trend,calibration,skillWeakness:skill,adaptive,openMistakes:mistakes,practiceLogCount,miniDays,difficultyKnown:space.logs.some(l=>l.subjectId===subjectId&&planMap.get(l.sessionId)?.topicId===topicId&&l.difficulty),errorMemory:errors,velocity,personalNorm:norm,latestDays,attainmentRatio:att});
@@ -360,8 +372,8 @@ function sessionPerformance(log){
 function buildCandidates(space,persona,currentDate){
   const weak=examWeakness(persona,daysBetween(currentDate,START)),models={},adaptives={},risks={};
   for(const t of CATALOG){
-    adaptives[t.id]=adaptiveState(space,t.subjectId,t.id,currentDate);
-    models[t.id]=modelFor(space,t.subjectId,t.id,currentDate,weak[t.subjectId]);
+    adaptives[t.id]=adaptiveState(space,persona,t.subjectId,t.id,currentDate,weak);
+    models[t.id]=modelFor(space,persona,t.subjectId,t.id,currentDate,weak[t.subjectId],adaptives[t.id]);
     risks[t.id]=riskFor(space,persona,t.id,currentDate,models[t.id],weak[t.subjectId]);
   }
   const R={dayAdd,uid:()=>`cl-${persona.id}-${++uid}`,topic:(_sp,id)=>topic(id),allTopics:()=>CATALOG};
@@ -482,7 +494,7 @@ function simulatePersona(persona){
     dailySafety(space,persona,currentDate);
     const beforeModel=built.models.m1||modelFor(space,'k-ma','m1',currentDate,built.weak['k-ma']),events=simulateTasks(space,persona,currentDate,dayIndex);
     addMini(space,persona,currentDate,dayIndex);updateMasteryStatuses(space,currentDate);
-    const afterWeak=examWeakness(persona,dayIndex),afterModel=modelFor(space,'k-ma','m1',currentDate,afterWeak['k-ma']),afterRisk=riskFor(space,persona,'m1',currentDate,afterModel,afterWeak['k-ma']),recoveryAfter=recoverySignal(space,currentDate);
+    const afterWeak=examWeakness(persona,dayIndex),afterAdaptive=adaptiveState(space,persona,'k-ma','m1',currentDate,afterWeak),afterModel=modelFor(space,persona,'k-ma','m1',currentDate,afterWeak['k-ma'],afterAdaptive),afterRisk=riskFor(space,persona,'m1',currentDate,afterModel,afterWeak['k-ma']),recoveryAfter=recoverySignal(space,currentDate);
     if(afterModel.state==='repair')metrics.repairDays++;if(afterModel.state==='sustainable')metrics.sustainableDays++;if(afterModel.state==='progress')metrics.progressDays++;if(built.recovery.active)metrics.recoveryDays++;
     for(const e of events){if(e.action==='complete')metrics.completed++;else metrics.skipped++;if(e.topicId?.startsWith('m'))metrics.mathTasks++;else metrics.otherTasks++;}
     metrics.miniAttempts=space.assessments.length;

@@ -1697,7 +1697,7 @@ for(const marker of [
       mistakes:{openAtCapture:2,created:3,resolved:1},
       mastery:{completedTopics:4,mastery:74,forgettingDue:1,retentionRefresh:1},
       modes:{steady:5,repair:2,ease:1,progress:0,transitions:2,current:'steady'},
-      interventions:{total:2,helpful:1,neutral:0,harmful:0,insufficient:0,confounded:0,pending:1,horizons:{7:{helpful:1,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0},14:{helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0},30:{helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0}}},
+      interventions:{total:2,helpful:1,neutral:0,harmful:0,insufficient:0,confounded:0,pending:1,horizons:{7:{helpful:1,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0},14:{helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0},30:{helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0,pending:0}},latest:{date:'2026-09-25',mode:'repair',status:'helpful'}},
       student:{state:'steady',performance:72,learningNeed:36,risk:44,confidence:81,execution:78,retention:71,trend:'up',personalNorm:'flat',velocity:'steady'},
       dataQuality:{capturedOnTime:true,plannedExact:true,openMistakesExact:true,modeHistoryExact:true,interventionHistoryExact:true,studentModelExact:true,masteryExact:true,actualLogsExact:true}
     }]
@@ -1719,6 +1719,7 @@ for(const marker of [
   assert.equal(s.modes.transitions,2);
   assert.equal(s.interventions.helpful,1);
   assert.equal(s.interventions.horizons[7].helpful,1);
+  assert.deepEqual(s.interventions.latest,{date:'2026-09-25',mode:'repair',status:'helpful'});
   assert.equal(s.student.state,'steady');
   assert.equal(s.student.execution,78);
   assert.equal(s.student.retention,71);

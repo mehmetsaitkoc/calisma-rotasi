@@ -42,12 +42,12 @@ const state={activeExam:'kpss'};
 const api=new Function(
   'routeEnsure','w','R','today','routePerformanceWindow','routeBehaviorWindow',
   'routeEvaluateInterventionFromMetrics','routeInterventionAggregateEvaluations',
-  'routeStudentOverview','routeTopicExamRisk','state',
+  'routeStudentOverview','routeTopicExamRisk','state','routePilotConfig',
   src+';return {routePilotSnapshot,routePilotAutoSnapshot,routePilotStart,routePilotPayload,routePilotModeSummary};'
 )(
   routeEnsure,w,R,today,routePerformanceWindow,routeBehaviorWindow,
   routeEvaluateInterventionFromMetrics,routeInterventionAggregateEvaluations,
-  routeStudentOverview,routeTopicExamRisk,state
+  routeStudentOverview,routeTopicExamRisk,state,()=>space.route.pilot
 );
 
 api.routePilotStart();

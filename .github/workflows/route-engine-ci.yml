@@ -92,3 +92,29 @@ jobs:
           grep -q "## Yönetici özeti" reports/route-engine-quality-report.md
           grep -q "## Persona özeti" reports/route-engine-quality-report.md
           grep -q "## Pilot öncesi kalan açıklar" reports/route-engine-quality-report.md
+
+
+  browser-e2e:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Syntax check browser E2E
+        run: node --check scripts/browser-e2e.mjs
+
+      - name: Install Playwright test runtime
+        run: npm install --no-save playwright@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run real browser learning-loop E2E
+        run: node scripts/browser-e2e.mjs

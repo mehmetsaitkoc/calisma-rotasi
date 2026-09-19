@@ -825,6 +825,17 @@ function lfChurn(days){
   }
   return {...base,bounceCount:bounces.length,bounces,stabilityScore:Math.max(0,100-base.transitionCount*5-bounces.length*25)};
 }
+function lfLongHorizonStability(days,churn=null){
+  const ch=churn||lfChurn(days),streaks=[];let start=0;
+  for(let i=1;i<=days.length;i++){
+    if(i===days.length||days[i].appliedMode!==days[start].appliedMode){
+      streaks.push({mode:days[start].appliedMode,startDay:days[start].day,endDay:days[i-1].day,length:i-start});
+      start=i;
+    }
+  }
+  const shortModeStreaks=streaks.filter(function(x){return x.mode!=='steady'&&x.length===1;}).length,allowedTransitions=Math.max(1,Math.ceil(days.length/14)),excessTransitions=Math.max(0,ch.transitionCount-allowedTransitions),score=Math.max(0,100-ch.bounceCount*30-shortModeStreaks*15-excessTransitions*5);
+  return {score,shortModeStreaks,allowedTransitions,excessTransitions,streaks};
+}
 function lfRefreshAudit(r){
   const tasks=r.space.plan.filter(function(p){return p.done&&p.source==='retention_refresh';}),groups=new Map(),keys=new Set();let duplicateKeys=0;
   for(const p of tasks){
@@ -839,8 +850,8 @@ function lfRefreshAudit(r){
   return {total:tasks.length,topics:groups.size,minGap,maxPerTopic,duplicateKeys};
 }
 function lfCheckpoint(r,n){
-  const xs=r.days.slice(0,n),d=xs.at(-1),ch=lfChurn(xs),refreshAudit=lfRefreshAudit(r);
-  return {day:n,finalState:d.studentState,confidence:d.confidence,learningNeed:d.learningNeed,risk:d.risk,modeTransitions:ch.transitionCount,modeBounces:ch.bounceCount,modeBounceDetails:ch.bounces,stabilityScore:ch.stabilityScore,longestRepairStreak:lfLongest(xs,'repair'),longestProgressStreak:lfLongest(xs,'progress'),firstRepairDay:lfFirst(xs,'repair',true),repairExitDay:lfFirst(xs,'repair',false),firstProgressDay:lfFirst(xs,'progress',true),progressExitDay:lfFirst(xs,'progress',false),recoveryDays:xs.filter(function(x){return x.recovery;}).length,sustainableDays:xs.filter(function(x){return x.studentState==='sustainable';}).length,completedTopics:d.completedTopics,masteryRegressions:xs.filter(function(x){return x.masteryRegression;}).length,forgettingRefreshCount:xs.reduce(function(a,x){return a+x.forgettingRefreshes;},0),staleEvidenceInfluence:d.staleEvidenceInfluence,personalNormChange:(Number.isFinite(d.normBase)&&Number.isFinite(r.normStart))?d.normBase-r.normStart:null,examFreshness:d.examFreshness,oldExamWeight:d.oldExamWeight,freshExamWeight:d.freshExamWeight,examEvidenceCount:d.examEvidenceCount,refreshAudit};
+  const xs=r.days.slice(0,n),d=xs.at(-1),ch=lfChurn(xs),longStability=lfLongHorizonStability(xs,ch),refreshAudit=lfRefreshAudit(r);
+  return {day:n,finalState:d.studentState,confidence:d.confidence,learningNeed:d.learningNeed,risk:d.risk,modeTransitions:ch.transitionCount,modeBounces:ch.bounceCount,modeBounceDetails:ch.bounces,stabilityScore:ch.stabilityScore,longHorizonStabilityScore:longStability.score,shortModeStreaks:longStability.shortModeStreaks,allowedTransitions:longStability.allowedTransitions,excessTransitions:longStability.excessTransitions,longHorizonModeStreaks:longStability.streaks,longestRepairStreak:lfLongest(xs,'repair'),longestProgressStreak:lfLongest(xs,'progress'),firstRepairDay:lfFirst(xs,'repair',true),repairExitDay:lfFirst(xs,'repair',false),firstProgressDay:lfFirst(xs,'progress',true),progressExitDay:lfFirst(xs,'progress',false),recoveryDays:xs.filter(function(x){return x.recovery;}).length,sustainableDays:xs.filter(function(x){return x.studentState==='sustainable';}).length,completedTopics:d.completedTopics,masteryRegressions:xs.filter(function(x){return x.masteryRegression;}).length,forgettingRefreshCount:xs.reduce(function(a,x){return a+x.forgettingRefreshes;},0),staleEvidenceInfluence:d.staleEvidenceInfluence,personalNormChange:(Number.isFinite(d.normBase)&&Number.isFinite(r.normStart))?d.normBase-r.normStart:null,examFreshness:d.examFreshness,oldExamWeight:d.oldExamWeight,freshExamWeight:d.freshExamWeight,examEvidenceCount:d.examEvidenceCount,refreshAudit};
 }
 function lfSim(base){
   const space=makeSpace({...base,targetDays:Math.max(90,base.targetDays||90)}),days=[];let normStart=null,lastMastered=new Set();
@@ -866,6 +877,7 @@ for(const r of lfResults){
   assert.equal(r.day60.modeBounces,0,r.persona.id+' has lifecycle mode bounce');
   if(r.day60.stabilityScore<60)console.log('LIFECYCLE-DIAG '+r.persona.id,JSON.stringify({modes:r.days.map(function(d){return d.appliedMode;}),states:r.days.map(function(d){return d.studentState;}),confidence:r.days.map(function(d){return d.confidence;}),execution:r.days.map(function(d){return d.execution;}),performance:r.days.map(function(d){return d.performance;})}));
   assert.ok(r.day60.stabilityScore>=60,r.persona.id+' lifecycle stability collapsed '+r.day60.stabilityScore);
+  assert.ok(r.day60.longHorizonStabilityScore>=80,r.persona.id+' long-horizon stability collapsed '+r.day60.longHorizonStabilityScore);
   assert.ok(r.days.every(function(d,i){return !d.hysteresisHeld||(!d.recovery&&d.appliedMode==='progress'&&(i===0||!r.days[i-1].hysteresisHeld));}),r.persona.id+' unsafe repeated progress hold');
   assert.ok(r.days.every(function(d,i){return !d.easeHysteresisHeld||(d.appliedMode==='ease'&&(i===0||!r.days[i-1].easeHysteresisHeld));}),r.persona.id+' unsafe repeated ease re-entry hold');
   assert.ok(r.days.every(function(d,i){return !d.easeEntryHeld||(d.appliedMode==='steady'&&(i===0||!r.days[i-1].easeEntryHeld));}),r.persona.id+' unsafe repeated sustainable entry hold');

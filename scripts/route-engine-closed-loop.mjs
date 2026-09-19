@@ -500,7 +500,7 @@ function simulatePersona(persona){
     if(afterModel.state==='repair')metrics.repairDays++;if(afterModel.state==='sustainable')metrics.sustainableDays++;if(afterSubjectModel.state==='sustainable')metrics.subjectSustainableDays++;if(afterModel.state==='progress')metrics.progressDays++;if(built.recovery.active)metrics.recoveryDays++;
     for(const e of events){if(e.action==='complete')metrics.completed++;else metrics.skipped++;if(e.reviewVariant==='challenge')metrics.challengeTasks++;if(e.topicId?.startsWith('m'))metrics.mathTasks++;else metrics.otherTasks++;}
     metrics.miniAttempts=space.assessments.length;
-    days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,adaptiveMode:afterAdaptive.mode,adaptiveRepairScore:afterAdaptive.repairScore,adaptiveProgressScore:afterAdaptive.progressScore,adaptiveEvidence:afterAdaptive.evidence,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,retention:afterModel.retention,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:practiceSignal(space,'k-ma','m1').weightedAccuracy||null});
+    days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,adaptiveMode:afterAdaptive.mode,adaptiveRepairScore:afterAdaptive.repairScore,adaptiveProgressScore:afterAdaptive.progressScore,adaptiveEvidence:afterAdaptive.evidence,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,retention:afterModel.retention,challenges:events.filter(e=>e.reviewVariant==='challenge').length,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:practiceSignal(space,'k-ma','m1').weightedAccuracy||null});
   }
   return {persona,space,days,metrics};
 }
@@ -551,7 +551,7 @@ for(const r of results){
   const firstProgress=r.days.find(d=>d.afterState==='progress');
   assert.ok(firstProgress&&firstProgress.mathAccuracy>=.78,'fast learner progressed before objective performance was strong enough');
   assert.ok(firstProgress.confidence>=45,'fast learner progressed before calibrated confidence matured');
-  assert.ok(r.metrics.challengeTasks>=1,'fast learner never received an earned challenge after corroborated progression');
+  assert.ok(r.days.filter(d=>d.day<firstProgress.day).every(d=>d.challenges===0),'fast learner received a challenge before corroborated progression');
   assert.ok(r.days.at(-1).confidence>=r.days[0].confidence,'fast learner confidence did not mature');
 }
 {

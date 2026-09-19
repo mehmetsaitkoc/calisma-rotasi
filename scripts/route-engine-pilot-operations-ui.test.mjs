@@ -46,7 +46,7 @@ assert.ok(!/\bTC\b|telefon|adres/i.test(shared),'Shared pilot operations model m
 
 const moduleMatch=html.match(/<script type="module">([\s\S]*?)<\/script>/);
 assert.ok(moduleMatch,'Pilot operations module script missing');
-const compilable=moduleMatch[1].replace(/^import[^\n]+\n/,'');
+const compilable=moduleMatch[1].replace(/^\s*import[^\n]+\n/,'');
 assert.doesNotThrow(()=>new Function(compilable),'Pilot operations inline module must parse after stripping static import');
 
 console.log('route-engine-pilot-operations-ui: dashboard contract and inline module syntax passed');

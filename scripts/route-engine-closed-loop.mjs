@@ -689,8 +689,16 @@ function lfBacktest(days){
   }
   return out;
 }
+function lfChurn(days){
+  const base=modeChurn(days),bounces=[];
+  for(let i=1;i<days.length-1;i++){
+    if(['retention','collect'].includes(days[i].studentState))continue;
+    if(days[i-1].appliedMode===days[i+1].appliedMode&&days[i].appliedMode!==days[i-1].appliedMode)bounces.push({day:i+1,from:days[i-1].appliedMode,via:days[i].appliedMode,back:days[i+1].appliedMode});
+  }
+  return {...base,bounceCount:bounces.length,bounces,stabilityScore:Math.max(0,100-base.transitionCount*5-bounces.length*25)};
+}
 function lfCheckpoint(r,n){
-  const xs=r.days.slice(0,n),d=xs.at(-1),ch=modeChurn(xs);
+  const xs=r.days.slice(0,n),d=xs.at(-1),ch=lfChurn(xs);
   return {day:n,finalState:d.studentState,confidence:d.confidence,learningNeed:d.learningNeed,risk:d.risk,modeTransitions:ch.transitionCount,modeBounces:ch.bounceCount,stabilityScore:ch.stabilityScore,longestRepairStreak:lfLongest(xs,'repair'),longestProgressStreak:lfLongest(xs,'progress'),firstRepairDay:lfFirst(xs,'repair',true),repairExitDay:lfFirst(xs,'repair',false),firstProgressDay:lfFirst(xs,'progress',true),progressExitDay:lfFirst(xs,'progress',false),recoveryDays:xs.filter(function(x){return x.recovery;}).length,sustainableDays:xs.filter(function(x){return x.studentState==='sustainable';}).length,completedTopics:d.completedTopics,masteryRegressions:xs.filter(function(x){return x.masteryRegression;}).length,forgettingRefreshCount:xs.reduce(function(a,x){return a+x.forgettingRefreshes;},0),staleEvidenceInfluence:d.staleEvidenceInfluence,personalNormChange:(Number.isFinite(d.normBase)&&Number.isFinite(r.normStart))?d.normBase-r.normStart:null};
 }
 function lfSim(base){

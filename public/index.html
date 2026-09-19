@@ -1414,15 +1414,15 @@ function routeBehaviorSignal(subjectId,topicId=''){
  const meaningful=complete+skip+later;
  return {known:meaningful>=3,complete,skip,later,start,total:meaningful,completion:meaningful?complete/meaningful:0,friction:meaningful?(skip+later*.5)/meaningful:0};
 }
-function routeOutcomeSignal(subjectId,topicId=''){
- const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!['stuck','ok','strong'].includes(l.outcome))return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,6);
+function routeOutcomeSignal(subjectId,topicId='',sinceDate=''){
+ const since=sinceDate||R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!['stuck','ok','strong'].includes(l.outcome))return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,6);
  const weights=[1,.82,.68,.55,.45,.36];let stuck=0,ok=0,strong=0,weighted=0,weightTotal=0;
  xs.forEach(function(l,i){if(l.outcome==='stuck')stuck++;else if(l.outcome==='strong')strong++;else ok++;const wgt=weights[i]||.3,score=l.outcome==='strong'?1:l.outcome==='stuck'?-1:0;weighted+=score*wgt;weightTotal+=wgt;});
  const total=xs.length,recent=xs[0]?.outcome||'',trend=weightTotal?weighted/weightTotal:0;
  return {known:total>0,total,stuck,ok,strong,recent,stuckRate:total?stuck/total:0,strongRate:total?strong/total:0,trend};
 }
-function routePracticeSignal(subjectId,topicId=''){
- const since=R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,6);
+function routePracticeSignal(subjectId,topicId='',sinceDate=''){
+ const since=sinceDate||R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),xs=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,6);
  const weights=[1,.82,.68,.55,.45,.36];let correct=0,wrong=0,weighted=0,weightTotal=0;
  xs.forEach(function(l,i){correct+=l.correct;wrong+=l.wrong;const answered=l.correct+l.wrong,wgt=weights[i]||.3;weighted+=(answered?l.correct/answered:0)*wgt;weightTotal+=wgt;});
  const answered=correct+wrong,accuracy=answered?correct/answered:0,recent=xs[0]||null,recentAnswered=recent?(recent.correct+recent.wrong):0,recentAccuracy=recentAnswered?recent.correct/recentAnswered:0,weightedAccuracy=weightTotal?weighted/weightTotal:0;
@@ -1537,7 +1537,7 @@ function routeTopicMasterySignal(topicId){
   return !!completed&&completed>=due;
  };
  const review3=done.some(function(p){return reviewValid(p,3);}),review7=done.some(function(p){return reviewValid(p,7);});
- const outcome=routeOutcomeSignal(t.subjectId,topicId),practice=routePracticeSignal(t.subjectId,topicId),openMistake=space.mistakes.some(function(m){return !m.resolved&&m.topicId===topicId;});
+ const outcome=routeOutcomeSignal(t.subjectId,topicId,baseDate),practice=routePracticeSignal(t.subjectId,topicId,baseDate),openMistake=space.mistakes.some(function(m){return !m.resolved&&m.topicId===topicId;});
  const practiceEnough=practice.known&&practice.sessions>=2&&practice.answered>=15,outcomeEnough=outcome.known&&outcome.total>=2,hasEvidence=practiceEnough||outcomeEnough;
  const performanceAccuracy=practice.known?(practice.weightedAccuracy||practice.accuracy):0,practiceOk=practiceEnough&&performanceAccuracy>=.78&&practice.recentAccuracy>=.65,outcomeOk=outcomeEnough&&outcome.recent!=='stuck'&&outcome.trend>=0&&outcome.stuckRate<.5,performanceOk=practiceEnough?practiceOk:outcomeOk,evidenceOk=hasEvidence&&performanceOk;
  const progress=[base,review3,review7,evidenceOk].filter(Boolean).length,total=4;

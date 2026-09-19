@@ -45,6 +45,9 @@ jobs:
       - name: Syntax check critical persona audit
         run: node --check scripts/route-engine-critical-personas.mjs
 
+      - name: Syntax check pilot telemetry fixture
+        run: node --check scripts/route-engine-pilot-telemetry.mjs
+
       - name: Syntax check pilot cohort reporter
         run: node --check scripts/route-engine-pilot-cohort.mjs
 
@@ -59,6 +62,9 @@ jobs:
 
       - name: Run critical persona pilot-readiness audit
         run: npm run critical:audit
+
+      - name: Run pilot telemetry fixture
+        run: npm run pilot:telemetry
 
       - name: Run pilot cohort aggregation tests
         run: npm run pilot:test

@@ -751,6 +751,31 @@ for(const marker of [
   'KARAR GERİ TESTİ'
 ]) assert.ok(html.includes(marker),`Missing intervention backtest marker: ${marker}`);
 
+// 4) Backtest outcomes may change future prescriptions only after enough evaluated history.
+{
+  const src=between('function routeInterventionPolicyAdjustment','function routeInterventionBacktestCard');
+  const effects=[
+    {known:false,total:0,score:0},
+    {known:true,total:1,score:-1},
+    {known:true,total:3,score:-.67},
+    {known:true,total:4,score:.50},
+    {known:true,total:4,score:.10}
+  ];
+  let i=0;const routeInterventionEffectSignal=()=>effects[i++];
+  const fn=new Function('routeInterventionEffectSignal',src+';return routeInterventionPolicyAdjustment;')(routeInterventionEffectSignal);
+  assert.equal(fn('s','t','repair').action,'hold');
+  assert.equal(fn('s','t','repair').action,'hold','A single negative backtest must not trigger an automatic strategy switch');
+  assert.equal(fn('s','t','repair').action,'change','Repeated harmful outcomes should trigger a bounded method change');
+  assert.equal(fn('s','t','repair').action,'repeat','Repeated helpful outcomes may preserve the successful core method');
+  assert.equal(fn('s','t','repair').action,'hold','Mixed outcomes should not overfit');
+}
+for(const marker of [
+  'function routeInterventionPolicyAdjustment',
+  "policy.action==='change'",
+  'aynı onarım biçimi geçmişte yeterince sonuç vermedi',
+  'çekirdek yaklaşımı geçmişte çoğunlukla işe yaradı'
+]) assert.ok(html.includes(marker),`Missing bounded intervention-learning marker: ${marker}`);
+
 // 4) Topic mastery suggestion requires correctly spaced reviews + repeated evidence.
 {
   const src=between('function routeTopicMasterySignal','function routeClearCompletedTopicQueue');

@@ -1397,6 +1397,12 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
  if(adaptive.calibration?.hiddenGap)text+=' · “Rahat” hissini tek başına ölçü sayma; set sonunda doğruluk oranını kontrol et ve düşük kalan soru tipini düzelt.';
  else if(adaptive.calibration?.productiveStruggle>=2)text+=' · Doğruluk iyi olsa da efor yüksek: bugün soru sayısını artırma, aynı yükte daha akıcı çözmeyi hedefle.';
  if(adaptive.skillWeakness?.primary)text+=' · Mini deneme odağı: “'+adaptive.skillWeakness.primary.skill+'” alt başlığında önce hatanın nedenini düzelt; ardından aynı beceriden en az 2 yeni soru ile doğrula.';
+ const interventionMode=adaptive.mode==='repair'?'repair':adaptive.mode==='ease'?'ease':adaptive.mode==='progress'?'progress':'',policy=interventionMode?routeInterventionPolicyAdjustment(subjectId,topicId,interventionMode):{action:'hold'},errorMemory=routeErrorMemorySignal(subjectId,topicId);
+ if(policy.action==='change'){
+  if(interventionMode==='repair')text+=' · Karar geri testi: aynı onarım biçimi geçmişte yeterince sonuç vermedi. Aynısını körlemesine tekrarlama; '+(errorMemory.primary?'baskın hata türü “'+errorMemory.primary.label+'” üzerinden farklı bir yaklaşım uygula.':'hata nedenini yeniden sınıflandırıp farklı bir çalışma biçimi dene.');
+  else if(interventionMode==='ease')text+=' · Karar geri testi: yalnızca görev hacmini küçültmek geçmişte yeterli olmadı. Bu kez süre, dikkat veya yöntem sürtünmesini ayrıca ele al.';
+  else if(interventionMode==='progress')text+=' · Karar geri testi: önceki seviye artışlarında performans geriledi. Zorluğu geri çek ve bir güçlü doğrulama daha almadan yeniden artırma.';
+ }else if(policy.action==='repeat')text+=' · Karar geri testi: bu müdahalenin çekirdek yaklaşımı geçmişte çoğunlukla işe yaradı; yöntemi koru, yalnız küçük varyasyon ekle.';
  return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label,adaptiveMode:adaptive.mode,adaptiveLabel:adaptive.label};
 }
 function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
@@ -2142,6 +2148,13 @@ function routeInterventionEffectSignal(subjectId,topicId='',mode=''){
  if(!xs.length)return {known:false,total:0,helpful:0,neutral:0,harmful:0,score:0,label:'Henüz geri test yok'};
  const helpful=xs.filter(function(x){return x.evaluation.status==='helpful';}).length,harmful=xs.filter(function(x){return x.evaluation.status==='harmful';}).length,neutral=xs.length-helpful-harmful,score=(helpful-harmful)/xs.length,label=score>=.5?'Bu müdahale sende çoğunlukla işe yarıyor':score<=-.34?'Bu müdahale sende sık sık işe yaramıyor':'Bu müdahalenin etkisi karışık';
  return {known:true,total:xs.length,helpful,neutral,harmful,score,label,samples:xs};
+}
+function routeInterventionPolicyAdjustment(subjectId,topicId,mode){
+ const effect=routeInterventionEffectSignal(subjectId,topicId,mode);
+ if(!effect.known||effect.total<2)return {action:'hold',label:'Yeterli geri test yok',effect};
+ if(effect.score<=-.34)return {action:'change',label:'Yöntemi değiştir',effect};
+ if(effect.score>=.5)return {action:'repeat',label:'İşe yarayan çekirdeği koru',effect};
+ return {action:'hold',label:'Karışık sonuç; aşırı uyarlama yapma',effect};
 }
 function routeInterventionBacktestCard(){
  const rows=(w().route?.interventions||[]).map(function(x){return {x,e:routeInterventionEvaluation(x)};}).filter(function(r){return r.e.status!=='pending';}).sort(function(a,b){return b.x.date.localeCompare(a.x.date)||b.x.created-a.x.created;}).slice(0,5),all=(w().route?.interventions||[]),evaluated=all.map(routeInterventionEvaluation).filter(function(e){return e.status!=='pending';}),helpful=evaluated.filter(function(e){return e.status==='helpful';}).length,harmful=evaluated.filter(function(e){return e.status==='harmful';}).length;

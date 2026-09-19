@@ -27,6 +27,9 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
     'k-tr-4':'Sözel mantık',
     'k-ma-13':'Üçgenler',
     'd-yd-1':'Kelime çalışması',
+    'd-yd-2':'Dil bilgisi',
+    'd-yd-5':'Okuduğunu anlama',
+    't-bi-3':'Hücre',
     'a-ed-8':'Servetifünun',
     'k-ta-5':'Osmanlı yükselme dönemi',
     't-co-4':'Harita bilgisi',
@@ -39,6 +42,9 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(method('k-tr','k-tr-4').key,'logic');
   assert.equal(method('k-ma','k-ma-13').key,'geometry');
   assert.equal(method('d-yd','d-yd-1').key,'ydt_vocab');
+  assert.equal(method('d-yd','d-yd-2').key,'ydt_grammar');
+  assert.equal(method('d-yd','d-yd-5').key,'ydt_reading');
+  assert.equal(method('t-bi','t-bi-3').key,'biology');
   assert.equal(method('a-ed','a-ed-8').key,'literature');
   assert.equal(method('k-ta','k-ta-5').key,'history');
   assert.equal(method('t-co','t-co-4').key,'geography');
@@ -52,6 +58,32 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:1}),'1 GÜN ONARIMI');
   assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:3}),'3 GÜN TEKRARI');
   assert.equal(api.routeTaskSourceLabel({source:'spaced_review',reviewWave:3,reviewVariant:'challenge'}),'SEVİYE YOKLAMA');
+}
+
+// 2c) TYT/KPSS main net and AYT/YDT stage net must stay separate.
+{
+  const src=between('function routeObservedNet','function routeGapPressure');
+  const space={
+    exams:[
+      {type:'TYT',date:'2026-09-18',penalty:4,parts:[{label:'TYT',correct:60,wrong:0,total:120}]},
+      {type:'AYT_SAY',date:'2026-09-18',penalty:4,parts:[{label:'AYT',correct:25,wrong:0,total:80}]}
+    ],
+    profile:{targetNet:90,targetStageNet:50},
+    settings:{track:'say'}
+  };
+  const R={calcNet:parts=>({net:parts[0].correct})};
+  const C={TYPES:{TYT:{label:'TYT'},AYT_SAY:{label:'AYT · Sayısal'}}};
+  const state={activeExam:'yks'};
+  const yksStageExamType=()=> 'AYT_SAY';
+  const yksStageLabel=()=> 'AYT · Sayısal';
+  const api=new Function('R','C','state','w','yksStageExamType','yksStageLabel',src+';return {routeNetGap,routeStageGap};')(R,C,state,()=>space,yksStageExamType,yksStageLabel);
+  const main=api.routeNetGap(),stage=api.routeStageGap();
+  assert.equal(main.current,60);
+  assert.equal(main.target,90);
+  assert.equal(main.observed.label,'TYT');
+  assert.equal(stage.current,25);
+  assert.equal(stage.target,50);
+  assert.equal(stage.observed.label,'AYT · Sayısal');
 }
 
 // 3) Adaptive dosage must react differently to struggle, strong performance and friction.
@@ -141,6 +173,35 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 }
 
 
+// 3b) Subjective effort and objective accuracy must be calibrated instead of trusted blindly.
+{
+  const src=between('function routeOutcomeSignal','function routeCandidateFromPlan');
+  function evaluate(logs){
+    const space={logs,mistakes:[],plan:[]};
+    const R={dayAdd:()=> '2026-08-29',topic:()=>null};
+    const today=()=> '2026-09-19';
+    const routeBehaviorSignal=()=>({known:false,total:0,completion:0,friction:0});
+    const routeExamWeakness=()=>({'k-ma':{ratio:.8}});
+    const api=new Function('R','today','w','routeBehaviorSignal','routeExamWeakness',src+';return {routeFeedbackCalibrationSignal,routeSubjectAdaptiveState};')(R,today,()=>space,routeBehaviorSignal,routeExamWeakness);
+    return {calibration:api.routeFeedbackCalibrationSignal('k-ma'),adaptive:api.routeSubjectAdaptiveState('k-ma')};
+  }
+
+  const hiddenGap=evaluate([
+    {id:'h1',subjectId:'k-ma',sessionId:'a',date:'2026-09-18',outcome:'strong',correct:5,wrong:5},
+    {id:'h2',subjectId:'k-ma',sessionId:'b',date:'2026-09-17',outcome:'strong',correct:5,wrong:5}
+  ]);
+  assert.equal(hiddenGap.calibration.hiddenGap,2);
+  assert.equal(hiddenGap.adaptive.mode,'repair','Feeling comfortable must not override repeatedly low accuracy');
+
+  const productive=evaluate([
+    {id:'p1',subjectId:'k-ma',sessionId:'a',date:'2026-09-18',outcome:'stuck',correct:9,wrong:1},
+    {id:'p2',subjectId:'k-ma',sessionId:'b',date:'2026-09-17',outcome:'stuck',correct:9,wrong:1}
+  ]);
+  assert.equal(productive.calibration.productiveStruggle,2);
+  assert.equal(productive.adaptive.mode,'steady','Repeated high accuracy with high effort should hold dose steady, not punish or accelerate it');
+  assert.match(productive.adaptive.note,/akıcılı/i);
+}
+
 // 4) Recent learning evidence must outweigh stale history without erasing it.
 {
   const src=between('function routeOutcomeSignal','function routeDifficultyLabel');
@@ -192,6 +253,24 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeMaxTaskMinutes(),25,'30 min daily capacity must leave room for the 5 min break');
 }
 
+// 4) Quantitative-heavy work has a hard daily ceiling that scheduler relaxation cannot bypass.
+{
+  const src=between('function routeMethodLoad','function routeMaxTaskMinutes');
+  const api=new Function(src+';return {routeIsQuantitativeHeavy,routeQuantitativeDailyLimit};')();
+  assert.equal(api.routeIsQuantitativeHeavy('quant'),true);
+  assert.equal(api.routeIsQuantitativeHeavy('geometry'),true);
+  assert.equal(api.routeIsQuantitativeHeavy('science'),true);
+  assert.equal(api.routeIsQuantitativeHeavy('paragraph'),false);
+  assert.equal(api.routeQuantitativeDailyLimit(90),1);
+  assert.equal(api.routeQuantitativeDailyLimit(120),1);
+  assert.equal(api.routeQuantitativeDailyLimit(121),2);
+  assert.equal(api.routeQuantitativeDailyLimit(300),2);
+
+  const rebalance=between('function routeRebalance','function routeAutoSync');
+  assert.ok(!rebalance.includes('mode<=2&&isHeavy'),'Relaxation modes must not bypass the heavy-load ceiling');
+  assert.ok(rebalance.includes('!critical&&quantHeavy&&day.quantHeavy>=day.quantHeavyLimit'),'Quantitative-heavy cap must remain a hard scheduler rule');
+}
+
 // 4) Topic frontier keeps curriculum order and prevents deep-topic flooding.
 {
   const src=between('function routeTopicFrontier','function routeBuildCandidates');
@@ -231,6 +310,31 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(stale.studySince,4);
   space.logs=space.logs.slice(0,2);
   assert.equal(fn('KPSS').stale,false,'Old exam alone should not force a refresh before enough new study exists');
+  space.logs=[
+    {sessionId:'a',date:'2026-09-05'},
+    {sessionId:'a',date:'2026-09-06'},
+    {sessionId:'b',date:'2026-09-10'},
+    {sessionId:'c',date:'2026-09-12'}
+  ];
+  assert.equal(fn('KPSS').studySince,3,'Duplicate logs for the same planned session must count once');
+  assert.equal(fn('KPSS').stale,false);
+}
+
+// 4) Stale exam evidence must actually lose priority weight, not only show a refresh hint.
+{
+  const src=between('function routeExamEvidenceFactor','function routeObservedNet');
+  const R={calcNet:parts=>({net:parts[0].correct})};
+  const C={PART_SUBJECTS:{KPSS:{Matematik:['k-ma']}}};
+  const state={activeExam:'kpss'};
+  const subject=id=>id==='k-ma'?{exam:'kpss'}:null;
+  const today=()=> '2026-09-19';
+  const space={exams:[{type:'KPSS',date:'2026-08-01',penalty:4,parts:[{label:'Matematik',total:10,correct:4}]}],logs:[]};
+  const api=new Function('R','C','state','subject','today','w',src+';return {routeExamEvidenceFactor,routeExamWeakness};')(R,C,state,subject,today,()=>space);
+  const fresh=api.routeExamWeakness()['k-ma'];
+  space.logs=Array.from({length:10},(_,i)=>({sessionId:'s'+i,date:'2026-08-'+String(2+i).padStart(2,'0')}));
+  const stale=api.routeExamWeakness()['k-ma'];
+  assert.equal(stale.freshness,.35);
+  assert.ok(stale.boost<fresh.boost,'Very stale deneme data must not keep the same route priority boost');
 }
 
 // 4) Light-day action must preserve critical work and move low-priority tasks without recording friction.
@@ -386,6 +490,8 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 // 4) Guard core personalization features against accidental removal.
 for(const marker of [
   'routeObservedNet',
+  'function routeExamEvidenceFactor',
+  'freshness',
   'function routeExamFreshness',
   'ölçümünü yenile',
   'age>=14&&studySince>=4',
@@ -393,6 +499,8 @@ for(const marker of [
   'routeConsistencySignal',
   'routePracticeSignal',
   'weightedAccuracy',
+  'routeFeedbackCalibrationSignal',
+  'rahat hissetme + düşük doğruluk',
   'routeDifficultySignal',
   'routeDifficultyPrescription',
   'Tekrar odağı:',
@@ -404,6 +512,9 @@ for(const marker of [
   'Sinyal güveni',
   'const waves=needsRepair?[1,3,7]:[3,7]',
   'routeHeavyLimit',
+  'routeIsQuantitativeHeavy',
+  'routeQuantitativeDailyLimit',
+  '!critical&&quantHeavy&&day.quantHeavy>=day.quantHeavyLimit',
   'routeMaxTaskMinutes',
   'routePaceSignal',
   'extraSessionsPerWeek',

@@ -1635,6 +1635,22 @@ for(const marker of [
 }
 
 
+// 5) Mobile dock must reuse existing navigation actions and keep core study destinations one tap away.
+for(const marker of [
+  'Mobile Dock v1 — key study destinations stay one tap away.',
+  'mobile-dock',
+  'Hızlı mobil menü',
+  '<span>Bugün</span>',
+  '<span>Rota Hoca</span>',
+  '<span>Deneme</span>'
+]) assert.ok(html.includes(marker),`Missing mobile dock marker: ${marker}`);
+{
+  const src=between('function shell(content)','function activeLogs');
+  for(const view of ['today','plan','teacher','exams'])assert.ok(src.includes('data-view="'+view+'"'),'Mobile dock must reuse existing '+view+' navigation target');
+  assert.ok(src.includes('data-action="menu"'),'Mobile dock menu button must reuse the existing drawer action');
+}
+
+
 // 5) Mini repair generation and stale mini-repair tasks must also respect the calibrated repair gate.
 {
   const mini=between('function routeMiniRepairSignals','function routeBuildCandidates');

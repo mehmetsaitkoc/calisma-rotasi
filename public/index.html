@@ -1812,11 +1812,11 @@ function routeDaysToTarget(){
  return Math.max(1,Math.ceil((new Date(target+'T12:00:00')-new Date(today()+'T12:00:00'))/86400000));
 }
 function routeExamRiskFromSignals(input){
- const confidence=Math.max(0,Math.min(100,Number(input.confidence)||0)),conf=confidence/100,mastery=Math.max(0,Math.min(100,Number(input.masteryScore)||0)),retained=Number.isFinite(input.retained)?Math.max(0,Math.min(100,Number(input.retained))):mastery,learningNeed=Math.max(0,Math.min(100,Number(input.learningNeed)||50)),status=Number.isInteger(input.status)?input.status:0,days=Number.isFinite(input.daysToTarget)?Math.max(1,input.daysToTarget):null,openMistakes=Math.max(0,Number(input.openMistakes)||0);
+ const confidence=Math.max(0,Math.min(100,Number(input.confidence)||0)),conf=confidence/100,mastery=Math.max(0,Math.min(100,Number(input.masteryScore)||0)),retained=Number.isFinite(input.retained)?Math.max(0,Math.min(100,Number(input.retained))):mastery,learningNeed=Math.max(0,Math.min(100,Number(input.learningNeed)||50)),status=Number.isInteger(input.status)?input.status:0,days=Number.isFinite(input.daysToTarget)?Math.max(1,input.daysToTarget):null,openMistakes=Math.max(0,Number(input.openMistakes)||0),examFreshness=Number.isFinite(input.examFreshness)?Math.max(0,Math.min(1,Number(input.examFreshness))):1;
  const knowledgeGap=100-(mastery*.58+retained*.42),uncertainBaseline=46,urgency=days===null?0:days<=21?14:days<=45?10:days<=90?6:days<=180?3:0;
  let score=knowledgeGap*.58*conf+uncertainBaseline*(1-conf)+learningNeed*.16*conf+urgency+Math.min(12,openMistakes*4);
  if(input.trend==='down')score+=8;else if(input.trend==='up')score-=4;
- if(Number.isFinite(input.examWeakRatio)){if(input.examWeakRatio<.55)score+=8;else if(input.examWeakRatio<.65)score+=4;else if(input.examWeakRatio>=.82)score-=3;}
+ if(Number.isFinite(input.examWeakRatio)){const examDelta=input.examWeakRatio<.55?8:input.examWeakRatio<.65?4:input.examWeakRatio>=.82?-3:0;score+=examDelta*examFreshness;}
  if(input.subjectPriority)score+=5;if(input.forgettingDue)score+=6;if(input.paceStatus==='overload')score+=4;if(status===0)score+=6;if(status===2&&retained>=75)score-=8;
  score=Math.max(0,Math.min(100,Math.round(score)));
  if(confidence<25)score=Math.min(score,55);else if(confidence<40)score=Math.min(score,68);
@@ -1832,15 +1832,15 @@ function routeExamRiskFromSignals(input){
  if(openMistakes)reasons.push(openMistakes+' açık yanlış var.');
  if(input.forgettingDue)reasons.push('Kalıcılık tazelemesi zamanı geldi.');
  if(input.trend==='down')reasons.push('Yakın dönem performans trendi geriliyor.');
- if(Number.isFinite(input.examWeakRatio)&&input.examWeakRatio<.65)reasons.push('Deneme kanıtı bu derste zayıflık gösteriyor.');
+ if(Number.isFinite(input.examWeakRatio)&&input.examWeakRatio<.65)reasons.push(examFreshness<.75?'Deneme kanıtı bu derste zayıflık gösteriyor; veri eskidiği için etkisi azaltıldı.':'Deneme kanıtı bu derste zayıflık gösteriyor.');
  if(urgency)reasons.push('Hedef tarih yaklaştıkça zaman baskısı artıyor.');
  if(confidence<25)reasons.push('Kanıt güveni düşük; rota önceliği artırılmıyor.');
  if(!reasons.length)reasons.push('Mevcut kanıtlar belirgin ek risk göstermiyor.');
- return {score,label,priorityBoost,action,reasons,confidenceBand:confidence<25?'low':confidence<55?'medium':'high',confidence,knowledgeGap,urgency,mastery,retained,learningNeed};
+ return {score,label,priorityBoost,action,reasons,confidenceBand:confidence<25?'low':confidence<55?'medium':'high',confidence,examFreshness,knowledgeGap,urgency,mastery,retained,learningNeed};
 }
 function routeTopicExamRisk(subjectId,topicId,studentInput=null,context={}){
  const space=w(),student=studentInput||routeStudentModel(subjectId,topicId),mastery=context.mastery||routeTopicMasteryScore(topicId),forgetting=context.forgetting||routeTopicForgettingSignal(topicId,mastery),weak=context.weakMap?.[subjectId]||routeExamWeakness()[subjectId]||null,pace=context.pace||routePaceSignal(space),daysToTarget=Number.isFinite(context.daysToTarget)?context.daysToTarget:routeDaysToTarget(),status=space.topicState[topicId]?.status||0,confidence=Math.max(student.confidence||0,mastery.confidence||0);
- const risk=routeExamRiskFromSignals({confidence,masteryScore:mastery.score||0,retained:forgetting.known?forgetting.retained:mastery.score||0,learningNeed:student.learningNeed,daysToTarget,openMistakes:student.openMistakes,trend:student.trend?.direction,examWeakRatio:weak?.ratio,subjectPriority:space.settings.priorities.includes(subjectId),forgettingDue:!!forgetting.reviewDue,paceStatus:pace.known?pace.status:'',status});
+ const risk=routeExamRiskFromSignals({confidence,masteryScore:mastery.score||0,retained:forgetting.known?forgetting.retained:mastery.score||0,learningNeed:student.learningNeed,daysToTarget,openMistakes:student.openMistakes,trend:student.trend?.direction,examWeakRatio:weak?.ratio,examFreshness:weak?.freshness,subjectPriority:space.settings.priorities.includes(subjectId),forgettingDue:!!forgetting.reviewDue,paceStatus:pace.known?pace.status:'',status});
  let incrementalBoost=0;
  if(confidence>=25){
   if(daysToTarget!==null)incrementalBoost+=daysToTarget<=21?3:daysToTarget<=45?2:daysToTarget<=90?1:0;
@@ -2087,7 +2087,7 @@ function routeBuildCandidates(){
  }
  for(const item of routeRetentionRefreshCandidates()){
   const t=item.topic,f=item.forgetting,key='retention-refresh:'+t.id+':'+f.latestDate;
-  if(seenKeys.has(key)||space.plan.some(function(p){return !p.done&&p.topicId===t.id&&p.source==='retention_refresh';}))continue;
+  if(seenTopics.has(t.id)||seenKeys.has(key)||space.plan.some(function(p){return !p.done&&p.topicId===t.id&&p.source==='retention_refresh';}))continue;
   const goal=routeReviewGoal(t.subjectId,t.id,t.title,'long'),priority=Math.max(66,Math.min(82,66+Math.round((65-f.retained)*.6)));
   push({id:R.uid(),date:today(),subjectId:t.subjectId,topicId:t.id,title:('Koruma tekrarı · '+t.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'retention_refresh',priority,reason:'Tamamlanmış konuda Rota koruma tahmini %'+f.retained+' düzeyine geriledi. Yeni ana konu açmadan kısa bir geri çağırma ve doğrulama yapıyoruz.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }

@@ -622,6 +622,23 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeReviewWeeklyLimit(150),70);
 }
 
+// 4) Structured error memory must preserve legacy notes and detect recurring failure patterns.
+{
+  const src=between('const ROUTE_ERROR_TYPES','function routeEvidenceFreshness');
+  const R={dayAdd:()=> '2026-08-05',iso:d=>d.toISOString().slice(0,10)},today=()=> '2026-09-19';
+  const space={mistakes:[
+    {subjectId:'k-ma',topicId:'t1',cause:'Yöntem / işlem hatası',reviewDate:'2026-09-17',resolved:false,created:new Date('2026-09-17T12:00:00').getTime()},
+    {subjectId:'k-ma',topicId:'t1',errorType:'process',cause:'Yöntem / işlem hatası',reviewDate:'2026-09-18',resolved:false,created:new Date('2026-09-18T12:00:00').getTime()}
+  ],logs:[{subjectId:'k-ma',sessionId:'s1',date:'2026-09-19',difficulty:'process',outcome:'stuck'}],plan:[{id:'s1',topicId:'t1'}]};
+  const api=new Function('R','today','w',src+';return {routeLegacyErrorType,routeErrorMemorySignal};')(R,today,()=>space);
+  assert.equal(api.routeLegacyErrorType('Bilgi eksiği'),'concept');
+  const m=api.routeErrorMemorySignal('k-ma','t1');
+  assert.equal(m.primary.type,'process');
+  assert.equal(m.repeated,true);
+  assert.equal(m.primary.count,3);
+}
+for(const marker of ['ROUTE_ERROR_TYPES','function routeErrorMemorySignal','errorType,note:','created:old?.created||Date.now()','errorPattern']) assert.ok(html.includes(marker),`Missing error-memory marker: ${marker}`);
+
 // 4) Student Model v2 must gate strong decisions by evidence quantity, diversity and freshness.
 {
   const src=between('function routeEvidenceFreshness','function routeStudentModel(subjectId');

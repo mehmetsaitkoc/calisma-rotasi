@@ -59,16 +59,23 @@ function makeBuild(space,opts={}){
   const routeProfileSignal=id=>opts.profile?.[id]||{level:2,label:'Orta',boost:0,goalBoost:0};
   const routeExamWeakness=()=>opts.weak||{};
   const routeRecoverySignal=()=>opts.recovery||{active:false,severe:false};
-  const routeCandidateFromPlan=p=>({
-    ...p,
-    earliest:p.earliest||TODAY,
-    routeKey:p.routeKey||('plan:'+p.id),
-    source:p.source||'curriculum',
-    priority:Number.isFinite(p.priority)?p.priority:35,
-    minutes:p.minutes||30,
-    targetQuestions:p.targetQuestions||10,
-    taskGoal:p.taskGoal||'çalış'
-  });
+  const routeCandidateFromPlan=p=>{
+    const base={
+      ...p,
+      earliest:p.earliest||TODAY,
+      routeKey:p.routeKey||('plan:'+p.id),
+      source:p.source||'curriculum',
+      priority:Number.isFinite(p.priority)?p.priority:35,
+      minutes:p.minutes||30,
+      targetQuestions:p.targetQuestions||10,
+      taskGoal:p.taskGoal||'çalış'
+    };
+    if(base.reviewVariant==='challenge'){
+      const recovery=opts.recovery||{active:false,severe:false},student=opts.students?.[p.topicId]||{state:'steady'};
+      if(recovery.active||student.state!=='progress')delete base.reviewVariant;
+    }
+    return base;
+  };
   const routeReviewGoal=()=>({minutes:20,questions:8,text:'review'});
   const teacherQuestions=()=>[];
   const subName=id=>subjectDefs.find(s=>s.id===id)?.name||id;
@@ -415,5 +422,5 @@ sim('R20 earliest and capacity safety',()=>{
 
 if(failures.length)console.error('Route simulation failures:',JSON.stringify(failures,null,2));
 assert.equal(failures.length,0,`${failures.length} route simulations failed`);
-assert.equal(passed,20,'Expected exactly 20 route simulations');
+assert.equal(passed,22,'Expected exactly 22 route simulations');
 console.log(`route-engine-route-sim: ${passed} real candidate/scheduler simulations passed`);

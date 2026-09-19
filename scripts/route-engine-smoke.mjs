@@ -1591,7 +1591,7 @@ for(const marker of [
   const src=between('function denemeCenterSection','function examsPage');
   assert.ok(src.includes('rec=miniRecommendation()'),'Premium exam center must keep the existing recommendation engine');
   assert.ok(src.includes("btn('Önerilen denemeyi çöz '+icon('arrow'),'start-mini-exam','primary'"),'Recommended mini CTA must keep the existing start action');
-  assert.ok(src.includes("minis.length+' uygun mini set'"),'Mini catalog count must derive from eligible minis');
+  assert.ok(src.includes("minis.length+' uygun mini set</span>"),'Mini catalog count must derive from eligible minis');
 }
 
 

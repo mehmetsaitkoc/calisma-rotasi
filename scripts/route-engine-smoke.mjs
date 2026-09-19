@@ -673,10 +673,17 @@ for(const marker of ['function routeLearningVelocityRaw','function routeLearning
   const singleSource=api.routeConfidenceCalibrationFromSignals({rawConfidence:80,sourceCount:1,practiceAccuracy:80});
   assert.equal(singleSource.confidence,35,'One evidence family must not produce high confidence');
   const agreeing=api.routeConfidenceCalibrationFromSignals({rawConfidence:78,sourceCount:4,practiceAccuracy:78,examAccuracy:74});
-  const conflicting=api.routeConfidenceCalibrationFromSignals({rawConfidence:78,sourceCount:4,practiceAccuracy:88,examAccuracy:50});
+  const conflicting=api.routeConfidenceCalibrationFromSignals({rawConfidence:78,sourceCount:4,practiceAccuracy:88,examAccuracy:50,examFreshness:1});
+  const staleConflict=api.routeConfidenceCalibrationFromSignals({rawConfidence:78,sourceCount:4,practiceAccuracy:88,examAccuracy:50,examFreshness:.35});
   assert.equal(agreeing.confidence,78);
   assert.ok(conflicting.confidence<agreeing.confidence,'Contradictory practice/exam evidence must reduce calibrated confidence');
   assert.ok(conflicting.disagreementPenalty>=12);
+  assert.ok(staleConflict.disagreementPenalty<conflicting.disagreementPenalty,'Old exam evidence must not penalize confidence as strongly as fresh contradictory evidence');
+  assert.match(staleConflict.reasons[0],/eski deneme/);
+
+  const rolling=api.routePersonalNormFromSamples([S(.10),S(.20),S(.60),S(.62),S(.64),S(.66),S(.68),S(.70),S(.78),S(.80)],[]);
+  assert.equal(rolling.baselineSamples,6,'Personal norm baseline must stay bounded to recent history rather than use the entire lifetime');
+  assert.ok(rolling.baselineAccuracy>=.60,'Ancient low performance must not dominate a current rolling baseline');
 }
 for(const marker of [
   'function routePersonalNormSignal',

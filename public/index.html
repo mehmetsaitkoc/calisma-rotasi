@@ -560,7 +560,7 @@ const uid=()=> (root.crypto&&root.crypto.randomUUID?root.crypto.randomUUID():Dat
 const iso=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function dayAdd(date,days){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+days);return iso(d);}
 function validDate(v){return typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(new Date(v+'T12:00:00'))&&iso(new Date(v+'T12:00:00'))===v;}
-function workspace(exam){return {configured:false,settings:{name:'',track:exam==='yks'?'say':'lisans',dailyMinutes:90,days:[1,2,3,4,5,6],priorities:[],target:'',targetDate:''},profile:{version:4,completed:false,summaryConfirmed:false,currentNet:null,targetNet:0,currentStageNet:null,targetStageNet:0,targetScore:0,targetRank:0,studyHabit:'',subjectLevels:{},updated:0},topicState:{},customTopics:[],plan:[],logs:[],exams:[],assessments:[],mistakes:[],route:{version:2,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[],interventions:[]},taskEvents:[]};}
+function workspace(exam){return {configured:false,settings:{name:'',track:exam==='yks'?'say':'lisans',dailyMinutes:90,days:[1,2,3,4,5,6],priorities:[],target:'',targetDate:''},profile:{version:4,completed:false,summaryConfirmed:false,currentNet:null,targetNet:0,currentStageNet:null,targetStageNet:0,targetScore:0,targetRank:0,studyHabit:'',subjectLevels:{},updated:0},topicState:{},customTopics:[],plan:[],logs:[],exams:[],assessments:[],mistakes:[],route:{version:2,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[],interventions:[],modeHistory:[]},taskEvents:[]};}
 const fresh=()=>({version:1,activeExam:null,workspaces:{kpss:workspace('kpss'),yks:workspace('yks')}});
 function courses(exam,track){return C.subjects.filter(s=>s.exam===exam&&(!s.tracks.length||s.tracks.includes(track)));}
 function allTopics(w,exam){return courses(exam,w.settings.track).flatMap(s=>s.topics).concat(w.customTopics.filter(t=>courses(exam,w.settings.track).some(s=>s.id===t.subjectId)));}
@@ -658,7 +658,11 @@ function validateBackup(data){
    const mode=['repair','ease','progress'].includes(x.mode)?x.mode:'repair';
    return {id:ident(x.id),date:checkedDate(x.date),subjectId,topicId,mode,source:text(x.source||'',40),method:text(x.method||'',60),taskId:text(x.taskId||'',120),taskDate:x.taskDate?checkedDate(x.taskDate):checkedDate(x.date),confidence:int(Number.isInteger(x.confidence)?x.confidence:0,0,100,'müdahale güveni'),baselineAccuracy:Number.isFinite(x.baselineAccuracy)?Math.max(0,Math.min(100,Number(x.baselineAccuracy))):null,baselineCompletion:Number.isFinite(x.baselineCompletion)?Math.max(0,Math.min(100,Number(x.baselineCompletion))):null,baselineNeed:Number.isFinite(x.baselineNeed)?Math.max(0,Math.min(100,Number(x.baselineNeed))):null,baselineAnswered:int(Number.isInteger(x.baselineAnswered)?x.baselineAnswered:0,0,10000,'müdahale cevap sayısı'),reason:text(x.reason||'',500),created:Number.isFinite(x.created)?Math.max(0,x.created):0};
   }):[];
-  w.route={version:2,lastRun:ro.lastRun&&validDate(ro.lastRun)?ro.lastRun:'',lastAutoDate:ro.lastAutoDate&&validDate(ro.lastAutoDate)?ro.lastAutoDate:'',lastReason:text(ro.lastReason||'',500),lastChanged:int(Number.isInteger(ro.lastChanged)?ro.lastChanged:0,0,10000,'rota değişikliği'),decisions,interventions};
+  const modeHistory=Array.isArray(ro.modeHistory)?ro.modeHistory.slice(-160).map(x=>{
+   const subjectId=sub(x.subjectId),topicId=x.topicId?ident(x.topicId):'';if(topicId){const t=topic(w,topicId);if(!topicIds.has(topicId)||!t||t.subjectId!==subjectId)throw Error('Rota karar geçmişi konu bağlantısı geçersiz.');}
+   return {date:checkedDate(x.date),subjectId,topicId,mode:['repair','ease','steady','progress'].includes(x.mode)?x.mode:'steady',studentState:['collect','repair','retention','sustainable','progress','steady'].includes(x.studentState)?x.studentState:'steady',confidence:int(Number.isInteger(x.confidence)?x.confidence:0,0,100,'rota karar güveni'),performance:Number.isFinite(x.performance)?Math.max(0,Math.min(100,Number(x.performance))):null,learningNeed:Number.isFinite(x.learningNeed)?Math.max(0,Math.min(100,Number(x.learningNeed))):null,hysteresisHeld:!!x.hysteresisHeld,created:Number.isFinite(x.created)?Math.max(0,x.created):0};
+  }):[];
+  w.route={version:2,lastRun:ro.lastRun&&validDate(ro.lastRun)?ro.lastRun:'',lastAutoDate:ro.lastAutoDate&&validDate(ro.lastAutoDate)?ro.lastAutoDate:'',lastReason:text(ro.lastReason||'',500),lastChanged:int(Number.isInteger(ro.lastChanged)?ro.lastChanged:0,0,10000,'rota değişikliği'),decisions,interventions,modeHistory};
   w.taskEvents=Array.isArray(old.taskEvents)?old.taskEvents.slice(-300).map(ev=>({id:ident(ev.id),taskId:ident(ev.taskId),date:checkedDate(ev.date),action:['skip','later','complete','start'].includes(ev.action)?ev.action:'later',created:Number.isFinite(ev.created)?Math.max(0,ev.created):0})):[];
   for(const list of [w.plan,w.logs,w.exams,w.assessments,w.mistakes,w.customTopics,w.taskEvents])if(new Set(list.map(x=>x.id)).size!==list.length)throw Error('Yedekte yinelenen kayıt kimliği.');
  }
@@ -1186,8 +1190,8 @@ function timerCard(){const t=timer();if(!subjects().some(s=>s.id===t.subjectId))
 function rhythm(){const days=Array.from({length:7},(_,i)=>R.dayAdd(today(),i-6));const totals=days.map(d=>w().logs.filter(l=>l.date===d).reduce((a,l)=>a+l.minutes,0));const max=Math.max(60,...totals),sum=totals.reduce((a,b)=>a+b,0);return `<section class="card"><div class="card-head"><h3>Haftanın ritmi</h3><span class="muted tiny">Son 7 gün</span></div><div class="micro-stat"><strong>${duration(sum)}</strong> &nbsp; kaydedilmiş çalışma</div><div class="mini-bars">${days.map((d,i)=>`<div class="mini-col ${d===today()?'today':''}" title="${dateLabel(d)}: ${totals[i]} dakika"><div class="mini-bar" style="height:${Math.max(4,totals[i]/max*72)}px"></div><span>${new Date(d+'T12:00:00').toLocaleDateString('tr-TR',{weekday:'short'})}</span></div>`).join('')}</div></section>`;}
 
 function routeEnsure(space=w()){
- space.route=space.route&&typeof space.route==='object'?space.route:{version:2,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[],interventions:[]};
- space.route.version=2;space.route.decisions=Array.isArray(space.route.decisions)?space.route.decisions:[];space.route.interventions=Array.isArray(space.route.interventions)?space.route.interventions:[];
+ space.route=space.route&&typeof space.route==='object'?space.route:{version:2,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[],interventions:[],modeHistory:[]};
+ space.route.version=2;space.route.decisions=Array.isArray(space.route.decisions)?space.route.decisions:[];space.route.interventions=Array.isArray(space.route.interventions)?space.route.interventions:[];space.route.modeHistory=Array.isArray(space.route.modeHistory)?space.route.modeHistory:[];
  space.profile=space.profile&&typeof space.profile==='object'?space.profile:{version:4,completed:false,summaryConfirmed:false,currentNet:null,targetNet:0,currentStageNet:null,targetStageNet:0,targetScore:0,targetRank:0,studyHabit:'',subjectLevels:{},updated:0};
  space.profile.subjectLevels=space.profile.subjectLevels&&typeof space.profile.subjectLevels==='object'?space.profile.subjectLevels:{};
  space.taskEvents=Array.isArray(space.taskEvents)?space.taskEvents:[];
@@ -1783,10 +1787,21 @@ function routeStudentModel(subjectId,topicId=''){
  const planMap=realTopic?new Map(w().plan.map(function(p){return [p.id,p];})):null,practiceLogCount=w().logs.filter(function(l){if(l.subjectId!==subjectId||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;if(!realTopic)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===realTopic;}).length,miniDays=new Set((w().assessments||[]).filter(function(a){return a.subjectId===subjectId&&(!realTopic||a.topicId===realTopic);}).map(function(a){return a.date;})).size,dates=routeStudentEvidenceDates(subjectId,realTopic),latestDate=dates[0]||'',latestDays=latestDate?Math.max(0,Math.floor((new Date(today()+'T12:00:00')-new Date(latestDate+'T12:00:00'))/86400000)):999,openMistakes=w().mistakes.filter(function(m){return !m.resolved&&m.subjectId===subjectId&&(!realTopic||m.topicId===realTopic);}).length;
  return {...routeStudentModelFromSignals({practice,weak,behavior,outcome,retention,trend,calibration,skillWeakness,adaptive,openMistakes,practiceLogCount,miniDays,difficultyKnown:difficulty.known,errorMemory,velocity,personalNorm,latestDays,attainmentRatio:attainment.known?attainment.weightedRatio:null}),subjectId,topicId:realTopic,latestDate,adaptive,evidenceDates:dates.slice(0,8)};
 }
-function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false}){
+function routeProgressHoldFromSignals(student,previous,recovery={active:false}){
+ if(!previous||previous.mode!=='progress'||previous.hysteresisHeld||recovery.active)return false;
+ if((student?.state||'steady')!=='steady'||(student.confidence||0)<45||(student.openMistakes||0)>0)return false;
+ if(Number.isFinite(student.performance)&&student.performance<70)return false;
+ if(Number.isFinite(student.learningNeed)&&student.learningNeed>35)return false;
+ if(Number.isFinite(student.retention)&&student.retention<60)return false;
+ if(Number.isFinite(student.execution)&&student.execution<60)return false;
+ if(student.trend?.known&&student.trend.direction==='down')return false;
+ if(student.personalNorm?.known&&student.personalNorm.confidence>=45&&student.personalNorm.direction==='down')return false;
+ return true;
+}
+function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false},previous=null){
  adaptive=adaptive||{mode:'steady',label:'DENGELİ TEMPO',note:'Görev dozu mevcut seviyene göre korunuyor.',evidence:[]};
  student=student||{state:'collect',label:'VERİ TOPLUYOR',nextAction:'Keskin karar verme; yeni gerçek veri topla.',confidence:0};
- const rawMode=adaptive.mode||'steady',rawLabel=adaptive.label||'DENGELİ TEMPO',state=student.state||'collect';let mode='steady',label=student.label||'DENGELİ İLERLEME',note=student.nextAction||adaptive.note||'Mevcut dozu koru.';
+ const rawMode=adaptive.mode||'steady',rawLabel=adaptive.label||'DENGELİ TEMPO',state=student.state||'collect';let mode='steady',label=student.label||'DENGELİ İLERLEME',note=student.nextAction||adaptive.note||'Mevcut dozu koru.',hysteresisHeld=false;
  if(state==='repair')mode='repair';
  else if(state==='sustainable')mode='ease';
  else if(state==='progress'&&!recovery.active)mode='progress';
@@ -1794,6 +1809,7 @@ function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false
  else if(state==='retention'){mode='steady';label=student.label||'KALICILIK AÇIĞI';}
  else if(state==='collect'){mode='steady';label=student.label||'VERİ TOPLUYOR';}
  else {mode='steady';label=student.label||'DENGELİ İLERLEME';}
+ if(mode==='steady'&&routeProgressHoldFromSignals(student,previous,recovery)){mode='progress';label='GELİŞİM KORUNUYOR';note='Önceki GELİŞİM kararı güçlüydü; bugünkü küçük dalgalanma tek başına seviye düşürmek için yeterli değil. Bir sonraki yeni kanıt kararı yeniden doğrulayacak.';hysteresisHeld=true;}
  if(state==='collect'&&rawMode!=='steady')note='Ham '+rawLabel+' sinyali var; ancak kalibre güven henüz düşük olduğu için motor keskin doz değişikliği yapmadan yeni kanıt bekliyor.';
  else if(rawMode==='progress'&&mode!=='progress'&&state!=='collect'){
   note=recovery.active?'GELİŞİM doğrulandı; ancak toparlanma modu açıkken motor dozu artırmıyor.':
@@ -1803,15 +1819,20 @@ function routeAppliedDecisionFromSignals(adaptive,student,recovery={active:false
        'Güçlü performans sinyali var; ancak Öğrenci Modeli GELİŞİM kararını henüz doğrulamadığı için mevcut doz korunuyor.';
  }
  const evidence=[...(adaptive.evidence||[])];
- if(rawMode!==mode){
+ if(hysteresisHeld)evidence.unshift('GELİŞİM bir günlük hysteresis tamponuyla korunuyor');
+ else if(rawMode!==mode){
   const appliedName=label||({repair:'ONARIM',ease:'SÜRDÜRÜLEBİLİR',progress:'GELİŞİM',steady:'DENGELİ'}[mode]||mode);
   evidence.unshift(rawMode==='steady'?'Öğrenci Modeli '+appliedName+' kararını ek kanıtlarla doğruladı.':'Ham '+rawLabel+' sinyali kalibre Öğrenci Modeli kararıyla sınırlandı.');
  }
  const confidence=Number.isFinite(student.confidence)?student.confidence:(adaptive.confidence||0);
- return {...adaptive,mode,label,note,confidence,evidence:evidence.slice(0,8),rawMode,rawLabel,studentState:state,studentLabel:student.label||''};
+ return {...adaptive,mode,label,note,confidence,evidence:evidence.slice(0,8),rawMode,rawLabel,studentState:state,studentLabel:student.label||'',hysteresisHeld};
+}
+function routeLatestModeDecision(subjectId,topicId=''){
+ routeEnsure();const xs=(w().route.modeHistory||[]).filter(function(x){return x.subjectId===subjectId&&(!topicId||x.topicId===topicId);}).sort(function(a,b){return b.date.localeCompare(a.date)||b.created-a.created;});
+ return xs[0]||null;
 }
 function routeAppliedDecision(subjectId,topicId=''){
- return routeAppliedDecisionFromSignals(routeSubjectAdaptiveState(subjectId,topicId),routeStudentModel(subjectId,topicId),routeRecoverySignal());
+ return routeAppliedDecisionFromSignals(routeSubjectAdaptiveState(subjectId,topicId),routeStudentModel(subjectId,topicId),routeRecoverySignal(),routeLatestModeDecision(subjectId,topicId));
 }
 function routeStudentOverview(){
  return subjects().map(function(s){return {subject:s,model:routeStudentModel(s.id)};}).filter(function(x){return x.model.confidence>0;}).sort(function(a,b){const aa=a.model.learningNeed*(.35+.65*a.model.confidence/100),bb=b.model.learningNeed*(.35+.65*b.model.confidence/100);return bb-aa||b.model.confidence-a.model.confidence||a.subject.name.localeCompare(b.subject.name,'tr');});
@@ -2342,6 +2363,17 @@ function routeInterventionFollowup(intervention){
  return {age,start,end,performance,behavior};
 }
 function routeInterventionEvaluation(intervention){const follow=routeInterventionFollowup(intervention);return {...routeEvaluateInterventionFromMetrics(intervention,follow),follow};}
+function routeRecordModeHistory(tasks){
+ routeEnsure();const space=w(),list=space.route.modeHistory||[],todayKey=today(),seen=new Set();
+ for(const p of tasks){
+  if(p.date!==todayKey||!R.topic(space,p.topicId))continue;
+  const key=p.subjectId+'|'+p.topicId;if(seen.has(key))continue;seen.add(key);
+  const decision=routeAppliedDecision(p.subjectId,p.topicId),student=routeStudentModel(p.subjectId,p.topicId),existing=list.find(function(x){return x.date===todayKey&&x.subjectId===p.subjectId&&x.topicId===p.topicId;});
+  const row={date:todayKey,subjectId:p.subjectId,topicId:p.topicId,mode:decision.mode,studentState:student.state||'steady',confidence:student.confidence||decision.confidence||0,performance:Number.isFinite(student.performance)?student.performance:null,learningNeed:Number.isFinite(student.learningNeed)?student.learningNeed:null,hysteresisHeld:!!decision.hysteresisHeld,created:Date.now()};
+  if(existing)Object.assign(existing,row);else list.push(row);
+ }
+ space.route.modeHistory=list.slice(-160);
+}
 function routeRecordInterventions(tasks){
  routeEnsure();const space=w(),list=space.route.interventions||[],todayKey=today();
  for(const p of tasks){
@@ -2427,6 +2459,7 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  space.route.lastReason=reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Normal tekrarlar günün yaklaşık yarısını ve haftalık kapasitenin yaklaşık %45’ini aşmayacak şekilde yayılır; kritik yanlış ve onarım görevleri gerektiğinde bu sınırı aşabilir. Sayısal-ağır matematik/geometri/fen görevleri günlük sert sınıra takılır; kritik onarım gerektiğinde en fazla bir ek ağır slot açılabilir, ancak sınırsız biçimde aynı güne yığılmaz. Aksayan eski görevler de günün ve haftanın tamamını işgal etmez; toparlanma modunda aynı güne en fazla bir normal backlog görevi taşınır. Her derste yalnız sıradaki 2–3 uygun konu aktif cepheye alınır; ileri başlıklar temel sıra atlanarak programa doldurulmaz. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'');
  space.route.lastChanged=changed;
  space.route.decisions=scheduled.slice(0,80).map(function(p){return {taskId:p.id,date:p.date,source:p.source||'curriculum',priority:p.priority||0,reason:p.reason||''};});
+ routeRecordModeHistory(scheduled);
  routeRecordInterventions(scheduled);
  if(!silent)toast(changed?changed+' görev kapasite, tekrar payı ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');
  return {changed,scheduled:scheduled.length};

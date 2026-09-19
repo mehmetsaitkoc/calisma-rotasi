@@ -736,6 +736,17 @@ function lfControlMatches(results,targetResult,index,horizon){
   }
   return candidates.sort(function(a,b){return a.distance-b.distance||b.comparable-a.comparable;}).slice(0,5);
 }
+function lfPreTrendDelta(days,index,key,lowerBetter,horizon){
+  const base=lfFinite(days[index]?.[key]);if(base===null)return null;
+  const xs=[];
+  for(let j=Math.max(0,index-6);j<=index;j++){const v=lfFinite(days[j]?.[key]);if(v!==null)xs.push({index:j,value:v});}
+  if(xs.length<3)return null;
+  const first=xs[0],last=xs.at(-1),span=Math.max(1,last.index-first.index),slope=(last.value-first.value)/span,predicted=base+slope*horizon;
+  return lfBenefit(base,predicted,lowerBetter);
+}
+function lfBaselineConflictThreshold(key){
+  return key==='behaviorCompletion'?.20:key==='openMistakes'?1:key==='performance'?8:key==='execution'?12:10;
+}
 function lfMatchedMetric(targetResult,index,horizon,key,lowerBetter,controls){
   const base=lfFinite(targetResult.days[index]?.[key]),futureIndex=index+horizon;
   if(base===null||futureIndex>=targetResult.days.length)return {known:false,base,actual:null,delta:null,controlDelta:null,lift:null,controls:0};
@@ -745,8 +756,8 @@ function lfMatchedMetric(targetResult,index,horizon,key,lowerBetter,controls){
     const cb=lfFinite(m.result.days[m.index]?.[key]),cf=lfFinite(m.result.days[m.index+horizon]?.[key]),d=lfBenefit(cb,cf,lowerBetter);
     if(d!==null)controlDeltas.push(d);
   }
-  const controlDelta=controlDeltas.length?controlDeltas.reduce(function(n,x){return n+x;},0)/controlDeltas.length:null,lift=controlDelta===null?null:delta-controlDelta;
-  return {known:true,base,actual,delta,controlDelta,lift,controls:controlDeltas.length};
+  const controlDelta=controlDeltas.length?controlDeltas.reduce(function(n,x){return n+x;},0)/controlDeltas.length:null,selfTrendDelta=lfPreTrendDelta(targetResult.days,index,key,lowerBetter,horizon),baselineGap=controlDelta===null||selfTrendDelta===null?null:Math.abs(controlDelta-selfTrendDelta),baselineConflict=baselineGap!==null&&baselineGap>lfBaselineConflictThreshold(key),expectedDelta=baselineConflict?null:controlDelta,lift=expectedDelta===null?null:delta-expectedDelta;
+  return {known:true,base,actual,delta,controlDelta,selfTrendDelta,baselineGap,baselineConflict,lift,controls:controlDeltas.length};
 }
 function lfHorizonOutcome(results,targetResult,index,mode,horizon){
   const baseDay=targetResult.days[index],future=targetResult.days[index+horizon];
@@ -754,7 +765,7 @@ function lfHorizonOutcome(results,targetResult,index,mode,horizon){
   const phaseChanged=baseDay.personaPhase!==future.personaPhase;
   const controls=lfControlMatches(results,targetResult,index,horizon);
   const performance=lfMatchedMetric(targetResult,index,horizon,'performance',false,controls),learningNeed=lfMatchedMetric(targetResult,index,horizon,'learningNeed',true,controls),risk=lfMatchedMetric(targetResult,index,horizon,'risk',true,controls),execution=lfMatchedMetric(targetResult,index,horizon,'execution',false,controls),completion=lfMatchedMetric(targetResult,index,horizon,'behaviorCompletion',false,controls),retention=lfMatchedMetric(targetResult,index,horizon,'retention',false,controls),mistakes=lfMatchedMetric(targetResult,index,horizon,'openMistakes',true,controls);
-  const metrics={performance,learningNeed,risk,execution,completion,retention,mistakes};
+  const metrics={performance,learningNeed,risk,execution,completion,retention,mistakes},baselineConflict=[performance,execution,completion,risk].some(function(m){return !!m.baselineConflict;});
   let score=0,known=0,harmful=false,success=false,reasons=[];
   const add=function(m,w){if(!m.known)return;known++;score+=(m.lift??m.delta??0)*w;};
   if(mode==='repair'){
@@ -786,7 +797,10 @@ function lfHorizonOutcome(results,targetResult,index,mode,horizon){
     if(performance.known&&(performance.delta>=2||(performance.lift??-99)>=3))reasons.push('performans yükseldi');
     success=!harmful&&known>=2&&carried&&retained&&score>=-1;
   }
-  if(phaseChanged)return {horizon,label:'confounded',score:Math.round(score*10)/10,knownSignals:known,reasons:['öğrenci davranış/performans fazı değişti'].concat(reasons),controls:controls.length,phaseFrom:baseDay.personaPhase,phaseTo:future.personaPhase,metrics};
+  if(phaseChanged||baselineConflict){
+    const confoundReasons=[];if(phaseChanged)confoundReasons.push('öğrenci davranış/performans fazı değişti');if(baselineConflict)confoundReasons.push('eşleştirilmiş kontrol ile müdahale öncesi trend farklı karşı-olgu gösteriyor');
+    return {horizon,label:'confounded',score:Math.round(score*10)/10,knownSignals:known,reasons:confoundReasons.concat(reasons),controls:controls.length,phaseFrom:baseDay.personaPhase,phaseTo:future.personaPhase,baselineConflict,metrics};
+  }
   const insufficient=known===0||controls.length<2,label=insufficient?'insufficient':harmful?'harmful':success?'success':'neutral';
   return {horizon,label,score:Math.round(score*10)/10,knownSignals:known,reasons,controls:controls.length,phaseFrom:baseDay.personaPhase,phaseTo:future.personaPhase,metrics};
 }

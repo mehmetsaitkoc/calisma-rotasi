@@ -747,6 +747,9 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(repair>steady,'Repair mini should outrank a neutral unsolved mini');
   const repeatedToday=api.miniRecommendationScore({total:10,correct:4},{mode:'repair',repairScore:4},0);
   assert.ok(repeatedToday<repair,'Same-day repeat should be penalized');
+  assert.ok(repeatedToday<-800,'Same-day repeat should be effectively excluded from recommendation ranking');
+  const repeatedSoon=api.miniRecommendationScore({total:10,correct:4},{mode:'repair',repairScore:4},2,{attempts7:2,attempts14:2});
+  assert.ok(repeatedSoon<steady,'Very recent repeated attempts should lose to a fresh neutral measurement');
 }
 // 5) Mini scoring must distinguish correct, wrong and blank answers.
 {
@@ -798,6 +801,37 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(xs.some(x=>x.id==='assessment-new'));
   assert.ok(!xs.some(x=>x.id==='assessment-old'));
 }
+
+// 5) Wrong/blank question clusters must become a de-duplicated subtopic signal.
+{
+  const src=between('function routeAssessmentWeakSkillSignal','function routePracticeSignal');
+  const space={assessments:[
+    {id:'old',miniId:'m1',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',created:1,skillBreakdown:[{skill:'Yüzde',total:2,correct:0,wrong:2,blank:0}]},
+    {id:'new',miniId:'m1',date:'2026-09-19',subjectId:'k-ma',topicId:'t1',created:2,skillBreakdown:[{skill:'Yüzde',total:2,correct:1,wrong:1,blank:0},{skill:'Oran-orantı',total:1,correct:1,wrong:0,blank:0}]},
+    {id:'next',miniId:'m1',date:'2026-09-16',subjectId:'k-ma',topicId:'t1',created:3,skillBreakdown:[{skill:'Yüzde',total:2,correct:0,wrong:1,blank:1}]}
+  ]};
+  const R={dayAdd:()=> '2026-08-29'};
+  const today=()=> '2026-09-19';
+  const fn=new Function('R','today','w',src+';return routeAssessmentWeakSkillSignal;')(R,today,()=>space);
+  const signal=fn('k-ma','t1');
+  assert.equal(signal.attempts,2,'Same-day retakes must contribute only the newest subtopic breakdown');
+  assert.equal(signal.primary.skill,'Yüzde');
+  assert.ok(signal.primary.missed>=2);
+  assert.ok(signal.weak.some(x=>x.skill==='Yüzde'));
+}
+
+// 5) Mini evidence schema must preserve skill breakdown and the route decision snapshot across backup/import.
+for(const marker of [
+  'const skillBreakdown=Array.isArray(a.skillBreakdown)',
+  'const weakSkills=Array.isArray(a.weakSkills)',
+  'const routeDecision=rd&&',
+  'routeDecision=miniRouteDecisionSnapshot',
+  'function routeAssessmentWeakSkillSignal',
+  'MINI_SKILL_MAP',
+  'x.daysSince>=3',
+  'ders, konu ve alt-konu performansına'
+]) assert.ok(html.includes(marker),`Missing new mini evidence marker: ${marker}`);
+
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.
 for(const marker of [
   'assessments:[]',
@@ -806,11 +840,11 @@ for(const marker of [
   'function routeAssessmentSamples',
   'w().assessments.push(result)',
   'version:def.version||1',
-  'answers,created:Date.now()',
+  'answers,skillBreakdown,weakSkills,created:Date.now()',
   'function miniAttemptById',
   'function openMiniAttemptResult',
   'mini-result-detail',
-  'Rota Mini Deneme sonucu ders ve konu performansına eklendi',
+  'Rota Mini Deneme sonucu ders, konu ve alt-konu performansına eklendi',
   'DENEME MERKEZİ · BETA',
   'KPSS Problemler Mini #01',
   'TYT Paragraf Mini #01',

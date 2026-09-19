@@ -446,13 +446,13 @@ function simulateTasks(space,persona,currentDate,dayIndex){
   tasks.forEach((task,index)=>{
     if(!shouldComplete(persona,dayIndex,index)){
       space.taskEvents.push({taskId:task.id,date:currentDate,action:index%2?'later':'skip'});
-      events.push({taskId:task.id,action:'skip',source:task.source,topicId:task.topicId});return;
+      events.push({taskId:task.id,action:'skip',source:task.source,topicId:task.topicId,reviewVariant:task.reviewVariant||''});return;
     }
     const acc=accuracyFor(persona,task.subjectId,dayIndex,task),target=Math.max(5,task.targetQuestions||10),questions=Math.max(5,Math.round(target*(persona.volume||1))),correct=Math.max(0,Math.min(questions,Math.round(questions*acc))),wrong=questions-correct,outcome=outcomeFor(persona,dayIndex,correct/questions),minutes=Math.max(15,Math.round((task.minutes||25)*(persona.volume||1)));
     task.done=true;space.logs.push({id:'log-'+(++uid),sessionId:task.id,date:currentDate,subjectId:task.subjectId,title:task.title,minutes,questions,correct,wrong,outcome,difficulty:outcome==='stuck'?'process':'',created:uid,updated:uid});space.taskEvents.push({taskId:task.id,date:currentDate,action:'complete'});
     if(topic(task.topicId)&&(space.topicState[task.topicId]?.status||0)===0)space.topicState[task.topicId]={status:1};
     maybeAddMistake(space,task,correct/questions,currentDate);maybeResolveMistake(space,task,correct/questions);
-    events.push({taskId:task.id,action:'complete',source:task.source,topicId:task.topicId,accuracy:correct/questions});
+    events.push({taskId:task.id,action:'complete',source:task.source,topicId:task.topicId,reviewVariant:task.reviewVariant||'',accuracy:correct/questions});
   });
   return events;
 }
@@ -489,7 +489,7 @@ function dailySafety(space,persona,currentDate){
   }
 }
 function simulatePersona(persona){
-  const space=makeSpace(persona),days=[],metrics={repairDays:0,sustainableDays:0,subjectSustainableDays:0,progressDays:0,recoveryDays:0,mathTasks:0,otherTasks:0,miniAttempts:0,completed:0,skipped:0};
+  const space=makeSpace(persona),days=[],metrics={repairDays:0,sustainableDays:0,subjectSustainableDays:0,progressDays:0,recoveryDays:0,challengeTasks:0,mathTasks:0,otherTasks:0,miniAttempts:0,completed:0,skipped:0};
   for(let dayIndex=0;dayIndex<14;dayIndex++){
     const currentDate=dayAdd(START,dayIndex),built=buildCandidates(space,persona,currentDate);
     rebalance(space,persona,currentDate,built.candidates,built.recovery);
@@ -498,7 +498,7 @@ function simulatePersona(persona){
     addMini(space,persona,currentDate,dayIndex);updateMasteryStatuses(space,currentDate);
     const afterWeak=examWeakness(persona,dayIndex),afterAdaptive=adaptiveState(space,persona,'k-ma','m1',currentDate,afterWeak),afterModel=modelFor(space,persona,'k-ma','m1',currentDate,afterWeak['k-ma'],afterAdaptive),afterSubjectAdaptive=adaptiveState(space,persona,'k-ma','',currentDate,afterWeak),afterSubjectModel=modelFor(space,persona,'k-ma','',currentDate,afterWeak['k-ma'],afterSubjectAdaptive),afterRisk=riskFor(space,persona,'m1',currentDate,afterModel,afterWeak['k-ma']),recoveryAfter=recoverySignal(space,currentDate);
     if(afterModel.state==='repair')metrics.repairDays++;if(afterModel.state==='sustainable')metrics.sustainableDays++;if(afterSubjectModel.state==='sustainable')metrics.subjectSustainableDays++;if(afterModel.state==='progress')metrics.progressDays++;if(built.recovery.active)metrics.recoveryDays++;
-    for(const e of events){if(e.action==='complete')metrics.completed++;else metrics.skipped++;if(e.topicId?.startsWith('m'))metrics.mathTasks++;else metrics.otherTasks++;}
+    for(const e of events){if(e.action==='complete')metrics.completed++;else metrics.skipped++;if(e.reviewVariant==='challenge')metrics.challengeTasks++;if(e.topicId?.startsWith('m'))metrics.mathTasks++;else metrics.otherTasks++;}
     metrics.miniAttempts=space.assessments.length;
     days.push({day:dayIndex+1,date:currentDate,beforeState:beforeModel.state,afterState:afterModel.state,subjectState:afterSubjectModel.state,subjectExecution:afterSubjectModel.execution,subjectAdaptiveMode:afterSubjectAdaptive.mode,adaptiveMode:afterAdaptive.mode,adaptiveRepairScore:afterAdaptive.repairScore,adaptiveProgressScore:afterAdaptive.progressScore,adaptiveEvidence:afterAdaptive.evidence,confidence:afterModel.confidence,learningNeed:afterModel.learningNeed,risk:afterRisk.score,recovery:built.recovery.active,openMistakes:afterModel.openMistakes,retention:afterModel.retention,completed:events.filter(e=>e.action==='complete').length,skipped:events.filter(e=>e.action!=='complete').length,mathAccuracy:practiceSignal(space,'k-ma','m1').weightedAccuracy||null});
   }
@@ -507,8 +507,6 @@ function simulatePersona(persona){
 
 const results=PERSONAS.map(simulatePersona);
 const byId=Object.fromEntries(results.map(r=>[r.persona.id,r]));
-
-for(const id of ['weak-improver','hidden-gap','fast-learner','plateau','regressing','recovery-comeback'])console.log('closed-loop-trace '+id+' '+JSON.stringify(byId[id].days));
 
 for(const r of results){
   assert.equal(r.days.length,14,`${r.persona.id} did not simulate 14 days`);
@@ -521,6 +519,9 @@ for(const r of results){
   const r=byId['weak-improver'],first=r.days.find(d=>d.mathAccuracy!==null),last=[...r.days].reverse().find(d=>d.mathAccuracy!==null);
   assert.ok(first&&last&&last.mathAccuracy>first.mathAccuracy,`weak improver did not improve: ${first?.mathAccuracy} -> ${last?.mathAccuracy}`);
   assert.ok(r.days.at(-1).learningNeed<Math.max(...r.days.slice(0,5).map(d=>d.learningNeed)),'weak improver learning need did not fall as performance improved');
+  const objectivelyRecovered=r.days.find(d=>d.mathAccuracy!==null&&d.mathAccuracy>=.78&&d.openMistakes===0);
+  assert.ok(objectivelyRecovered,'weak improver never reached the objective recovery threshold');
+  assert.ok(r.days.slice(objectivelyRecovered.day-1).every(d=>d.afterState!=='repair'),'weak improver remained or returned to repair after objective recovery');
   assert.ok(r.metrics.mathTasks>=3,'weak improver received too little math work');
 }
 {
@@ -547,14 +548,21 @@ for(const r of results){
 {
   const r=byId['fast-learner'];
   assert.ok(r.metrics.progressDays>=1,'fast learner never reached progress');
+  const firstProgress=r.days.find(d=>d.afterState==='progress');
+  assert.ok(firstProgress&&firstProgress.mathAccuracy>=.78,'fast learner progressed before objective performance was strong enough');
+  assert.ok(firstProgress.confidence>=45,'fast learner progressed before calibrated confidence matured');
+  assert.ok(r.metrics.challengeTasks>=1,'fast learner never received an earned challenge after corroborated progression');
   assert.ok(r.days.at(-1).confidence>=r.days[0].confidence,'fast learner confidence did not mature');
 }
 {
   const r=byId['plateau'];
   assert.equal(r.metrics.progressDays,0,'plateau student incorrectly reached progress');
+  assert.equal(r.metrics.challengeTasks,0,'plateau student received a challenge without corroborated progression');
 }
 {
   const r=byId['regressing'];
+  assert.equal(r.metrics.progressDays,0,'regressing student incorrectly reached progress');
+  assert.equal(r.metrics.challengeTasks,0,'regressing student received a challenge from stale adaptive progress');
   assert.ok(r.days.at(-1).learningNeed>r.days[0].learningNeed||r.days.at(-1).risk>r.days[0].risk,'regressing student did not become more concerning');
 }
 {
@@ -575,7 +583,7 @@ for(const r of results){
 
 const summary=results.map(r=>({
   id:r.persona.id,completed:r.metrics.completed,skipped:r.metrics.skipped,repairDays:r.metrics.repairDays,
-  sustainableDays:r.metrics.sustainableDays,subjectSustainableDays:r.metrics.subjectSustainableDays,progressDays:r.metrics.progressDays,recoveryDays:r.metrics.recoveryDays,
+  sustainableDays:r.metrics.sustainableDays,subjectSustainableDays:r.metrics.subjectSustainableDays,progressDays:r.metrics.progressDays,recoveryDays:r.metrics.recoveryDays,challengeTasks:r.metrics.challengeTasks,
   mathTasks:r.metrics.mathTasks,finalConfidence:r.days.at(-1).confidence,finalNeed:r.days.at(-1).learningNeed,
   finalRisk:r.days.at(-1).risk,completedTopics:Object.values(r.space.topicState).filter(x=>x.status===2).length
 }));

@@ -292,6 +292,31 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.ok(outcome.trend>0,'Recent strong feedback should produce a positive recency trend');
 }
 
+// 4) Topic evidence can be scoped to the current learning cycle.
+{
+  const src=between('function routeOutcomeSignal','function routeFeedbackCalibrationSignal');
+  const space={
+    plan:[
+      {id:'old',subjectId:'k-ma',topicId:'topic-1'},
+      {id:'base',subjectId:'k-ma',topicId:'topic-1'},
+      {id:'review',subjectId:'k-ma',topicId:'topic-1'}
+    ],
+    logs:[
+      {id:'old-log',subjectId:'k-ma',sessionId:'old',date:'2026-09-05',outcome:'strong',correct:10,wrong:0},
+      {id:'base-log',subjectId:'k-ma',sessionId:'base',date:'2026-09-10',outcome:'ok',correct:8,wrong:2},
+      {id:'review-log',subjectId:'k-ma',sessionId:'review',date:'2026-09-13',outcome:'strong',correct:9,wrong:1}
+    ]
+  };
+  const R={dayAdd:()=> '2026-08-29'};
+  const today=()=> '2026-09-19';
+  const w=()=>space;
+  const api=new Function('R','today','w',src+';return {routeOutcomeSignal,routePracticeSignal};')(R,today,w);
+  assert.equal(api.routeOutcomeSignal('k-ma','topic-1').total,3);
+  assert.equal(api.routeOutcomeSignal('k-ma','topic-1','2026-09-10').total,2,'Old-cycle feedback must not validate the new cycle');
+  assert.equal(api.routePracticeSignal('k-ma','topic-1','2026-09-10').sessions,2);
+  assert.equal(api.routePracticeSignal('k-ma','topic-1','2026-09-10').answered,20);
+}
+
 // 4) Difficulty cause must be retrievable and must alter the study prescription.
 {
   const src=between('function routeDifficultyLabel','function routeSubjectAdaptiveState');
@@ -553,12 +578,14 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   };
   let outcome={known:false,total:0,recent:'',trend:0,stuckRate:0};
   let practice={known:true,sessions:1,answered:20,weightedAccuracy:.90,accuracy:.90,recentAccuracy:.90};
-  const routeOutcomeSignal=()=>outcome;
-  const routePracticeSignal=()=>practice;
+  const evidenceSince=[];
+  const routeOutcomeSignal=(_subject,_topic,since)=>{evidenceSince.push(['outcome',since]);return outcome;};
+  const routePracticeSignal=(_subject,_topic,since)=>{evidenceSince.push(['practice',since]);return practice;};
   const mastery=new Function('R','w','routeOutcomeSignal','routePracticeSignal','routePlanEvidenceDate',src+';return routeTopicMasterySignal;')(R,w,routeOutcomeSignal,routePracticeSignal,routePlanEvidenceDate);
 
   const oneSet=mastery('topic-1');
   assert.equal(oneSet.baseDate,'2026-09-10','Mastery must anchor to the actual logged study day');
+  assert.ok(evidenceSince.every(x=>x[1]==='2026-09-10'),'Mastery performance evidence must start at the current base study date');
   assert.equal(oneSet.review3,true);
   assert.equal(oneSet.review7,true);
   assert.equal(oneSet.ready,false,'One strong practice set must not be enough for mastery');
@@ -649,6 +676,8 @@ for(const marker of [
   "outcome:''",
   'routePracticeSignal',
   'weightedAccuracy',
+  "routeOutcomeSignal(t.subjectId,topicId,baseDate)",
+  "routePracticeSignal(t.subjectId,topicId,baseDate)",
   'routeFeedbackCalibrationSignal',
   'routeSessionPerformanceSignal',
   'routeInvalidateBaseReviews',

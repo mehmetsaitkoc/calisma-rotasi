@@ -695,27 +695,63 @@ function lfFirst(days,mode,enter){
   for(let i=0;i<days.length;i++){const a=days[i].appliedMode===mode,b=i?days[i-1].appliedMode===mode:false;if(enter&&a&&!b)return days[i].day;if(!enter&&!a&&b)return days[i].day;}
   return null;
 }
+function lfFinite(v){return Number.isFinite(v)?v:null;}
+function lfProject(days,index,key,horizon,min=0,max=100){
+  const base=lfFinite(days[index]?.[key]);if(base===null)return null;
+  const xs=[];
+  for(let j=Math.max(0,index-6);j<=index;j++){const v=lfFinite(days[j]?.[key]);if(v!==null)xs.push({index:j,value:v});}
+  if(xs.length<2)return base;
+  const first=xs[0],last=xs.at(-1),span=Math.max(1,last.index-first.index),rawSlope=(last.value-first.value)/span,slope=Math.max(-2.5,Math.min(2.5,rawSlope));
+  return Math.max(min,Math.min(max,base+slope*horizon));
+}
+function lfOutcomeMetric(days,index,horizon,key,lowerBetter=false,min=0,max=100){
+  const base=lfFinite(days[index]?.[key]),futureIndex=index+horizon;
+  if(base===null||futureIndex>=days.length)return {known:false,base,actual:null,projected:null,delta:null,lift:null};
+  const actual=lfFinite(days[futureIndex]?.[key]);if(actual===null)return {known:false,base,actual:null,projected:null,delta:null,lift:null};
+  const projected=lfProject(days,index,key,horizon,min,max),delta=lowerBetter?base-actual:actual-base,lift=projected===null?null:(lowerBetter?projected-actual:actual-projected);
+  return {known:true,base,actual,projected,delta,lift};
+}
+function lfHorizonOutcome(days,index,mode,horizon){
+  const performance=lfOutcomeMetric(days,index,horizon,'performance',false,0,100),learningNeed=lfOutcomeMetric(days,index,horizon,'learningNeed',true,0,100),risk=lfOutcomeMetric(days,index,horizon,'risk',true,0,100),execution=lfOutcomeMetric(days,index,horizon,'execution',false,0,100),completion=lfOutcomeMetric(days,index,horizon,'behaviorCompletion',false,0,1),retention=lfOutcomeMetric(days,index,horizon,'retention',false,0,100),mistakes=lfOutcomeMetric(days,index,horizon,'openMistakes',true,0,99);
+  let score=0,known=0,harmful=false,success=false,reasons=[];
+  if(mode==='repair'){
+    if(performance.known){known++;score+=performance.delta+(performance.lift||0)*.5;if(performance.delta>=4||performance.lift>=4)reasons.push('performans toparlandı');if(performance.delta<=-7&&performance.lift<=-4)harmful=true;}
+    if(learningNeed.known){known++;score+=learningNeed.delta*.45+(learningNeed.lift||0)*.25;if(learningNeed.delta>=6)reasons.push('öğrenme ihtiyacı düştü');if(learningNeed.delta<=-10)harmful=true;}
+    if(risk.known){known++;score+=risk.delta*.25+(risk.lift||0)*.15;if(risk.delta>=6)reasons.push('risk düştü');}
+    if(mistakes.known){known++;score+=mistakes.delta*6;if(mistakes.delta>0)reasons.push('açık yanlış azaldı');if(mistakes.delta<0)harmful=true;}
+    success=!harmful&&known>=2&&score>=5;
+  }else if(mode==='ease'){
+    if(execution.known){known++;score+=execution.delta*.65+(execution.lift||0)*.35;if(execution.delta>=6||execution.lift>=5)reasons.push('uygulanabilirlik arttı');}
+    if(completion.known){known++;score+=completion.delta*45+(completion.lift||0)*25;if(completion.delta>=.10||completion.lift>=.08)reasons.push('tamamlama arttı');}
+    if(learningNeed.known){known++;score+=learningNeed.delta*.20;}
+    if(risk.known){known++;score+=risk.delta*.10;}
+    if(performance.known&&performance.delta<=-10){harmful=true;reasons.push('performans fazla düştü');}
+    if((execution.known&&execution.delta<=-12)||(completion.known&&completion.delta<=-.18))harmful=true;
+    success=!harmful&&known>=1&&score>=5;
+  }else if(mode==='progress'){
+    if(performance.known){known++;score+=performance.delta+(performance.lift||0)*.5+3;if(performance.delta>=2||performance.lift>=3)reasons.push('yük artışını performans taşıdı');if(performance.delta<=-8)harmful=true;}
+    if(retention.known){known++;score+=retention.delta*.20;if(retention.delta<=-12)harmful=true;}
+    if(learningNeed.known){known++;score+=learningNeed.delta*.20;if(learningNeed.delta<=-12)harmful=true;}
+    if(risk.known){known++;score+=risk.delta*.12;if(risk.delta<=-15)harmful=true;}
+    if(execution.known&&execution.delta<=-15)harmful=true;
+    success=!harmful&&known>=2&&score>=3;
+  }
+  const insufficient=known===0,label=insufficient?'insufficient':harmful?'harmful':success?'success':'neutral';
+  return {horizon,label,score:Math.round(score*10)/10,knownSignals:known,reasons,metrics:{performance,learningNeed,risk,execution,completion,retention,mistakes}};
+}
 function lfBacktest(days){
-  const out={success:0,neutral:0,harmful:0,insufficientEvidence:0,events:[]};
+  const horizons=[7,14,30],out={success:0,neutral:0,harmful:0,insufficientEvidence:0,events:[],byMode:{repair:{success:0,neutral:0,harmful:0,insufficient:0},ease:{success:0,neutral:0,harmful:0,insufficient:0},progress:{success:0,neutral:0,harmful:0,insufficient:0}},byHorizon:{7:{success:0,neutral:0,harmful:0,insufficient:0},14:{success:0,neutral:0,harmful:0,insufficient:0},30:{success:0,neutral:0,harmful:0,insufficient:0}}};
   for(let i=0;i<days.length;i++){
     const d=days[i],prev=i?days[i-1].appliedMode:'steady';
     if(!['repair','ease','progress'].includes(d.appliedMode)||d.appliedMode===prev)continue;
-    const a=days[Math.min(days.length-1,i+14)],b=days[Math.min(days.length-1,i+30)];let score=0,insufficient=false;
-    if(d.appliedMode==='repair'){
-      const base=Number.isFinite(d.performance)?d.performance:null,future=[a,b].map(function(x){return x.performance;}).filter(Number.isFinite);
-      if(base===null||!future.length){insufficient=true;score=0;}
-      else {score=(future[0]-base)+(future.length>1?(future[1]-base)*.5:0)+(d.openMistakes-(b.openMistakes||0))*6;}
-    }else if(d.appliedMode==='ease'){
-      const base=Number.isFinite(d.execution)?d.execution:null,future=[a,b].map(function(x){return x.execution;}).filter(Number.isFinite);
-      if(base===null||!future.length){insufficient=true;score=0;}
-      else score=(future[0]-base)+(future.length>1?(future[1]-base)*.5:0);
-    }else{
-      const base=Number.isFinite(d.performance)?d.performance:null,future=[a,b].map(function(x){return x.performance;}).filter(Number.isFinite);
-      if(base===null||!future.length){insufficient=true;score=0;}
-      else score=Math.min.apply(null,future.map(function(x){return x-base;}))+4;
+    const results=horizons.map(function(h){return lfHorizonOutcome(days,i,d.appliedMode,h);}),evaluated=results.filter(function(x){return x.label!=='insufficient';}),harmful=evaluated.filter(function(x){return x.label==='harmful';}).length,success=evaluated.filter(function(x){return x.label==='success';}).length;
+    const label=!evaluated.length?'neutral':harmful?'harmful':success>=Math.ceil(evaluated.length/2)?'success':'neutral',insufficient=results.filter(function(x){return x.label==='insufficient';}).length;
+    out[label]++;out.insufficientEvidence+=insufficient;
+    for(const r of results){
+      const bucket=r.label==='insufficient'?'insufficient':r.label;
+      out.byMode[d.appliedMode][bucket]++;out.byHorizon[r.horizon][bucket]++;
     }
-    const label=insufficient?'neutral':score>=5?'success':score<=-8?'harmful':'neutral';out[label]++;if(insufficient)out.insufficientEvidence++;
-    out.events.push({day:d.day,mode:d.appliedMode,label,insufficientEvidence:insufficient,score:Math.round(score),basePerformance:d.performance,day14Performance:a.performance,day30Performance:b.performance,baseExecution:d.execution,day14Execution:a.execution,day30Execution:b.execution});
+    out.events.push({day:d.day,date:d.date,mode:d.appliedMode,label,insufficientEvidence:insufficient,base:{performance:d.performance,learningNeed:d.learningNeed,risk:d.risk,execution:d.execution,completion:d.behaviorCompletion,retention:d.retention,openMistakes:d.openMistakes},horizons:results});
   }
   return out;
 }
@@ -835,6 +871,6 @@ const burn=lfById['burnout-after-success'];assert.ok(burn.days.find(function(d){
   assert.equal(newCycle.ready,false,'old retention evidence completed a fresh learning cycle');
 }
 assert.equal(lfFreshness(3),1,'freshness 3d');assert.equal(lfFreshness(21),.55,'freshness 21d');assert.equal(lfFreshness(45),.35,'freshness 45d');
-const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful,interventionInsufficientEvidence:r.backtest.insufficientEvidence};});
+const lfSummary=lfResults.map(function(r){return {id:r.persona.id,day30:r.day30,day60:r.day60,interventionSuccess:r.backtest.success,interventionNeutral:r.backtest.neutral,interventionHarmful:r.backtest.harmful,interventionInsufficientEvidence:r.backtest.insufficientEvidence,interventionByMode:r.backtest.byMode,interventionByHorizon:r.backtest.byHorizon};});
 console.log('route-engine-lifecycle: '+LF_PERSONAS.length+' students x 60 days = '+(LF_PERSONAS.length*60)+' daily cycles; day 30 + day 60 checkpoints passed');
 console.log(JSON.stringify(lfSummary));

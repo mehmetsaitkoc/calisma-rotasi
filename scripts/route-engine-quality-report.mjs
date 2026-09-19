@@ -16,24 +16,28 @@ function interventionEvents(r){
   return (r.backtest.success||0)+(r.backtest.neutral||0)+(r.backtest.harmful||0);
 }
 function evidenceGaps(r){
-  return (r.backtest.insufficientEvidence||0)+(r.backtest.confounded||0);
+  return r.backtest.insufficientEvidence||0;
+}
+function causalAmbiguity(r){
+  return r.backtest.confounded||0;
 }
 function qualityStatus(r){
-  const d=r.day60,b=r.backtest,refresh=d.refreshAudit||{};
-  const blocker=d.modeBounces>0||d.stabilityScore<80||(b.harmful||0)>0||harmfulHorizons(r)>0||(refresh.duplicateKeys||0)>0||(d.masteryRegressions||0)>0||d.staleEvidenceInfluence>18;
+  const d=r.day60,b=r.backtest,refresh=d.refreshAudit||{},longStability=Number.isFinite(d.longHorizonStabilityScore)?d.longHorizonStabilityScore:d.stabilityScore;
+  const blocker=d.modeBounces>0||longStability<80||(b.harmful||0)>0||harmfulHorizons(r)>0||(refresh.duplicateKeys||0)>0||(d.masteryRegressions||0)>0||d.staleEvidenceInfluence>18;
   if(blocker)return {key:'blocker',label:'BLOKER'};
-  const watch=d.stabilityScore<90||d.risk>=50||evidenceGaps(r)>=3||(refresh.maxPerTopic||0)>3;
+  const watch=longStability<90||d.risk>=50||evidenceGaps(r)>=3||(refresh.maxPerTopic||0)>3;
   if(watch)return {key:'watch',label:'İZLE'};
   return {key:'strong',label:'GÜÇLÜ'};
 }
 function noteFor(r){
-  const d=r.day60,b=r.backtest,notes=[];
+  const d=r.day60,b=r.backtest,notes=[],longStability=Number.isFinite(d.longHorizonStabilityScore)?d.longHorizonStabilityScore:d.stabilityScore;
   if(d.modeBounces===0)notes.push('mod bounce yok');
-  if(d.stabilityScore===100)notes.push('stability 100');
+  if(longStability===100)notes.push('uzun dönem stability 100');
   if(d.longestRepairStreak>=20)notes.push('uzun ONARIM dönemi');
   if(d.longestProgressStreak>=10)notes.push('uzun GELİŞİM dönemi');
-  if(d.risk>=50)notes.push('final risk yüksek');
-  if(evidenceGaps(r)>=3)notes.push('uzun dönem kanıt açığı');
+  if(d.risk>=50)notes.push(r.persona.id==='urgent-weak'?'yüksek risk doğru biçimde korunuyor':'final risk yüksek');
+  if(evidenceGaps(r)>=3)notes.push('uzun dönem takip kanıtı yetersiz');
+  if(causalAmbiguity(r)>=3)notes.push(causalAmbiguity(r)+' ufukta faz/karşı-olgu belirsizliği bilinçli dışlandı');
   if(interventionEvents(r)===0)notes.push('müdahale gerekmedi / geri test yok');
   if((d.refreshAudit?.maxPerTopic||0)>=3)notes.push('refresh yoğunluğunu izle');
   if(d.examEvidenceCount>=2&&Number.isFinite(d.freshExamWeight)&&Number.isFinite(d.oldExamWeight)&&d.freshExamWeight>d.oldExamWeight)notes.push('yeni deneme eski kanıtı geçti');
@@ -42,7 +46,7 @@ function noteFor(r){
 }
 function row(r){
   const d=r.day60,s=qualityStatus(r),events=interventionEvents(r),gaps=evidenceGaps(r);
-  return `| ${r.persona.name} | ${s.label} | ${stateNames[d.finalState]||d.finalState} | ${d.stabilityScore} | ${d.risk} | ${d.completedTopics} | ${events} | ${gaps} | ${noteFor(r)} |`;
+  const longStability=Number.isFinite(d.longHorizonStabilityScore)?d.longHorizonStabilityScore:d.stabilityScore;return `| ${r.persona.name} | ${s.label} | ${stateNames[d.finalState]||d.finalState} | ${d.stabilityScore} / ${longStability} | ${d.risk} | ${d.completedTopics} | ${events} | ${gaps} | ${causalAmbiguity(r)} | ${noteFor(r)} |`;
 }
 
 const statuses=lfResults.map(r=>qualityStatus(r));
@@ -77,7 +81,7 @@ const report=`# Route Engine — 60 Günlük Motor Quality Report
 
 Bu rapor gerçek kullanıcı başarısını kanıtlamaz; sentetik uzun dönem yaşam döngülerinde motorun karar tutarlılığını, kanıt eskimesini, forgetting/mastery davranışını ve müdahale sonuçlarını denetler.
 
-- Ortalama 60 günlük stability score: **${avg(lfResults,r=>r.day60.stabilityScore)}/100**
+- Ortalama ham transition stability: **${avg(lfResults,r=>r.day60.stabilityScore)}/100**\n- Ortalama uzun dönem decision stability: **${avg(lfResults,r=>Number.isFinite(r.day60.longHorizonStabilityScore)?r.day60.longHorizonStabilityScore:r.day60.stabilityScore)}/100**
 - Mode bounce: **${totalBounces}**
 - Zararlı müdahale olayı: **${totalHarmful}**
 - Zararlı 7/14/30 günlük müdahale ufku: **${totalHarmfulHorizons}**
@@ -96,22 +100,22 @@ Gerçek kullanıcı pilotu açısından bu sonuç **teknik güvenlik/istikrar si
 
 ## Persona özeti
 
-| Persona | Durum | 60g final state | Stability | Risk | Tamamlanan konu | Müdahale olayı | Kanıt açığı | Not |
-| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Persona | Durum | 60g final state | Ham / uzun stability | Risk | Tamamlanan konu | Müdahale olayı | Kanıt açığı | Confounded | Not |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${lfResults.map(row).join('\n')}
 
 ## Özellikle izlenecek personelar
 
 ${watchRows.length?watchRows.map(r=>{
-  const d=r.day60,s=qualityStatus(r),g=evidenceGaps(r),refresh=d.refreshAudit||{};
+  const d=r.day60,s=qualityStatus(r),g=evidenceGaps(r),refresh=d.refreshAudit||{},longStability=Number.isFinite(d.longHorizonStabilityScore)?d.longHorizonStabilityScore:d.stabilityScore;
   return `### ${r.persona.name} — ${s.label}
 
 - Final state: **${stateNames[d.finalState]||d.finalState}**
-- Stability: **${d.stabilityScore}/100**, bounce: **${d.modeBounces}**
+- Stability: ham **${d.stabilityScore}/100** · uzun dönem **${longStability}/100**, bounce: **${d.modeBounces}**
 - Final risk: **${d.risk}**, learningNeed: **${d.learningNeed}**, confidence: **${d.confidence}**
 - Longest repair/progress streak: **${d.longestRepairStreak} / ${d.longestProgressStreak} gün**
 - Müdahale geri testi: **${r.backtest.success} başarılı · ${r.backtest.neutral} nötr · ${r.backtest.harmful} zararlı**
-- Takip kanıtı: **${r.backtest.insufficientEvidence} yetersiz · ${r.backtest.confounded} confounded**
+- Takip kanıtı: **${r.backtest.insufficientEvidence} yetersiz** · nedensellik ayrımı: **${r.backtest.confounded} confounded**
 - Forgetting refresh: **${d.forgettingRefreshCount}**, konu başına maksimum **${refresh.maxPerTopic||0}**
 - Değerlendirme: ${noteFor(r)}
 `;
@@ -145,7 +149,7 @@ Eski deneme kanıtı yaş ve yeni çalışma kanıtıyla zayıflıyor. 'exam-ref
 ## Pilot öncesi kalan açıklar
 
 1. **Gerçek öğrenci verisi yok.** Sentetik simülasyon karar güvenliğini gösterebilir; pedagojik etkiyi kanıtlayamaz.
-2. **Confounded sonuçlar var.** Persona fazı değiştiğinde müdahalenin etkisini tek başına ayırmak mümkün değil; bu doğru biçimde geri test puanına zorla yazılmıyor.
+2. **Confounded sonuçlar kalite hatası değildir.** Persona fazı veya karşı-olgu baz çizgisi değiştiğinde müdahalenin etkisini tek başına ayırmak mümkün değil; bu ufuklar başarı/zarar puanına zorla yazılmıyor.
 3. **Bazı müdahalelerde 30 günlük takip henüz yetersiz.** Motor bunları başarısızlık saymıyor; yeni kanıt bekliyor.
 4. **Gerçek pilotta telemetry şart.** Planlanan/güncel soru sayısı, completion, doğru/yanlış, açık yanlış, mode history ve intervention history birlikte tutulmalı.
 5. **İlk pilotta otomatik agresif optimizasyon yapılmamalı.** 7 günlük tek sonuçla yöntem değiştirme engeli korunmalı; 14/30 günlük doğrulama birikmeden öğrenme politikası sertleşmemeli.
@@ -170,5 +174,5 @@ Bu rapor 'npm run quality:report' ile yeniden üretilebilir.
 
 fs.writeFileSync(outUrl,report);
 console.log('route-engine-quality-report: wrote reports/route-engine-quality-report.md');
-console.log(JSON.stringify({personas:lfResults.length,avgStability:avg(lfResults,r=>r.day60.stabilityScore),bounces:totalBounces,harmfulEvents:totalHarmful,harmfulHorizons:totalHarmfulHorizons,strong:strongCount,watch:watchCount,blockers:blockerCount}));
+console.log(JSON.stringify({personas:lfResults.length,avgRawStability:avg(lfResults,r=>r.day60.stabilityScore),avgLongHorizonStability:avg(lfResults,r=>Number.isFinite(r.day60.longHorizonStabilityScore)?r.day60.longHorizonStabilityScore:r.day60.stabilityScore),bounces:totalBounces,harmfulEvents:totalHarmful,harmfulHorizons:totalHarmfulHorizons,strong:strongCount,watch:watchCount,blockers:blockerCount}));
 if(blockerCount>0)process.exitCode=1;

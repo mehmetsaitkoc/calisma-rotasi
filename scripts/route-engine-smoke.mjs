@@ -202,6 +202,37 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.match(productive.adaptive.note,/akıcılı/i);
 }
 
+// 3c) Repeated UI actions on the same task/day must not inflate adaptive behavior evidence.
+{
+  const eventSrc=between('function routeEvent','function routeSourceLabel');
+  const space={taskEvents:[]};
+  let uid=0;
+  const R={uid:()=> 'e'+(++uid)};
+  const today=()=> '2026-09-19';
+  const routeEnsure=()=>{};
+  const w=()=>space;
+  const routeEvent=new Function('R','today','routeEnsure','w',eventSrc+';return routeEvent;')(R,today,routeEnsure,w);
+  routeEvent('task-1','later');
+  routeEvent('task-1','later');
+  routeEvent('task-1','complete');
+  routeEvent('task-1','complete');
+  assert.equal(space.taskEvents.length,2,'Same action for the same task/day must be stored once');
+
+  const behaviorSrc=between('function routeBehaviorSignal','function routeOutcomeSignal');
+  space.plan=[{id:'task-1',subjectId:'k-ma',topicId:'m1'}];
+  space.taskEvents=[
+    {taskId:'task-1',date:'2026-09-19',action:'later'},
+    {taskId:'task-1',date:'2026-09-19',action:'later'},
+    {taskId:'task-1',date:'2026-09-19',action:'complete'},
+    {taskId:'task-1',date:'2026-09-19',action:'complete'}
+  ];
+  const R2={dayAdd:()=> '2026-09-05'};
+  const signal=new Function('R','today','w',behaviorSrc+';return routeBehaviorSignal;')(R2,today,w)('k-ma','m1');
+  assert.equal(signal.later,1);
+  assert.equal(signal.complete,1);
+  assert.equal(signal.total,2);
+}
+
 // 4) Recent learning evidence must outweigh stale history without erasing it.
 {
   const src=between('function routeOutcomeSignal','function routeDifficultyLabel');
@@ -262,13 +293,14 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   assert.equal(api.routeIsQuantitativeHeavy('science'),true);
   assert.equal(api.routeIsQuantitativeHeavy('paragraph'),false);
   assert.equal(api.routeQuantitativeDailyLimit(90),1);
-  assert.equal(api.routeQuantitativeDailyLimit(120),1);
-  assert.equal(api.routeQuantitativeDailyLimit(121),2);
+  assert.equal(api.routeQuantitativeDailyLimit(91),2);
+  assert.equal(api.routeQuantitativeDailyLimit(120),2);
   assert.equal(api.routeQuantitativeDailyLimit(300),2);
 
   const rebalance=between('function routeRebalance','function routeAutoSync');
   assert.ok(!rebalance.includes('mode<=2&&isHeavy'),'Relaxation modes must not bypass the heavy-load ceiling');
-  assert.ok(rebalance.includes('!critical&&quantHeavy&&day.quantHeavy>=day.quantHeavyLimit'),'Quantitative-heavy cap must remain a hard scheduler rule');
+  assert.ok(rebalance.includes('quantCeiling=day.quantHeavyLimit+(critical?1:0)'),'Critical repair may receive at most one extra quantitative-heavy slot');
+  assert.ok(rebalance.includes('if(quantHeavy&&day.quantHeavy>=quantCeiling)return false'),'Quantitative-heavy cap must remain hard even for repeated critical tasks');
 }
 
 // 4) Topic frontier keeps curriculum order and prevents deep-topic flooding.
@@ -331,10 +363,13 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
   const space={exams:[{type:'KPSS',date:'2026-08-01',penalty:4,parts:[{label:'Matematik',total:10,correct:4}]}],logs:[]};
   const api=new Function('R','C','state','subject','today','w',src+';return {routeExamEvidenceFactor,routeExamWeakness};')(R,C,state,subject,today,()=>space);
   const fresh=api.routeExamWeakness()['k-ma'];
-  space.logs=Array.from({length:10},(_,i)=>({sessionId:'s'+i,date:'2026-08-'+String(2+i).padStart(2,'0')}));
+  space.logs=Array.from({length:10},(_,i)=>({sessionId:'u'+i,subjectId:'k-tr',date:'2026-08-'+String(2+i).padStart(2,'0')}));
+  const unrelated=api.routeExamWeakness()['k-ma'];
+  assert.equal(unrelated.freshness,1,'Unrelated subject study must not stale mathematics evidence');
+  space.logs=Array.from({length:10},(_,i)=>({sessionId:'s'+i,subjectId:'k-ma',date:'2026-08-'+String(2+i).padStart(2,'0')}));
   const stale=api.routeExamWeakness()['k-ma'];
   assert.equal(stale.freshness,.35);
-  assert.ok(stale.boost<fresh.boost,'Very stale deneme data must not keep the same route priority boost');
+  assert.ok(stale.boost<fresh.boost,'Very stale deneme data must lose weight after enough relevant-subject study');
 }
 
 // 4) Light-day action must preserve critical work and move low-priority tasks without recording friction.
@@ -544,12 +579,16 @@ assert.ok(parsed>=5,'Expected executable inline scripts');
 for(const marker of [
   'routeObservedNet',
   'function routeExamEvidenceFactor',
+  "(!subjectId||l.subjectId===subjectId)",
   'freshness',
   'function routeExamFreshness',
   'ölçümünü yenile',
   'age>=14&&studySince>=4',
   'routeStageGap',
   'routeConsistencySignal',
+  'routeBehaviorSignal',
+  "ev.taskId===taskId&&ev.action===action&&ev.date===date",
+  "const wasDone=!!p.done",
   'routePracticeSignal',
   'weightedAccuracy',
   'routeFeedbackCalibrationSignal',
@@ -572,7 +611,7 @@ for(const marker of [
   'routeHeavyLimit',
   'routeIsQuantitativeHeavy',
   'routeQuantitativeDailyLimit',
-  '!critical&&quantHeavy&&day.quantHeavy>=day.quantHeavyLimit',
+  'quantCeiling=day.quantHeavyLimit+(critical?1:0)',
   'routeMaxTaskMinutes',
   'routePaceSignal',
   'extraSessionsPerWeek',

@@ -1594,6 +1594,10 @@ h1,h2,h3,h4{color:var(--v2-ink);letter-spacing:-.035em}
 <noscript><p style="padding:30px">Çalışma Rotası’nı kullanmak için tarayıcında JavaScript’i etkinleştir.</p></noscript>
 <!-- ARCHITECTURE BOUNDARY: shared route/UI/backup contracts -->
 <script src="/route-contracts.js"></script>
+<!-- ARCHITECTURE BOUNDARY: student-facing route presentation -->
+<script src="/route-presenter.js"></script>
+<!-- ARCHITECTURE BOUNDARY: bounded Rota Hoca learning context -->
+<script src="/teacher-context.js"></script>
 <!-- ARCHITECTURE BOUNDARY: privacy-safe pilot observability -->
 <script src="/pilot-metrics.js"></script>
 <!-- ARCHITECTURE BOUNDARY: original mini-exam catalog expansion contract -->
@@ -3820,8 +3824,8 @@ function routeLightenToday(){
  if(moved)routeRebalance('Öğrenci bugünü hafifletti; kritik görevler korundu, düşük öncelikli işler sonraki uygun güne taşındı. Bu işlem erteleme/atlama başarısızlığı olarak sayılmaz.',true);
  return {moved,kept:keep.size,target,used};
 }
-function routeTaskReason(p){routeRenderPerf.reasonCalls++;const local=p?.reason||({mistake:'Yanlış defterinden tekrar.',mini_repair:'Mini denemede görülen konu/alt-konu açığını kapatmak için oluşturuldu.',ai_teacher:'Rota Hoca tekrar sinyali.',exam:'Deneme performansından gelen öncelik.',profile:'Ders seviye profilinden gelen başlangıç önceliği.',priority:'Öncelikli ders olarak seçildi.',curriculum:'Konu sırasındaki uygun adım.',backlog:'Kaçırılan görev yeniden yerleştirildi.',spaced_review:'Birkaç gün sonraki kısa geri çağırma tekrarı.',retention_refresh:'Kalıcılığı yeniden doğrulamak için kısa tekrar.',checkpoint:'Haftalık öğrenme kontrolü.'}[p?.source]||'Kişisel çalışma rotandaki görev.');return window.RotaContracts?.taskReason?window.RotaContracts.taskReason({...p,reason:local}):local;}
-function routeModeExplanation(decision){const copy=window.RotaContracts?.modeCopy?.(decision?.mode);return copy?.short||({repair:'Önce açığı kapat, sonra ilerle.',steady:'Mevcut tempoyu koru.',progress:'Son veriler güçlü; kontrollü biçimde zorlaş.',ease:'Yükü küçült, istikrarı koru.'}[decision?.mode]||'Rota mevcut verine göre bu tempoyu seçti.');}
+function routeTaskReason(p){routeRenderPerf.reasonCalls++;const local=p?.reason||({mistake:'Yanlış defterinden tekrar.',mini_repair:'Mini denemede görülen konu/alt-konu açığını kapatmak için oluşturuldu.',ai_teacher:'Rota Hoca tekrar sinyali.',exam:'Deneme performansından gelen öncelik.',profile:'Ders seviye profilinden gelen başlangıç önceliği.',priority:'Öncelikli ders olarak seçildi.',curriculum:'Konu sırasındaki uygun adım.',backlog:'Kaçırılan görev yeniden yerleştirildi.',spaced_review:'Birkaç gün sonraki kısa geri çağırma tekrarı.',retention_refresh:'Kalıcılığı yeniden doğrulamak için kısa tekrar.',checkpoint:'Haftalık öğrenme kontrolü.'}[p?.source]||'Kişisel çalışma rotandaki görev.');const task={...p,reason:local};if(window.RotaPresenter?.taskReason)return window.RotaPresenter.taskReason(task);return window.RotaContracts?.taskReason?window.RotaContracts.taskReason(task):local;}
+function routeModeExplanation(decision){const present=window.RotaPresenter?.modeCopy?.(decision);if(present?.short)return present.short;const copy=window.RotaContracts?.modeCopy?.(decision?.mode);return copy?.short||({repair:'Önce açığı kapat, sonra ilerle.',steady:'Mevcut tempoyu koru.',progress:'Son veriler güçlü; kontrollü biçimde zorlaş.',ease:'Yükü küçült, istikrarı koru.'}[decision?.mode]||'Rota mevcut verine göre bu tempoyu seçti.');}
 const routeRenderDecisionCache=new Map();
 let routeRenderPlanIndex=null;
 const routeRenderPerf={view:'',decisionComputes:0,reasonCalls:0,planIndexBuilds:0,lastRenderMs:0,renderCount:0,lastTaskNodes:0};
@@ -4245,7 +4249,7 @@ function teacherStudentContext(record){
   topics:todayOpen.filter(p=>R.topic(ww,p.topicId)).filter((p,i,a)=>a.findIndex(x=>x.topicId===p.topicId)===i).slice(0,5).map(p=>{const m=routeTopicMasterySignal(p.topicId);return {subject:subName(p.subjectId,true),topic:R.topic(ww,p.topicId)?.title||p.title,ready:m.ready,progress:m.progress,total:m.total,baseDate:m.baseDate,review3:m.review3,review7:m.review7,openMistake:m.openMistake,next:m.next};})
  };
  const context={
-  exam:examLabel(),track:trackLabel(),target:ww.settings.target||'',targetDate:ww.settings.targetDate||'',dailyMinutes:ww.settings.dailyMinutes,topicStatus:selectedTopic?(ww.topicState[selectedTopic]?.status||0):null,
+  exam:examLabel(),track:trackLabel(),selected:{subject:subName(record.subjectId,true),topic:selectedTopic?(R.topic(ww,selectedTopic)?.title||''):''},target:ww.settings.target||'',targetDate:ww.settings.targetDate||'',dailyMinutes:ww.settings.dailyMinutes,topicStatus:selectedTopic?(ww.topicState[selectedTopic]?.status||0):null,
   routeSummary:{lastReason:ww.route?.lastReason||'',lastChanged:ww.route?.lastChanged||0,lastRun:ww.route?.lastRun||''},
   completion:{known:!!consistency.known,ratio:consistency.known?Math.round(consistency.ratio*100):null,active:consistency.active||0,expected:consistency.expected||0},
   todayPlan,
@@ -4255,6 +4259,7 @@ function teacherStudentContext(record){
   mastery,
   recentExams,recentMistakes,recentLogs,teacherSignals
  };
+ if(window.RotaTeacherContext?.build)return window.RotaTeacherContext.build(context);
  return window.RotaContracts?.teacherContextEnvelope?window.RotaContracts.teacherContextEnvelope(context):context;
 }
 function teacherRemoteText(a){return [a?.direct_answer,a?.message,a?.diagnosis,...(a?.steps||[]).map(x=>x.title+': '+x.text),a?.summary].filter(Boolean).join('\n');}

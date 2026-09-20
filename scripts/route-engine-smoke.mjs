@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 const externalCatalogJs=fs.readFileSync(new URL('../public/catalog.js',import.meta.url),'utf8');
+const externalWorkspaceJs=fs.readFileSync(new URL('../public/workspace-schema.js',import.meta.url),'utf8');
 
 function between(start,end){
   const a=html.indexOf(start),b=html.indexOf(end,a);
@@ -1962,6 +1963,7 @@ for(const marker of [
   assert.ok(catalogJs&&coreJs,'Catalog/core scripts must be available for backup round-trip test');
   const env={};
   new Function('window','globalThis',catalogJs)(env,env);
+  new Function('window','globalThis',externalWorkspaceJs)(env,env);
   new Function('window','globalThis',coreJs)(env,env);
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.assessments=[{
@@ -1983,7 +1985,7 @@ for(const marker of [
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
   const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
-  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.interventions=[{id:'iv1',date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'repair',source:'mini_repair',method:'quant',taskId:'task1',taskDate:'2026-09-19',confidence:72,baselineAccuracy:50,baselineCompletion:60,baselineNeed:78,baselineAnswered:20,reason:'Mini açığı',created:1}];
   const validated=env.RotaCore.validateBackup(backup),iv=validated.workspaces.kpss.route.interventions[0];
@@ -1998,7 +2000,7 @@ for(const marker of [
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
   const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
-  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.modeHistory=[{date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'progress',studentState:'steady',confidence:88,performance:73,learningNeed:24,hysteresisHeld:true,easeHysteresisHeld:true,easeEntryHeld:true,easeRecoveryHeld:true,created:1}];
   const row=env.RotaCore.validateBackup(backup).workspaces.kpss.route.modeHistory[0];
@@ -2015,7 +2017,7 @@ for(const marker of [
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
   const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
-  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.pilot={
     version:1,enabled:true,participantId:'p-test-001',startDate:'2026-09-19',startedAt:1,completedAt:0,

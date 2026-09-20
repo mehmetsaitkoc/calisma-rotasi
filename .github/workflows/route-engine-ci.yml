@@ -46,6 +46,15 @@ jobs:
       - name: Syntax check route contract tests
         run: node --check scripts/route-contracts.test.mjs
 
+      - name: Syntax check route presenter
+        run: node --check public/route-presenter.js
+
+      - name: Syntax check teacher context boundary
+        run: node --check public/teacher-context.js
+
+      - name: Syntax check architecture boundary tests
+        run: node --check scripts/architecture-boundaries.test.mjs
+
       - name: Syntax check pilot metrics
         run: node --check public/pilot-metrics.js
 

@@ -672,9 +672,11 @@ try {
   assert.ok(teacherRequest.studentContext?.studentModel, 'Rota Hoca must receive Student Model');
   assert.ok(teacherRequest.studentContext?.routeDecision, 'Rota Hoca must receive route decision');
   assert.ok(teacherRequest.studentContext?.mastery, 'Rota Hoca must receive mastery context');
-  assert.equal(teacherRequest.studentContext?.contextVersion, 1, 'Rota Hoca context must carry a versioned contract');
+  assert.equal(teacherRequest.studentContext?.contextVersion, 2, 'Rota Hoca context must carry the bounded v2 contract');
   assert.ok(teacherRequest.studentContext?.routeMode?.explanation, 'Rota Hoca must receive student-facing route-mode explanation');
   assert.ok(teacherRequest.studentContext?.todaySummary, 'Rota Hoca must receive todaySummary');
+  assert.ok(teacherRequest.studentContext?.contextHealth?.hasStudentModel, 'Rota Hoca v2 context must expose context health');
+  assert.ok((teacherRequest.studentContext?.todayPlan||[]).length <= 8, 'Rota Hoca todayPlan must stay bounded');
   const teacherContextText = JSON.stringify(teacherRequest.studentContext);
   assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(teacherContextText), 'Technical route jargon must not leak into teacher context');
   await assertCleanRender(page, 'Rota Hoca');

@@ -2078,8 +2078,6 @@ async function loadEntitlement(force=false){
 icons.lock='M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4M12 14v3';
 icons.credit='M3 5h18v14H3zM3 10h18M6 15h4';
 function plusBadge(label='PLUS'){return `<span class="plus-badge">${icon('spark')}${label}</span>`;}
-function rememberBilling(){try{sessionStorage.setItem('rota-plus:visual-demo',JSON.stringify(billing));}catch{}}
-function changePreviewTier(tier,offer=billing.offer){if(!['free','plus'].includes(tier))return;billing={tier,offer:Object.hasOwn(OFFERS,offer)?offer:'monthly'};rememberBilling();closeModal();render();}
 function previewBar(){
  const themeLabel=UI_THEME?(THEME_NAMES[UI_THEME]||UI_THEME.toUpperCase()):'VARSAYILAN';
  const themeLinks='<div class="theme-preview-switch" role="group" aria-label="Tema önizlemesi"><span class="theme-preview-current">TEMA: '+esc(themeLabel)+'</span>'+['red','violet','cyan'].map(function(t){return '<a class="'+(UI_THEME===t?'selected':'' )+'" href="'+esc(themeUrl(t))+'">'+esc(THEME_NAMES[t])+'</a>';}).join('')+'</div>';

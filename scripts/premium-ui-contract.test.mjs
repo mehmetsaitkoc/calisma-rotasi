@@ -32,7 +32,21 @@ for(const marker of [
   'Rota’nın ayrıntılı analizini gör',
   'Planı ayarla',
   'Verilerin bu tarayıcıda saklanır',
-  'Neden bugün?'
+  'Beta döneminde ödeme sistemi kapalı',
+  'Beta döneminde varsayılan paket Ücretsiz',
+  'Gelişmiş devamlar Plus',
+  'Neden bugün?',
+  'ROTA PLUS REPORTS V1',
+  'report-premium-hero',
+  'report-kpis',
+  'report-week-bars',
+  'report-trend-bars',
+  '6 aylık trendler',
+  'Çalışmanın izini, varsayım katmadan gör.',
+  'Bu 6 aylık dönemde ders kaydı yok.',
+  "emptyWeek?'is-empty'",
+  "emptyMonth?'is-empty'",
+  '.report-coverage{grid-template-columns:1fr}'
 ]) assert.ok(html.includes(marker),'Missing premium product contract marker: '+marker);
 
 assert.ok(
@@ -51,5 +65,21 @@ assert.ok(
 );
 
 assert.ok(!html.includes('Pilot sürüm · Ödeme ve gerçek üyelik aktif değil'),'Primary product surfaces must not use prototype-style pilot warning copy');
+assert.ok(!html.includes('rota-plus:visual-demo'),'Premium UI must not trust sessionStorage as an entitlement authority');
+assert.ok(!html.includes('data-action="paid-tier"'),'Premium UI must not expose a self-service tier switch');
+assert.ok(!html.includes('Plus görünümünü dene'),'Pricing UI must not visually grant Plus before account/payment entitlement exists');
+assert.ok(html.includes("fetch('/api/entitlements'"),'Premium UI must load its entitlement from the server boundary');
+assert.ok(html.includes("featureEnabled('advanced_teacher_insights')"),'Advanced teacher continuations must obey the central feature policy');
+for(const phrase of ['Production beta fail-closed','server entitlement','entitlement kaynağı','Sunucu yetkisi','Yetki servisine ulaşılamadı','Free yetkisi aktif','Plus yetkisi aktif','Plus özelliklerin sunucu tarafından açık.']){
+  assert.ok(!html.includes(phrase),'User-facing product copy must not expose technical access jargon: '+phrase);
+}
+assert.ok(html.includes('Plus erişimi yalnız doğrulanmış üyelikle açılacak'),'Membership copy must explain Plus access in user language');
+assert.ok(html.includes('Plus paketini incele'),'Pricing CTA must not imply that payment is already live');
+for(const phrase of ['Sıradaki çalışmanı da belirle.','ANALİZ + TEKRAR + RAPOR','Detaylı Rota Hoca analizleri','Her denemeden sonra net bir adım.']){
+  assert.ok(!html.includes(phrase),'Plus copy must not imply that the Free learning loop is paywalled: '+phrase);
+}
+for(const phrase of ['RAPOR + TREND + ROTA HOCA','Zaman içindeki desenini de gör.','6 aylık çalışma ve plan trendleri','Gelişmiş Rota Hoca devamları','Veri güveni ve karşılaştırılabilirlik açıklamaları']){
+  assert.ok(html.includes(phrase),'Plus value proposition must match implemented premium capabilities: '+phrase);
+}
 
-console.log('Premium UI contract passed: landing + onboarding + build + Today hierarchy + trust polish');
+console.log('Premium UI contract passed: living UI + server-sourced Free/Plus gates + polished user copy + honest empty report states');

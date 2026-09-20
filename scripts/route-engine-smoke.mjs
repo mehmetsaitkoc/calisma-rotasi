@@ -24,6 +24,7 @@ assert.ok(parsed>=4,'Expected executable inline scripts after catalog extraction
 // 1a) Architecture and student-facing contract boundary must stay wired.
 for(const marker of [
   '<script src="/route-contracts.js"></script>',
+  '<script src="/report-analytics.js"></script>',
   '<script src="/workspace-schema.js"></script>',
   '<script src="/catalog.js"></script>',
   '<script src="/turkish-catalog.js"></script>',
@@ -45,6 +46,16 @@ for(const marker of [
   'pilotMetrics?.summarize',
   'pilotMetrics?.collectEvents',
   "featureEnabled('monthly_report')",
+  "featureEnabled('long_term_trends')",
+  'function premiumMonthlyReport',
+  'function premiumTrendReport',
+  'RotaReportAnalytics',
+  'report-trend-bars',
+  'report-evidence-badge',
+  "featureEnabled('advanced_teacher_insights')",
+  "fetch('/api/entitlements'",
+  'validateEntitlement',
+  'Gelişmiş devamlar Plus',
   'routeRenderDecisionCache',
   'routeDecisionForRender',
   'STUDENT MODEL BOUNDARY',
@@ -78,6 +89,10 @@ for(const marker of [
   "!record.answer?._demo&&record.answer.confidence>=.7"
 ]) assert.ok(html.includes(marker),'Missing honest Rota Hoca client fallback marker: '+marker);
 assert.ok(!html.includes("teacherOpenConfigure();throw Error('Ders ve fotoğraf sorularını gerçek çözmek için AI bağlantısını kur.')"),'Teacher submit must not block the server honest-fallback path');
+assert.ok(!html.includes("rota-plus:visual-demo"),'Browser storage must not be an entitlement authority');
+assert.ok(!html.includes('data-action="paid-tier"'),'Production UI must not expose a client-controlled tier switch');
+assert.ok(!html.includes("function changePreviewTier("),'Client code must not self-promote to Plus');
+assert.ok(!html.includes("function showActivated("),'Visual checkout must not grant Plus access');
 
 
 // 2) Subject/topic methodology must classify materially different study modes.

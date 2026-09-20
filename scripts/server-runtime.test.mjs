@@ -36,6 +36,7 @@ try{
   assert.equal(health.aiConfigured,false);
   assert.equal(health.demoFallback,false);
   assert.equal(health.honestUnavailableFallback,true);
+  assert.deepEqual(health.entitlement,{tier:'free',source:'public_beta',purchaseEnabled:false,accountRequired:true},'Render health must expose the server-sourced Free entitlement');
   assert.equal(health.configurable,false,'Render runtime must never expose local API-key configuration');
   assert.equal(health.teacherPolicy.rateLimitPerMinute,20);
   assert.equal(health.teacherPolicy.maxBodyBytes,7*1024*1024,'Health must expose the actual request body ceiling');
@@ -43,6 +44,20 @@ try{
   assert.equal(health.teacherPolicy.contextSchemaVersion,2,'Health must expose the teacher context schema version');
   assert.ok(!Object.hasOwn(health,'apiKey'),'Health must never expose an API key');
   assert.ok(!JSON.stringify(health).includes('sk-'),'Health must not leak key-like secrets');
+
+  const entitlementResponse=await fetch(BASE+'/api/entitlements');
+  const entitlement=await entitlementResponse.json();
+  assert.equal(entitlementResponse.status,200);
+  assert.equal(entitlement.schema,'calisma-rotasi-entitlement-v1');
+  assert.equal(entitlement.version,1);
+  assert.equal(entitlement.tier,'free','Render must fail closed to Free until account-backed entitlements exist');
+  assert.equal(entitlement.source,'public_beta');
+  assert.equal(entitlement.features.core_route,true);
+  assert.equal(entitlement.features.teacher_basic,true);
+  assert.equal(entitlement.features.monthly_report,false);
+  assert.equal(entitlement.features.advanced_teacher_insights,false);
+  assert.equal(entitlement.purchaseEnabled,false);
+  assert.equal(entitlement.accountRequired,true);
 
   const configureBlocked=await jsonPost('/api/configure',{apiKey:'sk-test-not-a-real-key-1234567890',profile:'economy'});
   assert.equal(configureBlocked.status,403,'Runtime AI configuration must stay disabled on Render');
@@ -62,6 +77,13 @@ try{
   assert.equal(fallback.data.answer?.route_signal?.importance,0,'Unavailable mode must not influence route');
   assert.match(fallback.data.answer?.message||'',/tahmin|demo içerik cevabı/i);
   assert.equal(fallback.data.meta?.mode,'unavailable');
+  assert.equal(fallback.data.meta?.tier,'free');
+
+  const advancedBlocked=await jsonPost('/api/teacher',{question:'Bu çözümü başka yöntemle anlat.',mode:'alternate',exam:'KPSS',subject:'Matematik'});
+  assert.equal(advancedBlocked.status,403,'Advanced teacher continuation must be server-gated for Free');
+  assert.equal(advancedBlocked.data.code,'PLUS_REQUIRED');
+  assert.equal(advancedBlocked.data.feature,'advanced_teacher_insights');
+  assert.match(advancedBlocked.data.error||'',/Rota Plus/i);
 
   const invalidPhoto=await jsonPost('/api/teacher',{question:'',photo:'data:text/plain;base64,SGVsbG8='});
   assert.equal(invalidPhoto.status,400,'Photo validation must run even when AI is unavailable');
@@ -99,7 +121,7 @@ try{
   const ttsSameClient=await jsonPost('/api/tts',{text:'Merhaba'},forwardedHeaders);
   assert.equal(ttsSameClient.status,503,'Teacher traffic must not consume the independent TTS rate-limit bucket');
 
-  console.log('Server runtime contracts passed: honest fallback + body/photo bounds + bounded context + forwarded-IP scoped rate limits + secret-safe health');
+  console.log('Server runtime contracts passed: honest fallback + Free entitlement + Plus-only teacher continuation + body/photo bounds + bounded context + rate limits');
 } finally {
   server.kill('SIGTERM');
   await sleep(100);

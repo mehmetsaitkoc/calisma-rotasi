@@ -5,22 +5,54 @@ const CONTRACT_VERSION=1;
 const BACKUP_SCHEMA='calisma-rotasi-backup';
 const BACKUP_VERSION=2;
 const WORKSPACE_SCHEMA_VERSION=3;
+const ENTITLEMENT_SCHEMA='calisma-rotasi-entitlement-v1';
+const ENTITLEMENT_VERSION=1;
 
 const FEATURE_FLAGS=Object.freeze({
-  core_route:{free:true,plus:true},
-  mini_exams:{free:true,plus:true},
-  exam_wrong_repair:{free:true,plus:true},
-  mistake_notebook:{free:true,plus:true},
-  basic_analysis:{free:true,plus:true},
-  backup_export:{free:true,plus:true},
-  monthly_report:{free:false,plus:true},
-  long_term_trends:{free:false,plus:true},
-  advanced_teacher_insights:{free:false,plus:true}
+  core_route:Object.freeze({free:true,plus:true}),
+  mini_exams:Object.freeze({free:true,plus:true}),
+  exam_wrong_repair:Object.freeze({free:true,plus:true}),
+  mistake_notebook:Object.freeze({free:true,plus:true}),
+  basic_analysis:Object.freeze({free:true,plus:true}),
+  backup_export:Object.freeze({free:true,plus:true}),
+  teacher_basic:Object.freeze({free:true,plus:true}),
+  monthly_report:Object.freeze({free:false,plus:true}),
+  long_term_trends:Object.freeze({free:false,plus:true}),
+  advanced_teacher_insights:Object.freeze({free:false,plus:true})
 });
+function normalizeTier(tier){return tier==='plus'?'plus':'free';}
 function featureEnabled(tier,key){
   const rule=FEATURE_FLAGS[key];
   if(!rule)return false;
-  return !!rule[tier==='plus'?'plus':'free'];
+  return !!rule[normalizeTier(tier)];
+}
+function featureSet(tier){
+  const normalized=normalizeTier(tier),out={};
+  for(const key of Object.keys(FEATURE_FLAGS))out[key]=!!FEATURE_FLAGS[key][normalized];
+  return Object.freeze(out);
+}
+function entitlementForTier(tier,meta={}){
+  const normalized=normalizeTier(tier);
+  return Object.freeze({
+    schema:ENTITLEMENT_SCHEMA,
+    version:ENTITLEMENT_VERSION,
+    tier:normalized,
+    source:collapse(meta.source||'public_beta',80),
+    status:collapse(meta.status||(normalized==='plus'?'active':'free'),40),
+    purchaseEnabled:meta.purchaseEnabled===true,
+    accountRequired:meta.accountRequired!==false,
+    features:featureSet(normalized)
+  });
+}
+function validateEntitlement(value){
+  if(!value||value.schema!==ENTITLEMENT_SCHEMA||Number(value.version)!==ENTITLEMENT_VERSION)throw new Error('Üyelik yetkisi doğrulanamadı.');
+  if(!['free','plus'].includes(value.tier))throw new Error('Üyelik seviyesi geçersiz.');
+  return entitlementForTier(value.tier,{
+    source:value.source,
+    status:value.status,
+    purchaseEnabled:value.purchaseEnabled===true,
+    accountRequired:value.accountRequired!==false
+  });
 }
 
 const MODE_COPY=Object.freeze({
@@ -175,8 +207,14 @@ root.RotaContracts={
   BACKUP_SCHEMA,
   BACKUP_VERSION,
   WORKSPACE_SCHEMA_VERSION,
+  ENTITLEMENT_SCHEMA,
+  ENTITLEMENT_VERSION,
   FEATURE_FLAGS,
+  normalizeTier,
   featureEnabled,
+  featureSet,
+  entitlementForTier,
+  validateEntitlement,
   MODE_COPY,
   SOURCE_REASON,
   studentText,

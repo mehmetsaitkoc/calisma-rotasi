@@ -516,6 +516,7 @@ try {
   const pageErrors = [];
   const consoleErrors = [];
   let teacherRequest = null;
+  let entitlementOverride = null;
 
   page.on('pageerror', e => pageErrors.push(String(e?.stack || e)));
   page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
@@ -527,6 +528,14 @@ try {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ ok: true, aiConfigured: true, ttsConfigured: false, model: 'e2e-model', profile: 'economy', demoFallback: true })
+    });
+  });
+  await page.route('**/api/entitlements', async route => {
+    if (!entitlementOverride) return route.continue();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(entitlementOverride)
     });
   });
   await page.route('**/api/teacher', async route => {
@@ -577,9 +586,31 @@ try {
     repair: window.RotaContracts.featureEnabled('free','exam_wrong_repair'),
     mistakes: window.RotaContracts.featureEnabled('free','mistake_notebook'),
     basic: window.RotaContracts.featureEnabled('free','basic_analysis'),
-    report: window.RotaContracts.featureEnabled('free','monthly_report')
+    teacher: window.RotaContracts.featureEnabled('free','teacher_basic'),
+    report: window.RotaContracts.featureEnabled('free','monthly_report'),
+    advancedTeacher: window.RotaContracts.featureEnabled('free','advanced_teacher_insights')
   }));
-  assert.deepEqual(freeFlags,{core:true,mini:true,repair:true,mistakes:true,basic:true,report:false},'Free tier must keep the complete core learning loop and gate only advanced reporting');
+  assert.deepEqual(freeFlags,{core:true,mini:true,repair:true,mistakes:true,basic:true,teacher:true,report:false,advancedTeacher:false},'Free tier must keep the complete core learning loop while gating advanced reporting and teacher continuations');
+
+  const runtimeEntitlement = await page.evaluate(async () => {
+    const response=await fetch('/api/entitlements',{cache:'no-store'});
+    return {status:response.status,body:await response.json()};
+  });
+  assert.equal(runtimeEntitlement.status,200,'Browser runtime must expose the entitlement endpoint');
+  assert.equal(runtimeEntitlement.body.schema,'calisma-rotasi-entitlement-v1');
+  assert.equal(runtimeEntitlement.body.tier,'free','Default local browser E2E must fail closed to Free');
+  assert.equal(runtimeEntitlement.body.source,'local_dev');
+  assert.equal(runtimeEntitlement.body.features.core_route,true);
+  assert.equal(runtimeEntitlement.body.features.teacher_basic,true);
+  assert.equal(runtimeEntitlement.body.features.monthly_report,false);
+  assert.equal(runtimeEntitlement.body.features.advanced_teacher_insights,false);
+  assert.equal(await page.locator('[data-action="paid-tier"]').count(),0,'Production UI must not expose a browser-controlled Free/Plus tier toggle');
+
+  await navigate(page,'report');
+  await page.getByRole('heading',{name:'Aylık raporum'}).waitFor({state:'visible'});
+  assert.ok(await page.locator('.plus-gate').isVisible(),'Free runtime must render the Plus gate instead of the monthly report');
+  assert.ok(await page.getByText('PLUS İLE AÇILIR',{exact:false}).count(),'Monthly report gate must explain that the surface requires Plus');
+  await navigate(page,'today');
   const renderPerf = await page.evaluate(() => window.__rotaRenderPerf ? { ...window.__rotaRenderPerf } : null);
   assert.ok(renderPerf, 'Route render diagnostics must be exposed');
   assert.ok(Number.isFinite(renderPerf.lastRenderMs) && renderPerf.lastRenderMs >= 0, 'Route render duration must be measurable');
@@ -770,6 +801,13 @@ try {
   await page.locator('#teacher-question').fill('Bugünkü görevlerimi neden bu şekilde seçtin?');
   await page.locator('#teacher-form button[type="submit"]').click();
   await page.locator('#teacher-avatar-quote').filter({ hasText: 'E2E Rota Hoca cevabı' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('[data-action="teacher-followup"]').count(),0,'Free Rota Hoca must not expose advanced continuation calls');
+  const plusContinuation=page.getByText('Gelişmiş devamlar Plus',{exact:true});
+  await plusContinuation.waitFor({state:'visible'});
+  await plusContinuation.click();
+  await page.getByText('Bir adım ötesi Rota Plus’ta.',{exact:true}).waitFor({state:'visible'});
+  assert.ok(await page.getByText(/yalnız doğrulanmış üyelikle açılır/i).count(),'Plus teacher gate must explain verified membership access in user language');
+  await page.locator('[data-action="close-modal"]').click();
 
   assert.ok(teacherRequest, 'Rota Hoca request must reach the backend boundary');
   assert.ok(teacherRequest.studentContext?.todayPlan, 'Rota Hoca must receive todayPlan');
@@ -880,6 +918,77 @@ try {
   assert.deepEqual(pageErrors, [], 'Browser page errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Browser console errors:\n' + consoleErrors.join('\n'));
 
+  // Plus report contract: the browser must only unlock premium reporting after a server-shaped entitlement response.
+  entitlementOverride = {
+    schema: 'calisma-rotasi-entitlement-v1',
+    version: 1,
+    tier: 'plus',
+    source: 'local_dev',
+    status: 'dev_plus',
+    purchaseEnabled: false,
+    accountRequired: true,
+    features: {
+      core_route: true,
+      mini_exams: true,
+      exam_wrong_repair: true,
+      mistake_notebook: true,
+      basic_analysis: true,
+      backup_export: true,
+      teacher_basic: true,
+      monthly_report: true,
+      long_term_trends: true,
+      advanced_teacher_insights: true
+    }
+  };
+  await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  await page.locator('#app').waitFor({ state: 'visible' });
+  await page.locator('.topbar-upgrade.is-plus').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('[data-action="paid-tier"]').count(), 0, 'Plus entitlement must not reintroduce a browser tier switch');
+  assert.ok(await page.evaluate(() => !!window.RotaReportAnalytics), 'Plus report analytics module must be available in the real browser');
+
+  await navigate(page, 'report');
+  await page.getByRole('heading', { name: 'Aylık raporum' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.plus-gate').count(), 0, 'Server-authorized Plus must remove the monthly report gate');
+  await page.locator('.report-premium-hero').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.report-kpi').count(), 4, 'Premium monthly report must expose four evidence KPIs');
+  assert.ok(await page.locator('.report-week-bars').isVisible(), 'Premium monthly report must expose within-month rhythm');
+  assert.ok(await page.getByText(/öğrenme başarısı skoru üretmez/i).count(), 'Monthly report must preserve evidence-safe language');
+  await assertCleanRender(page, 'Plus premium monthly report');
+
+  const trendTab = page.locator('[data-action="report-tab"][data-report-tab="trend"]');
+  await trendTab.click();
+  await page.getByRole('heading', { name: '6 aylık trendler' }).waitFor({ state: 'visible' });
+  await page.locator('.report-trend-bars').waitFor({ state: 'visible' });
+  await page.locator('.report-plan-trend').waitFor({ state: 'visible' });
+  await page.locator('.report-coverage').waitFor({ state: 'visible' });
+  assert.ok(await page.getByText(/Net yolculuğu · türler ayrı/i).count(), 'Long-term report must keep exam types separate');
+  assert.ok(await page.getByText(/tek başına öğrenme veya başarı artışını kanıtlamaz/i).count(), 'Long-term report must not overclaim learning effects');
+  await assertCleanRender(page, 'Plus six-month trend report');
+  const plusVisibleCopy=(await page.locator('body').innerText()).toLocaleLowerCase('tr-TR');
+  assert.ok(!/entitlement kaynağı|server entitlement|fail-closed|yetki servisi|sunucu tarafından|free yetkisi|plus yetkisi/.test(plusVisibleCopy),'Plus user-facing copy must not expose technical access jargon');
+
+  // Empty-data Plus audit: select a period with no study records and verify honest zero-state rendering.
+  await page.locator('[data-action="report-tab"][data-report-tab="month"]').click();
+  const emptyMonthInput=page.locator('#report-month');
+  await emptyMonthInput.fill('2025-01');
+  await emptyMonthInput.dispatchEvent('change');
+  await page.getByRole('heading',{name:'Aylık raporum'}).waitFor({state:'visible'});
+  assert.ok(await page.getByText('Bu ay ders kaydı yok.',{exact:true}).count(),'Empty monthly Plus report must explain missing subject data');
+  assert.ok(await page.getByText('Bu ay deneme kaydı yok.',{exact:true}).count(),'Empty monthly Plus report must explain missing exam data');
+  assert.equal(await page.locator('.report-week-col.is-empty').count(),4,'Every empty monthly week must be rendered as explicitly empty');
+  const weeklyZeroBars=await page.locator('.report-week-col.is-empty .report-week-track i').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('style')||''));
+  assert.ok(weeklyZeroBars.every(style=>/height:\s*0%/.test(style)),'Empty monthly weeks must not draw a fake activity bar');
+  await assertCleanRender(page,'Plus empty monthly report');
+
+  await page.locator('[data-action="report-tab"][data-report-tab="trend"]').click();
+  await page.getByRole('heading',{name:'6 aylık trendler'}).waitFor({state:'visible'});
+  assert.equal(await page.locator('.report-trend-col.is-empty').count(),6,'Every empty long-term month must be rendered as explicitly empty');
+  const trendZeroBars=await page.locator('.report-trend-col.is-empty .report-trend-track i').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('style')||''));
+  assert.ok(trendZeroBars.every(style=>/height:\s*0%/.test(style)),'Empty long-term months must not draw a fake activity bar');
+  assert.ok(await page.getByText('Bu 6 aylık dönemde ders kaydı yok.',{exact:true}).count(),'Empty long-term Plus report must use six-month wording');
+  assert.ok(await page.getByText('Bu dönemde deneme yok.',{exact:true}).count(),'Empty long-term Plus report must explain missing exam evidence');
+  await assertCleanRender(page,'Plus empty six-month report');
+
   // Desktop/YKS hardening: exercise the longer SAY onboarding path in a separate storage context.
   const desktopContext = await browser.newContext({
     viewport: { width: 1280, height: 900 },
@@ -920,7 +1029,7 @@ try {
   await runMiniRepairProvenance(browser);
   await runLargePlanRenderPerf(browser);
 
-  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
+  console.log('Browser E2E passed: Free entitlement gates + polished mobile Plus reports + honest empty states + KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

@@ -3,11 +3,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+await import('./public/route-contracts.js');
+const PRODUCT_CONTRACTS = globalThis.RotaContracts;
+if(!PRODUCT_CONTRACTS) throw new Error('RotaContracts product policy could not be loaded.');
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, 'public');
 const INDEX = path.join(PUBLIC, 'index.html');
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
+const IS_RENDER = process.env.RENDER === 'true';
 const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/,'');
 let runtimeApiKey = process.env.OPENAI_API_KEY || '';
 const requestedProfile = ['best','balanced','economy'].includes(process.env.ROTA_AI_PROFILE) ? process.env.ROTA_AI_PROFILE : 'economy';
@@ -32,18 +37,43 @@ const PROFILE_MODELS = {
   economy:['gpt-5.6-luna']
 };
 
+function runtimeTier(){
+  if(IS_RENDER) return 'free';
+  return PRODUCT_CONTRACTS.normalizeTier(process.env.ROTA_DEV_TIER || 'free');
+}
+function runtimeEntitlement(){
+  const tier=runtimeTier();
+  return PRODUCT_CONTRACTS.entitlementForTier(tier,{
+    source:IS_RENDER?'public_beta':'local_dev',
+    status:tier==='plus'?'dev_plus':'free',
+    purchaseEnabled:false,
+    accountRequired:true
+  });
+}
+function requireRuntimeFeature(feature){
+  const entitlement=runtimeEntitlement();
+  if(!PRODUCT_CONTRACTS.featureEnabled(entitlement.tier,feature)){
+    throw Object.assign(new Error('Bu özellik Rota Plus gerektiriyor.'),{
+      status:403,
+      code:'PLUS_REQUIRED',
+      feature
+    });
+  }
+  return entitlement;
+}
+
 function json(res, status, value) {
   const body = JSON.stringify(value);
   res.writeHead(status, {'content-type':'application/json; charset=utf-8','content-length':Buffer.byteLength(body),'cache-control':'no-store'});
   res.end(body);
 }
 function isLocalRequest(req) {
-  if (process.env.RENDER === 'true') return false;
+  if (IS_RENDER) return false;
   const ip = req.socket.remoteAddress || '';
   return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
 }
 function clientIp(req) {
-  const forwarded = process.env.RENDER === 'true'
+  const forwarded = IS_RENDER
     ? String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()
     : '';
   return forwarded || req.socket.remoteAddress || 'local';
@@ -227,13 +257,15 @@ async function callTeacher(body){
   const question = cleanText(body.question, 5000).trim();
   const photo = safePhoto(body.photo);
   const context = cleanTeacherContext(body.studentContext);
+  const mode = ['base','simple','alternate','similar','review'].includes(body.mode) ? body.mode : 'base';
   if(!question && !photo) throw Object.assign(new Error('Sorunu yaz veya fotoğraf ekle.'),{status:400});
-  if (!runtimeApiKey) return {answer:demoTeacherAnswer({...body,question,photo},'not_configured'),model:'unavailable',responseId:'',usage:null,demo:true,demoReason:'Gerçek AI bağlantısı yapılandırılmamış.',meta:{mode:'unavailable',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,contextVersion:context.contextVersion}};
+  const entitlement=requireRuntimeFeature('teacher_basic');
+  if(mode!=='base') requireRuntimeFeature('advanced_teacher_insights');
+  if (!runtimeApiKey) return {answer:demoTeacherAnswer({...body,question,photo},'not_configured'),model:'unavailable',responseId:'',usage:null,demo:true,demoReason:'Gerçek AI bağlantısı yapılandırılmamış.',meta:{mode:'unavailable',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,contextVersion:context.contextVersion,tier:entitlement.tier}};
   const exam = cleanText(body.exam, 50) || 'Belirtilmedi';
   const track = cleanText(body.track, 100);
   const subject = cleanText(body.subject, 140);
   const topic = cleanText(body.topic, 200);
-  const mode = ['base','simple','alternate','similar','review'].includes(body.mode) ? body.mode : 'base';
   const previous = body.previousAnswer && typeof body.previousAnswer === 'object' ? body.previousAnswer : null;
   const contextText = JSON.stringify(context).slice(0,11000);
   const previousText = previous ? JSON.stringify(previous).slice(0,8000) : '';
@@ -329,7 +361,8 @@ const server=http.createServer(async (req,res)=>{
   res.setHeader('x-content-type-options','nosniff');
   res.setHeader('referrer-policy','no-referrer');
   res.setHeader('x-frame-options','SAMEORIGIN');
-  if(req.method==='GET'&&req.url==='/api/health'){ const local=isLocalRequest(req); return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:false,honestUnavailableFallback:true,teacherPolicy:{rateLimitPerMinute:TEACHER_RATE_LIMIT,windowMs:RATE_WINDOW_MS,maxBodyBytes:MAX_BODY,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,costProfile:runtimeProfile,contextSchemaVersion:TEACHER_CONTEXT_VERSION},configurable:local&&!runtimeApiKey,deploy:{provider:process.env.RENDER==='true'?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }
+  if(req.method==='GET'&&req.url==='/api/health'){ const local=isLocalRequest(req),entitlement=runtimeEntitlement(); return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:false,honestUnavailableFallback:true,entitlement:{tier:entitlement.tier,source:entitlement.source,purchaseEnabled:entitlement.purchaseEnabled,accountRequired:entitlement.accountRequired},teacherPolicy:{rateLimitPerMinute:TEACHER_RATE_LIMIT,windowMs:RATE_WINDOW_MS,maxBodyBytes:MAX_BODY,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,costProfile:runtimeProfile,contextSchemaVersion:TEACHER_CONTEXT_VERSION},configurable:local&&!runtimeApiKey,deploy:{provider:IS_RENDER?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }
+  if(req.method==='GET'&&req.url==='/api/entitlements'){ return json(res,200,runtimeEntitlement()); }
 
   if(req.method==='POST'&&req.url==='/api/configure'){
     if(!isLocalRequest(req)) return json(res,403,{error:'AI anahtarı yalnızca yerel uygulama çalıştırmasında bağlanabilir.'});
@@ -353,7 +386,7 @@ const server=http.createServer(async (req,res)=>{
   }
   if(req.method==='POST'&&req.url==='/api/teacher'){
     if(!rateLimit(req,'teacher',TEACHER_RATE_LIMIT,RATE_WINDOW_MS)) return json(res,429,{error:'Çok hızlı istek gönderildi. Biraz sonra tekrar dene.',code:'RATE_LIMITED',retryAfterSeconds:60});
-    try{const body=await readJson(req);const out=await callTeacher(body);return json(res,200,out);}catch(e){return json(res,e.status||500,{error:e.message||'Rota Hoca isteği başarısız.'});}
+    try{const body=await readJson(req);const out=await callTeacher(body);return json(res,200,out);}catch(e){return json(res,e.status||500,{error:e.message||'Rota Hoca isteği başarısız.',...(e.code?{code:e.code}:{}),...(e.feature?{feature:e.feature}:{})});}
   }
   if(req.method==='POST'&&req.url==='/api/tts'){
     if(!rateLimit(req,'tts',TTS_RATE_LIMIT,RATE_WINDOW_MS)) return json(res,429,{error:'Ses istek limiti aşıldı.',code:'RATE_LIMITED',retryAfterSeconds:60});

@@ -1939,7 +1939,7 @@ for(const marker of [
   const catalogJs=externalCatalogJs;
   assert.ok(catalogJs.includes('root.RotaCatalog='),'External catalog module missing');
   const env={};new Function('window','globalThis',catalogJs)(env,env);
-  const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition'),data=new Function(src+';return ROTA_MINI_EXAMS;')();
+  const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition'),data=new Function('window',src+';return ROTA_MINI_EXAMS;')({RotaKpssPractice:kpssPracticeCatalog});
   for(const mini of data){
     const subject=env.RotaCatalog.subjects.find(s=>s.id===mini.subjectId);
     assert.ok(subject,'Mini subject missing from catalog: '+mini.id);

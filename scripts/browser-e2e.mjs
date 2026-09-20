@@ -406,6 +406,93 @@ async function runMiniRepairProvenance(browser) {
   await context.close();
 }
 
+
+async function runLargePlanRenderPerf(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
+  });
+  const page = await context.newPage();
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', e => pageErrors.push(String(e?.stack || e)));
+  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+
+  await page.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
+  await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await submitWizard(page);
+
+  const seeded = await page.evaluate(fixedDay => {
+    let selected = null;
+    for (const [key, raw] of Object.entries(localStorage)) {
+      try {
+        const value = JSON.parse(raw);
+        if (value?.workspaces?.kpss && value?.workspaces?.yks) { selected = { key, value }; break; }
+      } catch {}
+    }
+    if (!selected) throw new Error('Perf fixture application state missing');
+    const space = selected.value.workspaces.kpss;
+    const base = space.plan.find(p => p.subjectId && p.topicId) || space.plan[0];
+    if (!base) throw new Error('Perf fixture requires one real route task');
+    const dayAdd = (date, days) => {
+      const d = new Date(date + 'T12:00:00Z');
+      d.setUTCDate(d.getUTCDate() + days);
+      return d.toISOString().slice(0, 10);
+    };
+    const beforePlan = space.plan.length, beforeLogs = space.logs.length;
+    for (let i = 0; i < 600; i++) {
+      const date = dayAdd(fixedDay, -1 - (i % 180));
+      const id = 'perf-history-' + i;
+      space.plan.push({
+        id,date,subjectId:base.subjectId,topicId:base.topicId,
+        title:'Perf geçmiş görevi '+i,minutes:25,done:true,kind:'route',
+        source:'curriculum',priority:30,reason:'Geçmiş çalışma kaydı.',
+        taskState:'open',targetQuestions:10,taskGoal:'10 soru ile kısa tekrar'
+      });
+      space.logs.push({
+        id:'perf-log-'+i,date,subjectId:base.subjectId,title:'Perf geçmiş kaydı '+i,
+        minutes:25,questions:10,correct:8,wrong:2,note:'',sessionId:id,
+        outcome:'ok',created:i+1,updated:i+1
+      });
+    }
+    localStorage.setItem(selected.key, JSON.stringify(selected.value));
+    return { beforePlan, beforeLogs, afterPlan:space.plan.length, afterLogs:space.logs.length };
+  }, FIXED_DAY);
+  assert.equal(seeded.afterPlan-seeded.beforePlan,600,'Perf fixture must add a large plan history');
+  assert.equal(seeded.afterLogs-seeded.beforeLogs,600,'Perf fixture must add a large log history');
+
+  await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  await page.locator('#app').waitFor({ state: 'visible' });
+  await navigate(page, 'today');
+  await page.getByRole('heading', { name: 'Bugünkü Rotan' }).waitFor({ state: 'visible' });
+  const todayPerf = await page.evaluate(() => ({ sample:window.__rotaRenderPerf?.recent?.at(-1), perf:window.__rotaRenderPerf ? { ...window.__rotaRenderPerf } : null }));
+  assert.ok(todayPerf.sample && todayPerf.sample.view==='today','Large-history Today render must be measured');
+  assert.ok(todayPerf.sample.planIndexBuilds<=1,'Large-history Today must build the plan date index at most once');
+  assert.ok(todayPerf.sample.decisionComputes<=todayPerf.sample.taskNodes+50,'Large-history Today must not explode applied-decision recomputation');
+  assert.ok(todayPerf.sample.reasonCalls<=todayPerf.sample.taskNodes+50,'Large-history Today must keep reason generation bounded to visible work');
+  assert.ok(Number.isFinite(todayPerf.sample.ms)&&todayPerf.sample.ms<5000,'Large-history Today render must remain bounded');
+
+  await navigate(page, 'plan');
+  await page.getByRole('heading', { name: 'Programım' }).waitFor({ state: 'visible' });
+  const planPerf = await page.evaluate(() => ({ sample:window.__rotaRenderPerf?.recent?.at(-1), perf:window.__rotaRenderPerf ? { ...window.__rotaRenderPerf } : null }));
+  assert.ok(planPerf.sample && planPerf.sample.view==='plan','Large-history Programım render must be measured');
+  assert.ok(planPerf.sample.planIndexBuilds<=1,'Large-history Programım must build the plan date index at most once');
+  assert.ok(planPerf.sample.decisionComputes<=planPerf.sample.taskNodes+50,'Large-history Programım must not explode applied-decision recomputation');
+  assert.ok(planPerf.sample.reasonCalls<=planPerf.sample.taskNodes+50,'Large-history Programım must keep reason generation bounded to visible work');
+  assert.ok(Number.isFinite(planPerf.sample.ms)&&planPerf.sample.ms<5000,'Large-history Programım render must remain bounded');
+  assert.ok(planPerf.perf.recent.length<=30,'Render performance history must stay bounded after large-history navigation');
+  assert.ok(planPerf.perf.byView.today?.renders>=1&&planPerf.perf.byView.plan?.renders>=1,'Per-view diagnostics must retain Today and Programım measurements');
+
+  const persisted = await appState(page);
+  assert.ok(persisted.value.workspaces.kpss.plan.length>=seeded.afterPlan,'Large plan history must survive reload without silent truncation');
+  assert.ok(persisted.value.workspaces.kpss.logs.length>=seeded.afterLogs,'Large log history must survive reload without silent truncation');
+  await assertCleanRender(page, 'large plan/log performance fixture');
+  assert.deepEqual(pageErrors, [], 'Large-history page errors:\n' + pageErrors.join('\n'));
+  assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Large-history console errors:\n' + consoleErrors.join('\n'));
+  await context.close();
+}
+
 const server = spawn(process.execPath, ['server.mjs'], {
   cwd: process.cwd(),
   env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', OPENAI_API_KEY: '' },
@@ -830,8 +917,9 @@ try {
 
   await runRestDayInitialRouteVisibility(browser);
   await runMiniRepairProvenance(browser);
+  await runLargePlanRenderPerf(browser);
 
-  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day initial route visibility + mini repair provenance');
+  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

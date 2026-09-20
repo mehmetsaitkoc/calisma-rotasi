@@ -209,6 +209,90 @@ async function settleTaskOnScheduledDay(page, findTask, label) {
   return lastTask;
 }
 
+async function fillAdaptiveWizardStep(page, exam) {
+  const form = page.locator('#setup-wizard-form');
+  await form.waitFor({ state: 'visible' });
+
+  const name = form.locator('[name="name"]');
+  if (await name.count()) await name.fill(exam === 'yks' ? 'YKS E2E Öğrenci' : 'E2E Öğrenci');
+
+  const track = form.locator('select[name="track"]');
+  if (await track.count()) await track.selectOption('say');
+
+  const habit = form.locator('[name="studyHabit"][value="yes"]');
+  if (await habit.count()) await habit.check();
+
+  const currentNet = form.locator('[name="currentNet"]');
+  if (await currentNet.count()) await currentNet.fill(exam === 'yks' ? '58' : '48');
+
+  const targetNet = form.locator('[name="targetNet"]');
+  if (await targetNet.count()) await targetNet.fill(exam === 'yks' ? '92' : '82');
+
+  const targetScore = form.locator('[name="targetScore"]');
+  if (await targetScore.count()) await targetScore.fill('88');
+
+  const targetRank = form.locator('[name="targetRank"]');
+  if (await targetRank.count()) await targetRank.fill('30000');
+
+  const target = form.locator('[name="target"]');
+  if (await target.count()) await target.fill(exam === 'yks' ? 'Sayısal hedef rotası' : 'E2E kişisel rota');
+
+  const minuteSelect = form.locator('select[name="dailyMinutes"]');
+  if (await minuteSelect.count()) {
+    await minuteSelect.selectOption('240');
+  } else {
+    const minuteRadio = form.locator('[name="dailyMinutes"][value="240"]');
+    if (await minuteRadio.count()) await minuteRadio.check();
+  }
+
+  const days = form.locator('[name="days"]');
+  for (let i = 0; i < await days.count(); i++) {
+    const box = days.nth(i);
+    if (!(await box.isChecked())) {
+      const label = box.locator('xpath=ancestor::label[1]');
+      if (await label.count()) await label.click();
+      else await box.check({ force: true });
+    }
+  }
+
+  const levelSelects = form.locator('select[name^="level:"]');
+  for (let i = 0; i < await levelSelects.count(); i++) {
+    const select = levelSelects.nth(i);
+    const values = await select.locator('option').evaluateAll(opts => opts.map(o => o.value).filter(Boolean));
+    if (values.length) await select.selectOption(i === 0 ? values[0] : values[Math.min(2, values.length - 1)]);
+  }
+
+  const numberInputs = form.locator('input[type="number"][name]');
+  for (let i = 0; i < await numberInputs.count(); i++) {
+    const input = numberInputs.nth(i);
+    if (await input.inputValue()) continue;
+    const field = (await input.getAttribute('name')) || '';
+    const value = /rank/i.test(field) ? '30000'
+      : /stage|field|ayt|ydt/i.test(field) ? (/target/i.test(field) ? '52' : '28')
+      : /target/i.test(field) ? '80'
+      : '40';
+    await input.fill(value);
+  }
+
+  await form.locator('button[type="submit"]').click();
+}
+
+async function submitYksWizard(page) {
+  await page.locator('[data-action="choose-exam"][data-exam="yks"]').click();
+
+  for (let step = 0; step < 14; step++) {
+    const build = page.locator('[data-action="summary-build"]');
+    if (await build.count() && await build.isVisible()) break;
+    await fillAdaptiveWizardStep(page, 'yks');
+  }
+
+  const build = page.locator('[data-action="summary-build"]');
+  await build.waitFor({ state: 'visible' });
+  await build.click();
+  await page.clock.fastForward(5000);
+  await page.locator('.route-task').first().waitFor({ state: 'visible' });
+}
+
 const server = spawn(process.execPath, ['server.mjs'], {
   cwd: process.cwd(),
   env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', OPENAI_API_KEY: '' },
@@ -493,7 +577,43 @@ try {
   assert.deepEqual(pageErrors, [], 'Browser page errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Browser console errors:\n' + consoleErrors.join('\n'));
 
-  console.log('Browser E2E passed: onboarding → today → completion → exam → wrong repair → 3/7 → Rota Hoca');
+  // Desktop/YKS hardening: exercise the longer SAY onboarding path in a separate storage context.
+  const desktopContext = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
+  });
+  const desktopPage = await desktopContext.newPage();
+  const desktopErrors = [];
+  const desktopConsoleErrors = [];
+  desktopPage.on('pageerror', e => desktopErrors.push(String(e?.stack || e)));
+  desktopPage.on('console', msg => { if (msg.type() === 'error') desktopConsoleErrors.push(msg.text()); });
+  await desktopPage.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
+  await desktopPage.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await submitYksWizard(desktopPage);
+  await assertCleanRender(desktopPage, 'YKS desktop onboarding');
+
+  const desktopSnapshot = await appState(desktopPage);
+  const yksSpace = desktopSnapshot.value.workspaces.yks;
+  assert.equal(desktopSnapshot.value.activeExam, 'yks', 'YKS desktop onboarding must keep YKS active');
+  assert.equal(yksSpace.configured, true, 'YKS workspace must be configured');
+  assert.equal(yksSpace.settings.track, 'say', 'YKS desktop fixture must preserve SAY track');
+  assert.equal(yksSpace.profile.completed, true, 'YKS profile must be completed');
+  assert.equal(yksSpace.profile.currentNet, 58, 'YKS TYT current net must be stored');
+  assert.equal(yksSpace.profile.targetNet, 92, 'YKS TYT target net must be stored');
+  assert.ok(Number.isFinite(yksSpace.profile.currentStageNet), 'SAY onboarding must store current AYT net');
+  assert.ok(Number(yksSpace.profile.targetStageNet) > Number(yksSpace.profile.currentStageNet), 'SAY onboarding must store a higher AYT target');
+  assert.ok(yksSpace.plan.length > 0, 'YKS onboarding must generate a plan');
+  assert.ok(new Set(yksSpace.plan.map(p => p.subjectId)).size >= 2, 'YKS plan must include more than one subject');
+  assert.ok(await desktopPage.locator('.sidebar').isVisible(), 'Desktop must show the sidebar');
+  if (await desktopPage.locator('.mobile-dock').count()) {
+    assert.equal(await desktopPage.locator('.mobile-dock').isVisible(), false, 'Desktop must hide the mobile dock');
+  }
+  assert.deepEqual(desktopErrors, [], 'YKS desktop page errors:\n' + desktopErrors.join('\n'));
+  assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'YKS desktop console errors:\n' + desktopConsoleErrors.join('\n'));
+  await desktopContext.close();
+
+  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

@@ -88,6 +88,7 @@ async function assertTodayContract(page) {
   const topic = (await card.locator('h3').first().innerText()).trim();
   const meta = await card.locator('.route-task-meta').innerText();
   const reason = (await card.locator('.route-task-reason').innerText()).trim();
+  const modeExplain = (await card.locator('.route-mode-explain').innerText()).trim();
   assert.ok(subject, 'Today task must show a lesson/subject');
   assert.ok(topic, 'Today task must show a topic/title');
   assert.match(meta, /\d+\s*dk/, 'Today task must show minutes');
@@ -95,6 +96,8 @@ async function assertTodayContract(page) {
   assert.ok(allMeta.some(x => /≈\s*\d+\s*soru/i.test(x)), 'Today must show a question target on a planned practice task');
   assert.match(meta, /Neden bugün\?/i, 'Today task must expose why it is scheduled today');
   assert.ok(reason, 'Today task must render its route reason');
+  assert.ok(modeExplain, 'Today task must explain its route mode in student language');
+  assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(reason + ' ' + modeExplain), 'Technical route jargon must not leak into Today');
 
   for (const label of ['Başla', 'Tamamla', 'Daha sonra', 'Atla']) {
     assert.ok(await card.getByText(label, { exact: true }).count(), 'Today task must expose action: ' + label);
@@ -209,6 +212,147 @@ async function settleTaskOnScheduledDay(page, findTask, label) {
   return lastTask;
 }
 
+async function fillAdaptiveWizardStep(page, exam) {
+  const form = page.locator('#setup-wizard-form');
+  await form.waitFor({ state: 'visible' });
+
+  const name = form.locator('[name="name"]');
+  if (await name.count()) await name.fill(exam === 'yks' ? 'YKS E2E Öğrenci' : 'E2E Öğrenci');
+
+  const track = form.locator('select[name="track"]');
+  if (await track.count()) await track.selectOption('say');
+
+  const habit = form.locator('[name="studyHabit"][value="yes"]');
+  if (await habit.count()) await habit.check();
+
+  const currentNet = form.locator('[name="currentNet"]');
+  if (await currentNet.count()) await currentNet.fill(exam === 'yks' ? '58' : '48');
+
+  const targetNet = form.locator('[name="targetNet"]');
+  if (await targetNet.count()) await targetNet.fill(exam === 'yks' ? '92' : '82');
+
+  const targetScore = form.locator('[name="targetScore"]');
+  if (await targetScore.count()) await targetScore.fill('88');
+
+  const targetRank = form.locator('[name="targetRank"]');
+  if (await targetRank.count()) await targetRank.fill('30000');
+
+  const target = form.locator('[name="target"]');
+  if (await target.count()) await target.fill(exam === 'yks' ? 'Sayısal hedef rotası' : 'E2E kişisel rota');
+
+  const minuteSelect = form.locator('select[name="dailyMinutes"]');
+  if (await minuteSelect.count()) {
+    await minuteSelect.selectOption('240');
+  } else {
+    const minuteRadio = form.locator('[name="dailyMinutes"][value="240"]');
+    if (await minuteRadio.count()) await minuteRadio.check();
+  }
+
+  const days = form.locator('[name="days"]');
+  for (let i = 0; i < await days.count(); i++) {
+    const box = days.nth(i);
+    if (!(await box.isChecked())) {
+      const label = box.locator('xpath=ancestor::label[1]');
+      if (await label.count()) await label.click();
+      else await box.check({ force: true });
+    }
+  }
+
+  const levelSelects = form.locator('select[name^="level:"]');
+  for (let i = 0; i < await levelSelects.count(); i++) {
+    const select = levelSelects.nth(i);
+    const values = await select.locator('option').evaluateAll(opts => opts.map(o => o.value).filter(Boolean));
+    if (values.length) await select.selectOption(i === 0 ? values[0] : values[Math.min(2, values.length - 1)]);
+  }
+
+  const numberInputs = form.locator('input[type="number"][name]');
+  for (let i = 0; i < await numberInputs.count(); i++) {
+    const input = numberInputs.nth(i);
+    if (await input.inputValue()) continue;
+    const field = (await input.getAttribute('name')) || '';
+    const value = /rank/i.test(field) ? '30000'
+      : /stage|field|ayt|ydt/i.test(field) ? (/target/i.test(field) ? '52' : '28')
+      : /target/i.test(field) ? '80'
+      : '40';
+    await input.fill(value);
+  }
+
+  await form.locator('button[type="submit"]').click();
+}
+
+async function submitYksWizard(page) {
+  await page.locator('[data-action="choose-exam"][data-exam="yks"]').click();
+
+  for (let step = 0; step < 14; step++) {
+    const build = page.locator('[data-action="summary-build"]');
+    if (await build.count() && await build.isVisible()) break;
+    await fillAdaptiveWizardStep(page, 'yks');
+  }
+
+  const build = page.locator('[data-action="summary-build"]');
+  await build.waitFor({ state: 'visible' });
+  await build.click();
+  await page.clock.fastForward(5000);
+  await page.locator('.route-task').first().waitFor({ state: 'visible' });
+}
+
+async function runMiniRepairProvenance(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 360, height: 800 },
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
+  });
+  const page = await context.newPage();
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', e => pageErrors.push(String(e?.stack || e)));
+  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+
+  await page.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
+  await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await submitWizard(page);
+
+  const runBlankMini = async date => {
+    await page.clock.setFixedTime(new Date(date + 'T09:00:00+03:00'));
+    await navigate(page, 'exams');
+    const start = page.locator('[data-action="start-mini-exam"][data-id="kpss-problemler-01"]').first();
+    await start.waitFor({ state: 'visible' });
+    await start.click();
+    const form = page.locator('#mini-exam-form');
+    await form.waitFor({ state: 'visible' });
+    await form.locator('button[type="submit"]').click();
+    await page.locator('.mini-result-hero').waitFor({ state: 'visible' });
+    const snapshot = await appState(page);
+    const attempts = snapshot.value.workspaces.kpss.assessments
+      .filter(a => a.miniId === 'kpss-problemler-01')
+      .sort((a,b) => String(b.date).localeCompare(String(a.date)) || Number(b.created||0)-Number(a.created||0));
+    assert.ok(attempts[0], 'Mini exam must persist a real assessment');
+    const close = page.locator('[data-action="close-modal"]').first();
+    if (await close.count() && await close.isVisible()) await close.click();
+    return attempts[0];
+  };
+
+  const first = await runBlankMini(FIXED_DAY);
+  assert.equal(first.correct, 0, 'Blank mini fixture must record zero correct answers');
+  const secondDay = addDays(FIXED_DAY, 1);
+  const second = await runBlankMini(secondDay);
+  assert.notEqual(second.id, first.id, 'A later-day mini attempt must have a distinct assessment id');
+
+  const snapshot = await appState(page);
+  const space = snapshot.value.workspaces.kpss;
+  assert.equal(space.exams.length, 0, 'Mini results must stay isolated from full-exam records');
+  const repair = space.plan.find(p => !p.done && p.source === 'mini_repair' && p.sourceAssessmentId === second.id);
+  assert.ok(repair, 'Repeated weak mini evidence must create a mini-repair task linked to the latest real assessment');
+  assert.equal(repair.topicId, second.topicId, 'Mini repair must preserve the measured topic');
+  assert.match(repair.reason || '', /Mini deneme/i, 'Mini repair must explain the mini evidence in student language');
+  assert.ok(!space.plan.some(p => p.source === 'mini_repair' && p.sourceAssessmentId && !space.assessments.some(a => a.id === p.sourceAssessmentId)), 'Every mini repair provenance id must resolve to a real assessment');
+
+  await assertCleanRender(page, 'mini repair provenance');
+  assert.deepEqual(pageErrors, [], 'Mini provenance page errors:\n' + pageErrors.join('\n'));
+  assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Mini provenance console errors:\n' + consoleErrors.join('\n'));
+  await context.close();
+}
+
 const server = spawn(process.execPath, ['server.mjs'], {
   cwd: process.cwd(),
   env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', OPENAI_API_KEY: '' },
@@ -282,6 +426,61 @@ try {
   await assertCleanRender(page, 'post onboarding today');
   await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
+  const freeFlags = await page.evaluate(() => ({
+    core: window.RotaContracts.featureEnabled('free','core_route'),
+    mini: window.RotaContracts.featureEnabled('free','mini_exams'),
+    repair: window.RotaContracts.featureEnabled('free','exam_wrong_repair'),
+    mistakes: window.RotaContracts.featureEnabled('free','mistake_notebook'),
+    basic: window.RotaContracts.featureEnabled('free','basic_analysis'),
+    report: window.RotaContracts.featureEnabled('free','monthly_report')
+  }));
+  assert.deepEqual(freeFlags,{core:true,mini:true,repair:true,mistakes:true,basic:true,report:false},'Free tier must keep the complete core learning loop and gate only advanced reporting');
+  const renderPerf = await page.evaluate(() => window.__rotaRenderPerf ? { ...window.__rotaRenderPerf } : null);
+  assert.ok(renderPerf, 'Route render diagnostics must be exposed');
+  assert.ok(Number.isFinite(renderPerf.lastRenderMs) && renderPerf.lastRenderMs >= 0, 'Route render duration must be measurable');
+  assert.ok(Number.isInteger(renderPerf.decisionComputes) && renderPerf.decisionComputes >= 0, 'Applied-decision compute count must be measurable');
+  assert.ok(Number.isInteger(renderPerf.reasonCalls) && renderPerf.reasonCalls >= 0, 'Task-reason call count must be measurable');
+  assert.ok(Number.isInteger(renderPerf.planIndexBuilds) && renderPerf.planIndexBuilds >= 0 && renderPerf.planIndexBuilds <= 1, 'Plan date index must be built at most once per render');
+  assert.ok(renderPerf.renderCount >= 1, 'Route render counter must increment');
+  assert.ok(renderPerf.lastTaskNodes >= 1, 'Render diagnostics must observe visible task nodes');
+
+  const backupContract = await page.evaluate(() => {
+    let current = null;
+    for (const raw of Object.values(localStorage)) {
+      try {
+        const value = JSON.parse(raw);
+        if (value?.workspaces?.kpss && value?.workspaces?.yks) { current = value; break; }
+      } catch {}
+    }
+    if (!current) throw new Error('Current app state missing for backup contract test');
+    const envelope = window.RotaContracts.makeBackupEnvelope(current, { appVersion: '4.1' });
+    const restored = window.RotaCore.validateBackup(envelope);
+    const tampered = JSON.parse(JSON.stringify(envelope));
+    tampered.state.activeExam = tampered.state.activeExam === 'kpss' ? 'yks' : 'kpss';
+    let tamperRejected = false;
+    try { window.RotaCore.validateBackup(tampered); } catch { tamperRejected = true; }
+    return {
+      schema: envelope.schema,
+      version: envelope.version,
+      checksum: envelope.integrity?.checksum || '',
+      restoredExam: restored.activeExam,
+      kpssSchemaVersion: restored.workspaces.kpss.schemaVersion,
+      kpssExam: restored.workspaces.kpss.exam,
+      yksSchemaVersion: restored.workspaces.yks.schemaVersion,
+      yksExam: restored.workspaces.yks.exam,
+      tamperRejected
+    };
+  });
+  assert.equal(backupContract.schema, 'calisma-rotasi-backup', 'Browser backup must use the versioned envelope');
+  assert.equal(backupContract.version, 2, 'Browser backup envelope version must stay at v2');
+  assert.match(backupContract.checksum, /^[a-f0-9]{8}$/i, 'Browser backup must include an integrity checksum');
+  assert.equal(backupContract.restoredExam, 'kpss', 'Versioned browser backup must restore through RotaCore validation');
+  assert.equal(backupContract.kpssSchemaVersion, 2, 'KPSS workspace must migrate to schema v2');
+  assert.equal(backupContract.kpssExam, 'kpss', 'KPSS workspace identity must be explicit');
+  assert.equal(backupContract.yksSchemaVersion, 2, 'YKS workspace must migrate to schema v2');
+  assert.equal(backupContract.yksExam, 'yks', 'YKS workspace identity must be explicit');
+  assert.equal(backupContract.tamperRejected, true, 'Tampered browser backup must be rejected');
+
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must expose Rota Hoca decision');
   assert.ok(await page.getByText('Bu plan neden böyle?').count(), 'Today must explain route logic');
 
@@ -295,6 +494,22 @@ try {
   assert.ok(todayTask, 'Today must have a task to complete');
 
   const beforeMode = latestTaskMode(space0, todayTask);
+
+  const startButton = page.locator('.route-task [data-action="focus-session"][data-id="' + todayTask.id + '"]').first();
+  await startButton.waitFor({ state: 'visible' });
+  await startButton.click();
+  const focusCard = page.locator('.route-focus-card');
+  await focusCard.waitFor({ state: 'visible' });
+  assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Başla must bind the real task title to the focus card');
+  assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Başla must expose the focus-session state');
+  assert.ok(await focusCard.getByText('Bitir ve kaydet', { exact: false }).count(), 'Focused task must expose the finish-and-record action');
+  assert.match(await focusCard.innerText(), /çalışma kaydına otomatik bağlanacak/i, 'Focus card must explain the task/log linkage');
+
+  snapshot = await appState(page);
+  const spaceAfterFocus = snapshot.value.workspaces.kpss;
+  assert.equal(spaceAfterFocus.plan.find(p => p.id === todayTask.id)?.done, false, 'Başla alone must not complete the task');
+  assert.ok(!spaceAfterFocus.logs.some(l => l.sessionId === todayTask.id), 'Başla alone must not fabricate a study log');
+
   const completionFeedback = await completeTask(page, todayTask.id);
   snapshot = await appState(page);
   const spaceAfterCompletion = snapshot.value.workspaces.kpss;
@@ -406,12 +621,142 @@ try {
   assert.ok(teacherRequest.studentContext?.studentModel, 'Rota Hoca must receive Student Model');
   assert.ok(teacherRequest.studentContext?.routeDecision, 'Rota Hoca must receive route decision');
   assert.ok(teacherRequest.studentContext?.mastery, 'Rota Hoca must receive mastery context');
+  assert.equal(teacherRequest.studentContext?.contextVersion, 1, 'Rota Hoca context must carry a versioned contract');
+  assert.ok(teacherRequest.studentContext?.routeMode?.explanation, 'Rota Hoca must receive student-facing route-mode explanation');
+  assert.ok(teacherRequest.studentContext?.todaySummary, 'Rota Hoca must receive todaySummary');
+  const teacherContextText = JSON.stringify(teacherRequest.studentContext);
+  assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(teacherContextText), 'Technical route jargon must not leak into teacher context');
   await assertCleanRender(page, 'Rota Hoca');
+
+  // Behavior hardening: Daha sonra must be reversible without duplicate evidence,
+  // Atla must reschedule the task, and both signals must survive a real reload.
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  let behaviorTask = space.plan.find(p => !p.done);
+  assert.ok(behaviorTask, 'Behavior hardening needs an open task');
+  if (behaviorTask.date !== (await page.evaluate(() => {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }))) {
+    await setDay(page, behaviorTask.date);
+  } else {
+    await navigate(page, 'today');
+  }
+
+  const laterButton = page.locator('[data-action="route-later"][data-id="' + behaviorTask.id + '"]');
+  await laterButton.waitFor({ state: 'visible' });
+  await laterButton.click();
+
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  assert.equal(space.plan.find(p => p.id === behaviorTask.id)?.taskState, 'later', 'Daha sonra must mark the task as later');
+  assert.equal(
+    space.taskEvents.filter(e => e.taskId === behaviorTask.id && e.action === 'later').length,
+    1,
+    'Daha sonra must create one behavior event'
+  );
+
+  await laterButton.click();
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  assert.equal(space.plan.find(p => p.id === behaviorTask.id)?.taskState, 'open', 'Second Daha sonra click must restore normal order');
+  assert.equal(
+    space.taskEvents.filter(e => e.taskId === behaviorTask.id && e.action === 'later').length,
+    1,
+    'Restoring order must not duplicate the later event'
+  );
+
+  const skipButton = page.locator('[data-action="route-skip"][data-id="' + behaviorTask.id + '"]');
+  await skipButton.waitFor({ state: 'visible' });
+  await skipButton.click();
+
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  assert.equal(
+    space.taskEvents.filter(e => e.taskId === behaviorTask.id && e.action === 'skip').length,
+    1,
+    'Atla must create exactly one skip event'
+  );
+  const movedBehaviorTask = space.plan.find(p => p.id === behaviorTask.id);
+  assert.ok(movedBehaviorTask && !movedBehaviorTask.done, 'Atla must keep the task open');
+  assert.ok(
+    String(movedBehaviorTask.date || '') > behaviorTask.date || String(movedBehaviorTask.deferUntil || '') > behaviorTask.date,
+    'Atla must defer or reschedule the task beyond its previous day'
+  );
+
+  const persistedBehavior = {
+    storageKey: snapshot.key,
+    taskId: behaviorTask.id,
+    date: movedBehaviorTask.date,
+    deferUntil: movedBehaviorTask.deferUntil || '',
+    eventCount: space.taskEvents.length,
+    planCount: space.plan.length
+  };
+
+  await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  assert.equal(new URL(page.url()).searchParams.get('fresh'), '1', 'Persistence reload must stay in the isolated fresh-preview namespace');
+  assert.equal(new URL(page.url()).searchParams.get('resume'), '1', 'Persistence reload must explicitly disable fresh-preview reset');
+  await page.locator('#app').waitFor({ state: 'visible' });
+  await assertCleanRender(page, 'behavior reload persistence');
+  assert.equal(await page.locator('#setup-wizard-form').count(), 0, 'Reloaded configured workspace must not fall back to onboarding');
+
+  snapshot = await appState(page);
+  assert.equal(snapshot.key, persistedBehavior.storageKey, 'Reload must read the exact same preview storage namespace');
+  space = snapshot.value.workspaces.kpss;
+  const afterReloadBehaviorTask = space.plan.find(p => p.id === persistedBehavior.taskId);
+  assert.ok(afterReloadBehaviorTask, 'Reload must preserve the rescheduled task');
+  assert.equal(afterReloadBehaviorTask.date, persistedBehavior.date, 'Reload must preserve the rescheduled date');
+  assert.equal(afterReloadBehaviorTask.deferUntil || '', persistedBehavior.deferUntil, 'Reload must preserve deferUntil');
+  assert.equal(space.taskEvents.length, persistedBehavior.eventCount, 'Reload must preserve behavior events without duplication');
+  assert.equal(space.plan.length, persistedBehavior.planCount, 'Reload must not regenerate duplicate plan tasks');
+  assert.equal(
+    space.taskEvents.filter(e => e.taskId === persistedBehavior.taskId && e.action === 'skip').length,
+    1,
+    'Reload must preserve exactly one skip event'
+  );
 
   assert.deepEqual(pageErrors, [], 'Browser page errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Browser console errors:\n' + consoleErrors.join('\n'));
 
-  console.log('Browser E2E passed: onboarding → today → completion → exam → wrong repair → 3/7 → Rota Hoca');
+  // Desktop/YKS hardening: exercise the longer SAY onboarding path in a separate storage context.
+  const desktopContext = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
+  });
+  const desktopPage = await desktopContext.newPage();
+  const desktopErrors = [];
+  const desktopConsoleErrors = [];
+  desktopPage.on('pageerror', e => desktopErrors.push(String(e?.stack || e)));
+  desktopPage.on('console', msg => { if (msg.type() === 'error') desktopConsoleErrors.push(msg.text()); });
+  await desktopPage.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
+  await desktopPage.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await submitYksWizard(desktopPage);
+  await assertCleanRender(desktopPage, 'YKS desktop onboarding');
+
+  const desktopSnapshot = await appState(desktopPage);
+  const yksSpace = desktopSnapshot.value.workspaces.yks;
+  assert.equal(desktopSnapshot.value.activeExam, 'yks', 'YKS desktop onboarding must keep YKS active');
+  assert.equal(yksSpace.configured, true, 'YKS workspace must be configured');
+  assert.equal(yksSpace.settings.track, 'say', 'YKS desktop fixture must preserve SAY track');
+  assert.equal(yksSpace.profile.completed, true, 'YKS profile must be completed');
+  assert.equal(yksSpace.profile.currentNet, 58, 'YKS TYT current net must be stored');
+  assert.equal(yksSpace.profile.targetNet, 92, 'YKS TYT target net must be stored');
+  assert.ok(Number.isFinite(yksSpace.profile.currentStageNet), 'SAY onboarding must store current AYT net');
+  assert.ok(Number(yksSpace.profile.targetStageNet) > Number(yksSpace.profile.currentStageNet), 'SAY onboarding must store a higher AYT target');
+  assert.ok(yksSpace.plan.length > 0, 'YKS onboarding must generate a plan');
+  assert.ok(new Set(yksSpace.plan.map(p => p.subjectId)).size >= 2, 'YKS plan must include more than one subject');
+  assert.ok(await desktopPage.locator('.sidebar').isVisible(), 'Desktop must show the sidebar');
+  if (await desktopPage.locator('.mobile-dock').count()) {
+    assert.equal(await desktopPage.locator('.mobile-dock').isVisible(), false, 'Desktop must hide the mobile dock');
+  }
+  assert.deepEqual(desktopErrors, [], 'YKS desktop page errors:\n' + desktopErrors.join('\n'));
+  assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'YKS desktop console errors:\n' + desktopConsoleErrors.join('\n'));
+  await desktopContext.close();
+
+  await runMiniRepairProvenance(browser);
+
+  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + mini repair provenance');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

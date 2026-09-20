@@ -23,7 +23,43 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .node-version
+
+      - name: Syntax check workspace schema
+        run: node --check public/workspace-schema.js
+
+      - name: Syntax check workspace schema tests
+        run: node --check scripts/workspace-schema.test.mjs
+
+      - name: Syntax check extracted catalog
+        run: node --check public/catalog.js
+
+      - name: Syntax check extracted course source catalog
+        run: node --check public/turkish-catalog.js
+
+      - name: Syntax check catalog boundary tests
+        run: node --check scripts/catalog-boundary.test.mjs
+
+      - name: Syntax check route contracts
+        run: node --check public/route-contracts.js
+
+      - name: Syntax check route contract tests
+        run: node --check scripts/route-contracts.test.mjs
+
+      - name: Syntax check pilot metrics
+        run: node --check public/pilot-metrics.js
+
+      - name: Syntax check pilot metrics tests
+        run: node --check scripts/pilot-metrics.test.mjs
+
+      - name: Syntax check mini catalog tests
+        run: node --check scripts/mini-catalog.test.mjs
+
+      - name: Syntax check server contract tests
+        run: node --check scripts/server-contracts.test.mjs
+
+      - name: Syntax check server runtime tests
+        run: node --check scripts/server-runtime.test.mjs
 
       - name: Syntax check smoke runner
         run: node --check scripts/route-engine-smoke.mjs
@@ -106,7 +142,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .node-version
 
       - name: Syntax check browser E2E
         run: node --check scripts/browser-e2e.mjs
@@ -136,7 +172,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .node-version
 
       - name: Syntax check production smoke
         run: node --check scripts/production-smoke.mjs

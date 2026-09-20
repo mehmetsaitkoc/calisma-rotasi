@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
+await import('../public/pilot-metrics.js');
+
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 function between(a,b){
   const i=html.indexOf(a),j=html.indexOf(b,i+a.length);
@@ -186,6 +188,13 @@ assert.equal(payload.interventionHistory.length,1);
 assert.equal(payload.interventionHistory[0].mode,'repair');
 assert.equal(payload.interventionHistory[0].status,'neutral');
 assert.deepEqual(payload.interventionHistory[0].horizons.map(x=>x.horizon),[7,14]);
-assert.ok(!JSON.stringify(payload).includes('name'),'Pilot export must not contain profile names');
+assert.equal(payload.observability.schema,'calisma-rotasi-pilot-metrics-v1');
+assert.ok(Number.isInteger(payload.observability.completion.planned));
+assert.ok(Number.isInteger(payload.observability.modes.bounces));
+assert.ok(Number.isInteger(payload.observability.openMistakes));
+assert.ok(Array.isArray(payload.events));
+assert.ok(payload.events.every(x=>x.schema==='calisma-rotasi-pilot-events-v1'));
+const payloadJson=JSON.stringify(payload);
+for(const forbidden of ['"note"','"question"','"name"','"phone"'])assert.ok(!payloadJson.includes(forbidden),'Pilot export must stay privacy-safe: '+forbidden);
 
 console.log('route-engine-pilot-telemetry: richer 0/7/14 snapshot semantics, behavior, unknowns and delayed-capture quality flags passed');

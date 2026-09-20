@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
+const externalCatalogJs=fs.readFileSync(new URL('../public/catalog.js',import.meta.url),'utf8');
+const externalWorkspaceJs=fs.readFileSync(new URL('../public/workspace-schema.js',import.meta.url),'utf8');
 
 function between(start,end){
   const a=html.indexOf(start),b=html.indexOf(end,a);
@@ -17,7 +19,66 @@ for(const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){
   new Function(js);
   parsed++;
 }
-assert.ok(parsed>=5,'Expected executable inline scripts');
+assert.ok(parsed>=4,'Expected executable inline scripts after catalog extraction');
+
+// 1a) Architecture and student-facing contract boundary must stay wired.
+for(const marker of [
+  '<script src="/route-contracts.js"></script>',
+  '<script src="/workspace-schema.js"></script>',
+  '<script src="/catalog.js"></script>',
+  '<script src="/turkish-catalog.js"></script>',
+  'ARCHITECTURE BOUNDARY: catalog data',
+  'ARCHITECTURE BOUNDARY: route engine + workspace validation',
+  'ARCHITECTURE BOUNDARY: application state adapters + UI',
+  'function routeModeExplanation',
+  'window.RotaContracts?.taskReason',
+  'window.RotaContracts?.teacherContextEnvelope',
+  'window.RotaContracts?.makeBackupEnvelope',
+  'window.RotaContracts?.unwrapBackup',
+  'route-mode-explain',
+  '<script src="/pilot-metrics.js"></script>',
+  '<script src="/mini-catalog.js"></script>',
+  'function miniCatalogInfo',
+  'function miniCatalogCoverage',
+  'İçerik derinliği iskeleti:',
+  'globalThis.RotaPilotMetrics||null',
+  'pilotMetrics?.summarize',
+  'pilotMetrics?.collectEvents',
+  "featureEnabled('monthly_report')",
+  'routeRenderDecisionCache',
+  'routeDecisionForRender',
+  'STUDENT MODEL BOUNDARY',
+  'ROUTE SCHEDULER BOUNDARY',
+  'ROUTE UI BOUNDARY',
+  'routeRenderPerf',
+  'window.__rotaRenderPerf=routeRenderPerf',
+  "const FRESH_RESET=FRESH_PREVIEW&&QUERY.get('resume')!=='1'",
+  'if(FRESH_RESET)',
+  'function workspace(exam){return WS.create(exam);}',
+  "const WS=root.RotaWorkspaceSchema||(typeof require==='function'?require('./workspace-schema.js'):null);", 
+  'WS.assertIdentity(old,e);',
+  'const w=WS.migrateIdentity(out.workspaces[e],e),s=old.settings;',
+  'w.configured=!!old.configured'
+]) assert.ok(html.includes(marker),'Missing architecture/contract marker: '+marker);
+
+{
+  const reason=between('function routeTaskReason','function routeTodayTask');
+  assert.ok(reason.includes('RotaContracts?.taskReason'),'Task reason must pass through the student-language contract');
+  assert.ok(reason.includes('routeModeExplanation'),'Route mode explanation must stay student-facing');
+}
+{
+  const teacher=between('function teacherStudentContext','function teacherRemoteText');
+  assert.ok(teacher.includes('teacherContextEnvelope'),'Rota Hoca context must use the shared context envelope');
+  for(const field of ['todayPlan','routeDecision','studentModel','mastery','completion'])assert.ok(teacher.includes(field),'Teacher context missing: '+field);
+}
+for(const marker of [
+  'honestFallback:!!j.honestUnavailableFallback',
+  "if(!status.ai&&!status.honestFallback)",
+  'Rota Hoca tahminî ders cevabı üretmez',
+  "!record.answer?._demo&&record.answer.confidence>=.7"
+]) assert.ok(html.includes(marker),'Missing honest Rota Hoca client fallback marker: '+marker);
+assert.ok(!html.includes("teacherOpenConfigure();throw Error('Ders ve fotoğraf sorularını gerçek çözmek için AI bağlantısını kur.')"),'Teacher submit must not block the server honest-fallback path');
+
 
 // 2) Subject/topic methodology must classify materially different study modes.
 {
@@ -1331,7 +1392,11 @@ for(const marker of [
   "source:'mini_repair'",
   "Mini onarım · ",
   "routeMiniRepairSignals()",
-  "Mini denemede “"
+  "Mini denemede “",
+  "sourceAssessmentId:a.id",
+  "const key='mini-repair:'+a.id",
+  "p.sourceAssessmentId?{sourceAssessmentId",
+  "Mini onarım görevinin deneme sonucu bağlantısı geçersiz."
 ]) assert.ok(html.includes(marker),`Missing mini repair route integration marker: ${marker}`);
 
 // 5) Deneme Merkezi pilots must be original, internally valid and isolated from full-exam net records.
@@ -1624,12 +1689,21 @@ for(const marker of [
 {
   const todayTask=between('function routeTodayTask','function routeTodayPage');
   const planCard=between('function routePlanCard','function planPage');
-  assert.ok(todayTask.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Today task badge must use the applied decision');
-  assert.ok(planCard.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Plan task badge must use the applied decision');
+  const memo=between('const routeRenderDecisionCache','function routeTodayTask');
+  assert.ok(memo.includes('routeAppliedDecision(subjectId,topicId)'),'Render memo must delegate to the real applied-decision function');
+  assert.ok(todayTask.includes('routeDecisionForRender(p.subjectId,p.topicId)'),'Today task badge must use the memoized applied decision');
+  assert.ok(planCard.includes('routeDecisionForRender(p.subjectId,p.topicId)'),'Plan task badge must use the memoized applied decision');
+  const renderSrc=between('function render(){','function commit(message)');
+  assert.ok(renderSrc.includes('routeRenderDecisionCache.clear()'),'Render must clear its decision memo before recomputing the UI');
+  assert.ok(renderSrc.includes('routeRenderPerf.decisionComputes=0')&&renderSrc.includes('routeRenderPerf.reasonCalls=0'),'Render diagnostics must reset per render');
+  assert.ok(html.includes('function routePlanIndexForRender'),'Render must build a reusable plan date index');
+  assert.ok(html.includes('routePlanItemsForDate(today())'),'Today must reuse the plan date index');
+  assert.ok(html.includes('routePlanItemsForDate(d).sort'),'Programım must reuse the plan date index instead of rescanning the full plan per day');
+  assert.ok(renderSrc.includes('routeRenderPlanIndex=null')&&renderSrc.includes('routeRenderPerf.planIndexBuilds=0'),'Render must reset its plan index and metric per render');
   assert.ok(html.includes('miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,topicId))'),'Mini result snapshot must persist the applied decision');
   assert.ok(html.includes('adaptive=routeAppliedDecision(def.subjectId,topicId)'),'Mini recommendation must use the applied decision');
   assert.ok(html.includes('const adaptive=routeAppliedDecision(p.subjectId,p.topicId),mode='),'Intervention audit must use the applied decision');
-  assert.ok(html.split('adaptive=routeAppliedDecision(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p);').length-1>=2,'Today task and Why modal must both explain the applied decision');
+  assert.ok(html.includes('adaptive=routeDecisionForRender(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p),modeExplain=routeModeExplanation(adaptive)'),'Why modal must explain the same applied decision shown in the task card');
   assert.ok(html.includes("adaptive.studentState==='retention'"),'Task prescription must explain retention priority');
   assert.ok(html.includes("adaptive.studentState==='collect'"),'Task prescription must explain low-confidence data collection');
   assert.ok(html.includes("state=a.studentState||'steady'"),'Learning summary must preserve calibrated Student Model state');
@@ -1836,9 +1910,8 @@ for(const marker of [
 
 // 5) Every mini must resolve to a real catalog subject and exact topic so topic-based evidence cannot silently fall back to subject-only mode.
 {
-  const scriptBodies=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>m[2]||'').filter(Boolean);
-  const catalogJs=scriptBodies.find(x=>x.includes('root.RotaCatalog='));
-  assert.ok(catalogJs,'Catalog script missing');
+  const catalogJs=externalCatalogJs;
+  assert.ok(catalogJs.includes('root.RotaCatalog='),'External catalog module missing');
   const env={};new Function('window','globalThis',catalogJs)(env,env);
   const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition'),data=new Function(src+';return ROTA_MINI_EXAMS;')();
   for(const mini of data){
@@ -1885,11 +1958,12 @@ for(const marker of [
 // 5) Backup validation must round-trip mini answers, subtopic evidence and the stored route decision.
 {
   const scriptBodies=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>m[2]||'').filter(Boolean);
-  const catalogJs=scriptBodies.find(x=>x.includes('root.RotaCatalog='));
+  const catalogJs=externalCatalogJs;
   const coreJs=scriptBodies.find(x=>x.includes('root.RotaCore='));
   assert.ok(catalogJs&&coreJs,'Catalog/core scripts must be available for backup round-trip test');
   const env={};
   new Function('window','globalThis',catalogJs)(env,env);
+  new Function('window','globalThis',externalWorkspaceJs)(env,env);
   new Function('window','globalThis',coreJs)(env,env);
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.assessments=[{
@@ -1910,8 +1984,8 @@ for(const marker of [
 // 5) Backup validation must preserve route intervention audit history.
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
-  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.interventions=[{id:'iv1',date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'repair',source:'mini_repair',method:'quant',taskId:'task1',taskDate:'2026-09-19',confidence:72,baselineAccuracy:50,baselineCompletion:60,baselineNeed:78,baselineAnswered:20,reason:'Mini açığı',created:1}];
   const validated=env.RotaCore.validateBackup(backup),iv=validated.workspaces.kpss.route.interventions[0];
@@ -1925,8 +1999,8 @@ for(const marker of [
 // 5) Backup validation must preserve decision-mode history used by progress hysteresis.
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
-  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.modeHistory=[{date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'progress',studentState:'steady',confidence:88,performance:73,learningNeed:24,hysteresisHeld:true,easeHysteresisHeld:true,easeEntryHeld:true,easeRecoveryHeld:true,created:1}];
   const row=env.RotaCore.validateBackup(backup).workspaces.kpss.route.modeHistory[0];
@@ -1942,8 +2016,8 @@ for(const marker of [
 // 5) Pilot telemetry must persist pseudonymous 0/7/14/30 checkpoint snapshots.
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
-  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
+  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.pilot={
     version:1,enabled:true,participantId:'p-test-001',startDate:'2026-09-19',startedAt:1,completedAt:0,
@@ -2025,7 +2099,11 @@ for(const marker of [
   'questionAttainmentRatio',
   'studentModelExact',
   'masteryExact',
-  'horizons:{7'
+  'horizons:{7',
+  "observability:metrics,events",
+  'Karar geri dönüşü',
+  'ONARIM→DENGELİ',
+  '3/7 kaçırma'
 ]) assert.ok(html.includes(marker),`Missing pilot telemetry marker: ${marker}`);
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.

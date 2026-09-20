@@ -806,7 +806,7 @@ try {
   await plusContinuation.waitFor({state:'visible'});
   await plusContinuation.click();
   await page.getByText('Bir adım ötesi Rota Plus’ta.',{exact:true}).waitFor({state:'visible'});
-  assert.ok(await page.getByText(/entitlement sunucudan gelir/i).count(),'Plus teacher gate must explain the server-sourced entitlement boundary');
+  assert.ok(await page.getByText(/yalnız doğrulanmış üyelikle açılır/i).count(),'Plus teacher gate must explain verified membership access in user language');
   await page.locator('[data-action="close-modal"]').click();
 
   assert.ok(teacherRequest, 'Rota Hoca request must reach the backend boundary');

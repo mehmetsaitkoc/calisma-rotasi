@@ -121,7 +121,14 @@ async function submitWizard(page) {
 
   const dayBoxes = page.locator('#setup-wizard-form [name="days"]');
   assert.equal(await dayBoxes.count(), 7, 'Working-day onboarding must expose all seven days');
-  for (let i = 0; i < await dayBoxes.count(); i++) await dayBoxes.nth(i).check();
+  for (let i = 0; i < await dayBoxes.count(); i++) {
+    const box = dayBoxes.nth(i);
+    if (!(await box.isChecked())) {
+      const label = box.locator('xpath=ancestor::label[1]');
+      assert.ok(await label.count(), 'Each working-day checkbox must have a clickable label');
+      await label.click();
+    }
+  }
   assert.equal(await page.locator('#setup-wizard-form [name="days"]:checked').count(), 7, 'Retention fixture uses all seven working days so +3/+7 timing is not distorted by skipped days');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 

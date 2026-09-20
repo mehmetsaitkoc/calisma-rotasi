@@ -36,10 +36,15 @@ try{
   assert.equal(health.aiConfigured,false);
   assert.equal(health.demoFallback,false);
   assert.equal(health.honestUnavailableFallback,true);
+  assert.equal(health.configurable,false,'Render runtime must never expose local API-key configuration');
   assert.equal(health.teacherPolicy.rateLimitPerMinute,20);
   assert.equal(health.teacherPolicy.maxOutputTokens,1400);
   assert.ok(!Object.hasOwn(health,'apiKey'),'Health must never expose an API key');
   assert.ok(!JSON.stringify(health).includes('sk-'),'Health must not leak key-like secrets');
+
+  const configureBlocked=await jsonPost('/api/configure',{apiKey:'sk-test-not-a-real-key-1234567890',profile:'economy'});
+  assert.equal(configureBlocked.status,403,'Runtime AI configuration must stay disabled on Render');
+  assert.match(configureBlocked.data.error||'',/yerel uygulama/i);
 
   const fallback=await jsonPost('/api/teacher',{question:'Bu soruyu açıklar mısın?',exam:'KPSS',subject:'Matematik'});
   assert.equal(fallback.status,200);

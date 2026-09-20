@@ -25,6 +25,15 @@ jobs:
         with:
           node-version: 20
 
+      - name: Syntax check extracted catalog
+        run: node --check public/catalog.js
+
+      - name: Syntax check extracted course source catalog
+        run: node --check public/turkish-catalog.js
+
+      - name: Syntax check catalog boundary tests
+        run: node --check scripts/catalog-boundary.test.mjs
+
       - name: Syntax check route contracts
         run: node --check public/route-contracts.js
 

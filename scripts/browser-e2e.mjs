@@ -379,6 +379,22 @@ try {
   assert.ok(todayTask, 'Today must have a task to complete');
 
   const beforeMode = latestTaskMode(space0, todayTask);
+
+  const startButton = page.locator('[data-action="focus-session"][data-id="' + todayTask.id + '"]');
+  await startButton.waitFor({ state: 'visible' });
+  await startButton.click();
+  const focusCard = page.locator('.route-focus-card');
+  await focusCard.waitFor({ state: 'visible' });
+  assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Başla must bind the real task title to the focus card');
+  assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Başla must expose the focus-session state');
+  assert.ok(await focusCard.getByText('Bitir ve kaydet', { exact: false }).count(), 'Focused task must expose the finish-and-record action');
+  assert.match(await focusCard.innerText(), /çalışma kaydına otomatik bağlanacak/i, 'Focus card must explain the task/log linkage');
+
+  snapshot = await appState(page);
+  const spaceAfterFocus = snapshot.value.workspaces.kpss;
+  assert.equal(spaceAfterFocus.plan.find(p => p.id === todayTask.id)?.done, false, 'Başla alone must not complete the task');
+  assert.ok(!spaceAfterFocus.logs.some(l => l.sessionId === todayTask.id), 'Başla alone must not fabricate a study log');
+
   const completionFeedback = await completeTask(page, todayTask.id);
   snapshot = await appState(page);
   const spaceAfterCompletion = snapshot.value.workspaces.kpss;

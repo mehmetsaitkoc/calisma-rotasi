@@ -369,6 +369,13 @@ try {
   await assertCleanRender(page, 'post onboarding today');
   await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
+  const renderPerf = await page.evaluate(() => window.__rotaRenderPerf ? { ...window.__rotaRenderPerf } : null);
+  assert.ok(renderPerf, 'Route render diagnostics must be exposed');
+  assert.ok(Number.isFinite(renderPerf.lastRenderMs) && renderPerf.lastRenderMs >= 0, 'Route render duration must be measurable');
+  assert.ok(Number.isInteger(renderPerf.decisionComputes) && renderPerf.decisionComputes >= 0, 'Applied-decision compute count must be measurable');
+  assert.ok(Number.isInteger(renderPerf.reasonCalls) && renderPerf.reasonCalls >= 0, 'Task-reason call count must be measurable');
+  assert.ok(renderPerf.renderCount >= 1, 'Route render counter must increment');
+  assert.ok(renderPerf.lastTaskNodes >= 1, 'Render diagnostics must observe visible task nodes');
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must expose Rota Hoca decision');
   assert.ok(await page.getByText('Bu plan neden böyle?').count(), 'Today must explain route logic');
 

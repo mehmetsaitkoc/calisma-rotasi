@@ -2802,7 +2802,7 @@ function routePilotInterventionHistory(startDate,cutoff){
  });
 }
 function routePilotPayload(){
- routePilotAutoSnapshot();const p=routePilotConfig(),metrics=window.RotaPilotMetrics?.summarize(w(),{startDate:p.startDate,cutoffDate:today()})||null,events=window.RotaPilotMetrics?.collectEvents(w(),{startDate:p.startDate,cutoffDate:today()})||[];
+ routePilotAutoSnapshot();const p=routePilotConfig(),pilotMetrics=globalThis.RotaPilotMetrics||null,metrics=pilotMetrics?.summarize(w(),{startDate:p.startDate,cutoffDate:today()})||null,events=pilotMetrics?.collectEvents(w(),{startDate:p.startDate,cutoffDate:today()})||[];
  return {schema:'calisma-rotasi-pilot-v1',participantId:p.participantId,exam:state.activeExam,track:w().settings.track,startDate:p.startDate,generatedDate:today(),lastActiveDate:routePilotLastActiveDate(p.startDate),completed:!!p.completedAt,snapshots:p.snapshots,interventionHistory:routePilotInterventionHistory(p.startDate,today()),observability:metrics,events};
 }
 function routePilotExport(){const p=routePilotConfig();if(!p.startDate)throw Error('Pilot kaydı henüz başlatılmadı.');const payload=routePilotPayload();download('calisma-rotasi-pilot-'+payload.participantId+'-'+today()+'.json',JSON.stringify(payload,null,2),'application/json');toast('Takma kimlikli pilot ölçüm dosyası hazırlandı.');}

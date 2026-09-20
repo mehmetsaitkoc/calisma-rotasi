@@ -380,7 +380,7 @@ try {
 
   const beforeMode = latestTaskMode(space0, todayTask);
 
-  const startButton = page.locator('[data-action="focus-session"][data-id="' + todayTask.id + '"]');
+  const startButton = page.locator('.route-task [data-action="focus-session"][data-id="' + todayTask.id + '"]').first();
   await startButton.waitFor({ state: 'visible' });
   await startButton.click();
   const focusCard = page.locator('.route-focus-card');

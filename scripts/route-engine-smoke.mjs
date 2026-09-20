@@ -1687,6 +1687,10 @@ for(const marker of [
   const renderSrc=between('function render(){','function commit(message)');
   assert.ok(renderSrc.includes('routeRenderDecisionCache.clear()'),'Render must clear its decision memo before recomputing the UI');
   assert.ok(renderSrc.includes('routeRenderPerf.decisionComputes=0')&&renderSrc.includes('routeRenderPerf.reasonCalls=0'),'Render diagnostics must reset per render');
+  assert.ok(html.includes('function routePlanIndexForRender'),'Render must build a reusable plan date index');
+  assert.ok(html.includes('routePlanItemsForDate(today())'),'Today must reuse the plan date index');
+  assert.ok(html.includes('routePlanItemsForDate(d).sort'),'Programım must reuse the plan date index instead of rescanning the full plan per day');
+  assert.ok(renderSrc.includes('routeRenderPlanIndex=null')&&renderSrc.includes('routeRenderPerf.planIndexBuilds=0'),'Render must reset its plan index and metric per render');
   assert.ok(html.includes('miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,topicId))'),'Mini result snapshot must persist the applied decision');
   assert.ok(html.includes('adaptive=routeAppliedDecision(def.subjectId,topicId)'),'Mini recommendation must use the applied decision');
   assert.ok(html.includes('const adaptive=routeAppliedDecision(p.subjectId,p.topicId),mode='),'Intervention audit must use the applied decision');

@@ -1424,11 +1424,13 @@ for(const marker of [
 // 5) Deneme Merkezi pilots must be original, internally valid and isolated from full-exam net records.
 {
   const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition');
-  const data=new Function('window',src+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES,MINI_SKILL_MAP};')({RotaKpssPractice:kpssPracticeCatalog});
+  const data=new Function(src+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES,MINI_SKILL_MAP};')();
   const legacyIds=["kpss-problemler-01","yks-paragraf-01","kpss-tarih-01","kpss-cografya-01","tyt-biyoloji-hucre-01","ayt-edebiyat-tanzimat-01","ydt-grammar-01","ydt-vocab-01","ydt-reading-01","kpss-vatandaslik-01","tyt-matematik-temel-01","tyt-fizik-hareket-01","ayt-matematik-fonksiyon-01","tyt-kimya-atom-01","ayt-fizik-vektor-01","ayt-biyoloji-sinir-01","ayt-tarih1-ilkcag-01","ayt-kimya-modern-atom-01","ayt-cografya1-dogal-01","ayt-felsefe-tarih-01","kpss-turkce-paragraf-01","tyt-tarih-zaman-01","tyt-cografya-harita-01","ayt-geometri-ucgen-01"];
-  assert.equal(data.ROTA_MINI_EXAMS.length,48,'24 legacy mini seeds + 24 KPSS topic-practice sets must load');
-  assert.deepEqual(data.ROTA_MINI_EXAMS.slice(0,24).map(x=>x.id),legacyIds,'Legacy mini seeds must remain intact and in place');
-  assert.equal(data.ROTA_MINI_EXAMS.filter(x=>String(x.id).includes('-practice-')).length,24,'KPSS Turkish + history must contribute 24 topic-practice sets');
+  assert.equal(data.ROTA_MINI_EXAMS.length,24,'Legacy inline mini seed catalog must stay at 24 definitions');
+  assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),legacyIds,'Legacy mini seeds must remain intact and in place');
+  assert.equal(kpssPracticeCatalog.topicSets.length,24,'External KPSS practice catalog must contribute 24 topic-practice sets');
+  assert.equal(kpssPracticeCatalog.sectionExams.find(x=>x.subjectId==='k-tr')?.questions.length,30,'KPSS Turkish section exam must contain 30 original questions');
+  assert.equal(kpssPracticeCatalog.sectionExams.find(x=>x.subjectId==='k-ta')?.questions.length,27,'KPSS history section exam must contain 27 original questions');
   assert.equal(new Set(data.ROTA_MINI_EXAMS.map(x=>x.id)).size,data.ROTA_MINI_EXAMS.length,'Mini ids must be unique');
   assert.deepEqual(data.ROTA_MINI_EXAMS.filter(x=>x.subjectId==='d-yd').map(x=>x.topicTitle).sort(),['Dil bilgisi','Kelime çalışması','Okuduğunu anlama'].sort(),'YDT must keep vocabulary, grammar and reading measurements separate');
   assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='k-va'&&x.topicTitle==='Hukukun temel kavramları'),'KPSS citizenship mini must exist');
@@ -1448,11 +1450,9 @@ for(const marker of [
   assert.ok(['a-ma','a-ge','a-ed','a-t1','a-c1'].every(id=>data.ROTA_MINI_EXAMS.some(x=>x.subjectId===id)),'AYT EA coverage must include math, geometry, literature, history-1 and geography-1');
   assert.ok(['a-ed','a-t1','a-c1','a-fg'].every(id=>data.ROTA_MINI_EXAMS.some(x=>x.subjectId===id)),'AYT SOZ coverage must include literature, history-1, geography-1 and philosophy group');
   for(const exam of data.ROTA_MINI_EXAMS){
-    const isPractice=String(exam.id).includes('-practice-');
-    assert.ok(exam.questions.length>=(isPractice?4:8),exam.id+' must contain its contracted question depth');
-    assert.equal(new Set(exam.questions.map(q=>q.id)).size,exam.questions.length,'Question ids must be unique inside each mini');
-    if(!isPractice)assert.equal(data.MINI_SKILL_MAP[exam.id]?.length,exam.questions.length,'Every legacy mini question must have one skill label');
-    else assert.ok(exam.questions.every(q=>q.topicId),'Every KPSS topic-practice question must carry a catalog topic id');
+    assert.ok(exam.questions.length>=8,exam.id+' should contain at least 8 pilot questions');
+    assert.equal(new Set(exam.questions.map(q=>q.id)).size,exam.questions.length,'Question ids must be unique');
+    assert.equal(data.MINI_SKILL_MAP[exam.id]?.length,exam.questions.length,'Every legacy mini question must have one skill label');
     for(const q of exam.questions){
       assert.equal(q.options.length,5);
       assert.equal(new Set(q.options).size,q.options.length,'Mini answer choices must be unique');

@@ -483,6 +483,7 @@ async function runLargePlanRenderPerf(browser) {
   assert.ok(Number.isFinite(planPerf.sample.ms)&&planPerf.sample.ms<5000,'Large-history Programım render must remain bounded');
   assert.ok(planPerf.perf.recent.length<=30,'Render performance history must stay bounded after large-history navigation');
   assert.ok(planPerf.perf.byView.today?.renders>=1&&planPerf.perf.byView.plan?.renders>=1,'Per-view diagnostics must retain Today and Programım measurements');
+  console.log('browser-render-perf-large-history '+JSON.stringify({seeded,today:todayPerf.sample,plan:planPerf.sample}));
 
   const persisted = await appState(page);
   assert.ok(persisted.value.workspaces.kpss.plan.length>=seeded.afterPlan,'Large plan history must survive reload without silent truncation');

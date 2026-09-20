@@ -12,6 +12,9 @@ for(const marker of [
   'premium-proof',
   'premium-signal-rail',
   'premium-deep-dive',
+  'premium-trust-strip',
+  'route-tools-menu',
+  'route-today-kicker',
   'data-premium-surface="teacher"',
   'data-premium-surface="exams"',
   'PREMIUM TEACHER + EXAM CENTER V1',
@@ -22,6 +25,8 @@ for(const marker of [
   'Çalışma kapasiten dengeleniyor',
   'Rotan ve tekrar döngün hazırlanıyor',
   'Rota’nın ayrıntılı analizini gör',
+  'Planı ayarla',
+  'Verilerin bu tarayıcıda saklanır',
   'Neden bugün?'
 ]) assert.ok(html.includes(marker),'Missing premium product contract marker: '+marker);
 
@@ -40,4 +45,6 @@ assert.ok(
   'Premium Today surface must not introduce technical causal jargon near the primary UI'
 );
 
-console.log('Premium UI contract passed: landing + onboarding + build + Today hierarchy');
+assert.ok(!html.includes('Pilot sürüm · Ödeme ve gerçek üyelik aktif değil'),'Primary product surfaces must not use prototype-style pilot warning copy');
+
+console.log('Premium UI contract passed: landing + onboarding + build + Today hierarchy + trust polish');

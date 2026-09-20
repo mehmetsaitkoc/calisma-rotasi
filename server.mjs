@@ -83,6 +83,36 @@ function readJson(req) {
   });
 }
 function cleanText(v, max=5000){ return typeof v === 'string' ? v.slice(0,max) : ''; }
+const TEACHER_CONTEXT_VERSION = 2;
+const TEACHER_CONTEXT_KEYS = new Set(['contextVersion','exam','track','selected','target','targetDate','dailyMinutes','topicStatus','routeSummary','completion','todaySummary','todayPlan','routeMode','routeDecision','studentModel','examRisk','mastery','recentExams','recentMistakes','recentLogs','teacherSignals','contextHealth']);
+function sanitizeContextValue(value,depth=0){
+  if(depth>5)return null;
+  if(typeof value==='string')return cleanText(value,700);
+  if(typeof value==='boolean')return value;
+  if(typeof value==='number')return Number.isFinite(value)?Math.max(-100000000,Math.min(100000000,value)):null;
+  if(Array.isArray(value))return value.slice(0,10).map(v=>sanitizeContextValue(v,depth+1)).filter(v=>v!==undefined);
+  if(value&&typeof value==='object'){
+    const out={};let count=0;
+    for(const [key,item] of Object.entries(value)){
+      if(['__proto__','prototype','constructor'].includes(key)||count>=24)continue;
+      const clean=sanitizeContextValue(item,depth+1);
+      if(clean!==undefined){out[key]=clean;count++;}
+    }
+    return out;
+  }
+  if(value===null)return null;
+  return undefined;
+}
+function cleanTeacherContext(value){
+  const raw=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const out={contextVersion:[1,2].includes(Number(raw.contextVersion))?Number(raw.contextVersion):TEACHER_CONTEXT_VERSION};
+  for(const key of TEACHER_CONTEXT_KEYS){
+    if(key==='contextVersion'||!(key in raw))continue;
+    const clean=sanitizeContextValue(raw[key],0);
+    if(clean!==undefined)out[key]=clean;
+  }
+  return out;
+}
 function safePhoto(photo){
   if (!photo) return '';
   if (typeof photo !== 'string' || photo.length > 5_800_000) throw Object.assign(new Error('Fotoğraf çok büyük.'),{status:413});
@@ -178,14 +208,14 @@ function isQuotaError(status,data,raw){
 async function callTeacher(body){
   const question = cleanText(body.question, 5000).trim();
   const photo = safePhoto(body.photo);
+  const context = cleanTeacherContext(body.studentContext);
   if(!question && !photo) throw Object.assign(new Error('Sorunu yaz veya fotoğraf ekle.'),{status:400});
-  if (!runtimeApiKey) return {answer:demoTeacherAnswer({...body,question,photo},'not_configured'),model:'unavailable',responseId:'',usage:null,demo:true,demoReason:'Gerçek AI bağlantısı yapılandırılmamış.',meta:{mode:'unavailable',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS}};
+  if (!runtimeApiKey) return {answer:demoTeacherAnswer({...body,question,photo},'not_configured'),model:'unavailable',responseId:'',usage:null,demo:true,demoReason:'Gerçek AI bağlantısı yapılandırılmamış.',meta:{mode:'unavailable',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,contextVersion:context.contextVersion}};
   const exam = cleanText(body.exam, 50) || 'Belirtilmedi';
   const track = cleanText(body.track, 100);
   const subject = cleanText(body.subject, 140);
   const topic = cleanText(body.topic, 200);
   const mode = ['base','simple','alternate','similar','review'].includes(body.mode) ? body.mode : 'base';
-  const context = body.studentContext && typeof body.studentContext === 'object' ? body.studentContext : {};
   const previous = body.previousAnswer && typeof body.previousAnswer === 'object' ? body.previousAnswer : null;
   const contextText = JSON.stringify(context).slice(0,11000);
   const previousText = previous ? JSON.stringify(previous).slice(0,8000) : '';
@@ -239,7 +269,7 @@ ${previousText?`Önceki cevap/bağlam: ${previousText}\n`:''}İstenen devam modu
   const text = extractOutputText(data);
   if (!text) throw Object.assign(new Error('Model yapılandırılmış cevap döndürmedi.'), {status:502});
   let answer; try { answer=validateAnswer(JSON.parse(text)); } catch(e) { throw Object.assign(new Error('Model cevabı çözümlenemedi: '+e.message), {status:502}); }
-  return {answer, model:data.model || runtimeModel, responseId:data.id || '', usage:data.usage || null,meta:{mode:'live',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS}};
+  return {answer, model:data.model || runtimeModel, responseId:data.id || '', usage:data.usage || null,meta:{mode:'live',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,contextVersion:context.contextVersion}};
 }
 
 async function callTTS(body){
@@ -281,7 +311,7 @@ const server=http.createServer(async (req,res)=>{
   res.setHeader('x-content-type-options','nosniff');
   res.setHeader('referrer-policy','no-referrer');
   res.setHeader('x-frame-options','SAMEORIGIN');
-  if(req.method==='GET'&&req.url==='/api/health'){ const local=isLocalRequest(req); return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:false,honestUnavailableFallback:true,teacherPolicy:{rateLimitPerMinute:TEACHER_RATE_LIMIT,windowMs:RATE_WINDOW_MS,maxBodyBytes:MAX_BODY,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,costProfile:runtimeProfile},configurable:local&&!runtimeApiKey,deploy:{provider:process.env.RENDER==='true'?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }
+  if(req.method==='GET'&&req.url==='/api/health'){ const local=isLocalRequest(req); return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:false,honestUnavailableFallback:true,teacherPolicy:{rateLimitPerMinute:TEACHER_RATE_LIMIT,windowMs:RATE_WINDOW_MS,maxBodyBytes:MAX_BODY,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,costProfile:runtimeProfile,contextSchemaVersion:TEACHER_CONTEXT_VERSION},configurable:local&&!runtimeApiKey,deploy:{provider:process.env.RENDER==='true'?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }
 
   if(req.method==='POST'&&req.url==='/api/configure'){
     if(!isLocalRequest(req)) return json(res,403,{error:'AI anahtarı yalnızca yerel uygulama çalıştırmasında bağlanabilir.'});

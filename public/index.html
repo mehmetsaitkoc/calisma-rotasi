@@ -2056,10 +2056,25 @@ const OFFERS=Object.freeze({
  quarterly:{name:'Rota Plus',amount:399,period:'90 gün',duration:'90 günlük paket',renewal:'Önerilen model: tek ödeme, 90 gün erişim. Otomatik yenileme yok.'},
  early:{name:'Erken Katılım',amount:249,period:'90 gün',duration:'90 günlük başlangıç paketi',renewal:'İlk ücretli test için önerilen paket. Tek ödeme, otomatik yenileme yok.'}
 });
-let billing={tier:'free',offer:'monthly'},billingPeriod='monthly',sampleSaved=null;
-try { const b=JSON.parse(sessionStorage.getItem('rota-plus:visual-demo')||'null'); if(b&&['free','plus'].includes(b.tier)&&Object.hasOwn(OFFERS,b.offer))billing={tier:b.tier,offer:b.offer}; } catch {}
-const isPlus=()=>billing.tier==='plus';
-const featureEnabled=key=>window.RotaContracts?.featureEnabled?window.RotaContracts.featureEnabled(billing.tier,key):isPlus();
+let entitlement=window.RotaContracts?.entitlementForTier?window.RotaContracts.entitlementForTier('free',{source:'client_default',purchaseEnabled:false,accountRequired:true}):{tier:'free',source:'client_default',purchaseEnabled:false,accountRequired:true,features:{}},entitlementLoaded=false,entitlementError='',billingPeriod='monthly',sampleSaved=null;
+const isPlus=()=>entitlement.tier==='plus';
+const featureEnabled=key=>window.RotaContracts?.featureEnabled?window.RotaContracts.featureEnabled(entitlement.tier,key):false;
+async function loadEntitlement(force=false){
+ if(entitlementLoaded&&!force)return entitlement;
+ try{
+  const response=await fetch('/api/entitlements',{cache:'no-store'});
+  const raw=await response.json();
+  if(!response.ok)throw Error(raw?.error||'Üyelik yetkisi alınamadı.');
+  entitlement=window.RotaContracts?.validateEntitlement?window.RotaContracts.validateEntitlement(raw):raw;
+  entitlementError='';
+ }catch(e){
+  entitlement=window.RotaContracts?.entitlementForTier?window.RotaContracts.entitlementForTier('free',{source:'client_fallback',purchaseEnabled:false,accountRequired:true}):{tier:'free',source:'client_fallback',purchaseEnabled:false,accountRequired:true,features:{}};
+  entitlementError=e?.message||'Üyelik yetkisi alınamadı.';
+ }
+ entitlementLoaded=true;
+ render();
+ return entitlement;
+}
 icons.lock='M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4M12 14v3';
 icons.credit='M3 5h18v14H3zM3 10h18M6 15h4';
 function plusBadge(label='PLUS'){return `<span class="plus-badge">${icon('spark')}${label}</span>`;}
@@ -2067,8 +2082,9 @@ function rememberBilling(){try{sessionStorage.setItem('rota-plus:visual-demo',JS
 function changePreviewTier(tier,offer=billing.offer){if(!['free','plus'].includes(tier))return;billing={tier,offer:Object.hasOwn(OFFERS,offer)?offer:'monthly'};rememberBilling();closeModal();render();}
 function previewBar(){
  const themeLabel=UI_THEME?(THEME_NAMES[UI_THEME]||UI_THEME.toUpperCase()):'VARSAYILAN';
- const themeLinks='<div class="theme-preview-switch" role="group" aria-label="Tema önizlemesi"><span class="theme-preview-current">TEMA: '+esc(themeLabel)+'</span>'+['red','violet','cyan'].map(function(t){return '<a class="'+(UI_THEME===t?'selected':'')+'" href="'+esc(themeUrl(t))+'">'+esc(THEME_NAMES[t])+'</a>';}).join('')+'</div>';
- $('#preview-bar').innerHTML=`<div class="preview-inner"><span class="preview-caption"><i></i><span>Tasarım önizlemesi<span class="preview-extra"> · Ödeme alınmaz</span></span></span><div class="preview-controls">${themeLinks}<button class="preview-text video-demo-shortcut" data-action="video-turkish-demo">Tüm dersleri gör</button>${sampleSaved?'<span class="sample-tag">Örnek veriler</span><button data-action="paid-end-sample" class="preview-text">Örnekten çık</button>':'<button data-action="paid-sample" class="preview-text">Örnek panel</button>'}<div class="preview-switch" role="group" aria-label="Üyelik görünümünü değiştir"><button data-action="paid-tier" data-tier="free" class="${!isPlus()?'selected':''}" aria-pressed="${!isPlus()}">Ücretsiz</button><button data-action="paid-tier" data-tier="plus" class="${isPlus()?'selected':''}" aria-pressed="${isPlus()}">${icon('spark')} Plus</button></div></div></div>`;
+ const themeLinks='<div class="theme-preview-switch" role="group" aria-label="Tema önizlemesi"><span class="theme-preview-current">TEMA: '+esc(themeLabel)+'</span>'+['red','violet','cyan'].map(function(t){return '<a class="'+(UI_THEME===t?'selected':'' )+'" href="'+esc(themeUrl(t))+'">'+esc(THEME_NAMES[t])+'</a>';}).join('')+'</div>';
+ const tierLabel=isPlus()?'ROTA PLUS':'ROTA FREE',sourceLabel=entitlement.source==='public_beta'?'Sunucu yetkisi':entitlement.source==='local_dev'?'Yerel geliştirme yetkisi':'Güvenli Free';
+ $('#preview-bar').innerHTML=`<div class="preview-inner"><span class="preview-caption"><i></i><span>${tierLabel}<span class="preview-extra"> · ${sourceLabel}</span></span></span><div class="preview-controls">${themeLinks}<button class="preview-text video-demo-shortcut" data-action="video-turkish-demo">Tüm dersleri gör</button>${sampleSaved?'<span class="sample-tag">Örnek veriler</span><button data-action="paid-end-sample" class="preview-text">Örnekten çık</button>':'<button data-action="paid-sample" class="preview-text">Örnek panel</button>'}</div></div>`;
 }
 function publicNav(){return `<nav class="welcome-nav paid-public-nav"><button class="brand-button" data-action="select" aria-label="Çalışma Rotası ana sayfa">${logo()}</button><div class="row"><button class="public-link ${ui.view==='pricing'?'active':''}" data-action="paid-pricing">Paketler</button>${btn(isPlus()?'Çalışma alanım '+icon('right'):'Ücretsiz başla '+icon('right'),'paid-start','primary sm')}</div></nav>`;}
 function welcomeUpgrade(){return `<section class="welcome-upgrade"><div class="row">${plusBadge('ROTA PLUS')}<span class="tiny muted">TEMEL TAKİPTEN BİR ADIM ÖTEYE</span></div><div class="welcome-upgrade-body"><div><h3>Sonucunu gör. <span class="serif">Sıradaki adımını belirle.</span></h3><p>Gelişmiş aylık analizler, uzun dönem trendleri ve daha ayrıntılı Rota Hoca içgörüleri.</p></div><div class="welcome-upgrade-price"><div><strong>Plus</strong><span> · fiyat testi tamamlanmadı</span></div>${btn('Özellikleri gör '+icon('arrow'),'paid-pricing','primary')}</div></div><span class="price-footnote">Örnek fiyat · Ücretsiz paketle başlayabilirsin.</span></section>`;}
@@ -4841,6 +4857,7 @@ setInterval(()=>{for(const e of ['kpss','yks']){const t=timers[e];if(t?.endAt&&r
 // İki sekmenin sessizce birbirinin kayıtlarını ezmesini önle.
 window.addEventListener('storage',e=>{if(e.key===KEY){storageBlocked=true;storageProblem='Başka bir sekmede kayıt değişti. Üzerine yazmamak için bu sekmede kalıcı kayıt durduruldu. Açık formunu korumak için yedek al veya sayfayı yenile.';showStorageWarning();}});
 render();
+void loadEntitlement();
 })();
 
 </script>

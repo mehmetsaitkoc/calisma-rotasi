@@ -62,6 +62,13 @@ for(const marker of [
   assert.ok(teacher.includes('teacherContextEnvelope'),'Rota Hoca context must use the shared context envelope');
   for(const field of ['todayPlan','routeDecision','studentModel','mastery','completion'])assert.ok(teacher.includes(field),'Teacher context missing: '+field);
 }
+for(const marker of [
+  'honestFallback:!!j.honestUnavailableFallback',
+  "if(!status.ai&&!status.honestFallback)",
+  'Rota Hoca tahminî ders cevabı üretmez',
+  "!record.answer?._demo&&record.answer.confidence>=.7"
+]) assert.ok(html.includes(marker),'Missing honest Rota Hoca client fallback marker: '+marker);
+assert.ok(!html.includes("teacherOpenConfigure();throw Error('Ders ve fotoğraf sorularını gerçek çözmek için AI bağlantısını kur.')"),'Teacher submit must not block the server honest-fallback path');
 
 
 // 2) Subject/topic methodology must classify materially different study modes.

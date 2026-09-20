@@ -1654,12 +1654,15 @@ for(const marker of [
 {
   const todayTask=between('function routeTodayTask','function routeTodayPage');
   const planCard=between('function routePlanCard','function planPage');
-  assert.ok(todayTask.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Today task badge must use the applied decision');
-  assert.ok(planCard.includes('routeAppliedDecision(p.subjectId,p.topicId)'),'Plan task badge must use the applied decision');
+  const memo=between('const routeRenderDecisionCache','function routeTodayTask');
+  assert.ok(memo.includes('routeAppliedDecision(subjectId,topicId)'),'Render memo must delegate to the real applied-decision function');
+  assert.ok(todayTask.includes('routeDecisionForRender(p.subjectId,p.topicId)'),'Today task badge must use the memoized applied decision');
+  assert.ok(planCard.includes('routeDecisionForRender(p.subjectId,p.topicId)'),'Plan task badge must use the memoized applied decision');
+  assert.ok(html.includes("routeRenderDecisionCache.clear();leaveVideo()"),'Render must clear its decision memo before recomputing the UI');
   assert.ok(html.includes('miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,topicId))'),'Mini result snapshot must persist the applied decision');
   assert.ok(html.includes('adaptive=routeAppliedDecision(def.subjectId,topicId)'),'Mini recommendation must use the applied decision');
   assert.ok(html.includes('const adaptive=routeAppliedDecision(p.subjectId,p.topicId),mode='),'Intervention audit must use the applied decision');
-  assert.ok(html.split('adaptive=routeAppliedDecision(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p);').length-1>=2,'Today task and Why modal must both explain the applied decision');
+  assert.ok(html.includes('adaptive=routeDecisionForRender(p.subjectId,p.topicId),sourceLabel=routeTaskSourceLabel(p),modeExplain=routeModeExplanation(adaptive)'),'Why modal must explain the same applied decision shown in the task card');
   assert.ok(html.includes("adaptive.studentState==='retention'"),'Task prescription must explain retention priority');
   assert.ok(html.includes("adaptive.studentState==='collect'"),'Task prescription must explain low-confidence data collection');
   assert.ok(html.includes("state=a.studentState||'steady'"),'Learning summary must preserve calibrated Student Model state');

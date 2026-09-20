@@ -500,6 +500,12 @@ try {
   assert.ok(Number.isInteger(renderPerf.planIndexBuilds) && renderPerf.planIndexBuilds >= 0 && renderPerf.planIndexBuilds <= 1, 'Plan date index must be built at most once per render');
   assert.ok(renderPerf.renderCount >= 1, 'Route render counter must increment');
   assert.ok(renderPerf.lastTaskNodes >= 1, 'Render diagnostics must observe visible task nodes');
+  assert.ok(Number.isFinite(renderPerf.totalRenderMs) && renderPerf.totalRenderMs >= renderPerf.lastRenderMs, 'Render diagnostics must accumulate measured render time');
+  assert.ok(Number.isFinite(renderPerf.maxRenderMs) && renderPerf.maxRenderMs >= renderPerf.lastRenderMs, 'Render diagnostics must track the slowest measured render');
+  assert.ok(Array.isArray(renderPerf.recent) && renderPerf.recent.length >= 1 && renderPerf.recent.length <= 30, 'Render diagnostics must keep a bounded recent sample window');
+  assert.equal(renderPerf.recent.at(-1).view, renderPerf.view, 'Latest render sample must identify the rendered view');
+  assert.ok(renderPerf.byView && renderPerf.byView[renderPerf.view]?.renders >= 1, 'Render diagnostics must aggregate measurements by view');
+  assert.ok(renderPerf.byView[renderPerf.view].maxTaskNodes >= renderPerf.lastTaskNodes, 'Per-view diagnostics must retain peak visible task nodes');
 
   const backupContract = await page.evaluate(() => {
     let current = null;

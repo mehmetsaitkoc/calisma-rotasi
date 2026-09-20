@@ -5,6 +5,11 @@ const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8
 
 for(const marker of [
   'PREMIUM PRODUCT PASS V1',
+  'PREMIUM UI V2 · LIVING INTERFACE',
+  '--v2-violet:#6c63ff',
+  '--v2-cyan:#25c8c4',
+  '.route-task:not(.is-done):first-child',
+  '.mobile-dock{',
   'PREMIUM EXPERIENCE COMPONENTS V1',
   'data-premium-surface="welcome"',
   'data-premium-surface="onboarding"',

@@ -1,0 +1,36 @@
+name: Premium Preview Artifact
+
+on:
+  push:
+    branches:
+      - gpt/premium-static-preview
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build standalone premium preview
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text(encoding='utf-8')
+          def repl(match):
+              name = match.group(1)
+              content = Path(name).read_text(encoding='utf-8')
+              content = content.replace('</script>', '<\\/script>')
+              return '<script>\n' + content + '\n</script>'
+          html = re.sub(r'<script src="\./([^"]+\.js)"></script>', repl, html)
+          Path('calisma-rotasi-premium-preview.html').write_text(html, encoding='utf-8')
+          print('standalone bytes', Path('calisma-rotasi-premium-preview.html').stat().st_size)
+          PY
+      - name: Upload standalone preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: calisma-rotasi-premium-preview
+          path: calisma-rotasi-premium-preview.html
+          if-no-files-found: error

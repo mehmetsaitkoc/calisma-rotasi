@@ -39,6 +39,7 @@ try{
   assert.equal(health.configurable,false,'Render runtime must never expose local API-key configuration');
   assert.equal(health.teacherPolicy.rateLimitPerMinute,20);
   assert.equal(health.teacherPolicy.maxOutputTokens,1400);
+  assert.equal(health.teacherPolicy.contextSchemaVersion,2,'Health must expose the teacher context schema version');
   assert.ok(!Object.hasOwn(health,'apiKey'),'Health must never expose an API key');
   assert.ok(!JSON.stringify(health).includes('sk-'),'Health must not leak key-like secrets');
 
@@ -82,7 +83,7 @@ try{
   const ttsSameClient=await jsonPost('/api/tts',{text:'Merhaba'},forwardedHeaders);
   assert.equal(ttsSameClient.status,503,'Teacher traffic must not consume the independent TTS rate-limit bucket');
 
-  console.log('Server runtime contracts passed: honest fallback + validation + forwarded-IP scoped rate limits + secret-safe health');
+  console.log('Server runtime contracts passed: honest fallback + validation + bounded context + forwarded-IP scoped rate limits + secret-safe health');
 } finally {
   server.kill('SIGTERM');
   await sleep(100);

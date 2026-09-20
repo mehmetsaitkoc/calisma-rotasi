@@ -113,6 +113,14 @@ assert.equal(sparseMonth.examTypes.length,1);
 assert.equal(sparseMonth.examTypes[0].comparisonReason,'no_previous','A single exam must not invent a comparison');
 assert.equal(sparseMonth.examTypes[0].delta,null);
 
+const sparseComparison=A.compareMonth(sparse,'2026-09',{today:'2026-09-20'});
+for(const key of ['minutes','questions','activeDays']){
+  assert.equal(sparseComparison.deltas[key].known,false,'Missing previous-month study evidence must keep '+key+' delta unknown');
+  assert.equal(sparseComparison.deltas[key].value,null,'Missing previous-month study evidence must not fabricate a zero-baseline '+key+' delta');
+}
+assert.equal(sparseComparison.deltas.examCount.known,false,'A single current-month exam must not create an exam-count delta against missing evidence');
+assert.equal(sparseComparison.deltas.examCount.value,null);
+
 const sparseTrend=A.longTerm(sparse,'2026-09',{today:'2026-09-20',months:6});
 assert.equal(sparseTrend.evidence.monthsWithLogs,1);
 assert.equal(sparseTrend.evidence.studyTrendReady,false,'One month of study data is not enough for a trend claim');

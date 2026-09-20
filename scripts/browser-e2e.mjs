@@ -147,6 +147,21 @@ async function submitWizard(page) {
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
 }
 
+async function showTaskInPlan(page, id, label) {
+  await navigate(page, 'plan');
+  const thisWeek = page.locator('[data-action="week-today"]').first();
+  if (await thisWeek.count() && await thisWeek.isVisible()) await thisWeek.click();
+
+  const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`);
+  for (let hop = 0; hop < 4; hop++) {
+    if (await taskButton.count() && await taskButton.isVisible()) return;
+    const next = page.locator('[data-action="week-next"]').first();
+    assert.ok(await next.count() && await next.isVisible(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
+    await next.click();
+  }
+  assert.ok(await taskButton.count() && await taskButton.isVisible(), label + ': görev Programım içinde erişilebilir olmalı');
+}
+
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {
   const button = page.locator(`[data-action="complete-session"][data-id="${id}"]`);
   await button.waitFor({ state: 'visible' });
@@ -343,7 +358,7 @@ try {
 
   let repair = space.plan.find(p => !p.done && p.sourceMistakeId === mistake.id);
   assert.ok(repair, 'Exam-linked wrong must create a repair task');
-  await navigate(page, 'plan');
+  await showTaskInPlan(page, repair.id, 'exam-linked repair task');
   await completeTask(page, repair.id, { questions: 18, correct: 15, wrong: 3, outcome: 'ok' });
 
   await navigate(page, 'mistakes');
@@ -366,7 +381,7 @@ try {
   assert.equal(review3.reviewBaseDate, repairLog.date, '3-day review must anchor to the real repair completion date');
   assert.ok(review3.date >= due3, '3-day review must never be scheduled before its real +3 due date');
   assert.match(review3.reason || '', /Denemeden gelen yanlış onarımını/i);
-  await navigate(page, 'plan');
+  await showTaskInPlan(page, review3.id, '3-day exam-wrong retention review');
   await completeTask(page, review3.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
 
   const due7 = addDays(repairLog.date, 7);
@@ -377,7 +392,7 @@ try {
   assert.ok(review7, '7-day exam-wrong retention review must materialize when due');
   assert.equal(review7.reviewBaseDate, repairLog.date, '7-day review must anchor to the real repair completion date');
   assert.ok(review7.date >= due7, '7-day review must never be scheduled before its real +7 due date');
-  await navigate(page, 'plan');
+  await showTaskInPlan(page, review7.id, '7-day exam-wrong retention review');
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 

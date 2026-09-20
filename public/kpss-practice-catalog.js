@@ -199,15 +199,15 @@ const turkishSection={
 const historySection={
  id:'kpss-tarih-section-01',exam:'kpss',subjectId:'k-ta',title:'KPSS Tarih Bölüm Denemesi #01',eyebrow:'BÖLÜM DENEMESİ · KPSS',minutes:24,penalty:4,version:1,
  blueprint:[
-  ['k-ta-1','İslamiyet öncesi Türk tarihi',2],['k-ta-2','İlk Türk İslam devletleri',2],['k-ta-3','Türkiye Selçuklu Devleti',1],
+  ['k-ta-1','İslamiyet öncesi Türk tarihi',1],['k-ta-2','İlk Türk İslam devletleri',2],['k-ta-3','Türkiye Selçuklu Devleti',1],
   ['k-ta-4','Osmanlı kuruluş dönemi',2],['k-ta-5','Osmanlı yükselme dönemi',2],['k-ta-6','Osmanlı kültür ve medeniyeti',2],
   ['k-ta-7','Osmanlı yenileşme hareketleri',2],['k-ta-8','20. yüzyılda Osmanlı Devleti',2],['k-ta-9','Millî Mücadele hazırlık dönemi',3],
-  ['k-ta-10','Kurtuluş Savaşı cepheleri',3],['k-ta-11','Atatürk ilke ve inkılapları',3],['k-ta-12','Atatürk dönemi dış politika',2],
+  ['k-ta-10','Kurtuluş Savaşı cepheleri',3],['k-ta-11','Atatürk ilke ve inkılapları',3],['k-ta-12','Atatürk dönemi dış politika',1],
   ['k-ta-13','Çağdaş Türk ve dünya tarihi',3]
  ],
  questions:[
  Q('ta-s1','k-ta-1','Eski Türklerde yazısız hukuk kurallarının bütününe ne ad verilirdi?',['Töre','Kut','Ülüş','Toy','Yabgu'],0,'Töre toplum ve devlet hayatını düzenleyen geleneksel hukuk kurallarıdır.'),
- Q('ta-s2','k-ta-1','Uygurların diğer birçok eski Türk topluluğundan farklı olarak öne çıktığı özellik hangisidir?',['Tamamen göçebe kalmaları','Yerleşik şehir yaşamını geliştirmeleri','İslamiyet’i ilk kabul etmeleri','Anadolu’ya ilk yerleşmeleri','Roma ile ittifak kurmaları'],1,'Uygurlar yerleşik yaşam, şehir ve kültür faaliyetleriyle öne çıkar.'),
+ Q('ta-s2','k-ta-13','Varşova Paktı hangi yıl kurulmuştur?',['1945','1949','1952','1955','1961'],3,'Varşova Paktı 1955’te Sovyetler Birliği öncülüğünde kurulmuştur.'),
  Q('ta-s3','k-ta-2','Türkçenin söz varlığını Araplara tanıtmak amacıyla yazılan eser hangisidir?',['Kutadgu Bilig','Dîvânu Lugâti’t-Türk','Atabetü’l-Hakayık','Divan-ı Hikmet','Siyasetname'],1,'Kaşgarlı Mahmut’un Dîvânu Lugâti’t-Türk’ü Türkçeyi tanıtır.'),
  Q('ta-s4','k-ta-2','Büyük Selçuklu Devleti’nde vezirlik yapan ve Siyasetname’yi yazan devlet adamı kimdir?',['Nizamülmülk','Tuğrul Bey','Alp Arslan','Melikşah','Hasan Sabbah'],0,'Siyasetname Nizamülmülk’e aittir.'),
  Q('ta-s5','k-ta-3','1243 Kösedağ Savaşı’nın Türkiye Selçukluları açısından en önemli sonucu hangisidir?',['Bizans’ın yıkılması','Moğol/İlhanlı hâkimiyetinin güçlenmesi','Haçlı Seferlerinin sona ermesi','Osmanlı Devleti’nin kurulması','İstanbul’un fethedilmesi'],1,'Kösedağ yenilgisi Selçukluları Moğol nüfuzu altına soktu.'),
@@ -231,7 +231,7 @@ const historySection={
  Q('ta-s23','k-ta-11','Soyadı Kanunu’nun kabulü hangi alandaki düzenlemeler arasında değerlendirilir?',['Toplumsal','Askerî','Dış politika','Maliye','Tarım'],0,'Soyadı Kanunu toplumsal alandaki inkılaplardandır.'),
  Q('ta-s24','k-ta-11','Aşağıdaki gelişmelerden hangisi ekonomik alandaki devletçilik uygulamalarına örnektir?',['Birinci Beş Yıllık Sanayi Planı','Harf İnkılabı','Şapka Kanunu','Tevhid-i Tedrisat','Soyadı Kanunu'],0,'Sanayi planları devletin ekonomide aktif rol üstlenmesinin örneklerindendir.'),
  Q('ta-s25','k-ta-12','Türkiye’nin Milletler Cemiyetine üye olduğu yıl hangisidir?',['1923','1929','1932','1936','1939'],2,'Türkiye 1932’de Milletler Cemiyetine üye oldu.'),
- Q('ta-s26','k-ta-12','Sadabat Paktı’nda Türkiye ile birlikte yer alan devletlerden biri hangisidir?',['İran','Yunanistan','Bulgaristan','Romanya','Yugoslavya'],0,'Sadabat Paktı Türkiye, İran, Irak ve Afganistan arasında imzalandı.'),
+ Q('ta-s26','k-ta-13','Kıbrıs Barış Harekâtı hangi yıl gerçekleştirilmiştir?',['1960','1964','1971','1974','1980'],3,'Kıbrıs Barış Harekâtı 1974 yılında gerçekleştirilmiştir.'),
  Q('ta-s27','k-ta-13','Türkiye’nin Kore Savaşı’na asker göndermesinin ardından üye olduğu askerî ittifak hangisidir?',['NATO','Varşova Paktı','SEATO','Bağdat Paktı','Avrupa Konseyi'],0,'Türkiye 1952’de NATO’ya üye oldu.')
  ]
 };

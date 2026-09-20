@@ -14,6 +14,10 @@ for(const marker of [
   "scope + ':' + clientIp(req)",
   "'x-forwarded-for'",
   'function safePhoto',
+  'const TEACHER_CONTEXT_VERSION = 2',
+  'function cleanTeacherContext',
+  'function sanitizeContextValue',
+  'const context = cleanTeacherContext(body.studentContext)',
   'function validateAnswer',
   "text:{format:{type:'json_schema'",
   "store: false"
@@ -27,4 +31,4 @@ assert.ok(src.includes('honestUnavailableFallback:true'),'Health endpoint must e
 assert.ok(src.includes("if(!isLocalRequest(req)) return json(res,403"),'Render must not expose runtime API-key configuration');
 assert.ok(!src.includes("direct='Demo test cevabı'"),'Server must not fabricate a generic demo answer');
 
-console.log('Server contracts passed: schema + body/photo guards + honest fallback + rate limits');
+console.log('Server contracts passed: schema + body/photo guards + bounded context + honest fallback + rate limits');

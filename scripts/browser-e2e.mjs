@@ -954,6 +954,11 @@ try {
   assert.ok(await page.locator('.report-week-bars').isVisible(), 'Premium monthly report must expose within-month rhythm');
   assert.ok(await page.getByText(/öğrenme başarısı skoru üretmez/i).count(), 'Monthly report must preserve evidence-safe language');
   await assertCleanRender(page, 'Plus premium monthly report');
+  const reportSubjectName=page.locator('.report-subject-row strong').first();
+  if(await reportSubjectName.count()){
+    await reportSubjectName.evaluate(node=>{node.textContent='Uluslararası İlişkiler ve Çağdaş Dünya Tarihi Çok Uzun Ders Adı';});
+    await assertCleanRender(page,'Plus premium monthly report with long subject name');
+  }
 
   const trendTab = page.locator('[data-action="report-tab"][data-report-tab="trend"]');
   await trendTab.click();

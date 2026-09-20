@@ -55,9 +55,9 @@ function monthWeek(date){
   if(!Number.isInteger(day)||day<1)return -1;
   return Math.min(3,Math.floor((day-1)/7));
 }
-function metricDelta(current,previous,key){
-  const now=safeNumber(current?.[key]),before=safeNumber(previous?.[key]);
-  return {value:now-before,current:now,previous:before,known:before>0||now>0};
+function metricDelta(current,previous,key,known=true){
+  const now=safeNumber(current?.[key]),before=safeNumber(previous?.[key]),comparable=known===true;
+  return {value:comparable?now-before:null,current:now,previous:before,known:comparable};
 }
 function aggregateMonth(space,month,options={}){
   if(!validMonth(month))throw new Error('Geçerli bir rapor ayı gerekli.');
@@ -135,10 +135,10 @@ function compareMonth(space,month,options={}){
     current,
     previous,
     deltas:{
-      minutes:metricDelta(current,previous,'minutes'),
-      questions:metricDelta(current,previous,'questions'),
-      activeDays:metricDelta(current,previous,'activeDays'),
-      examCount:metricDelta(current,previous,'examCount'),
+      minutes:metricDelta(current,previous,'minutes',current.logCount>0&&previous.logCount>0),
+      questions:metricDelta(current,previous,'questions',current.logCount>0&&previous.logCount>0),
+      activeDays:metricDelta(current,previous,'activeDays',current.logCount>0&&previous.logCount>0),
+      examCount:metricDelta(current,previous,'examCount',current.examCount>0&&previous.examCount>0),
       planCompletion:{
         known:current.plan.completionRate!==null&&previous.plan.completionRate!==null,
         value:current.plan.completionRate!==null&&previous.plan.completionRate!==null?current.plan.completionRate-previous.plan.completionRate:null,

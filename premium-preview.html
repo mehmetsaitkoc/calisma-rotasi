@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Çalışma Rotası · Premium Preview</title>
+<style>
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f5f1;color:#17372f}
+#preview-loading{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center}
+#preview-loading div{max-width:560px}
+#preview-loading strong{display:block;font-size:22px;margin-bottom:8px}
+#preview-loading span{color:#66756d;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="preview-loading"><div><strong>Premium önizleme hazırlanıyor…</strong><span>Çalışma Rotası'nın güncel premium branch'i yükleniyor.</span></div></div>
+<script>
+(async function(){
+  const source="https://cdn.jsdelivr.net/gh/mehmetsaitkoc/calisma-rotasi@c44e49bf1c3420dd7e38a24d94d00f875ebc361a/public/index.html";
+  const publicBase="https://cdn.jsdelivr.net/gh/mehmetsaitkoc/calisma-rotasi@c44e49bf1c3420dd7e38a24d94d00f875ebc361a/public/";
+  try{
+    let html=await fetch(source,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('index '+r.status);return r.text();});
+    html=html.replace(/<script src="\/([^"]+\.js)"><\/script>/g,function(_,file){
+      return '<script src="'+publicBase+file+'"><\\/script>';
+    });
+    html=html.replace('</head>', '<style>.preview-static-note{position:fixed;right:14px;bottom:14px;z-index:99999;padding:8px 11px;border-radius:999px;background:rgba(23,55,47,.92);color:#fff;font:700 10px/1 system-ui;letter-spacing:.5px;box-shadow:0 12px 30px rgba(0,0,0,.16)}<\\/style></head>');
+    html=html.replace('</body>', '<div class="preview-static-note">PREMIUM BRANCH PREVIEW</div></body>');
+    document.open();
+    document.write(html);
+    document.close();
+  }catch(err){
+    document.body.innerHTML='<div id="preview-loading"><div><strong>Önizleme yüklenemedi.</strong><span>'+String(err&&err.message||err)+'</span></div></div>';
+  }
+})();
+</script>
+</body>
+</html>

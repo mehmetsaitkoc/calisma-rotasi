@@ -70,7 +70,7 @@ assert.ok(!html.includes('data-action="paid-tier"'),'Premium UI must not expose 
 assert.ok(!html.includes('Plus görünümünü dene'),'Pricing UI must not visually grant Plus before account/payment entitlement exists');
 assert.ok(html.includes("fetch('/api/entitlements'"),'Premium UI must load its entitlement from the server boundary');
 assert.ok(html.includes("featureEnabled('advanced_teacher_insights')"),'Advanced teacher continuations must obey the central feature policy');
-for(const phrase of ['Production beta fail-closed','server entitlement','entitlement kaynağı','Sunucu yetkisi']){
+for(const phrase of ['Production beta fail-closed','server entitlement','entitlement kaynağı','Sunucu yetkisi','Yetki servisine ulaşılamadı','Free yetkisi aktif','Plus yetkisi aktif','Plus özelliklerin sunucu tarafından açık.']){
   assert.ok(!html.includes(phrase),'User-facing product copy must not expose technical access jargon: '+phrase);
 }
 assert.ok(html.includes('Plus erişimi yalnız doğrulanmış üyelikle açılacak'),'Membership copy must explain Plus access in user language');

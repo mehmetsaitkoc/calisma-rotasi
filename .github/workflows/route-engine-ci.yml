@@ -25,6 +25,15 @@ jobs:
         with:
           node-version: 20
 
+      - name: Syntax check route contracts
+        run: node --check public/route-contracts.js
+
+      - name: Syntax check route contract tests
+        run: node --check scripts/route-contracts.test.mjs
+
+      - name: Syntax check server contract tests
+        run: node --check scripts/server-contracts.test.mjs
+
       - name: Syntax check smoke runner
         run: node --check scripts/route-engine-smoke.mjs
 

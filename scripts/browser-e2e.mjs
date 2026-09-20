@@ -479,6 +479,10 @@ try {
   await assertCleanRender(page, 'post onboarding today');
   await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
+  const workspaceV3 = await appState(page);
+  assert.equal(workspaceV3.value.workspaces.kpss.schemaVersion,3,'Fresh onboarding must use workspace schema v3');
+  assert.match(workspaceV3.value.workspaces.kpss.sync?.workspaceId||'',/^ws-kpss-[A-Za-z0-9-]{8,}$/,'Workspace must expose a stable sync-ready identity');
+  assert.ok((workspaceV3.value.workspaces.kpss.sync?.revision||0)>0,'Persisted onboarding must advance workspace revision');
   const freeFlags = await page.evaluate(() => ({
     core: window.RotaContracts.featureEnabled('free','core_route'),
     mini: window.RotaContracts.featureEnabled('free','mini_exams'),
@@ -745,6 +749,8 @@ try {
 
   const persistedBehavior = {
     storageKey: snapshot.key,
+    workspaceId: space.sync?.workspaceId || '',
+    revision: space.sync?.revision || 0,
     taskId: behaviorTask.id,
     date: movedBehaviorTask.date,
     deferUntil: movedBehaviorTask.deferUntil || '',
@@ -762,6 +768,9 @@ try {
   snapshot = await appState(page);
   assert.equal(snapshot.key, persistedBehavior.storageKey, 'Reload must read the exact same preview storage namespace');
   space = snapshot.value.workspaces.kpss;
+  assert.equal(space.schemaVersion,3,'Reload must preserve workspace schema v3');
+  assert.equal(space.sync?.workspaceId,persistedBehavior.workspaceId,'Reload must preserve the exact workspace identity');
+  assert.ok((space.sync?.revision||0)>=persistedBehavior.revision,'Reload must never move workspace revision backwards');
   const afterReloadBehaviorTask = space.plan.find(p => p.id === persistedBehavior.taskId);
   assert.ok(afterReloadBehaviorTask, 'Reload must preserve the rescheduled task');
   assert.equal(afterReloadBehaviorTask.date, persistedBehavior.date, 'Reload must preserve the rescheduled date');

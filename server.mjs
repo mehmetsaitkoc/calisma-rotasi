@@ -298,7 +298,7 @@ const server=http.createServer(async (req,res)=>{
   res.setHeader('x-content-type-options','nosniff');
   res.setHeader('referrer-policy','no-referrer');
   res.setHeader('x-frame-options','SAMEORIGIN');
-  if(req.method==='GET'&&req.url==='/api/health'){ const ip=req.socket.remoteAddress||''; const local=ip==='127.0.0.1'||ip==='::1'||ip==='::ffff:127.0.0.1'; return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:true,configurable:local&&!runtimeApiKey}); }
+  if(req.method==='GET'&&req.url==='/api/health'){ const ip=req.socket.remoteAddress||''; const local=ip==='127.0.0.1'||ip==='::1'||ip==='::ffff:127.0.0.1'; return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:true,configurable:local&&!runtimeApiKey,deploy:{provider:process.env.RENDER==='true'?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }
 
   if(req.method==='POST'&&req.url==='/api/configure'){
     const ip = req.socket.remoteAddress || '';

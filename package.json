@@ -5,6 +5,14 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node scripts/route-engine-smoke.mjs"
+    "test": "node scripts/route-engine-smoke.mjs && node scripts/route-engine-stress.mjs && node scripts/route-engine-route-sim.mjs && node scripts/route-engine-longitudinal.mjs && node scripts/route-engine-closed-loop.mjs",
+    "quality:report": "node scripts/route-engine-quality-report.mjs",
+    "critical:audit": "node scripts/route-engine-critical-personas.mjs",
+    "pilot:report": "node scripts/route-engine-pilot-cohort.mjs",
+    "pilot:test": "node scripts/route-engine-pilot-cohort.test.mjs",
+    "pilot:telemetry": "node scripts/route-engine-pilot-telemetry.mjs",
+    "pilot:operations:test": "node scripts/route-engine-pilot-operations.test.mjs",
+    "pilot:operations:ui:test": "node scripts/route-engine-pilot-operations-ui.test.mjs",
+    "production:smoke": "node scripts/production-smoke.mjs"
   }
 }

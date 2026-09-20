@@ -14,6 +14,42 @@ function isDate(v){return typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!N
 function dayAdd(date,days){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
 function daysBetween(a,b){if(!isDate(a)||!isDate(b))return null;return Math.floor((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000);}
 function finite(v){return Number.isFinite(v)?Number(v):null;}
+function ratio(n,d){return d?Math.round(n/d*1000)/10:null;}
+function validateObservability(o){
+  if(!o||o.schema!=='calisma-rotasi-pilot-metrics-v1')throw Error('Pilot observability schema geçersiz.');
+  if(![1,2].includes(Number(o.version)))throw Error('Pilot observability sürümü geçersiz.');
+  if(Number(o.version)>=2){
+    if(!o.reviews?.byWave?.[3]||!o.reviews?.byWave?.[7])throw Error('Pilot v2 review observability eksik.');
+    if(o.privacy?.aggregateOnly!==true||o.privacy?.localFirst!==true||o.privacy?.optInRequired!==true)throw Error('Pilot v2 privacy sözleşmesi geçersiz.');
+  }
+  return o;
+}
+function observabilityOverview(payload){
+  const o=payload?.observability;
+  if(!o)return {available:false,version:0};
+  validateObservability(o);
+  const recovery=o.miniRepairRecovery||{},trend=o.mistakeTrend?.direction||'insufficient_evidence';
+  return {
+    available:true,
+    version:Number(o.version),
+    completionRate:finite(o.completion?.rate),
+    modeBounces:finite(o.modes?.bounces),
+    repairExit:finite(o.modes?.repairExit),
+    review3Escape:finite(o.reviews?.byWave?.[3]?.escapeRate),
+    review7Escape:finite(o.reviews?.byWave?.[7]?.escapeRate),
+    review3Due:finite(o.reviews?.byWave?.[3]?.due),
+    review3Missed:finite(o.reviews?.byWave?.[3]?.missed),
+    review7Due:finite(o.reviews?.byWave?.[7]?.due),
+    review7Missed:finite(o.reviews?.byWave?.[7]?.missed),
+    openMistakeTrend:['rising','falling','flat','insufficient_evidence'].includes(trend)?trend:'insufficient_evidence',
+    miniRepairEpisodes:finite(recovery.episodes),
+    miniRepairRecovered:finite(recovery.recoveredEvidence),
+    miniRepairStillRepair:finite(recovery.stillRepairEvidence),
+    miniRepairInsufficient:finite(recovery.insufficientEvidence),
+    miniRepairRecoveryRate:finite(recovery.recoveryRate),
+    privacySafe:o.privacy?.aggregateOnly===true&&o.privacy?.containsName===false&&o.privacy?.containsNotes===false&&o.privacy?.containsQuestions===false
+  };
+}
 function validatePilotPayload(payload){
   if(!payload||payload.schema!=='calisma-rotasi-pilot-v1')throw Error('Geçersiz pilot dosyası.');
   if(typeof payload.participantId!=='string'||!/^[a-zA-Z0-9_-]{3,120}$/.test(payload.participantId))throw Error('Pilot kimliği geçersiz.');
@@ -27,6 +63,7 @@ function validatePilotPayload(payload){
     if(s.milestoneDay!==undefined&&s.milestoneDay!==s.checkpoint)throw Error('Pilot milestone/checkpoint uyuşmuyor.');
     for(const key of ['planned','actual','modes','interventions','student'])if(!s[key]||typeof s[key]!=='object'||Array.isArray(s[key]))throw Error('Pilot snapshot '+key+' alanı eksik.');
   }
+  if(payload.observability!==undefined)validateObservability(payload.observability);
   if(payload.interventionHistory!==undefined){
     if(!Array.isArray(payload.interventionHistory)||payload.interventionHistory.length>240)throw Error('Pilot müdahale geçmişi geçersiz.');
     for(const x of payload.interventionHistory){if(!x||!isDate(x.date)||!['repair','ease','progress'].includes(x.mode)||!Number.isFinite(x.confidence))throw Error('Pilot müdahale kaydı geçersiz.');}
@@ -139,6 +176,7 @@ function studentOverview(payload,asOfDate=payload.generatedDate){
     openMistakes:finite(latest?.mistakes?.openAtCapture),
     mastery:finite(latest?.mastery?.mastery),
     intervention:(payload.interventionHistory||[]).at(-1)||interventionStatus(latest),
+    observability:observabilityOverview(payload),
     alarms
   };
 }
@@ -152,7 +190,13 @@ function avg(values){const xs=values.filter(Number.isFinite);return xs.length?Ma
 function cohortSummary(payloads,asOfDate){
   const rows=payloads.map(p=>studentOverview(p,asOfDate||p.generatedDate)),counts={normal:0,waiting:0,attention:0,critical:0};
   for(const row of rows)counts[row.status]=(counts[row.status]||0)+1;
-  const latest=payloads.map(latestSnapshot).filter(Boolean);
+  const latest=payloads.map(latestSnapshot).filter(Boolean),obs=rows.map(r=>r.observability).filter(x=>x.available);
+  const review=function(wave){
+    const due=obs.reduce((n,x)=>n+(finite(x['review'+wave+'Due'])||0),0),missed=obs.reduce((n,x)=>n+(finite(x['review'+wave+'Missed'])||0),0);
+    return {due,missed,escapeRate:ratio(missed,due)};
+  };
+  const recovered=obs.reduce((n,x)=>n+(finite(x.miniRepairRecovered)||0),0),stillRepair=obs.reduce((n,x)=>n+(finite(x.miniRepairStillRepair)||0),0),insufficient=obs.reduce((n,x)=>n+(finite(x.miniRepairInsufficient)||0),0),episodes=obs.reduce((n,x)=>n+(finite(x.miniRepairEpisodes)||0),0),measured=recovered+stillRepair;
+  const trendCounts={rising:0,falling:0,flat:0,insufficient_evidence:0};for(const x of obs)trendCounts[x.openMistakeTrend]=(trendCounts[x.openMistakeTrend]||0)+1;
   return {
     students:rows.length,
     counts,
@@ -163,8 +207,20 @@ function cohortSummary(payloads,asOfDate){
     averagePerformanceChange:avg(payloads.map(p=>changeFromDay0(p,s=>finite(s.student?.performance)))),
     modeTransitions:latest.reduce((n,s)=>n+(s.modes?.transitions||0),0),
     modeBounces:latest.reduce((n,s)=>n+(s.modes?.bounces||0),0),
+    observability:{
+      participants:obs.length,
+      coverage:payloads.length?Math.round(obs.length/payloads.length*1000)/10:0,
+      version2:obs.filter(x=>x.version>=2).length,
+      review3:review(3),
+      review7:review(7),
+      repairExitTotal:obs.reduce((n,x)=>n+(finite(x.repairExit)||0),0),
+      modeBouncesTotal:obs.reduce((n,x)=>n+(finite(x.modeBounces)||0),0),
+      mistakeTrend:trendCounts,
+      miniRepairRecovery:{episodes,recoveredEvidence:recovered,stillRepairEvidence:stillRepair,insufficientEvidence:insufficient,recoveryRate:ratio(recovered,measured),observationalOnly:true},
+      privacySafe:obs.filter(x=>x.privacySafe).length
+    },
     rows
   };
 }
 
-export {CHECKPOINTS,THRESHOLDS,validatePilotPayload,milestoneStatus,pilotAlarms,studentOverview,cohortSummary};
+export {CHECKPOINTS,THRESHOLDS,validatePilotPayload,validateObservability,observabilityOverview,milestoneStatus,pilotAlarms,studentOverview,cohortSummary};

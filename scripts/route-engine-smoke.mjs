@@ -24,6 +24,7 @@ assert.ok(parsed>=4,'Expected executable inline scripts after catalog extraction
 // 1a) Architecture and student-facing contract boundary must stay wired.
 for(const marker of [
   '<script src="/route-contracts.js"></script>',
+  '<script src="/report-analytics.js"></script>',
   '<script src="/workspace-schema.js"></script>',
   '<script src="/catalog.js"></script>',
   '<script src="/turkish-catalog.js"></script>',
@@ -45,6 +46,12 @@ for(const marker of [
   'pilotMetrics?.summarize',
   'pilotMetrics?.collectEvents',
   "featureEnabled('monthly_report')",
+  "featureEnabled('long_term_trends')",
+  'function premiumMonthlyReport',
+  'function premiumTrendReport',
+  'RotaReportAnalytics',
+  'report-trend-bars',
+  'report-evidence-badge',
   "featureEnabled('advanced_teacher_insights')",
   "fetch('/api/entitlements'",
   'validateEntitlement',

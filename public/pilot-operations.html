@@ -89,7 +89,7 @@ function cards(s){
   const totalIv=s.helpfulInterventions+s.harmfulInterventions;
   const helpRate=totalIv?Math.round(s.helpfulInterventions/totalIv*1000)/10:null;
   const harmRate=totalIv?Math.round(s.harmfulInterventions/totalIv*1000)/10:null;
-  const delta=v=>v===null?'—':(v>0?'+':'')+v+' puan';
+  const delta=v=>v===null?'—':(v>0?'+':'')+v+' puan',obs=s.observability||{},recovery=obs.miniRepairRecovery||{},measured=(recovery.recoveredEvidence||0)+(recovery.stillRepairEvidence||0);
   return [
     ['Öğrenci',s.students],
     ['Normal',s.counts.normal],
@@ -104,7 +104,11 @@ function cards(s){
     ['Δ Completion',delta(s.averageCompletionChange)],
     ['Δ Performance',delta(s.averagePerformanceChange)],
     ['Mod geçişi',s.modeTransitions],
-    ['Mode bounce',s.modeBounces]
+    ['Mode bounce',s.modeBounces],
+    ['Telemetry v2',String(obs.version2||0)+'/'+s.students],
+    ['3 gün kaçırma',Number.isFinite(obs.review3?.escapeRate)?obs.review3.escapeRate+'%':'—'],
+    ['7 gün kaçırma',Number.isFinite(obs.review7?.escapeRate)?obs.review7.escapeRate+'%':'—'],
+    ['Mini onarım yeniden ölçüm',measured?(recovery.recoveredEvidence||0)+'/'+measured:'—']
   ].map(x=>'<article class="card metric"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></article>').join('');
 }
 function render(){
@@ -128,15 +132,16 @@ function snapshotRow(s){
 }
 function renderDetail(){
   const box=$('#detail'),p=payloads.find(x=>x.participantId===selected);if(!p){box.className='detail';box.innerHTML='';return;}
-  const r=studentOverview(p,today()),snaps=[...(p.snapshots||[])].sort((a,b)=>a.checkpoint-b.checkpoint),history=p.interventionHistory||[];
+  const r=studentOverview(p,today()),snaps=[...(p.snapshots||[])].sort((a,b)=>a.checkpoint-b.checkpoint),history=p.interventionHistory||[],obs=r.observability||{available:false};
   const first=snaps.find(x=>x.checkpoint===0),last=snaps.at(-1);
   const d=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)?Math.round((b-a)*10)/10:null;
-  const perfDelta=first&&last?d(first.student?.performance,last.student?.performance):null,compDelta=first&&last?d(first.actual?.completion,last.actual?.completion):null;
+  const perfDelta=first&&last?d(first.student?.performance,last.student?.performance):null,compDelta=first&&last?d(first.actual?.completion,last.actual?.completion):null,trendLabel=({rising:'Artıyor',falling:'Azalıyor',flat:'Dengede',insufficient_evidence:'Kanıt yetersiz'}[obs.openMistakeTrend]||'Kanıt yetersiz'),miniMeasured=(obs.miniRepairRecovered||0)+(obs.miniRepairStillRepair||0);
   box.className='detail open';
   box.innerHTML='<div class="card"><div class="detail-head"><div><div class="eyebrow">ÖĞRENCİ DETAYI</div><h2>'+esc(p.participantId)+' · '+esc(p.exam.toUpperCase())+'</h2><p class="muted small">Başlangıç '+esc(p.startDate)+' · pilot günü '+r.pilotDay+' · son aktif '+esc(r.lastActiveDate||'bilinmiyor')+'</p></div><button id="closeDetail" class="btn" type="button">Kapat</button></div>'+
     '<div class="detail-grid"><div class="stack"><section><h3>Timeline</h3><div class="timeline"><div class="timeline-row head"><span>Checkpoint</span><span>Mode</span><span>Performance</span><span>Risk</span><span>Need</span><span>Completion</span><span>Mastery</span></div>'+snaps.map(snapshotRow).join('')+'</div></section>'+
     '<section><h3>Intervention geçmişi</h3>'+(history.length?history.map(x=>'<div class="iv '+esc(x.status)+'"><strong>'+esc(x.date)+' · '+esc(mode(x.mode))+' · '+esc(ivLabel(x.status))+'</strong><div class="small muted">Güven %'+num(x.confidence)+(x.reason?' · '+esc(x.reason):'')+'</div><div class="small">'+(x.horizons||[]).map(h=>'Gün '+h.horizon+': '+ivLabel(h.status)).join(' · ')+'</div></div>').join(''):'<p class="muted small">Henüz intervention geçmişi yok.</p>')+'</section></div>'+
     '<div class="stack"><section><h3>Snapshot karşılaştırma</h3><div class="card"><div class="small muted">Gün 0 → son checkpoint</div><p>Performance: <strong class="delta '+deltaClass(perfDelta)+'">'+(perfDelta===null?'—':(perfDelta>0?'+':'')+perfDelta)+'</strong></p><p>Completion: <strong class="delta '+deltaClass(compDelta)+'">'+(compDelta===null?'—':(compDelta>0?'+':'')+compDelta+' puan')+'</strong></p></div></section>'+
+    '<section><h3>V2 gözlemlenebilirlik</h3><div class="card">'+(obs.available?'<div class="small muted">Gözlemsel metrikler · başarı/mastery kanıtı değildir</div><p>3 gün kaçırma: <strong>'+pct(obs.review3Escape)+'</strong></p><p>7 gün kaçırma: <strong>'+pct(obs.review7Escape)+'</strong></p><p>ONARIM çıkışı: <strong>'+num(obs.repairExit)+'</strong></p><p>Açık yanlış trendi: <strong>'+esc(trendLabel)+'</strong></p><p>Mini onarım yeniden ölçüm: <strong>'+(miniMeasured?(obs.miniRepairRecovered||0)+'/'+miniMeasured:'Kanıt bekliyor')+'</strong></p>':'<div class="small muted">Bu exportta v2 observability yok; eski pilot dosyası olabilir.</div>')+'</div></section>'+
     '<section><h3>Operasyon alarmları</h3>'+(r.alarms.length?r.alarms.map(a=>'<div class="alarm '+a.severity+'"><strong>'+esc(statLabel(a.severity))+' · '+esc(a.category)+'</strong><div class="small">'+esc(a.message)+'</div></div>').join(''):'<div class="alarm"><strong>Alarm yok</strong><div class="small muted">Mevcut telemetry belirgin operasyon alarmı üretmiyor.</div></div>')+'</section></div></div></div>';
   $('#closeDetail').addEventListener('click',()=>{selected='';renderDetail();});
 }

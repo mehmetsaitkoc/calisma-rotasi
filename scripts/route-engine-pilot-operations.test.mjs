@@ -27,6 +27,25 @@ function snap(checkpoint,overrides={}){
 function payload(id,overrides={}){
   return {schema:'calisma-rotasi-pilot-v1',participantId:id,exam:'kpss',track:'lisans',startDate:'2026-09-01',generatedDate:'2026-10-01',lastActiveDate:'2026-09-30',completed:false,snapshots:[snap(0),snap(7),snap(14)],...overrides};
 }
+function observability(overrides={}){
+  return {
+    schema:'calisma-rotasi-pilot-metrics-v1',
+    version:2,
+    completion:{planned:20,completed:15,rate:75},
+    modes:{samples:5,transitions:2,bounces:1,repairToSteady:1,repairToProgress:1,repairExit:2},
+    reviews:{
+      due:5,completed:3,missed:2,completionRate:60,escapeRate:40,
+      byWave:{3:{due:3,completed:2,missed:1,completionRate:66.7,escapeRate:33.3},7:{due:2,completed:1,missed:1,completionRate:50,escapeRate:50}}
+    },
+    openMistakes:2,
+    mistakeTrend:{opened:3,resolved:2,netChange:1,direction:'rising',evidenceComplete:true,currentOpen:2},
+    interventions:2,
+    miniResults:4,
+    miniRepairRecovery:{episodes:3,recoveredEvidence:1,stillRepairEvidence:1,insufficientEvidence:1,recoveryRate:50,observationalOnly:true},
+    privacy:{aggregateOnly:true,localFirst:true,optInRequired:true,containsName:false,containsPhone:false,containsEmail:false,containsNotes:false,containsQuestions:false,containsPhoto:false,containsFreeText:false,containsAiChat:false},
+    ...overrides
+  };
+}
 
 // Milestone states distinguish done/waiting/overdue without fabricating a snapshot.
 {
@@ -106,10 +125,45 @@ function payload(id,overrides={}){
   assert.equal(s.rows.find(x=>x.participantId==='p-2').status,'critical');
 }
 
+// V2 observability is consumed without turning observational signals into mastery claims.
+{
+  const p1=payload('p-obs-1',{observability:observability()});
+  const p2=payload('p-obs-2',{observability:observability({
+    modes:{samples:4,transitions:1,bounces:2,repairToSteady:1,repairToProgress:0,repairExit:1},
+    reviews:{due:4,completed:2,missed:2,completionRate:50,escapeRate:50,byWave:{3:{due:2,completed:1,missed:1,completionRate:50,escapeRate:50},7:{due:2,completed:1,missed:1,completionRate:50,escapeRate:50}}},
+    mistakeTrend:{opened:1,resolved:2,netChange:-1,direction:'falling',evidenceComplete:true,currentOpen:1},
+    miniRepairRecovery:{episodes:2,recoveredEvidence:1,stillRepairEvidence:0,insufficientEvidence:1,recoveryRate:100,observationalOnly:true}
+  })});
+  const row=studentOverview(p1,'2026-09-15');
+  assert.equal(row.observability.available,true);
+  assert.equal(row.observability.version,2);
+  assert.equal(row.observability.review3Escape,33.3);
+  assert.equal(row.observability.review7Escape,50);
+  assert.equal(row.observability.openMistakeTrend,'rising');
+  assert.equal(row.observability.miniRepairRecoveryRate,50);
+  const s=cohortSummary([p1,p2],'2026-09-15');
+  assert.equal(s.observability.participants,2);
+  assert.equal(s.observability.coverage,100);
+  assert.equal(s.observability.version2,2);
+  assert.deepEqual(s.observability.review3,{due:5,missed:2,escapeRate:40});
+  assert.deepEqual(s.observability.review7,{due:4,missed:2,escapeRate:50});
+  assert.equal(s.observability.repairExitTotal,3);
+  assert.equal(s.observability.modeBouncesTotal,3);
+  assert.deepEqual(s.observability.mistakeTrend,{rising:1,falling:1,flat:0,insufficient_evidence:0});
+  assert.deepEqual(s.observability.miniRepairRecovery,{episodes:5,recoveredEvidence:2,stillRepairEvidence:1,insufficientEvidence:2,recoveryRate:66.7,observationalOnly:true});
+  assert.equal(s.observability.privacySafe,2);
+}
+
+// Unsafe or incomplete v2 privacy metadata must be rejected instead of silently accepted.
+{
+  const unsafe=payload('p-unsafe',{observability:observability({privacy:{aggregateOnly:true,localFirst:false,optInRequired:true,containsName:false,containsNotes:false,containsQuestions:false}})});
+  assert.throws(()=>studentOverview(unsafe,'2026-09-15'),/privacy sözleşmesi/i);
+}
+
 // Latest intervention metadata is directly available to the future admin row.
 {
   const row=studentOverview(payload('p-last'),'2026-09-15');
   assert.deepEqual(row.intervention,{date:'2026-09-15',mode:'repair',status:'helpful'});
 }
 
-console.log('route-engine-pilot-operations: milestone, alarm, overview and cohort summary rules passed');
+console.log('route-engine-pilot-operations: milestone, alarm, overview, cohort and v2 observability rules passed');

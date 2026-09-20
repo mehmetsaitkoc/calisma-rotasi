@@ -38,6 +38,7 @@ try{
   assert.equal(health.honestUnavailableFallback,true);
   assert.equal(health.configurable,false,'Render runtime must never expose local API-key configuration');
   assert.equal(health.teacherPolicy.rateLimitPerMinute,20);
+  assert.equal(health.teacherPolicy.maxBodyBytes,7*1024*1024,'Health must expose the actual request body ceiling');
   assert.equal(health.teacherPolicy.maxOutputTokens,1400);
   assert.equal(health.teacherPolicy.contextSchemaVersion,2,'Health must expose the teacher context schema version');
   assert.ok(!Object.hasOwn(health,'apiKey'),'Health must never expose an API key');
@@ -46,6 +47,12 @@ try{
   const configureBlocked=await jsonPost('/api/configure',{apiKey:'sk-test-not-a-real-key-1234567890',profile:'economy'});
   assert.equal(configureBlocked.status,403,'Runtime AI configuration must stay disabled on Render');
   assert.match(configureBlocked.data.error||'',/yerel uygulama/i);
+
+  const boundedContext=await jsonPost('/api/teacher',{question:'Bağlamı kontrol et.',studentContext:{contextVersion:2,unknownSecret:'PRIVATE-CONTEXT-LEAK',todayPlan:Array.from({length:20},(_,i)=>({title:'Görev '+i,reason:'x'.repeat(1200)})),recentLogs:Array.from({length:20},(_,i)=>({title:'Log '+i,note:'PRIVATE-NOTE-'+i}))}});
+  assert.equal(boundedContext.status,200,'Bounded teacher context must remain accepted in unavailable mode');
+  assert.equal(boundedContext.data.meta?.contextVersion,2);
+  assert.ok(!JSON.stringify(boundedContext.data).includes('PRIVATE-CONTEXT-LEAK'),'Unknown top-level teacher context must not leak into responses');
+  assert.ok(!JSON.stringify(boundedContext.data).includes('PRIVATE-NOTE-'),'Nested free-form context must not be echoed into unavailable responses');
 
   const fallback=await jsonPost('/api/teacher',{question:'Bu soruyu açıklar mısın?',exam:'KPSS',subject:'Matematik'});
   assert.equal(fallback.status,200);
@@ -60,6 +67,10 @@ try{
   assert.equal(invalidPhoto.status,400,'Photo validation must run even when AI is unavailable');
   assert.match(invalidPhoto.data.error||'',/fotoğraf|biçim/i);
 
+  const oversizedPhoto=await jsonPost('/api/teacher',{question:'',photo:'data:image/png;base64,'+'A'.repeat(5_800_001)});
+  assert.equal(oversizedPhoto.status,413,'Photo-specific size bound must reject oversized images before any AI call');
+  assert.match(oversizedPhoto.data.error||'',/Fotoğraf çok büyük/i);
+
   const empty=await jsonPost('/api/teacher',{question:'',photo:''});
   assert.equal(empty.status,400);
   assert.match(empty.data.error||'',/Sorunu yaz|fotoğraf ekle/i);
@@ -67,6 +78,11 @@ try{
   const invalidJson=await jsonPost('/api/teacher','{bad json');
   assert.equal(invalidJson.status,400);
   assert.match(invalidJson.data.error||'',/Geçersiz JSON/i);
+
+  const oversizedBody=JSON.stringify({question:'x'.repeat(7*1024*1024+1024)});
+  const oversized=await jsonPost('/api/teacher',oversizedBody);
+  assert.equal(oversized.status,413,'Oversized teacher payloads must fail with an explicit 413 response');
+  assert.match(oversized.data.error||'',/çok büyük/i);
 
   const forwardedHeaders={'content-type':'application/json','x-forwarded-for':'203.0.113.10, 10.0.0.5'};
   for(let i=0;i<20;i++){
@@ -83,7 +99,7 @@ try{
   const ttsSameClient=await jsonPost('/api/tts',{text:'Merhaba'},forwardedHeaders);
   assert.equal(ttsSameClient.status,503,'Teacher traffic must not consume the independent TTS rate-limit bucket');
 
-  console.log('Server runtime contracts passed: honest fallback + validation + bounded context + forwarded-IP scoped rate limits + secret-safe health');
+  console.log('Server runtime contracts passed: honest fallback + body/photo bounds + bounded context + forwarded-IP scoped rate limits + secret-safe health');
 } finally {
   server.kill('SIGTERM');
   await sleep(100);

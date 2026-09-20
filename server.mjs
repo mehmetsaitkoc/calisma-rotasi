@@ -72,14 +72,32 @@ function rateLimit(req, scope, limit=30, windowMs=60_000) {
 }
 function readJson(req) {
   return new Promise((resolve, reject) => {
-    let size=0, chunks=[];
+    const tooLarge=()=>Object.assign(new Error('İstek çok büyük.'),{status:413});
+    let size=0, chunks=[], failed=false;
+    req.on('error', e => { if(!failed) reject(e); });
+    const declared=Number(req.headers['content-length']||0);
+    if(Number.isFinite(declared)&&declared>MAX_BODY){
+      failed=true;
+      req.resume();
+      reject(tooLarge());
+      return;
+    }
     req.on('data', c => {
+      if(failed)return;
       size += c.length;
-      if (size > MAX_BODY) { reject(Object.assign(new Error('İstek çok büyük.'),{status:413})); req.destroy(); return; }
+      if (size > MAX_BODY) {
+        failed=true;
+        chunks=[];
+        reject(tooLarge());
+        return;
+      }
       chunks.push(c);
     });
-    req.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); } catch { reject(Object.assign(new Error('Geçersiz JSON.'),{status:400})); } });
-    req.on('error', reject);
+    req.on('end', () => {
+      if(failed)return;
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); }
+      catch { reject(Object.assign(new Error('Geçersiz JSON.'),{status:400})); }
+    });
   });
 }
 function cleanText(v, max=5000){ return typeof v === 'string' ? v.slice(0,max) : ''; }

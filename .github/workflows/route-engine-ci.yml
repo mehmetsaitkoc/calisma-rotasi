@@ -25,6 +25,12 @@ jobs:
         with:
           node-version: 20
 
+      - name: Syntax check workspace schema
+        run: node --check public/workspace-schema.js
+
+      - name: Syntax check workspace schema tests
+        run: node --check scripts/workspace-schema.test.mjs
+
       - name: Syntax check extracted catalog
         run: node --check public/catalog.js
 

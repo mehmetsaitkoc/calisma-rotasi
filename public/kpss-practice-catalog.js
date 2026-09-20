@@ -46,7 +46,7 @@ T('k-tr-6-practice-01','k-tr','Yazım kuralları','KPSS Yazım Kuralları · Hı
 ]),
 T('k-tr-7-practice-01','k-tr','Noktalama işaretleri','KPSS Noktalama · Hızlı Pratik',[
  Q('tr7q1','“Çantama üç şey koydum ___ defter, kalem ve su.” boşluğuna hangi işaret getirilmelidir?',['Virgül','Noktalı virgül','İki nokta','Üç nokta','Kısa çizgi'],2,'Açıklama ve örnek verileceği için iki nokta kullanılır.'),
- Q('tr7q2','Aşağıdaki cümlelerin hangisinde virgül doğru kullanılmıştır?',['Ali, ve Ayşe geldi.','Kitabı okudum, fakat not almadım.','Bugün, okula gitmedim çünkü hastaydım.','Eve geldim, ve dinlendim.','Kırmızı, kalemi aldım.'],1,'Fakat bağlacından önce virgül, iki yargıyı ayırmak için kullanılabilir.'),
+ Q('tr7q2','Aşağıdaki cümlelerin hangisinde virgül doğru kullanılmıştır?',['Ali, ve Ayşe geldi.','Pazardan elma, armut, portakal aldım.','Bugün, okula gitmedim çünkü hastaydım.','Eve geldim, ve dinlendim.','Kırmızı, kalemi aldım.'],1,'Eş görevli sözcükleri ayırmak için virgül doğru kullanılmıştır.'),
  Q('tr7q3','“Eyvah ___ anahtarı içeride unuttum.” cümlesinde boşluğa hangi işaret gelmelidir?',['Nokta','Virgül','Ünlem','Soru işareti','Noktalı virgül'],2,'Duygu bildiren ünlem sözünden sonra ünlem işareti uygundur.'),
  Q('tr7q4','Aşağıdaki cümlelerin hangisinin sonuna soru işareti getirilmelidir?',['Ne kadar güzel bir gün','Bunu gerçekten sen mi yaptın','Keşke bizimle gelseydin','Sana anlatacaklarım var','Bugün hava çok soğuk'],1,'Soru anlamı doğrudan “mi” ile kurulmuştur.')
 ]),
@@ -71,7 +71,7 @@ T('k-tr-10-practice-01','k-tr','Cümle türleri','KPSS Cümle Türleri · Hızl�
 T('k-tr-11-practice-01','k-tr','Anlatım bozuklukları','KPSS Anlatım Bozuklukları · Hızlı Pratik',[
  Q('tr11q1','Aşağıdaki cümlelerin hangisinde gereksiz sözcük kullanımından doğan anlatım bozukluğu vardır?',['Bu konuda herkes aynı fikirde birleşti.','Toplantı saat üçte başladı.','Kitabı dün bitirdim.','Soruyu dikkatlice okudu.','Yarın seni arayacağım.'],0,'“Aynı fikirde” ve “birleşti” birlikte gereksiz anlam tekrarına yol açar.'),
  Q('tr11q2','“Beni en çok sevindiren şey, sınavı kazanmış olmamdır.” cümlesinde anlatım bozukluğu var mıdır?',['Özne eksikliği vardır.','Nesne eksikliği vardır.','Tamlama yanlışlığı vardır.','Anlatım bozukluğu yoktur.','Çatı uyuşmazlığı vardır.'],3,'Cümlede anlam ve yapı bakımından bir bozukluk yoktur.'),
- Q('tr11q3','“Bu ilaç ağrıyı azaltır ve kısa sürede geçirir.” cümlesindeki anlatım bozukluğunun nedeni hangisidir?',['Özne eksikliği','Nesne eksikliği','Yanlış bağlaç','Gereksiz sözcük','Zaman uyumsuzluğu'],1,'“Geçirir” yüklemi için “ağrıyı” nesnesinin ortak kullanımı anlamca sorunlu kabul edilir; ikinci yüklemde nesne açıklaştırılmalıdır.'),
+ Q('tr11q3','“Bu konuda seni destekliyor ve güveniyorum.” cümlesindeki anlatım bozukluğunun nedeni hangisidir?',['Özne eksikliği','Tümleç eksikliği','Yanlış bağlaç','Gereksiz sözcük','Zaman uyumsuzluğu'],1,'“Destekliyorum” fiili “seni”, “güveniyorum” fiili ise “sana” tümlecini ister; ikinci yüklemin tümleci eksiktir.'),
  Q('tr11q4','Aşağıdaki cümlelerin hangisinde mantık hatası vardır?',['Bırakın sigarayı, hiç olmazsa azaltın.','Önce küçük odaları, sonra salonu temizledi.','Toplantıya müdür ve çalışanlar katıldı.','Bu yazı anlaşılır ve akıcıdır.','Kitabı masanın üzerine bıraktı.'],0,'“Bırakmak” azaltmaktan daha ileri bir aşama olduğu için sıralama mantıksal olarak ters kurulmuştur.')
 ]),
 
@@ -101,7 +101,7 @@ T('k-ta-4-practice-01','k-ta','Osmanlı kuruluş dönemi','KPSS Osmanlı Kurulu�
 ]),
 T('k-ta-5-practice-01','k-ta','Osmanlı yükselme dönemi','KPSS Osmanlı Yükselme · Hızlı Pratik',[
  Q('ta5q1','k-ta-5','İstanbul hangi padişah döneminde fethedilmiştir?',['II. Murat','Fatih Sultan Mehmet','Yavuz Sultan Selim','Kanuni Sultan Süleyman','II. Bayezid'],1,'İstanbul 1453’te Fatih Sultan Mehmet döneminde fethedildi.'),
- Q('ta5q2','k-ta-5','Mısır Seferi sonucunda Memlük Devleti’ne son veren Osmanlı padişahı kimdir?',['Fatih Sultan Mehmet','Yavuz Sultan Selim','Kanuni Sultan Süleyman','II. Bayezid','I. Selim'],1,'1516-1517 seferleri Yavuz Sultan Selim dönemindedir.'),
+ Q('ta5q2','k-ta-5','Mısır Seferi sonucunda Memlük Devleti’ne son veren Osmanlı padişahı kimdir?',['Fatih Sultan Mehmet','Yavuz Sultan Selim','Kanuni Sultan Süleyman','II. Bayezid','II. Selim'],1,'1516-1517 seferleri Yavuz Sultan Selim dönemindedir.'),
  Q('ta5q3','k-ta-5','Kanuni döneminde 1526’da Macar Krallığı’nın gücünü kıran savaş hangisidir?',['Mohaç','Preveze','Ridaniye','Çaldıran','Otlukbeli'],0,'Mohaç Meydan Savaşı 1526’da Osmanlı zaferiyle sonuçlandı.'),
  Q('ta5q4','k-ta-5','1538 Preveze Deniz Zaferi’nde Osmanlı donanmasının komutanı kimdir?',['Piri Reis','Barbaros Hayreddin Paşa','Turgut Reis','Kılıç Ali Paşa','Seydi Ali Reis'],1,'Preveze’de Osmanlı donanmasına Barbaros Hayreddin Paşa komuta etti.')
 ]),

@@ -23,6 +23,7 @@ assert.ok(parsed>=4,'Expected executable inline scripts after catalog extraction
 // 1a) Architecture and student-facing contract boundary must stay wired.
 for(const marker of [
   '<script src="/route-contracts.js"></script>',
+  '<script src="/workspace-schema.js"></script>',
   '<script src="/catalog.js"></script>',
   '<script src="/turkish-catalog.js"></script>',
   'ARCHITECTURE BOUNDARY: catalog data',
@@ -52,10 +53,11 @@ for(const marker of [
   'window.__rotaRenderPerf=routeRenderPerf',
   "const FRESH_RESET=FRESH_PREVIEW&&QUERY.get('resume')!=='1'",
   'if(FRESH_RESET)',
-  "function workspace(exam){return {schemaVersion:2,exam,configured:false",
-  "if(old.schemaVersion!==undefined&&(!Number.isInteger(old.schemaVersion)||old.schemaVersion<1||old.schemaVersion>2))throw Error('Yedekte desteklenmeyen workspace şeması.')",
-  "if(old.exam!==undefined&&old.exam!==e)throw Error('Yedekte workspace sınav kimliği geçersiz.')",
-  "w.schemaVersion=2;w.exam=e;w.configured=!!old.configured"
+  'function workspace(exam){return WS.create(exam);}',
+  "const WS=root.RotaWorkspaceSchema||(typeof require==='function'?require('./workspace-schema.js'):null);", 
+  'WS.assertIdentity(old,e);',
+  'const w=WS.migrateIdentity(out.workspaces[e],e),s=old.settings;',
+  'w.configured=!!old.configured'
 ]) assert.ok(html.includes(marker),'Missing architecture/contract marker: '+marker);
 
 {

@@ -369,6 +369,15 @@ try {
   await assertCleanRender(page, 'post onboarding today');
   await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
+  const freeFlags = await page.evaluate(() => ({
+    core: window.RotaContracts.featureEnabled('free','core_route'),
+    mini: window.RotaContracts.featureEnabled('free','mini_exams'),
+    repair: window.RotaContracts.featureEnabled('free','exam_wrong_repair'),
+    mistakes: window.RotaContracts.featureEnabled('free','mistake_notebook'),
+    basic: window.RotaContracts.featureEnabled('free','basic_analysis'),
+    report: window.RotaContracts.featureEnabled('free','monthly_report')
+  }));
+  assert.deepEqual(freeFlags,{core:true,mini:true,repair:true,mistakes:true,basic:true,report:false},'Free tier must keep the complete core learning loop and gate only advanced reporting');
   const renderPerf = await page.evaluate(() => window.__rotaRenderPerf ? { ...window.__rotaRenderPerf } : null);
   assert.ok(renderPerf, 'Route render diagnostics must be exposed');
   assert.ok(Number.isFinite(renderPerf.lastRenderMs) && renderPerf.lastRenderMs >= 0, 'Route render duration must be measurable');

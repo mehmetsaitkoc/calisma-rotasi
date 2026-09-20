@@ -12,6 +12,39 @@ function avg(xs,key){
   const vals=xs.map(key).filter(Number.isFinite);
   return vals.length?Math.round(vals.reduce((n,x)=>n+x,0)/vals.length*10)/10:null;
 }
+function ratio(n,d){return d?Math.round(n/d*1000)/10:null;}
+function validateObservability(o,source='pilot'){
+  if(!o||o.schema!=='calisma-rotasi-pilot-metrics-v1')throw Error(source+': observability schema geçersiz');
+  if(![1,2].includes(Number(o.version)))throw Error(source+': observability version geçersiz');
+  if(Number(o.version)>=2){
+    if(!o.reviews?.byWave?.[3]||!o.reviews?.byWave?.[7])throw Error(source+': v2 review observability eksik');
+    if(o.privacy?.aggregateOnly!==true||o.privacy?.localFirst!==true||o.privacy?.optInRequired!==true)throw Error(source+': v2 privacy sözleşmesi geçersiz');
+  }
+  return o;
+}
+function aggregateObservability(payloads){
+  const rows=payloads.map(p=>p.observability).filter(Boolean);
+  const review=function(wave){
+    const xs=rows.map(o=>o.reviews?.byWave?.[wave]).filter(Boolean),due=xs.reduce((n,x)=>n+(finite(x.due)||0),0),completed=xs.reduce((n,x)=>n+(finite(x.completed)||0),0),missed=xs.reduce((n,x)=>n+(finite(x.missed)||0),0);
+    return {sources:xs.length,due,completed,missed,escapeRate:ratio(missed,due)};
+  };
+  const trendCounts={rising:0,falling:0,flat:0,insufficient_evidence:0};
+  for(const o of rows){const key=['rising','falling','flat'].includes(o.mistakeTrend?.direction)?o.mistakeTrend.direction:'insufficient_evidence';trendCounts[key]++;}
+  const recovered=rows.reduce((n,o)=>n+(finite(o.miniRepairRecovery?.recoveredEvidence)||0),0),stillRepair=rows.reduce((n,o)=>n+(finite(o.miniRepairRecovery?.stillRepairEvidence)||0),0),insufficient=rows.reduce((n,o)=>n+(finite(o.miniRepairRecovery?.insufficientEvidence)||0),0),episodes=rows.reduce((n,o)=>n+(finite(o.miniRepairRecovery?.episodes)||0),0),measured=recovered+stillRepair;
+  return {
+    participants:rows.length,
+    coverage:payloads.length?Math.round(rows.length/payloads.length*1000)/10:0,
+    version2:rows.filter(o=>Number(o.version)>=2).length,
+    completionRate:avg(rows,o=>finite(o.completion?.rate)),
+    modeBounces:rows.reduce((n,o)=>n+(finite(o.modes?.bounces)||0),0),
+    repairExitTotal:rows.reduce((n,o)=>n+(finite(o.modes?.repairExit)||0),0),
+    review3:review(3),
+    review7:review(7),
+    mistakeTrend:trendCounts,
+    miniRepairRecovery:{episodes,recoveredEvidence:recovered,stillRepairEvidence:stillRepair,insufficientEvidence:insufficient,recoveryRate:ratio(recovered,measured),observationalOnly:true},
+    privacySafe:rows.filter(o=>o.privacy?.aggregateOnly===true&&o.privacy?.containsName===false&&o.privacy?.containsNotes===false&&o.privacy?.containsQuestions===false).length
+  };
+}
 function validatePayload(x,source='pilot'){
   if(!x||x.schema!=='calisma-rotasi-pilot-v1')throw Error(source+': geçersiz pilot schema');
   if(typeof x.participantId!=='string'||!/^[a-zA-Z0-9_-]{3,120}$/.test(x.participantId))throw Error(source+': participantId geçersiz');
@@ -27,6 +60,7 @@ function validatePayload(x,source='pilot'){
     for(const [obj,name] of [[s.planned,'planned'],[s.actual,'actual'],[s.modes,'modes'],[s.interventions,'interventions'],[s.student,'student']])if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error(source+': '+name+' eksik');
     if(s.mastery!==undefined&&(!s.mastery||typeof s.mastery!=='object'||Array.isArray(s.mastery)))throw Error(source+': mastery geçersiz');
   }
+  if(x.observability!==undefined)validateObservability(x.observability,source);
   return x;
 }
 function checkpointSummary(payloads,checkpoint){
@@ -82,7 +116,7 @@ function deltaBundle(payloads,from,to){
 function summarizeCohort(raw){
   const payloads=raw.map((x,i)=>validatePayload(x,'pilot '+(i+1))),ids=new Set();
   for(const p of payloads){if(ids.has(p.participantId))throw Error('Aynı participantId birden fazla dosyada var: '+p.participantId);ids.add(p.participantId);}
-  const checkpoints=CHECKPOINTS.map(cp=>checkpointSummary(payloads,cp)),comparisons=COMPARISONS.map(([from,to])=>deltaBundle(payloads,from,to)),paired30=comparisons.find(x=>x.from===0&&x.to===30);
+  const checkpoints=CHECKPOINTS.map(cp=>checkpointSummary(payloads,cp)),comparisons=COMPARISONS.map(([from,to])=>deltaBundle(payloads,from,to)),paired30=comparisons.find(x=>x.from===0&&x.to===30),observability=aggregateObservability(payloads);
   return {
     participants:payloads.length,
     examCounts:{kpss:payloads.filter(p=>p.exam==='kpss').length,yks:payloads.filter(p=>p.exam==='yks').length},
@@ -90,7 +124,8 @@ function summarizeCohort(raw){
     harmfulTotal:checkpoints.reduce((n,x)=>n+x.harmful,0),
     helpfulTotal:checkpoints.reduce((n,x)=>n+x.helpful,0),
     insufficientTotal:checkpoints.reduce((n,x)=>n+x.insufficient,0),
-    confoundedTotal:checkpoints.reduce((n,x)=>n+x.confounded,0)
+    confoundedTotal:checkpoints.reduce((n,x)=>n+x.confounded,0),
+    observability
   };
 }
 function fmt(v,suffix=''){return Number.isFinite(v)?v+suffix:'—';}
@@ -121,7 +156,19 @@ ${deltas}
 - Insufficient checkpoint sonuçları: **${summary.insufficientTotal}**
 - Confounded checkpoint sonuçları: **${summary.confoundedTotal}**
 
-Bu rapor gözlemsel pilot telemetrisidir; nedensel etki kanıtı değildir. Değişimler “motor kararı sonrası gözlenen değişim” olarak yorumlanmalıdır. Katılımcı bazında eksik checkpointler coverage ve eşleşmiş n değerlerinde görünür.
+## Operasyonel gözlemlenebilirlik
+
+- Observability coverage: **${summary.observability.participants}/${summary.participants} (${fmt(summary.observability.coverage,'%')})**
+- Telemetry v2: **${summary.observability.version2}/${summary.participants}**
+- 3 gün review escape: **${fmt(summary.observability.review3.escapeRate,'%')}** · due ${summary.observability.review3.due} · missed ${summary.observability.review3.missed}
+- 7 gün review escape: **${fmt(summary.observability.review7.escapeRate,'%')}** · due ${summary.observability.review7.due} · missed ${summary.observability.review7.missed}
+- ONARIM → DENGE/İLERLEME gözlemi: **${summary.observability.repairExitTotal}**
+- Mode bounce toplamı: **${summary.observability.modeBounces}**
+- Açık yanlış trendi: ↑ ${summary.observability.mistakeTrend.rising} · ↓ ${summary.observability.mistakeTrend.falling} · → ${summary.observability.mistakeTrend.flat} · kanıt yetersiz ${summary.observability.mistakeTrend.insufficient_evidence}
+- Mini onarım yeniden ölçüm: **${summary.observability.miniRepairRecovery.recoveredEvidence}/${summary.observability.miniRepairRecovery.recoveredEvidence+summary.observability.miniRepairRecovery.stillRepairEvidence}** ölçülen episode · recovery rate ${fmt(summary.observability.miniRepairRecovery.recoveryRate,'%')} · insufficient ${summary.observability.miniRepairRecovery.insufficientEvidence}
+- Privacy-safe observability export: **${summary.observability.privacySafe}/${summary.observability.participants}**
+
+Bu rapor gözlemsel pilot telemetrisidir; nedensel etki veya pedagojik başarı kanıtı değildir. Değişimler “motor kararı sonrası gözlenen değişim” olarak yorumlanmalıdır. Katılımcı bazında eksik checkpoint/observability verileri coverage ve eşleşmiş n değerlerinde görünür.
 `;
 }
 function readInputs(args){
@@ -139,4 +186,4 @@ function main(){
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))main();
 
-export {validatePayload,summarizeCohort,markdown};
+export {validatePayload,validateObservability,aggregateObservability,summarizeCohort,markdown};

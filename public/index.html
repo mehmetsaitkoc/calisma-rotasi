@@ -1728,6 +1728,7 @@ function validateBackup(data){
   const old=data.workspaces[e];if(!old||!old.settings)throw Error('Yedekte sınav alanı eksik.');
   WS.assertIdentity(old,e);
   const w=WS.migrateIdentity(out.workspaces[e],e),s=old.settings;
+  WS.adoptSyncMeta(w,old,e);
   w.configured=!!old.configured;
   if(e==='yks'&&!C.TRACKS[s.track])throw Error('Yedekte geçersiz YKS alanı.');
   w.settings={name:text(s.name,60),track:e==='yks'?s.track:'lisans',dailyMinutes:int(s.dailyMinutes,30,720,'günlük süre'),days:[...new Set(array(s.days).map(n=>int(n,0,6,'gün')))],priorities:array(s.priorities).map(ident),target:text(s.target,160),targetDate:s.targetDate?checkedDate(s.targetDate):''};
@@ -1956,7 +1957,7 @@ R.validateBackup=function(data){
  const unpack=window.RotaContracts?.unwrapBackup?window.RotaContracts.unwrapBackup(data):{state:data,migratedFrom:'legacy'};
  const raw=unpack.state,out=baseValidate(raw);
  for(const e of ['kpss','yks']){out.workspaces[e].lessons=validateLessons(raw.workspaces[e].lessons,out.workspaces[e],e);out.workspaces[e].turkishPrefs=TC.validatePreferences(raw.workspaces[e].turkishPrefs,e);Object.assign(out.workspaces[e],TC.validateCourseData(raw.workspaces[e],e));}
- out.videoVersion=3;out.workspaceSchemaVersion=window.RotaContracts?.WORKSPACE_SCHEMA_VERSION||2;
+ out.videoVersion=3;out.workspaceSchemaVersion=window.RotaContracts?.WORKSPACE_SCHEMA_VERSION||3;
  return out;
 };
 function newClock(minutes=25){return {id:R.uid(),duration:minutes,phase:'focus',remainingMs:minutes*60000,deadline:0,bankMs:0,rounds:0,pauseVideo:true,updated:Date.now()};}
@@ -2033,7 +2034,7 @@ function subIcon(id){const s=subject(id);const idx=Math.max(0,C.subjects.findInd
 function subOptions(selected=''){const list=subjects();if(selected&&!list.some(s=>s.id===selected)){const hidden=C.subjects.find(s=>s.id===selected&&s.exam===state.activeExam);if(hidden)list.push(hidden);}return list.map(s=>`<option value="${s.id}" ${selected===s.id?'selected':''}>${esc((state.activeExam==='yks'?s.stage+' · ':'')+s.name)}</option>`).join('');}
 function examLabel(){return state.activeExam==='kpss'?'KPSS':'YKS';}
 function trackLabel(){return state.activeExam==='kpss'?'Lisans · GY–GK':C.TRACKS[w().settings.track];}
-function save(){if(sampleSaved)return true;if(storageBlocked){showStorageWarning();return false;}try{localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{storageProblem='Tarayıcı kaydı yapılamadı. Bu oturumdaki verilerini kaybetmemek için yedek indir; tarayıcı verilerini silme.';showStorageWarning();return false;}}
+function save(){if(sampleSaved)return true;if(storageBlocked){showStorageWarning();return false;}try{if(state.activeExam&&state.workspaces[state.activeExam])window.RotaWorkspaceSchema?.touch?.(state.workspaces[state.activeExam]);localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{storageProblem='Tarayıcı kaydı yapılamadı. Bu oturumdaki verilerini kaybetmemek için yedek indir; tarayıcı verilerini silme.';showStorageWarning();return false;}}
 function showStorageWarning(){const el=$('#storage-warning');if(storageProblem){el.textContent=storageProblem;el.hidden=false;}}
 function saveTimers(){if(sampleSaved)return;try{localStorage.setItem(TIMER_KEY,JSON.stringify(timers));}catch{}}
 function toast(message,error=false){const el=document.createElement('div');el.className='toast'+(error?' error':'');el.textContent=message;while($('#toasts').children.length>=2)$('#toasts').firstElementChild.remove();$('#toasts').append(el);setTimeout(()=>el.remove(),4500);}

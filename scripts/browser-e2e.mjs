@@ -36,32 +36,6 @@ async function appState(page) {
   });
 }
 
-async function pinTaskToDay(page, taskId, date) {
-  await page.evaluate(({ taskId, date }) => {
-    for (const [key, raw] of Object.entries(localStorage)) {
-      try {
-        const value = JSON.parse(raw);
-        const space = value?.workspaces?.kpss;
-        if (!space?.plan) continue;
-        const task = space.plan.find(p => p.id === taskId);
-        if (!task) continue;
-        for (const p of space.plan) {
-          if (!p.done && p.id !== taskId && p.date < date) p.date = date;
-        }
-        task.date = date;
-        task.taskState = 'open';
-        space.route = space.route && typeof space.route === 'object' ? space.route : {};
-        space.route.lastAutoDate = date;
-        localStorage.setItem(key, JSON.stringify(value));
-        return;
-      } catch {}
-    }
-    throw new Error('Task could not be pinned inside the browser fixture.');
-  }, { taskId, date });
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.locator('#app').waitFor({ state: 'visible' });
-}
-
 async function assertCleanRender(page, label) {
   const text = await page.locator('body').innerText();
   for (const literal of ['${content}', '${icon(', '${ui.', '[object Object]']) {
@@ -369,8 +343,7 @@ try {
 
   let repair = space.plan.find(p => !p.done && p.sourceMistakeId === mistake.id);
   assert.ok(repair, 'Exam-linked wrong must create a repair task');
-  await pinTaskToDay(page, repair.id, FIXED_DAY);
-  await navigate(page, 'today');
+  await navigate(page, 'plan');
   await completeTask(page, repair.id, { questions: 18, correct: 15, wrong: 3, outcome: 'ok' });
 
   await navigate(page, 'mistakes');
@@ -393,8 +366,7 @@ try {
   assert.equal(review3.reviewBaseDate, repairLog.date, '3-day review must anchor to the real repair completion date');
   assert.ok(review3.date >= due3, '3-day review must never be scheduled before its real +3 due date');
   assert.match(review3.reason || '', /Denemeden gelen yanlış onarımını/i);
-  await pinTaskToDay(page, review3.id, due3);
-  await navigate(page, 'today');
+  await navigate(page, 'plan');
   await completeTask(page, review3.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
 
   const due7 = addDays(repairLog.date, 7);
@@ -405,8 +377,7 @@ try {
   assert.ok(review7, '7-day exam-wrong retention review must materialize when due');
   assert.equal(review7.reviewBaseDate, repairLog.date, '7-day review must anchor to the real repair completion date');
   assert.ok(review7.date >= due7, '7-day review must never be scheduled before its real +7 due date');
-  await pinTaskToDay(page, review7.id, due7);
-  await navigate(page, 'today');
+  await navigate(page, 'plan');
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 

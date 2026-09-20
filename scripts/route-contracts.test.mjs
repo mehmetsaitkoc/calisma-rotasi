@@ -42,7 +42,7 @@ const state={
 const backup=C.makeBackupEnvelope(state,{appVersion:'4.1'});
 assert.equal(backup.schema,'calisma-rotasi-backup');
 assert.equal(backup.version,2);
-assert.equal(backup.workspaceSchemaVersion,2);
+assert.equal(backup.workspaceSchemaVersion,3);
 assert.equal(backup.integrity.algorithm,'fnv1a32');
 assert.equal(C.unwrapBackup(backup).state.activeExam,'kpss');
 

@@ -1728,6 +1728,7 @@ function validateBackup(data){
   const old=data.workspaces[e];if(!old||!old.settings)throw Error('Yedekte sınav alanı eksik.');
   WS.assertIdentity(old,e);
   const w=WS.migrateIdentity(out.workspaces[e],e),s=old.settings;
+  WS.adoptSyncMeta(w,old,e);
   w.configured=!!old.configured;
   if(e==='yks'&&!C.TRACKS[s.track])throw Error('Yedekte geçersiz YKS alanı.');
   w.settings={name:text(s.name,60),track:e==='yks'?s.track:'lisans',dailyMinutes:int(s.dailyMinutes,30,720,'günlük süre'),days:[...new Set(array(s.days).map(n=>int(n,0,6,'gün')))],priorities:array(s.priorities).map(ident),target:text(s.target,160),targetDate:s.targetDate?checkedDate(s.targetDate):''};
@@ -1956,7 +1957,7 @@ R.validateBackup=function(data){
  const unpack=window.RotaContracts?.unwrapBackup?window.RotaContracts.unwrapBackup(data):{state:data,migratedFrom:'legacy'};
  const raw=unpack.state,out=baseValidate(raw);
  for(const e of ['kpss','yks']){out.workspaces[e].lessons=validateLessons(raw.workspaces[e].lessons,out.workspaces[e],e);out.workspaces[e].turkishPrefs=TC.validatePreferences(raw.workspaces[e].turkishPrefs,e);Object.assign(out.workspaces[e],TC.validateCourseData(raw.workspaces[e],e));}
- out.videoVersion=3;out.workspaceSchemaVersion=window.RotaContracts?.WORKSPACE_SCHEMA_VERSION||2;
+ out.videoVersion=3;out.workspaceSchemaVersion=window.RotaContracts?.WORKSPACE_SCHEMA_VERSION||3;
  return out;
 };
 function newClock(minutes=25){return {id:R.uid(),duration:minutes,phase:'focus',remainingMs:minutes*60000,deadline:0,bankMs:0,rounds:0,pauseVideo:true,updated:Date.now()};}
@@ -2022,7 +2023,7 @@ function duration(n){return n>=60?`${Math.floor(n/60)} sa ${n%60?`${n%60} dk`:''
 function dateLabel(d,full=false){return new Date(d+'T12:00:00').toLocaleDateString('tr-TR',full?{weekday:'long',day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'short'});}
 const today=()=>R.iso();
 let state=R.fresh(),storageBlocked=false,storageProblem='';
-try{const raw=localStorage.getItem(KEY);if(raw)state=R.validateBackup(JSON.parse(raw));}catch(e){storageBlocked=true;storageProblem='Önceki yerel kayıt okunamadı veya tarayıcı kayıt izni vermiyor. Mevcut verinin üzerine yazılmadı. Yedeğini Ayarlar’dan içe aktarabilirsin.';}
+try{const raw=localStorage.getItem(KEY);if(raw){const parsed=JSON.parse(raw);state=R.validateBackup(parsed);const wsVersion=window.RotaWorkspaceSchema?.VERSION||3,needsWorkspaceMigration=['kpss','yks'].some(function(exam){const old=parsed?.workspaces?.[exam];return !old||old.schemaVersion!==wsVersion||!old.sync?.workspaceId;});if(needsWorkspaceMigration)localStorage.setItem(KEY,JSON.stringify(state));}}catch(e){storageBlocked=true;storageProblem='Önceki yerel kayıt okunamadı veya tarayıcı kayıt izni vermiyor. Mevcut verinin üzerine yazılmadı. Yedeğini Ayarlar’dan içe aktarabilirsin.';}
 const ui={view:state.activeExam&&state.workspaces[state.activeExam].configured?(state.workspaces[state.activeExam].profile?.completed&&state.workspaces[state.activeExam].profile?.summaryConfirmed===false?'summary':'today'):'select',setupStep:0,stage:'all',query:'',mockFilter:'',mistakeFilter:'open',month:today().slice(0,7),weekStart:today(),formContext:null,confirmFn:null,analysisId:''};
 let timers={};try{const raw=JSON.parse(localStorage.getItem(TIMER_KEY)||'{}');for(const e of ['kpss','yks']){const t=raw[e];if(t&&Number.isFinite(t.seconds)&&t.seconds>=0&&t.seconds<=5400&&[25,50,90].includes(t.duration)&&Number.isFinite(t.endAt)&&t.endAt>=0)timers[e]={duration:t.duration,seconds:t.seconds,endAt:t.endAt,subjectId:typeof t.subjectId==='string'?t.subjectId:'',sessionId:typeof t.sessionId==='string'?t.sessionId:''};}}catch{}
 function w(){return state.workspaces[state.activeExam];}
@@ -2033,7 +2034,7 @@ function subIcon(id){const s=subject(id);const idx=Math.max(0,C.subjects.findInd
 function subOptions(selected=''){const list=subjects();if(selected&&!list.some(s=>s.id===selected)){const hidden=C.subjects.find(s=>s.id===selected&&s.exam===state.activeExam);if(hidden)list.push(hidden);}return list.map(s=>`<option value="${s.id}" ${selected===s.id?'selected':''}>${esc((state.activeExam==='yks'?s.stage+' · ':'')+s.name)}</option>`).join('');}
 function examLabel(){return state.activeExam==='kpss'?'KPSS':'YKS';}
 function trackLabel(){return state.activeExam==='kpss'?'Lisans · GY–GK':C.TRACKS[w().settings.track];}
-function save(){if(sampleSaved)return true;if(storageBlocked){showStorageWarning();return false;}try{localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{storageProblem='Tarayıcı kaydı yapılamadı. Bu oturumdaki verilerini kaybetmemek için yedek indir; tarayıcı verilerini silme.';showStorageWarning();return false;}}
+function save(){if(sampleSaved)return true;if(storageBlocked){showStorageWarning();return false;}try{if(state.activeExam&&state.workspaces[state.activeExam])window.RotaWorkspaceSchema?.touch?.(state.workspaces[state.activeExam]);localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{storageProblem='Tarayıcı kaydı yapılamadı. Bu oturumdaki verilerini kaybetmemek için yedek indir; tarayıcı verilerini silme.';showStorageWarning();return false;}}
 function showStorageWarning(){const el=$('#storage-warning');if(storageProblem){el.textContent=storageProblem;el.hidden=false;}}
 function saveTimers(){if(sampleSaved)return;try{localStorage.setItem(TIMER_KEY,JSON.stringify(timers));}catch{}}
 function toast(message,error=false){const el=document.createElement('div');el.className='toast'+(error?' error':'');el.textContent=message;while($('#toasts').children.length>=2)$('#toasts').firstElementChild.remove();$('#toasts').append(el);setTimeout(()=>el.remove(),4500);}
@@ -3381,10 +3382,13 @@ function routeMiniRepairSignals(){
  return [...byTopic.values()].map(function(a){return {assessment:a,adaptive:routeSubjectAdaptiveState(a.subjectId,a.topicId),student:routeStudentModel(a.subjectId,a.topicId)};}).filter(function(x){return x.adaptive.mode==='repair'&&x.student.state==='repair';});
 }
 function routeBuildCandidates(){
- const space=w(),weak=routeExamWeakness(),recovery=routeRecoverySignal(space),seenTopics=new Set(),seenKeys=new Set(),out=[];
+ const space=w(),weak=routeExamWeakness(),recovery=routeRecoverySignal(space),seenTopics=new Set(),seenKeys=new Set(),out=[],miniRepairSignals=routeMiniRepairSignals(),miniRepairByTopic=new Map(miniRepairSignals.map(function(signal){return [signal.assessment.topicId,signal];}));
  const push=function(c){if(!c||seenKeys.has(c.routeKey))return;seenKeys.add(c.routeKey);if(c.topicId&&R.topic(space,c.topicId))seenTopics.add(c.topicId);out.push(c);};
  const horizon=R.dayAdd(today(),13);
- for(const p of space.plan.filter(function(p){return !p.done&&(p.date<=horizon||p.date<today());}))push(routeCandidateFromPlan(p));
+ for(const p of space.plan.filter(function(p){return !p.done&&(p.date<=horizon||p.date<today());})){
+  if(p.source==='mini_repair'&&!miniRepairByTopic.has(p.topicId))continue;
+  push(routeCandidateFromPlan(p));
+ }
  for(const m of space.mistakes.filter(function(m){return !m.resolved;})){
   const key='mistake:'+m.id;if(seenKeys.has(key)||space.plan.some(function(p){return !p.done&&p.sourceMistakeId===m.id;}))continue;const due=m.reviewDate<=today(),goal=routeReviewGoal(m.subjectId,m.topicId,m.title,'mistake');
   push({id:R.uid(),date:today(),subjectId:m.subjectId,topicId:m.topicId||('review-'+m.id),title:('Yanlış tekrarı · '+m.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceMistakeId:m.id,source:'mistake',priority:due?88:72,reason:due?'Yanlış defterindeki tekrar tarihi geldi.':'Yanlış defterindeki konu yeniden çalışılmalı.',earliest:due?today():m.reviewDate,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
@@ -3409,13 +3413,15 @@ function routeBuildCandidates(){
   const title=R.topic(space,q.topicId)?.title||q.question||subName(q.subjectId),goal=routeReviewGoal(q.subjectId,q.topicId,title,'spaced');
   push({id:R.uid(),date:today(),subjectId:q.subjectId,topicId:q.topicId||('teacher-'+q.id),title:('Rota Hoca tekrar · '+title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceTeacherQuestionId:q.id,source:'ai_teacher',priority:q.status==='stuck'?82:72,reason:q.status==='stuck'?'Rota Hoca’da “Anlamadım” olarak işaretlediğin soru yeniden çalışılmalı.':'Rota Hoca’da tekrar bakılacak olarak işaretledin.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }}catch{}
- for(const signal of routeMiniRepairSignals()){
-  const a=signal.assessment,adaptive=signal.adaptive,skill=adaptive.skillWeakness?.primary?.skill||'',topicTitle=R.topic(space,a.topicId)?.title||a.title||subName(a.subjectId),reason=skill?'Mini denemede “'+skill+'” alt alanında açık görüldü; yeni konu eklemek yerine önce bu eksiği kapatıyoruz.':'Mini deneme bu konuda ONARIM sinyali verdi; yeni konuya geçmeden önce kısa bir düzeltme turu ekleniyor.',goal=routeTaskGoal(a.subjectId,a.topicId,topicTitle);
-  const existingRepair=out.find(function(c){return c.topicId===a.topicId&&c.source==='mini_repair';});
-  if(existingRepair){existingRepair.priority=Math.max(existingRepair.priority||0,84);existingRepair.reason=reason;existingRepair.title=('Mini onarım · '+topicTitle).slice(0,180);existingRepair.kind='review';existingRepair.sourceAssessmentId=a.id;existingRepair.minutes=goal.minutes;existingRepair.targetQuestions=goal.questions;existingRepair.taskGoal=goal.text;continue;}
+ for(const signal of miniRepairSignals){
+  const a=signal.assessment,adaptive=signal.adaptive,skill=adaptive.skillWeakness?.primary?.skill||'',topicTitle=R.topic(space,a.topicId)?.title||a.title||subName(a.subjectId),reason=skill?'Mini denemede “'+skill+'” alt alanında açık görüldü; yeni konu eklemek yerine önce bu eksiği kapatıyoruz.':'Mini deneme bu konuda ONARIM sinyali verdi; yeni konuya geçmeden önce kısa bir düzeltme turu ekleniyor.',goal=routeTaskGoal(a.subjectId,a.topicId,topicTitle),key='mini-repair-topic:'+a.topicId;
+  const repairs=out.filter(function(c){return c.topicId===a.topicId&&c.source==='mini_repair';}),existingRepair=repairs.sort(function(x,y){return (y.priority||0)-(x.priority||0);})[0]||null;
+  if(existingRepair){
+   for(let i=out.length-1;i>=0;i--)if(out[i]!==existingRepair&&out[i].topicId===a.topicId&&out[i].source==='mini_repair')out.splice(i,1);
+   existingRepair.priority=Math.max(existingRepair.priority||0,84);existingRepair.reason=reason;existingRepair.title=('Mini onarım · '+topicTitle).slice(0,180);existingRepair.kind='review';existingRepair.sourceAssessmentId=a.id;existingRepair.routeKey=key;existingRepair.minutes=goal.minutes;existingRepair.targetQuestions=goal.questions;existingRepair.taskGoal=goal.text;seenKeys.add(key);continue;
+  }
   const promotable=out.find(function(c){return c.topicId===a.topicId&&!routeIsReviewLike(c)&&['curriculum','profile','priority','exam','backlog'].includes(c.source);});
-  if(promotable){promotable.source='mini_repair';promotable.kind='review';promotable.sourceAssessmentId=a.id;promotable.priority=Math.max(promotable.priority||0,84);promotable.reason=reason;promotable.title=('Mini onarım · '+topicTitle).slice(0,180);promotable.minutes=goal.minutes;promotable.targetQuestions=goal.questions;promotable.taskGoal=goal.text;continue;}
-  const key='mini-repair:'+a.id;
+  if(promotable){promotable.source='mini_repair';promotable.kind='review';promotable.sourceAssessmentId=a.id;promotable.routeKey=key;promotable.priority=Math.max(promotable.priority||0,84);promotable.reason=reason;promotable.title=('Mini onarım · '+topicTitle).slice(0,180);promotable.minutes=goal.minutes;promotable.targetQuestions=goal.questions;promotable.taskGoal=goal.text;seenKeys.add(key);continue;}
   if(seenKeys.has(key))continue;
   push({id:R.uid(),date:today(),subjectId:a.subjectId,topicId:a.topicId,title:('Mini onarım · '+topicTitle).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'mini_repair',sourceAssessmentId:a.id,priority:84,reason,earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }

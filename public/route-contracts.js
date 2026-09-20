@@ -4,7 +4,7 @@
 const CONTRACT_VERSION=1;
 const BACKUP_SCHEMA='calisma-rotasi-backup';
 const BACKUP_VERSION=2;
-const WORKSPACE_SCHEMA_VERSION=2;
+const WORKSPACE_SCHEMA_VERSION=3;
 
 const FEATURE_FLAGS=Object.freeze({
   core_route:{free:true,plus:true},

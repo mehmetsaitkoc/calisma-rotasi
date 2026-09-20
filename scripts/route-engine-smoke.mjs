@@ -1394,7 +1394,10 @@ for(const marker of [
   "routeMiniRepairSignals()",
   "Mini denemede “",
   "sourceAssessmentId:a.id",
-  "const key='mini-repair:'+a.id",
+  "miniRepairSignals=routeMiniRepairSignals()",
+  "miniRepairByTopic=new Map",
+  "if(p.source==='mini_repair'&&!miniRepairByTopic.has(p.topicId))continue",
+  "key='mini-repair-topic:'+a.topicId",
   "p.sourceAssessmentId?{sourceAssessmentId",
   "Mini onarım görevinin deneme sonucu bağlantısı geçersiz."
 ]) assert.ok(html.includes(marker),`Missing mini repair route integration marker: ${marker}`);
@@ -1953,6 +1956,37 @@ for(const marker of [
   assert.equal(items[0].skill,'C');
   assert.equal(items[0].missed,4);
   assert.ok(items.some(x=>x.skill==='A'));
+}
+
+// 5) Workspace v3 sync metadata must survive backup validation and reject cross-workspace identity.
+{
+  const scriptBodies=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>m[2]||'').filter(Boolean);
+  const catalogJs=externalCatalogJs;
+  const coreJs=scriptBodies.find(x=>x.includes('root.RotaCore='));
+  assert.ok(catalogJs&&coreJs,'Catalog/core scripts must be available for workspace v3 migration test');
+  const env={crypto:{randomUUID:()=> '11111111-2222-4333-8444-555555555555'}};
+  new Function('window','globalThis',catalogJs)(env,env);
+  new Function('window','globalThis',externalWorkspaceJs)(env,env);
+  new Function('window','globalThis',coreJs)(env,env);
+  const backup=env.RotaCore.fresh();backup.activeExam='kpss';
+  backup.workspaces.kpss.sync={version:1,workspaceId:'ws-kpss-stable123',revision:9,updatedAt:12345};
+  const validated=env.RotaCore.validateBackup(backup);
+  assert.equal(validated.workspaces.kpss.schemaVersion,3);
+  assert.equal(validated.workspaces.kpss.sync.workspaceId,'ws-kpss-stable123');
+  assert.equal(validated.workspaces.kpss.sync.revision,9);
+  assert.equal(validated.workspaces.kpss.sync.updatedAt,12345);
+
+  const legacy=JSON.parse(JSON.stringify(backup));
+  legacy.workspaces.kpss.schemaVersion=2;
+  delete legacy.workspaces.kpss.sync;
+  const migrated=env.RotaCore.validateBackup(legacy).workspaces.kpss;
+  assert.equal(migrated.schemaVersion,3);
+  assert.match(migrated.sync.workspaceId,/^ws-kpss-/);
+  assert.equal(migrated.sync.revision,0);
+
+  const invalid=JSON.parse(JSON.stringify(backup));
+  invalid.workspaces.kpss.sync.workspaceId='ws-yks-wrong123';
+  assert.throws(()=>env.RotaCore.validateBackup(invalid),/workspace kimliği/i);
 }
 
 // 5) Backup validation must round-trip mini answers, subtopic evidence and the stored route decision.

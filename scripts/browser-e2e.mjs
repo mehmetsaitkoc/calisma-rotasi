@@ -384,13 +384,19 @@ async function runMiniRepairProvenance(browser) {
   const secondDay = addDays(FIXED_DAY, 1);
   const second = await runBlankMini(secondDay);
   assert.notEqual(second.id, first.id, 'A later-day mini attempt must have a distinct assessment id');
+  const thirdDay = addDays(secondDay, 1);
+  const third = await runBlankMini(thirdDay);
+  assert.notEqual(third.id, second.id, 'A newer weak mini must remain separate evidence');
 
   const snapshot = await appState(page);
   const space = snapshot.value.workspaces.kpss;
   assert.equal(space.exams.length, 0, 'Mini results must stay isolated from full-exam records');
-  const repair = space.plan.find(p => !p.done && p.source === 'mini_repair' && p.sourceAssessmentId === second.id);
-  assert.ok(repair, 'Repeated weak mini evidence must create a mini-repair task linked to the latest real assessment');
-  assert.equal(repair.topicId, second.topicId, 'Mini repair must preserve the measured topic');
+  const repairs = space.plan.filter(p => !p.done && p.source === 'mini_repair' && p.topicId === third.topicId);
+  assert.equal(repairs.length, 1, 'A topic must have only one open mini-repair task');
+  const repair = repairs[0];
+  assert.equal(repair.sourceAssessmentId, third.id, 'Open mini repair must follow the newest real weak assessment');
+  assert.equal(repair.routeKey, 'mini-repair-topic:' + third.topicId, 'Mini repair identity must be topic-stable across newer evidence');
+  assert.equal(repair.topicId, third.topicId, 'Mini repair must preserve the measured topic');
   assert.match(repair.reason || '', /Mini deneme/i, 'Mini repair must explain the mini evidence in student language');
   assert.ok(!space.plan.some(p => p.source === 'mini_repair' && p.sourceAssessmentId && !space.assessments.some(a => a.id === p.sourceAssessmentId)), 'Every mini repair provenance id must resolve to a real assessment');
 
@@ -473,6 +479,10 @@ try {
   await assertCleanRender(page, 'post onboarding today');
   await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
+  const workspaceV3 = await appState(page);
+  assert.equal(workspaceV3.value.workspaces.kpss.schemaVersion,3,'Fresh onboarding must use workspace schema v3');
+  assert.match(workspaceV3.value.workspaces.kpss.sync?.workspaceId||'',/^ws-kpss-[A-Za-z0-9-]{8,}$/,'Workspace must expose a stable sync-ready identity');
+  assert.ok((workspaceV3.value.workspaces.kpss.sync?.revision||0)>0,'Persisted onboarding must advance workspace revision');
   const freeFlags = await page.evaluate(() => ({
     core: window.RotaContracts.featureEnabled('free','core_route'),
     mini: window.RotaContracts.featureEnabled('free','mini_exams'),
@@ -522,9 +532,9 @@ try {
   assert.equal(backupContract.version, 2, 'Browser backup envelope version must stay at v2');
   assert.match(backupContract.checksum, /^[a-f0-9]{8}$/i, 'Browser backup must include an integrity checksum');
   assert.equal(backupContract.restoredExam, 'kpss', 'Versioned browser backup must restore through RotaCore validation');
-  assert.equal(backupContract.kpssSchemaVersion, 2, 'KPSS workspace must migrate to schema v2');
+  assert.equal(backupContract.kpssSchemaVersion, 3, 'KPSS workspace must migrate to schema v3');
   assert.equal(backupContract.kpssExam, 'kpss', 'KPSS workspace identity must be explicit');
-  assert.equal(backupContract.yksSchemaVersion, 2, 'YKS workspace must migrate to schema v2');
+  assert.equal(backupContract.yksSchemaVersion, 3, 'YKS workspace must migrate to schema v3');
   assert.equal(backupContract.yksExam, 'yks', 'YKS workspace identity must be explicit');
   assert.equal(backupContract.tamperRejected, true, 'Tampered browser backup must be rejected');
 
@@ -739,6 +749,8 @@ try {
 
   const persistedBehavior = {
     storageKey: snapshot.key,
+    workspaceId: space.sync?.workspaceId || '',
+    revision: space.sync?.revision || 0,
     taskId: behaviorTask.id,
     date: movedBehaviorTask.date,
     deferUntil: movedBehaviorTask.deferUntil || '',
@@ -756,6 +768,9 @@ try {
   snapshot = await appState(page);
   assert.equal(snapshot.key, persistedBehavior.storageKey, 'Reload must read the exact same preview storage namespace');
   space = snapshot.value.workspaces.kpss;
+  assert.equal(space.schemaVersion,3,'Reload must preserve workspace schema v3');
+  assert.equal(space.sync?.workspaceId,persistedBehavior.workspaceId,'Reload must preserve the exact workspace identity');
+  assert.ok((space.sync?.revision||0)>=persistedBehavior.revision,'Reload must never move workspace revision backwards');
   const afterReloadBehaviorTask = space.plan.find(p => p.id === persistedBehavior.taskId);
   assert.ok(afterReloadBehaviorTask, 'Reload must preserve the rescheduled task');
   assert.equal(afterReloadBehaviorTask.date, persistedBehavior.date, 'Reload must preserve the rescheduled date');

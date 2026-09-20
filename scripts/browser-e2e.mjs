@@ -88,6 +88,7 @@ async function assertTodayContract(page) {
   const topic = (await card.locator('h3').first().innerText()).trim();
   const meta = await card.locator('.route-task-meta').innerText();
   const reason = (await card.locator('.route-task-reason').innerText()).trim();
+  const modeExplain = (await card.locator('.route-mode-explain').innerText()).trim();
   assert.ok(subject, 'Today task must show a lesson/subject');
   assert.ok(topic, 'Today task must show a topic/title');
   assert.match(meta, /\d+\s*dk/, 'Today task must show minutes');
@@ -95,6 +96,8 @@ async function assertTodayContract(page) {
   assert.ok(allMeta.some(x => /≈\s*\d+\s*soru/i.test(x)), 'Today must show a question target on a planned practice task');
   assert.match(meta, /Neden bugün\?/i, 'Today task must expose why it is scheduled today');
   assert.ok(reason, 'Today task must render its route reason');
+  assert.ok(modeExplain, 'Today task must explain its route mode in student language');
+  assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(reason + ' ' + modeExplain), 'Technical route jargon must not leak into Today');
 
   for (const label of ['Başla', 'Tamamla', 'Daha sonra', 'Atla']) {
     assert.ok(await card.getByText(label, { exact: true }).count(), 'Today task must expose action: ' + label);
@@ -506,6 +509,11 @@ try {
   assert.ok(teacherRequest.studentContext?.studentModel, 'Rota Hoca must receive Student Model');
   assert.ok(teacherRequest.studentContext?.routeDecision, 'Rota Hoca must receive route decision');
   assert.ok(teacherRequest.studentContext?.mastery, 'Rota Hoca must receive mastery context');
+  assert.equal(teacherRequest.studentContext?.contextVersion, 1, 'Rota Hoca context must carry a versioned contract');
+  assert.ok(teacherRequest.studentContext?.routeMode?.explanation, 'Rota Hoca must receive student-facing route-mode explanation');
+  assert.ok(teacherRequest.studentContext?.todaySummary, 'Rota Hoca must receive todaySummary');
+  const teacherContextText = JSON.stringify(teacherRequest.studentContext);
+  assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(teacherContextText), 'Technical route jargon must not leak into teacher context');
   await assertCleanRender(page, 'Rota Hoca');
 
   // Behavior hardening: Daha sonra must be reversible without duplicate evidence,

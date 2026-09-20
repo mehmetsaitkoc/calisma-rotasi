@@ -2656,27 +2656,23 @@ function routeOutcomeSignal(subjectId,topicId='',sinceDate=''){
  const total=xs.length,recent=xs[0]?.outcome||'',trend=weightTotal?weighted/weightTotal:0;
  return {known:total>0,total,stuck,ok,strong,recent,stuckRate:total?stuck/total:0,strongRate:total?strong/total:0,trend};
 }
-function routeAssessmentTopicSlice(a,topicId=''){
- if(!topicId||a.topicId===topicId)return a;
- const row=(a.topicBreakdown||[]).find(function(x){return x.topicId===topicId;});
- if(!row)return null;
- return {...a,topicId,correct:row.correct||0,wrong:row.wrong||0,blank:row.blank||0,skillBreakdown:[{skill:row.title||topicId,total:row.total||0,correct:row.correct||0,wrong:row.wrong||0,blank:row.blank||0}]};
-}
 function routeAssessmentSamples(subjectId,topicId=''){
+ const topicSlice=function(a){if(!topicId||a.topicId===topicId)return a;const row=(a.topicBreakdown||[]).find(function(x){return x.topicId===topicId;});return row?{...a,topicId,correct:row.correct||0,wrong:row.wrong||0,blank:row.blank||0,skillBreakdown:[{skill:row.title||topicId,total:row.total||0,correct:row.correct||0,wrong:row.wrong||0,blank:row.blank||0}]}:null;};
  const grouped=new Map();
  for(const raw of (w().assessments||[])){
   if(raw.subjectId!==subjectId)continue;
-  const a=routeAssessmentTopicSlice(raw,topicId);if(!a)continue;
+  const a=topicSlice(raw);if(!a)continue;
   const key=(raw.miniId||raw.sectionId||raw.id)+'|'+raw.date+'|'+(topicId||'all'),prev=grouped.get(key);
   if(!prev||(a.created||0)>=(prev.created||0))grouped.set(key,a);
  }
  return [...grouped.values()].map(function(a){return {id:'assessment-'+a.id,sessionId:'assessment-'+a.id,date:a.date,subjectId:a.subjectId,topicId:a.topicId||'',correct:a.correct,wrong:a.wrong+(a.blank||0),updated:a.created||0,assessment:true};});
 }
 function routeAssessmentWeakSkillSignal(subjectId,topicId=''){
+ const topicSlice=function(a){if(!topicId||a.topicId===topicId)return a;const row=(a.topicBreakdown||[]).find(function(x){return x.topicId===topicId;});return row?{...a,topicId,correct:row.correct||0,wrong:row.wrong||0,blank:row.blank||0,skillBreakdown:[{skill:row.title||topicId,total:row.total||0,correct:row.correct||0,wrong:row.wrong||0,blank:row.blank||0}]}:null;};
  const since=R.dayAdd(today(),-21),grouped=new Map();
  for(const raw of (w().assessments||[])){
   if(raw.subjectId!==subjectId||raw.date<since)continue;
-  const a=routeAssessmentTopicSlice(raw,topicId);if(!a)continue;
+  const a=topicSlice(raw);if(!a)continue;
   const key=(raw.miniId||raw.sectionId||raw.id)+'|'+raw.date+'|'+(topicId||'all'),prev=grouped.get(key);
   if(!prev||(a.created||0)>=(prev.created||0))grouped.set(key,a);
  }

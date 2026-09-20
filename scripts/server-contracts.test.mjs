@@ -9,7 +9,7 @@ for(const marker of [
   'const TTS_RATE_LIMIT = 36',
   'const TEACHER_MAX_OUTPUT_TOKENS = 1400',
   'function isLocalRequest',
-  "process.env.RENDER === 'true'",
+  "const IS_RENDER = process.env.RENDER === 'true'",
   'function clientIp',
   "scope + ':' + clientIp(req)",
   "'x-forwarded-for'",
@@ -19,6 +19,12 @@ for(const marker of [
   'function sanitizeContextValue',
   'const context = cleanTeacherContext(body.studentContext)',
   'function validateAnswer',
+  'function runtimeEntitlement',
+  'function requireRuntimeFeature',
+  "req.url==='/api/entitlements'",
+  "requireRuntimeFeature('teacher_basic')",
+  "requireRuntimeFeature('advanced_teacher_insights')",
+  "code:'PLUS_REQUIRED'",
   "text:{format:{type:'json_schema'",
   "store: false"
 ]) assert.ok(src.includes(marker),'Missing server safety marker: '+marker);
@@ -31,4 +37,4 @@ assert.ok(src.includes('honestUnavailableFallback:true'),'Health endpoint must e
 assert.ok(src.includes("if(!isLocalRequest(req)) return json(res,403"),'Render must not expose runtime API-key configuration');
 assert.ok(!src.includes("direct='Demo test cevabı'"),'Server must not fabricate a generic demo answer');
 
-console.log('Server contracts passed: schema + body/photo guards + bounded context + honest fallback + rate limits');
+console.log('Server contracts passed: schema + body/photo guards + bounded context + honest fallback + rate limits + Free/Plus entitlement gates');

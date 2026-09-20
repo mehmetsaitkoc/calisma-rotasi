@@ -20,7 +20,7 @@ async function jsonPost(path,body,headers={'content-type':'application/json'}){
 
 const server=spawn(process.execPath,['server.mjs'],{
   cwd:process.cwd(),
-  env:{...process.env,PORT:String(PORT),HOST:'127.0.0.1',OPENAI_API_KEY:''},
+  env:{...process.env,PORT:String(PORT),HOST:'127.0.0.1',OPENAI_API_KEY:'',RENDER:'true'},
   stdio:['ignore','pipe','pipe']
 });
 let log='';
@@ -62,7 +62,22 @@ try{
   assert.equal(invalidJson.status,400);
   assert.match(invalidJson.data.error||'',/Geçersiz JSON/i);
 
-  console.log('Server runtime contracts passed: honest fallback + validation + secret-safe health');
+  const forwardedHeaders={'content-type':'application/json','x-forwarded-for':'203.0.113.10, 10.0.0.5'};
+  for(let i=0;i<20;i++){
+    const limited=await jsonPost('/api/teacher',{question:'Rate limit fixture '+i},forwardedHeaders);
+    assert.equal(limited.status,200,'Teacher requests below the per-client limit must pass');
+  }
+  const teacherBlocked=await jsonPost('/api/teacher',{question:'Rate limit fixture blocked'},forwardedHeaders);
+  assert.equal(teacherBlocked.status,429,'Teacher rate limit must use the real forwarded client IP');
+  assert.equal(teacherBlocked.data.code,'RATE_LIMITED');
+
+  const otherClient=await jsonPost('/api/teacher',{question:'Other client remains independent'},{'content-type':'application/json','x-forwarded-for':'203.0.113.11'});
+  assert.equal(otherClient.status,200,'A different forwarded client IP must have an independent bucket');
+
+  const ttsSameClient=await jsonPost('/api/tts',{text:'Merhaba'},forwardedHeaders);
+  assert.equal(ttsSameClient.status,503,'Teacher traffic must not consume the independent TTS rate-limit bucket');
+
+  console.log('Server runtime contracts passed: honest fallback + validation + forwarded-IP scoped rate limits + secret-safe health');
 } finally {
   server.kill('SIGTERM');
   await sleep(100);

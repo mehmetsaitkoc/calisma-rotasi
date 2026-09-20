@@ -596,7 +596,7 @@ const uid=()=> (root.crypto&&root.crypto.randomUUID?root.crypto.randomUUID():Dat
 const iso=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function dayAdd(date,days){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+days);return iso(d);}
 function validDate(v){return typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(new Date(v+'T12:00:00'))&&iso(new Date(v+'T12:00:00'))===v;}
-function workspace(exam){return {configured:false,settings:{name:'',track:exam==='yks'?'say':'lisans',dailyMinutes:90,days:[1,2,3,4,5,6],priorities:[],target:'',targetDate:''},profile:{version:4,completed:false,summaryConfirmed:false,currentNet:null,targetNet:0,currentStageNet:null,targetStageNet:0,targetScore:0,targetRank:0,studyHabit:'',subjectLevels:{},updated:0},topicState:{},customTopics:[],plan:[],logs:[],exams:[],assessments:[],mistakes:[],route:{version:2,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[],interventions:[],modeHistory:[],pilot:{version:1,enabled:false,participantId:'',startDate:'',startedAt:0,completedAt:0,snapshots:[]}},taskEvents:[]};}
+function workspace(exam){return {schemaVersion:2,exam,configured:false,settings:{name:'',track:exam==='yks'?'say':'lisans',dailyMinutes:90,days:[1,2,3,4,5,6],priorities:[],target:'',targetDate:''},profile:{version:4,completed:false,summaryConfirmed:false,currentNet:null,targetNet:0,currentStageNet:null,targetStageNet:0,targetScore:0,targetRank:0,studyHabit:'',subjectLevels:{},updated:0},topicState:{},customTopics:[],plan:[],logs:[],exams:[],assessments:[],mistakes:[],route:{version:2,lastRun:'',lastAutoDate:'',lastReason:'',lastChanged:0,decisions:[],interventions:[],modeHistory:[],pilot:{version:1,enabled:false,participantId:'',startDate:'',startedAt:0,completedAt:0,snapshots:[]}},taskEvents:[]};}
 const fresh=()=>({version:1,activeExam:null,workspaces:{kpss:workspace('kpss'),yks:workspace('yks')}});
 function courses(exam,track){return C.subjects.filter(s=>s.exam===exam&&(!s.tracks.length||s.tracks.includes(track)));}
 function allTopics(w,exam){return courses(exam,w.settings.track).flatMap(s=>s.topics).concat(w.customTopics.filter(t=>courses(exam,w.settings.track).some(s=>s.id===t.subjectId)));}
@@ -706,7 +706,10 @@ function validateBackup(data){
  const out=fresh();out.activeExam=['kpss','yks'].includes(data.activeExam)?data.activeExam:null;
  for(const e of ['kpss','yks']){
   const old=data.workspaces[e];if(!old||!old.settings)throw Error('Yedekte sınav alanı eksik.');
-  const w=out.workspaces[e],s=old.settings;w.configured=!!old.configured;
+  const w=out.workspaces[e],s=old.settings;
+  if(old.schemaVersion!==undefined&&(!Number.isInteger(old.schemaVersion)||old.schemaVersion<1||old.schemaVersion>2))throw Error('Yedekte desteklenmeyen workspace şeması.');
+  if(old.exam!==undefined&&old.exam!==e)throw Error('Yedekte workspace sınav kimliği geçersiz.');
+  w.schemaVersion=2;w.exam=e;w.configured=!!old.configured;
   if(e==='yks'&&!C.TRACKS[s.track])throw Error('Yedekte geçersiz YKS alanı.');
   w.settings={name:text(s.name,60),track:e==='yks'?s.track:'lisans',dailyMinutes:int(s.dailyMinutes,30,720,'günlük süre'),days:[...new Set(array(s.days).map(n=>int(n,0,6,'gün')))],priorities:array(s.priorities).map(ident),target:text(s.target,160),targetDate:s.targetDate?checkedDate(s.targetDate):''};
   const op=old.profile&&typeof old.profile==='object'&&!Array.isArray(old.profile)?old.profile:{};

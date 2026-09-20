@@ -374,6 +374,7 @@ try {
   assert.ok(Number.isFinite(renderPerf.lastRenderMs) && renderPerf.lastRenderMs >= 0, 'Route render duration must be measurable');
   assert.ok(Number.isInteger(renderPerf.decisionComputes) && renderPerf.decisionComputes >= 0, 'Applied-decision compute count must be measurable');
   assert.ok(Number.isInteger(renderPerf.reasonCalls) && renderPerf.reasonCalls >= 0, 'Task-reason call count must be measurable');
+  assert.ok(Number.isInteger(renderPerf.planIndexBuilds) && renderPerf.planIndexBuilds >= 0 && renderPerf.planIndexBuilds <= 1, 'Plan date index must be built at most once per render');
   assert.ok(renderPerf.renderCount >= 1, 'Route render counter must increment');
   assert.ok(renderPerf.lastTaskNodes >= 1, 'Render diagnostics must observe visible task nodes');
 

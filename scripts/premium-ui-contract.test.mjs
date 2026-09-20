@@ -36,6 +36,7 @@ for(const marker of [
   'Üyelik satışı açılana kadar varsayılan paket Ücretsiz',
   'Satış başlamadan önce fiyat kesinleşecek · Ücretsiz paketle başlayabilirsin.',
   'Plus paketleri <span>· Üyelik satışı henüz açık değil</span>',
+  'Üyelik satışı açılana kadar bu seçenek satın alınamaz; fiyat satıştan önce kesinleşecek.',
   'Gelişmiş devamlar Plus',
   'Neden bugün?',
   'ROTA PLUS REPORTS V1',
@@ -73,7 +74,7 @@ assert.ok(
 );
 
 assert.ok(!html.includes('Pilot sürüm · Ödeme ve gerçek üyelik aktif değil'),'Primary product surfaces must not use prototype-style pilot warning copy');
-for(const phrase of ['Beta paket tasarımı','Fiyatlar test amaçlıdır','Örnek fiyat','fiyat testi tamamlanmadı','Paket tasarımı','İlk ücretli test','Bu önizlemede abonelik','Şu anda beta sürümündesin','BETA · ÜYELİK SATIŞI HENÜZ KAPALI']){
+for(const phrase of ['Beta paket tasarımı','Fiyatlar test amaçlıdır','Örnek fiyat','fiyat testi tamamlanmadı','Paket tasarımı','İlk ücretli test','lansman fiyatını nasıl göstereceğimize dair önizleme','Bu önizlemede abonelik','Şu anda beta sürümündesin','BETA · ÜYELİK SATIŞI HENÜZ KAPALI']){
   assert.ok(!html.includes(phrase),'Membership surfaces must not look like an engineering demo: '+phrase);
 }
 assert.ok(!html.includes('rota-plus:visual-demo'),'Premium UI must not trust sessionStorage as an entitlement authority');

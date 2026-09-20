@@ -3,6 +3,8 @@ services:
     name: calisma-rotasi
     runtime: node
     plan: free
+    branch: main
+    autoDeployTrigger: commit
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health

@@ -4,11 +4,19 @@ import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 const externalCatalogJs=fs.readFileSync(new URL('../public/catalog.js',import.meta.url),'utf8');
 const externalWorkspaceJs=fs.readFileSync(new URL('../public/workspace-schema.js',import.meta.url),'utf8');
+const externalCoreJs=fs.readFileSync(new URL('../public/core.js',import.meta.url),'utf8');
+const externalAnalysisJs=fs.readFileSync(new URL('../public/analysis.js',import.meta.url),'utf8');
+const architectureSource=[html,externalCoreJs,externalAnalysisJs].join('\n');
 
 function between(start,end){
   const a=html.indexOf(start),b=html.indexOf(end,a);
   assert.ok(a>=0 && b>a,`Missing source markers: ${start} -> ${end}`);
   return html.slice(a,b);
+}
+function betweenSource(source,start,end){
+  const a=source.indexOf(start),b=source.indexOf(end,a);
+  assert.ok(a>=0 && b>a,`Missing external source markers: ${start} -> ${end}`);
+  return source.slice(a,b);
 }
 
 // 1) Every executable inline script must parse.
@@ -19,13 +27,17 @@ for(const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){
   new Function(js);
   parsed++;
 }
-assert.ok(parsed>=4,'Expected executable inline scripts after catalog extraction');
+assert.ok(parsed>=2,'Expected executable inline scripts after engine extraction');
+new Function(externalCoreJs);
+new Function(externalAnalysisJs);
 
 // 1a) Architecture and student-facing contract boundary must stay wired.
 for(const marker of [
   '<script src="/route-contracts.js"></script>',
   '<script src="/workspace-schema.js"></script>',
   '<script src="/catalog.js"></script>',
+  '<script src="/core.js"></script>',
+  '<script src="/analysis.js"></script>',
   '<script src="/turkish-catalog.js"></script>',
   'ARCHITECTURE BOUNDARY: catalog data',
   'ARCHITECTURE BOUNDARY: route engine + workspace validation',
@@ -59,7 +71,7 @@ for(const marker of [
   'WS.assertIdentity(old,e);',
   'const w=WS.migrateIdentity(out.workspaces[e],e),s=old.settings;',
   'w.configured=!!old.configured'
-]) assert.ok(html.includes(marker),'Missing architecture/contract marker: '+marker);
+]) assert.ok(architectureSource.includes(marker),'Missing architecture/contract marker: '+marker);
 
 {
   const reason=between('function routeTaskReason','function routeTodayTask');
@@ -140,8 +152,8 @@ assert.ok(!html.includes("teacherOpenConfigure();throw Error('Ders ve fotoğraf 
     'function planSubjectGap','function planSubjectLevel','function planLatestEvidenceDate','function planExamWeakness',
     'function planTopicSignal','function planTaskMinutes','targetQuestions:questions',
     "kind:'route'","source:pick.signal.source","reason:pick.signal.reason","weekSubjectCount","daySubjectCount"
-  ]) assert.ok(html.includes(marker),`Missing generatePlan personalization marker: ${marker}`);
-  const core=between('function planDaysBetween','function safeUrl');
+  ]) assert.ok(externalCoreJs.includes(marker),`Missing generatePlan personalization marker: ${marker}`);
+  const core=betweenSource(externalCoreJs,'function planDaysBetween','function safeUrl');
   const C={
     TYPES:{KPSS:{exam:'kpss'}},
     PART_SUBJECTS:{KPSS:{Matematik:['k-ma'],Tarih:['k-ta']}},
@@ -1201,7 +1213,7 @@ for(const marker of [
 
 // 4) Full-exam analysis must emit deterministic route signals and apply them once at save-time, without inventing a wrong topic.
 {
-  const src=between('function sortedExams','root.RotaAnalysis=');
+  const src=betweenSource(externalAnalysisJs,'function sortedExams','root.RotaAnalysis=');
   let uid=0;
   const C={
     TYPES:{KPSS:{exam:'kpss',label:'KPSS'}},
@@ -1957,10 +1969,9 @@ for(const marker of [
 
 // 5) Backup validation must round-trip mini answers, subtopic evidence and the stored route decision.
 {
-  const scriptBodies=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>m[2]||'').filter(Boolean);
   const catalogJs=externalCatalogJs;
-  const coreJs=scriptBodies.find(x=>x.includes('root.RotaCore='));
-  assert.ok(catalogJs&&coreJs,'Catalog/core scripts must be available for backup round-trip test');
+  const coreJs=externalCoreJs;
+  assert.ok(catalogJs&&coreJs,'Catalog/core modules must be available for backup round-trip test');
   const env={};
   new Function('window','globalThis',catalogJs)(env,env);
   new Function('window','globalThis',externalWorkspaceJs)(env,env);
@@ -1983,8 +1994,7 @@ for(const marker of [
 
 // 5) Backup validation must preserve route intervention audit history.
 {
-  const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const catalogJs=externalCatalogJs,coreJs=externalCoreJs;
   const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.interventions=[{id:'iv1',date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'repair',source:'mini_repair',method:'quant',taskId:'task1',taskDate:'2026-09-19',confidence:72,baselineAccuracy:50,baselineCompletion:60,baselineNeed:78,baselineAnswered:20,reason:'Mini açığı',created:1}];
@@ -1998,8 +2008,7 @@ for(const marker of [
 
 // 5) Backup validation must preserve decision-mode history used by progress hysteresis.
 {
-  const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const catalogJs=externalCatalogJs,coreJs=externalCoreJs;
   const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.modeHistory=[{date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'progress',studentState:'steady',confidence:88,performance:73,learningNeed:24,hysteresisHeld:true,easeHysteresisHeld:true,easeEntryHeld:true,easeRecoveryHeld:true,created:1}];
@@ -2015,8 +2024,7 @@ for(const marker of [
 
 // 5) Pilot telemetry must persist pseudonymous 0/7/14/30 checkpoint snapshots.
 {
-  const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const catalogJs=externalCatalogJs,coreJs=externalCoreJs;
   const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',externalWorkspaceJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.pilot={

@@ -2301,7 +2301,16 @@ function startInitialRouteBuild(exam){
 }
 function finishInitialRouteBuild(exam){
  if(state.activeExam!==exam||!state.workspaces[exam]?.configured||!state.workspaces[exam]?.profile?.completed)return;
- stopSetupBuildTimers();routeEnsure();w().plan=[];routeRebalance('İlk kişisel rota; mevcut–hedef net farkın, çalışma düzenin, ders seviyelerin, soru hedeflerin ve tekrar döngün birlikte kullanılarak oluşturuldu.',true);w().route.lastAutoDate=today();w().profile.summaryConfirmed=true;save();ui.buildStage=4;ui.view='today';render();window.scrollTo({top:0,behavior:'instant'});toast('Konu + soru + tekrar döngülü ilk programın hazır.');
+ stopSetupBuildTimers();routeEnsure();w().plan=[];
+ const buildResult=routeRebalance('İlk kişisel rota; mevcut–hedef net farkın, çalışma düzenin, ders seviyelerin, soru hedeflerin ve tekrar döngün birlikte kullanılarak oluşturuldu.',true);
+ w().route.lastAutoDate=today();w().profile.summaryConfirmed=true;save();ui.buildStage=4;
+ const todayHasOpen=w().plan.some(function(p){return !p.done&&p.date===today();});
+ const futureHasOpen=w().plan.some(function(p){return !p.done&&p.date>today();});
+ ui.weekStart=today();ui.view=todayHasOpen||!futureHasOpen?'today':'plan';
+ render();window.scrollTo({top:0,behavior:'instant'});
+ if(todayHasOpen)toast('Konu + soru + tekrar döngülü ilk programın hazır.');
+ else if(futureHasOpen)toast('Rotan hazır. Bugün çalışma günün olmadığı için haftalık programını açtım.');
+ else toast(buildResult.scheduled?'Rotan hazırlandı.':'Rota için uygun çalışma günü bulunamadı; çalışma günlerini kontrol et.',!buildResult.scheduled);
 }
 function buildingView(){
  const p=w().profile||{},cap=routeEffectiveDailyMinutes(),max=w().settings.dailyMinutes,habit=profileHabitLabel(profileHabitValue(p)),gap=routeNetGap(),stageGap=routeStageGap(),weak=profileSubjects().filter(function(s){return (p.subjectLevels?.[s.id]??2)<=1;}),stage=Math.max(0,Math.min(3,Number(ui.buildStage)||0));

@@ -75,5 +75,11 @@ for(const phrase of ['Production beta fail-closed','server entitlement','entitle
 }
 assert.ok(html.includes('Plus erişimi yalnız doğrulanmış üyelikle açılacak'),'Membership copy must explain Plus access in user language');
 assert.ok(html.includes('Plus paketini incele'),'Pricing CTA must not imply that payment is already live');
+for(const phrase of ['Sıradaki çalışmanı da belirle.','ANALİZ + TEKRAR + RAPOR','Detaylı Rota Hoca analizleri','Her denemeden sonra net bir adım.']){
+  assert.ok(!html.includes(phrase),'Plus copy must not imply that the Free learning loop is paywalled: '+phrase);
+}
+for(const phrase of ['RAPOR + TREND + ROTA HOCA','Zaman içindeki desenini de gör.','6 aylık çalışma ve plan trendleri','Gelişmiş Rota Hoca devamları','Veri güveni ve karşılaştırılabilirlik açıklamaları']){
+  assert.ok(html.includes(phrase),'Plus value proposition must match implemented premium capabilities: '+phrase);
+}
 
 console.log('Premium UI contract passed: living UI + server-sourced Free/Plus gates + polished user copy + honest empty report states');

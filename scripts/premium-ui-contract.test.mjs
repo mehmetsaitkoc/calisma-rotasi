@@ -38,6 +38,13 @@ for(const marker of [
   'Plus paketleri <span>· Üyelik satışı henüz açık değil</span>',
   'Üyelik satışı açılana kadar bu seçenek satın alınamaz; fiyat satıştan önce kesinleşecek.',
   'Gelişmiş devamlar Plus',
+  '/kpss-practice-catalog.js',
+  'BÖLÜM DENEMELERİ',
+  'Dersin gerçek soru sayısıyla çöz.',
+  'start-section-exam',
+  'section-exam-form',
+  'Bölüm denemesi sonucu',
+  'Konu dağılımı geçmiş sınav eğilimlerini yaklaşıklar.',
   'Neden bugün?',
   'ROTA PLUS REPORTS V1',
   'report-premium-hero',
@@ -82,6 +89,8 @@ assert.ok(!html.includes('data-action="paid-tier"'),'Premium UI must not expose 
 assert.ok(!html.includes('Plus görünümünü dene'),'Pricing UI must not visually grant Plus before account/payment entitlement exists');
 assert.ok(html.includes("fetch('/api/entitlements'"),'Premium UI must load its entitlement from the server boundary');
 assert.ok(html.includes("featureEnabled('advanced_teacher_insights')"),'Advanced teacher continuations must obey the central feature policy');
+assert.ok(html.includes('window.RotaKpssPractice?.topicSets'),'KPSS topic practices must extend the existing mini catalog without replacing it');
+assert.ok(html.includes('topicBreakdown'),'Section exam results must preserve topic-level evidence for the route engine');
 for(const phrase of ['Production beta fail-closed','server entitlement','entitlement kaynağı','Sunucu yetkisi','Yetki servisine ulaşılamadı','Free yetkisi aktif','Plus yetkisi aktif','Plus özelliklerin sunucu tarafından açık.']){
   assert.ok(!html.includes(phrase),'User-facing product copy must not expose technical access jargon: '+phrase);
 }

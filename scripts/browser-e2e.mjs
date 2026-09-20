@@ -343,14 +343,11 @@ try {
 
   let repair = space.plan.find(p => !p.done && p.sourceMistakeId === mistake.id);
   assert.ok(repair, 'Exam-linked wrong must create a repair task');
-  if (repair.date !== FIXED_DAY) await setDay(page, repair.date);
-  else {
-    await navigate(page, 'today');
-  }
-
-  snapshot = await appState(page);
-  space = snapshot.value.workspaces.kpss;
-  repair = space.plan.find(p => !p.done && p.sourceMistakeId === mistake.id) || repair;
+  repair = await settleTaskOnScheduledDay(
+    page,
+    s => s.plan.find(p => !p.done && p.sourceMistakeId === mistake.id),
+    'exam-linked repair task'
+  );
   await completeTask(page, repair.id, { questions: 18, correct: 15, wrong: 3, outcome: 'ok' });
 
   await navigate(page, 'mistakes');

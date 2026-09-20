@@ -1357,7 +1357,11 @@ for(const marker of [
   "source:'mini_repair'",
   "Mini onarım · ",
   "routeMiniRepairSignals()",
-  "Mini denemede “"
+  "Mini denemede “",
+  "sourceAssessmentId:a.id",
+  "const key='mini-repair:'+a.id",
+  "p.sourceAssessmentId?{sourceAssessmentId",
+  "Mini onarım görevinin deneme sonucu bağlantısı geçersiz."
 ]) assert.ok(html.includes(marker),`Missing mini repair route integration marker: ${marker}`);
 
 // 5) Deneme Merkezi pilots must be original, internally valid and isolated from full-exam net records.

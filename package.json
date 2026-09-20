@@ -14,6 +14,6 @@
     "pilot:operations:test": "node scripts/route-engine-pilot-operations.test.mjs",
     "pilot:operations:ui:test": "node scripts/route-engine-pilot-operations-ui.test.mjs",
     "production:smoke": "node scripts/production-smoke.mjs",
-    "contracts:test": "node scripts/route-contracts.test.mjs && node scripts/pilot-metrics.test.mjs && node scripts/server-contracts.test.mjs"
+    "contracts:test": "node scripts/route-contracts.test.mjs && node scripts/mini-catalog.test.mjs && node scripts/pilot-metrics.test.mjs && node scripts/server-contracts.test.mjs"
   }
 }

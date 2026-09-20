@@ -399,7 +399,7 @@ try {
   await navigate(page, 'teacher');
   await page.locator('#teacher-question').fill('Bugünkü görevlerimi neden bu şekilde seçtin?');
   await page.locator('#teacher-form button[type="submit"]').click();
-  await page.getByText('E2E Rota Hoca cevabı').waitFor({ state: 'visible' });
+  await page.locator('#teacher-avatar-quote').filter({ hasText: 'E2E Rota Hoca cevabı' }).waitFor({ state: 'visible' });
 
   assert.ok(teacherRequest, 'Rota Hoca request must reach the backend boundary');
   assert.ok(teacherRequest.studentContext?.todayPlan, 'Rota Hoca must receive todayPlan');

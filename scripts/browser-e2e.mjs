@@ -105,7 +105,11 @@ async function assertTodayContract(page) {
 }
 
 async function submitWizard(page) {
+  const premiumWelcome = page.locator('[data-premium-surface="welcome"]');
+  await premiumWelcome.waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.premium-proof-item').count(), 3, 'Premium landing must render the three product-value signals');
   await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
+  await page.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
 
   await page.locator('#setup-wizard-form [name="name"]').fill('E2E Öğrenci');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
@@ -146,8 +150,13 @@ async function submitWizard(page) {
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   await page.locator('[data-action="summary-build"]').click();
+  await page.locator('.route-building-card').waitFor({ state: 'visible' });
+  await page.locator('.route-build-live').waitFor({ state: 'visible' });
   await page.clock.fastForward(5000);
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
+  await page.locator('[data-premium-surface="today"]').waitFor({ state: 'visible' });
+  assert.ok(await page.locator('.premium-signal-rail').isVisible(), 'Premium Today signal rail must stay visible');
+  assert.equal(await page.locator('.premium-deep-dive').count(), 1, 'Advanced route diagnostics must stay behind a single progressive-disclosure control');
 }
 
 async function showTaskInPlan(page, id, label) {

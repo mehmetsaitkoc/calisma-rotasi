@@ -296,6 +296,63 @@ async function submitYksWizard(page) {
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
 }
 
+async function runMiniRepairProvenance(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 360, height: 800 },
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
+  });
+  const page = await context.newPage();
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', e => pageErrors.push(String(e?.stack || e)));
+  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+
+  await page.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
+  await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await submitWizard(page);
+
+  const runBlankMini = async date => {
+    await page.clock.setFixedTime(new Date(date + 'T09:00:00+03:00'));
+    await navigate(page, 'exams');
+    const start = page.locator('[data-action="start-mini-exam"][data-id="kpss-problemler-01"]').first();
+    await start.waitFor({ state: 'visible' });
+    await start.click();
+    const form = page.locator('#mini-exam-form');
+    await form.waitFor({ state: 'visible' });
+    await form.locator('button[type="submit"]').click();
+    await page.locator('.mini-result-hero').waitFor({ state: 'visible' });
+    const snapshot = await appState(page);
+    const attempts = snapshot.value.workspaces.kpss.assessments
+      .filter(a => a.miniId === 'kpss-problemler-01')
+      .sort((a,b) => String(b.date).localeCompare(String(a.date)) || Number(b.created||0)-Number(a.created||0));
+    assert.ok(attempts[0], 'Mini exam must persist a real assessment');
+    const close = page.locator('[data-action="close-modal"]').first();
+    if (await close.count() && await close.isVisible()) await close.click();
+    return attempts[0];
+  };
+
+  const first = await runBlankMini(FIXED_DAY);
+  assert.equal(first.correct, 0, 'Blank mini fixture must record zero correct answers');
+  const secondDay = addDays(FIXED_DAY, 1);
+  const second = await runBlankMini(secondDay);
+  assert.notEqual(second.id, first.id, 'A later-day mini attempt must have a distinct assessment id');
+
+  const snapshot = await appState(page);
+  const space = snapshot.value.workspaces.kpss;
+  assert.equal(space.exams.length, 0, 'Mini results must stay isolated from full-exam records');
+  const repair = space.plan.find(p => !p.done && p.source === 'mini_repair' && p.sourceAssessmentId === second.id);
+  assert.ok(repair, 'Repeated weak mini evidence must create a mini-repair task linked to the latest real assessment');
+  assert.equal(repair.topicId, second.topicId, 'Mini repair must preserve the measured topic');
+  assert.match(repair.reason || '', /Mini deneme/i, 'Mini repair must explain the mini evidence in student language');
+  assert.ok(!space.plan.some(p => p.source === 'mini_repair' && p.sourceAssessmentId && !space.assessments.some(a => a.id === p.sourceAssessmentId)), 'Every mini repair provenance id must resolve to a real assessment');
+
+  await assertCleanRender(page, 'mini repair provenance');
+  assert.deepEqual(pageErrors, [], 'Mini provenance page errors:\n' + pageErrors.join('\n'));
+  assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Mini provenance console errors:\n' + consoleErrors.join('\n'));
+  await context.close();
+}
+
 const server = spawn(process.execPath, ['server.mjs'], {
   cwd: process.cwd(),
   env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', OPENAI_API_KEY: '' },
@@ -689,7 +746,9 @@ try {
   assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'YKS desktop console errors:\n' + desktopConsoleErrors.join('\n'));
   await desktopContext.close();
 
-  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding');
+  await runMiniRepairProvenance(browser);
+
+  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + mini repair provenance');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

@@ -150,10 +150,10 @@ function isQuotaError(status,data,raw){
 }
 
 async function callTeacher(body){
-  if (!runtimeApiKey) return {answer:demoTeacherAnswer(body,'not_configured'),model:'unavailable',responseId:'',usage:null,demo:true,demoReason:'Gerçek AI bağlantısı yapılandırılmamış.',meta:{mode:'unavailable',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS}};
   const question = cleanText(body.question, 5000).trim();
   const photo = safePhoto(body.photo);
   if(!question && !photo) throw Object.assign(new Error('Sorunu yaz veya fotoğraf ekle.'),{status:400});
+  if (!runtimeApiKey) return {answer:demoTeacherAnswer({...body,question,photo},'not_configured'),model:'unavailable',responseId:'',usage:null,demo:true,demoReason:'Gerçek AI bağlantısı yapılandırılmamış.',meta:{mode:'unavailable',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS}};
   const exam = cleanText(body.exam, 50) || 'Belirtilmedi';
   const track = cleanText(body.track, 100);
   const subject = cleanText(body.subject, 140);

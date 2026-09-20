@@ -577,9 +577,31 @@ try {
     repair: window.RotaContracts.featureEnabled('free','exam_wrong_repair'),
     mistakes: window.RotaContracts.featureEnabled('free','mistake_notebook'),
     basic: window.RotaContracts.featureEnabled('free','basic_analysis'),
-    report: window.RotaContracts.featureEnabled('free','monthly_report')
+    teacher: window.RotaContracts.featureEnabled('free','teacher_basic'),
+    report: window.RotaContracts.featureEnabled('free','monthly_report'),
+    advancedTeacher: window.RotaContracts.featureEnabled('free','advanced_teacher_insights')
   }));
-  assert.deepEqual(freeFlags,{core:true,mini:true,repair:true,mistakes:true,basic:true,report:false},'Free tier must keep the complete core learning loop and gate only advanced reporting');
+  assert.deepEqual(freeFlags,{core:true,mini:true,repair:true,mistakes:true,basic:true,teacher:true,report:false,advancedTeacher:false},'Free tier must keep the complete core learning loop while gating advanced reporting and teacher continuations');
+
+  const runtimeEntitlement = await page.evaluate(async () => {
+    const response=await fetch('/api/entitlements',{cache:'no-store'});
+    return {status:response.status,body:await response.json()};
+  });
+  assert.equal(runtimeEntitlement.status,200,'Browser runtime must expose the entitlement endpoint');
+  assert.equal(runtimeEntitlement.body.schema,'calisma-rotasi-entitlement-v1');
+  assert.equal(runtimeEntitlement.body.tier,'free','Default local browser E2E must fail closed to Free');
+  assert.equal(runtimeEntitlement.body.source,'local_dev');
+  assert.equal(runtimeEntitlement.body.features.core_route,true);
+  assert.equal(runtimeEntitlement.body.features.teacher_basic,true);
+  assert.equal(runtimeEntitlement.body.features.monthly_report,false);
+  assert.equal(runtimeEntitlement.body.features.advanced_teacher_insights,false);
+  assert.equal(await page.locator('[data-action="paid-tier"]').count(),0,'Production UI must not expose a browser-controlled Free/Plus tier toggle');
+
+  await navigate(page,'report');
+  await page.getByRole('heading',{name:'Aylık raporum'}).waitFor({state:'visible'});
+  assert.ok(await page.locator('.plus-gate').isVisible(),'Free runtime must render the Plus gate instead of the monthly report');
+  assert.ok(await page.getByText('PLUS İLE AÇILIR',{exact:false}).count(),'Monthly report gate must explain that the surface requires Plus');
+  await navigate(page,'today');
   const renderPerf = await page.evaluate(() => window.__rotaRenderPerf ? { ...window.__rotaRenderPerf } : null);
   assert.ok(renderPerf, 'Route render diagnostics must be exposed');
   assert.ok(Number.isFinite(renderPerf.lastRenderMs) && renderPerf.lastRenderMs >= 0, 'Route render duration must be measurable');
@@ -770,6 +792,13 @@ try {
   await page.locator('#teacher-question').fill('Bugünkü görevlerimi neden bu şekilde seçtin?');
   await page.locator('#teacher-form button[type="submit"]').click();
   await page.locator('#teacher-avatar-quote').filter({ hasText: 'E2E Rota Hoca cevabı' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('[data-action="teacher-followup"]').count(),0,'Free Rota Hoca must not expose advanced continuation calls');
+  const plusContinuation=page.getByText('Gelişmiş devamlar Plus',{exact:true});
+  await plusContinuation.waitFor({state:'visible'});
+  await plusContinuation.click();
+  await page.getByText('Bir adım ötesi Rota Plus’ta.',{exact:true}).waitFor({state:'visible'});
+  assert.ok(await page.getByText(/entitlement sunucudan gelir/i).count(),'Plus teacher gate must explain the server-sourced entitlement boundary');
+  await page.locator('[data-action="close-modal"]').click();
 
   assert.ok(teacherRequest, 'Rota Hoca request must reach the backend boundary');
   assert.ok(teacherRequest.studentContext?.todayPlan, 'Rota Hoca must receive todayPlan');
@@ -920,7 +949,7 @@ try {
   await runMiniRepairProvenance(browser);
   await runLargePlanRenderPerf(browser);
 
-  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
+  console.log('Browser E2E passed: Free entitlement gates + KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

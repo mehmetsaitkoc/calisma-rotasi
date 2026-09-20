@@ -527,7 +527,7 @@ async function runKpssSectionExamContent(browser) {
   assert.ok(await page.getByText('0 / 30 doğru', { exact: true }).count(), 'Blank section fixture must score zero correct');
   const sectionScopeNotice=page.locator('.notice').filter({hasText:'Bu sonuç tam KPSS GY–GK neti değildir'}).first();
   await sectionScopeNotice.waitFor({state:'visible'});
-  assert.match(await sectionScopeNotice.innerText(),/yalnızca Türkçe bölüm denemesidir/i,'Section result must not present itself as the full KPSS');
+  assert.match(await sectionScopeNotice.innerText(),/tam KPSS GY–GK neti değildir[\s\S]*Türkçe bölüm denemesidir/i,'Section result must not present itself as the full KPSS');
 
   const snapshot = await appState(page);
   const attempts = snapshot.value.workspaces.kpss.assessments.filter(a => a.sectionId === 'kpss-turkce-section-01');

@@ -556,7 +556,8 @@ try {
     planCount: space.plan.length
   };
 
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
+  assert.equal(new URL(page.url()).searchParams.has('fresh'), false, 'Persistence reload must use the normal application URL');
   await page.locator('#app').waitFor({ state: 'visible' });
   await assertCleanRender(page, 'behavior reload persistence');
 

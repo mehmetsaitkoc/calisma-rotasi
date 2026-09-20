@@ -376,6 +376,36 @@ try {
   assert.ok(Number.isInteger(renderPerf.reasonCalls) && renderPerf.reasonCalls >= 0, 'Task-reason call count must be measurable');
   assert.ok(renderPerf.renderCount >= 1, 'Route render counter must increment');
   assert.ok(renderPerf.lastTaskNodes >= 1, 'Render diagnostics must observe visible task nodes');
+
+  const backupContract = await page.evaluate(() => {
+    let current = null;
+    for (const raw of Object.values(localStorage)) {
+      try {
+        const value = JSON.parse(raw);
+        if (value?.workspaces?.kpss && value?.workspaces?.yks) { current = value; break; }
+      } catch {}
+    }
+    if (!current) throw new Error('Current app state missing for backup contract test');
+    const envelope = window.RotaContracts.makeBackupEnvelope(current, { appVersion: '4.1' });
+    const restored = window.RotaCore.validateBackup(envelope);
+    const tampered = JSON.parse(JSON.stringify(envelope));
+    tampered.state.activeExam = tampered.state.activeExam === 'kpss' ? 'yks' : 'kpss';
+    let tamperRejected = false;
+    try { window.RotaCore.validateBackup(tampered); } catch { tamperRejected = true; }
+    return {
+      schema: envelope.schema,
+      version: envelope.version,
+      checksum: envelope.integrity?.checksum || '',
+      restoredExam: restored.activeExam,
+      tamperRejected
+    };
+  });
+  assert.equal(backupContract.schema, 'calisma-rotasi-backup', 'Browser backup must use the versioned envelope');
+  assert.equal(backupContract.version, 2, 'Browser backup envelope version must stay at v2');
+  assert.match(backupContract.checksum, /^[a-f0-9]{8}$/i, 'Browser backup must include an integrity checksum');
+  assert.equal(backupContract.restoredExam, 'kpss', 'Versioned browser backup must restore through RotaCore validation');
+  assert.equal(backupContract.tamperRejected, true, 'Tampered browser backup must be rejected');
+
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must expose Rota Hoca decision');
   assert.ok(await page.getByText('Bu plan neden böyle?').count(), 'Today must explain route logic');
 

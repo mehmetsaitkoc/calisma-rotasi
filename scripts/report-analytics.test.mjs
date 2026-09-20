@@ -117,9 +117,30 @@ const sparseComparison=A.compareMonth(sparse,'2026-09',{today:'2026-09-20'});
 for(const key of ['minutes','questions','activeDays']){
   assert.equal(sparseComparison.deltas[key].known,false,'Missing previous-month study evidence must keep '+key+' delta unknown');
   assert.equal(sparseComparison.deltas[key].value,null,'Missing previous-month study evidence must not fabricate a zero-baseline '+key+' delta');
+  assert.equal(sparseComparison.deltas[key].reason,'missing_previous','Missing previous-month study evidence must be identified precisely for '+key);
 }
 assert.equal(sparseComparison.deltas.examCount.known,false,'A single current-month exam must not create an exam-count delta against missing evidence');
 assert.equal(sparseComparison.deltas.examCount.value,null);
+assert.equal(sparseComparison.deltas.examCount.reason,'missing_previous');
+
+const previousOnly={
+  logs:[{id:'p1',date:'2026-08-05',subjectId:'math',minutes:50,questions:20}],
+  plan:[],
+  exams:[exam('p-e1','KPSS','2026-08-06',55,20)]
+};
+const missingCurrent=A.compareMonth(previousOnly,'2026-09',{today:'2026-09-20'});
+for(const key of ['minutes','questions','activeDays']){
+  assert.equal(missingCurrent.deltas[key].known,false,'Missing current-month study evidence must keep '+key+' delta unknown');
+  assert.equal(missingCurrent.deltas[key].value,null,'Missing current-month study evidence must not fabricate a negative delta for '+key);
+  assert.equal(missingCurrent.deltas[key].reason,'missing_current','Missing current-month study evidence must be identified precisely for '+key);
+}
+assert.equal(missingCurrent.deltas.examCount.known,false);
+assert.equal(missingCurrent.deltas.examCount.value,null);
+assert.equal(missingCurrent.deltas.examCount.reason,'missing_current');
+
+const missingBoth=A.compareMonth({logs:[],plan:[],exams:[]},'2026-09',{today:'2026-09-20'});
+assert.equal(missingBoth.deltas.minutes.reason,'missing_both','Two empty months must expose missing_both rather than blaming the previous month');
+assert.equal(missingBoth.deltas.examCount.reason,'missing_both');
 
 const sparseTrend=A.longTerm(sparse,'2026-09',{today:'2026-09-20',months:6});
 assert.equal(sparseTrend.evidence.monthsWithLogs,1);

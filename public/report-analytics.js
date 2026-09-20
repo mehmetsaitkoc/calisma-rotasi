@@ -55,9 +55,10 @@ function monthWeek(date){
   if(!Number.isInteger(day)||day<1)return -1;
   return Math.min(3,Math.floor((day-1)/7));
 }
-function metricDelta(current,previous,key,known=true){
-  const now=safeNumber(current?.[key]),before=safeNumber(previous?.[key]),comparable=known===true;
-  return {value:comparable?now-before:null,current:now,previous:before,known:comparable};
+function metricDelta(current,previous,key,currentKnown=true,previousKnown=true){
+  const now=safeNumber(current?.[key]),before=safeNumber(previous?.[key]),hasCurrent=currentKnown===true,hasPrevious=previousKnown===true,comparable=hasCurrent&&hasPrevious;
+  const reason=comparable?'':(!hasCurrent&&!hasPrevious?'missing_both':(!hasCurrent?'missing_current':'missing_previous'));
+  return {value:comparable?now-before:null,current:now,previous:before,known:comparable,reason};
 }
 function aggregateMonth(space,month,options={}){
   if(!validMonth(month))throw new Error('Geçerli bir rapor ayı gerekli.');
@@ -135,10 +136,10 @@ function compareMonth(space,month,options={}){
     current,
     previous,
     deltas:{
-      minutes:metricDelta(current,previous,'minutes',current.logCount>0&&previous.logCount>0),
-      questions:metricDelta(current,previous,'questions',current.logCount>0&&previous.logCount>0),
-      activeDays:metricDelta(current,previous,'activeDays',current.logCount>0&&previous.logCount>0),
-      examCount:metricDelta(current,previous,'examCount',current.examCount>0&&previous.examCount>0),
+      minutes:metricDelta(current,previous,'minutes',current.logCount>0,previous.logCount>0),
+      questions:metricDelta(current,previous,'questions',current.logCount>0,previous.logCount>0),
+      activeDays:metricDelta(current,previous,'activeDays',current.logCount>0,previous.logCount>0),
+      examCount:metricDelta(current,previous,'examCount',current.examCount>0,previous.examCount>0),
       planCompletion:{
         known:current.plan.completionRate!==null&&previous.plan.completionRate!==null,
         value:current.plan.completionRate!==null&&previous.plan.completionRate!==null?current.plan.completionRate-previous.plan.completionRate:null,

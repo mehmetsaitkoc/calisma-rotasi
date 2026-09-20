@@ -35,7 +35,14 @@ for(const marker of [
   'Beta döneminde ödeme sistemi kapalı',
   'Production beta fail-closed Free',
   'Gelişmiş devamlar Plus',
-  'Neden bugün?'
+  'Neden bugün?',
+  'ROTA PLUS REPORTS V1',
+  'report-premium-hero',
+  'report-kpis',
+  'report-week-bars',
+  'report-trend-bars',
+  '6 aylık trendler',
+  'Çalışmanın izini, varsayım katmadan gör.'
 ]) assert.ok(html.includes(marker),'Missing premium product contract marker: '+marker);
 
 assert.ok(

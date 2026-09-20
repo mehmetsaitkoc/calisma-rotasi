@@ -31,6 +31,12 @@ jobs:
       - name: Syntax check route contract tests
         run: node --check scripts/route-contracts.test.mjs
 
+      - name: Syntax check pilot metrics
+        run: node --check public/pilot-metrics.js
+
+      - name: Syntax check pilot metrics tests
+        run: node --check scripts/pilot-metrics.test.mjs
+
       - name: Syntax check server contract tests
         run: node --check scripts/server-contracts.test.mjs
 

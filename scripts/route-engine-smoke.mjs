@@ -2119,7 +2119,7 @@ for(const marker of [
   'function openMiniAttemptResult',
   'mini-result-detail',
   'Rota Mini Deneme sonucu ders, konu ve alt-konu performansına eklendi',
-  'DENEME MERKEZİ · BETA',
+  'DENEME MERKEZİ · ROTA İLE BAĞLI',
   'KPSS Problemler Mini #01',
   'TYT Paragraf Mini #01',
   'KPSS İnkılap Tarihi Mini #01',

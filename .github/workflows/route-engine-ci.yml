@@ -118,3 +118,33 @@ jobs:
 
       - name: Run real browser learning-loop E2E
         run: node scripts/browser-e2e.mjs
+
+
+  production-smoke:
+    needs: browser-e2e
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PRODUCTION_URL: https://calisma-rotasi.onrender.com
+      EXPECTED_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Syntax check production smoke
+        run: node --check scripts/production-smoke.mjs
+
+      - name: Install Playwright test runtime
+        run: npm install --no-save playwright@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify Render deployed this commit in a real browser
+        run: npm run production:smoke

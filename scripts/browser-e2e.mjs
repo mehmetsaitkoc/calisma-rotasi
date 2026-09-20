@@ -104,7 +104,7 @@ async function assertTodayContract(page) {
   }
 }
 
-async function submitWizard(page) {
+async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 'today' } = {}) {
   const premiumWelcome = page.locator('[data-premium-surface="welcome"]');
   await premiumWelcome.waitFor({ state: 'visible' });
   assert.equal(await page.locator('.premium-proof-item').count(), 3, 'Premium landing must render the three product-value signals');
@@ -131,13 +131,15 @@ async function submitWizard(page) {
   assert.equal(await dayBoxes.count(), 7, 'Working-day onboarding must expose all seven days');
   for (let i = 0; i < await dayBoxes.count(); i++) {
     const box = dayBoxes.nth(i);
-    if (!(await box.isChecked())) {
+    const day = Number(await box.getAttribute('value'));
+    const shouldBeChecked = workingDays.includes(day);
+    if ((await box.isChecked()) !== shouldBeChecked) {
       const label = box.locator('xpath=ancestor::label[1]');
       assert.ok(await label.count(), 'Each working-day checkbox must have a clickable label');
       await label.click();
     }
   }
-  assert.equal(await page.locator('#setup-wizard-form [name="days"]:checked').count(), 7, 'Retention fixture uses all seven working days so +3/+7 timing is not distorted by skipped days');
+  assert.equal(await page.locator('#setup-wizard-form [name="days"]:checked').count(), workingDays.length, 'Wizard must preserve the requested working-day selection');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   await page.locator('#setup-wizard-form [name="targetScore"]').fill('88');
@@ -154,13 +156,18 @@ async function submitWizard(page) {
   await page.locator('.route-building-card').waitFor({ state: 'visible' });
   await page.locator('.route-build-live').waitFor({ state: 'visible' });
   await page.clock.fastForward(5000);
-  await page.locator('.route-task').first().waitFor({ state: 'visible' });
-  await page.locator('[data-premium-surface="today"]').waitFor({ state: 'visible' });
-  assert.ok(await page.locator('.premium-signal-rail').isVisible(), 'Premium Today signal rail must stay visible');
-  await page.locator('.route-today-kicker').waitFor({ state: 'visible' });
-  await page.locator('.route-tools > summary').waitFor({ state: 'visible' });
-  assert.equal((await page.locator('.route-tools > summary').innerText()).trim().includes('Planı ayarla'), true, 'Secondary route controls must stay behind the quiet plan menu');
-  assert.equal(await page.locator('.premium-deep-dive').count(), 1, 'Advanced route diagnostics must stay behind a single progressive-disclosure control');
+  if (expectView === 'plan') {
+    await page.getByRole('heading', { name: 'Programım' }).waitFor({ state: 'visible' });
+    assert.ok((await page.locator('.route-plan-card').count()) > 0, 'Rest-day onboarding must reveal the generated weekly route instead of an empty Today screen');
+  } else {
+    await page.locator('.route-task').first().waitFor({ state: 'visible' });
+    await page.locator('[data-premium-surface="today"]').waitFor({ state: 'visible' });
+    assert.ok(await page.locator('.premium-signal-rail').isVisible(), 'Premium Today signal rail must stay visible');
+    await page.locator('.route-today-kicker').waitFor({ state: 'visible' });
+    await page.locator('.route-tools > summary').waitFor({ state: 'visible' });
+    assert.equal((await page.locator('.route-tools > summary').innerText()).trim().includes('Planı ayarla'), true, 'Secondary route controls must stay behind the quiet plan menu');
+    assert.equal(await page.locator('.premium-deep-dive').count(), 1, 'Advanced route diagnostics must stay behind a single progressive-disclosure control');
+  }
 }
 
 async function showTaskInPlan(page, id, label) {
@@ -307,6 +314,33 @@ async function submitYksWizard(page) {
   await build.click();
   await page.clock.fastForward(5000);
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
+}
+
+async function runRestDayInitialRouteVisibility(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
+  });
+  const page = await context.newPage();
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', e => pageErrors.push(String(e?.stack || e)));
+  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+
+  await page.clock.install({ time: new Date('2026-09-20T09:00:00+03:00') }); // Sunday
+  await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await submitWizard(page, { workingDays: [1,2,3,4,5], expectView: 'plan' });
+
+  const snapshot = await appState(page);
+  const space = snapshot.value.workspaces.kpss;
+  assert.ok(space.plan.length > 0, 'Rest-day onboarding must still generate a route');
+  assert.ok(space.plan.some(p => p.date > '2026-09-20'), 'Rest-day route must schedule tasks on the next selected working day');
+  assert.equal(await page.locator('[data-premium-surface="today"]').count(), 0, 'Initial route build on a rest day must not strand the student on empty Today');
+  await assertCleanRender(page, 'rest-day initial route visibility');
+  assert.deepEqual(pageErrors, [], 'Rest-day page errors:\n' + pageErrors.join('\n'));
+  assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Rest-day console errors:\n' + consoleErrors.join('\n'));
+  await context.close();
 }
 
 async function runMiniRepairProvenance(browser) {
@@ -771,9 +805,10 @@ try {
   assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'YKS desktop console errors:\n' + desktopConsoleErrors.join('\n'));
   await desktopContext.close();
 
+  await runRestDayInitialRouteVisibility(browser);
   await runMiniRepairProvenance(browser);
 
-  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + mini repair provenance');
+  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day initial route visibility + mini repair provenance');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

@@ -1918,7 +1918,7 @@ for(const marker of [
     {id:'untouched-repair',exam:'kpss',subjectId:'s3',title:'Untouched repair'}
   ];
   let repairDays=1;
-  const fn=new Function('subjects','ROTA_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
+  const fn=new Function('subjects','ROTA_ALL_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
     src+';return miniRecommendation;'
   )(
     ()=>[{id:'s1'},{id:'s2'},{id:'s3'}],defs,{activeExam:'kpss'},

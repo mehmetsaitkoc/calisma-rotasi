@@ -965,7 +965,7 @@ try {
   assert.ok(await page.getByText(/tek başına öğrenme veya başarı artışını kanıtlamaz/i).count(), 'Long-term report must not overclaim learning effects');
   await assertCleanRender(page, 'Plus six-month trend report');
   const plusVisibleCopy=(await page.locator('body').innerText()).toLocaleLowerCase('tr-TR');
-  assert.ok(!/entitlement kaynağı|server entitlement|fail-closed/.test(plusVisibleCopy),'Plus user-facing copy must not expose technical access jargon');
+  assert.ok(!/entitlement kaynağı|server entitlement|fail-closed|yetki servisi|sunucu tarafından|free yetkisi|plus yetkisi/.test(plusVisibleCopy),'Plus user-facing copy must not expose technical access jargon');
 
   // Empty-data Plus audit: select a period with no study records and verify honest zero-state rendering.
   await page.locator('[data-action="report-tab"][data-report-tab="month"]').click();

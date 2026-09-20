@@ -19,6 +19,32 @@ for(const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){
 }
 assert.ok(parsed>=5,'Expected executable inline scripts');
 
+// 1a) Architecture and student-facing contract boundary must stay wired.
+for(const marker of [
+  '<script src="/route-contracts.js"></script>',
+  'ARCHITECTURE BOUNDARY: catalog data',
+  'ARCHITECTURE BOUNDARY: route engine + workspace validation',
+  'ARCHITECTURE BOUNDARY: application state adapters + UI',
+  'function routeModeExplanation',
+  'window.RotaContracts?.taskReason',
+  'window.RotaContracts?.teacherContextEnvelope',
+  'window.RotaContracts?.makeBackupEnvelope',
+  'window.RotaContracts?.unwrapBackup',
+  'route-mode-explain'
+]) assert.ok(html.includes(marker),'Missing architecture/contract marker: '+marker);
+
+{
+  const reason=between('function routeTaskReason','function routeTodayTask');
+  assert.ok(reason.includes('RotaContracts?.taskReason'),'Task reason must pass through the student-language contract');
+  assert.ok(reason.includes('routeModeExplanation'),'Route mode explanation must stay student-facing');
+}
+{
+  const teacher=between('function teacherStudentContext','function teacherRemoteText');
+  assert.ok(teacher.includes('teacherContextEnvelope'),'Rota Hoca context must use the shared context envelope');
+  for(const field of ['todayPlan','routeDecision','studentModel','mastery','completion'])assert.ok(teacher.includes(field),'Teacher context missing: '+field);
+}
+
+
 // 2) Subject/topic methodology must classify materially different study modes.
 {
   const src=between('function routeStudyMethod','function routeMethodLoad');

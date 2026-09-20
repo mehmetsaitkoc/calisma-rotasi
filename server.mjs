@@ -23,6 +23,7 @@ const TEACHER_RATE_LIMIT = 20;
 const TTS_RATE_LIMIT = 36;
 const RATE_WINDOW_MS = 60_000;
 const TEACHER_MAX_OUTPUT_TOKENS = 1400;
+const RATE_BUCKET_PRUNE_AT = 2048;
 const buckets = new Map();
 
 const PROFILE_MODELS = {
@@ -36,13 +37,33 @@ function json(res, status, value) {
   res.writeHead(status, {'content-type':'application/json; charset=utf-8','content-length':Buffer.byteLength(body),'cache-control':'no-store'});
   res.end(body);
 }
-function rateLimit(req, limit=30, windowMs=60_000) {
-  const ip = req.socket.remoteAddress || 'local';
+function clientIp(req) {
+  const forwarded = process.env.RENDER === 'true'
+    ? String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    : '';
+  return forwarded || req.socket.remoteAddress || 'local';
+}
+function pruneRateBuckets(now, windowMs) {
+  if (buckets.size <= RATE_BUCKET_PRUNE_AT) return;
+  for (const [key, times] of buckets) {
+    const fresh = times.filter(t => now - t < windowMs);
+    if (fresh.length) buckets.set(key, fresh);
+    else buckets.delete(key);
+  }
+}
+function rateLimit(req, scope, limit=30, windowMs=60_000) {
   const now = Date.now();
-  const old = buckets.get(ip) || [];
+  pruneRateBuckets(now, windowMs);
+  const key = scope + ':' + clientIp(req);
+  const old = buckets.get(key) || [];
   const fresh = old.filter(t => now - t < windowMs);
-  if (fresh.length >= limit) return false;
-  fresh.push(now); buckets.set(ip, fresh); return true;
+  if (fresh.length >= limit) {
+    buckets.set(key, fresh);
+    return false;
+  }
+  fresh.push(now);
+  buckets.set(key, fresh);
+  return true;
 }
 function readJson(req) {
   return new Promise((resolve, reject) => {
@@ -280,11 +301,11 @@ const server=http.createServer(async (req,res)=>{
     }catch(e){return json(res,e.status||500,{error:e.message||'AI bağlantısı kurulamadı.'});}
   }
   if(req.method==='POST'&&req.url==='/api/teacher'){
-    if(!rateLimit(req,TEACHER_RATE_LIMIT,RATE_WINDOW_MS)) return json(res,429,{error:'Çok hızlı istek gönderildi. Biraz sonra tekrar dene.',code:'RATE_LIMITED',retryAfterSeconds:60});
+    if(!rateLimit(req,'teacher',TEACHER_RATE_LIMIT,RATE_WINDOW_MS)) return json(res,429,{error:'Çok hızlı istek gönderildi. Biraz sonra tekrar dene.',code:'RATE_LIMITED',retryAfterSeconds:60});
     try{const body=await readJson(req);const out=await callTeacher(body);return json(res,200,out);}catch(e){return json(res,e.status||500,{error:e.message||'Rota Hoca isteği başarısız.'});}
   }
   if(req.method==='POST'&&req.url==='/api/tts'){
-    if(!rateLimit(req,TTS_RATE_LIMIT,RATE_WINDOW_MS)) return json(res,429,{error:'Ses istek limiti aşıldı.',code:'RATE_LIMITED',retryAfterSeconds:60});
+    if(!rateLimit(req,'tts',TTS_RATE_LIMIT,RATE_WINDOW_MS)) return json(res,429,{error:'Ses istek limiti aşıldı.',code:'RATE_LIMITED',retryAfterSeconds:60});
     try{const body=await readJson(req);const audio=await callTTS(body);res.writeHead(200,{'content-type':'audio/mpeg','content-length':audio.length,'cache-control':'no-store','x-rota-voice-profile':body.gender==='female'?'female':'male'});return res.end(audio);}catch(e){return json(res,e.status||500,{error:e.message||'Ses üretilemedi.'});}
   }
   if(req.method==='GET') return serve(req,res);

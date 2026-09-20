@@ -538,6 +538,8 @@ try {
   await assertCleanRender(page, 'after task completion');
 
   await navigate(page, 'exams');
+  await page.locator('[data-premium-surface="exams"]').waitFor({ state: 'visible' });
+  assert.ok(await page.getByText('Çöz. Ölç. Rota ne öğrendiğini göstersin.', { exact: true }).count(), 'Premium Exam Center surface must stay visible');
   await page.locator('[data-action="add-exam"]').first().click();
   const examForm = page.locator('#exam-form');
   await examForm.locator('[name="name"]').fill('E2E Tam Deneme');
@@ -621,6 +623,8 @@ try {
   await assertCleanRender(page, 'after 3/7 retention loop');
 
   await navigate(page, 'teacher');
+  await page.locator('[data-premium-surface="teacher"]').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.teacher-premium-flow span').count(), 4, 'Premium Rota Hoca surface must stay visible');
   await page.locator('#teacher-question').fill('Bugünkü görevlerimi neden bu şekilde seçtin?');
   await page.locator('#teacher-form button[type="submit"]').click();
   await page.locator('#teacher-avatar-quote').filter({ hasText: 'E2E Rota Hoca cevabı' }).waitFor({ state: 'visible' });

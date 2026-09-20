@@ -12,6 +12,7 @@
     "pilot:test": "node scripts/route-engine-pilot-cohort.test.mjs",
     "pilot:telemetry": "node scripts/route-engine-pilot-telemetry.mjs",
     "pilot:operations:test": "node scripts/route-engine-pilot-operations.test.mjs",
-    "pilot:operations:ui:test": "node scripts/route-engine-pilot-operations-ui.test.mjs"
+    "pilot:operations:ui:test": "node scripts/route-engine-pilot-operations-ui.test.mjs",
+    "production:smoke": "node scripts/production-smoke.mjs"
   }
 }

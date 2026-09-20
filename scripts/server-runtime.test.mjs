@@ -68,6 +68,11 @@ try{
   assert.equal(invalidJson.status,400);
   assert.match(invalidJson.data.error||'',/Geçersiz JSON/i);
 
+  const oversizedBody=JSON.stringify({question:'x'.repeat(7*1024*1024+1024)});
+  const oversized=await jsonPost('/api/teacher',oversizedBody);
+  assert.equal(oversized.status,413,'Oversized teacher payloads must fail with an explicit 413 response');
+  assert.match(oversized.data.error||'',/çok büyük/i);
+
   const forwardedHeaders={'content-type':'application/json','x-forwarded-for':'203.0.113.10, 10.0.0.5'};
   for(let i=0;i<20;i++){
     const limited=await jsonPost('/api/teacher',{question:'Rate limit fixture '+i},forwardedHeaders);
@@ -83,7 +88,7 @@ try{
   const ttsSameClient=await jsonPost('/api/tts',{text:'Merhaba'},forwardedHeaders);
   assert.equal(ttsSameClient.status,503,'Teacher traffic must not consume the independent TTS rate-limit bucket');
 
-  console.log('Server runtime contracts passed: honest fallback + validation + bounded context + forwarded-IP scoped rate limits + secret-safe health');
+  console.log('Server runtime contracts passed: honest fallback + validation + explicit body bound + bounded context + forwarded-IP scoped rate limits + secret-safe health');
 } finally {
   server.kill('SIGTERM');
   await sleep(100);

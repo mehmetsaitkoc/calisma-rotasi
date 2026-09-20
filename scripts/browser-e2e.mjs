@@ -611,6 +611,7 @@ try {
   );
 
   const persistedBehavior = {
+    storageKey: snapshot.key,
     taskId: behaviorTask.id,
     date: movedBehaviorTask.date,
     deferUntil: movedBehaviorTask.deferUntil || '',
@@ -618,12 +619,15 @@ try {
     planCount: space.plan.length
   };
 
-  await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
-  assert.equal(new URL(page.url()).searchParams.has('fresh'), false, 'Persistence reload must use the normal application URL');
+  await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  assert.equal(new URL(page.url()).searchParams.get('fresh'), '1', 'Persistence reload must stay in the isolated fresh-preview namespace');
+  assert.equal(new URL(page.url()).searchParams.get('resume'), '1', 'Persistence reload must explicitly disable fresh-preview reset');
   await page.locator('#app').waitFor({ state: 'visible' });
   await assertCleanRender(page, 'behavior reload persistence');
+  assert.equal(await page.locator('#setup-wizard-form').count(), 0, 'Reloaded configured workspace must not fall back to onboarding');
 
   snapshot = await appState(page);
+  assert.equal(snapshot.key, persistedBehavior.storageKey, 'Reload must read the exact same preview storage namespace');
   space = snapshot.value.workspaces.kpss;
   const afterReloadBehaviorTask = space.plan.find(p => p.id === persistedBehavior.taskId);
   assert.ok(afterReloadBehaviorTask, 'Reload must preserve the rescheduled task');

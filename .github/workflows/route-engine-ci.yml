@@ -31,6 +31,15 @@ jobs:
       - name: Syntax check workspace schema tests
         run: node --check scripts/workspace-schema.test.mjs
 
+      - name: Syntax check extracted route core
+        run: node --check public/core.js
+
+      - name: Syntax check extracted exam analysis
+        run: node --check public/analysis.js
+
+      - name: Syntax check architecture boundary tests
+        run: node --check scripts/architecture-boundary.test.mjs
+
       - name: Syntax check extracted catalog
         run: node --check public/catalog.js
 

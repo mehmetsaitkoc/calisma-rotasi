@@ -14,15 +14,17 @@ const src=html.slice(a,b);
 const defs=new Function(src+';return ROTA_MINI_EXAMS;')();
 
 assert.ok(defs.length>=48,'Original mini seeds plus KPSS topic practices must be present');
-const legacySeeds=defs.filter(x=>!String(x.id).includes('-practice-01'));
+const legacySeeds=defs.filter(x=>!String(x.id).includes('-practice-'));
 assert.equal(legacySeeds.length,24,'The original 24 mini seed definitions must stay intact');
-assert.equal(defs.filter(x=>String(x.id).includes('-practice-01')).length,24,'KPSS Turkish + history must add one original topic-practice set per catalog topic');
+const kpssPractices=defs.filter(x=>String(x.id).includes('-practice-'));
+assert.equal(kpssPractices.length,24,'KPSS Turkish + history must add one original topic-practice set per catalog topic');
 assert.equal(new Set(defs.map(x=>x.id)).size,defs.length,'Mini ids must stay unique');
 for(const def of defs){
   const n=M.normalize(def);
   assert.equal(n.sourceKind,'original');
   assert.equal(n.original,true);
-  assert.equal(n.setNo,1,'Seed minis currently represent Set #01');
+  if(legacySeeds.some(x=>x.id===def.id))assert.equal(n.setNo,1,'Legacy seed minis must remain Set #01');
+  else assert.ok([1,2].includes(n.setNo),'New KPSS topic practices may use Set #02 when Set #01 already existed');
   assert.ok(n.seriesId.includes(def.subjectId));
 }
 

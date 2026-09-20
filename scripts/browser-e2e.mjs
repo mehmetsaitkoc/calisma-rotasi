@@ -408,6 +408,88 @@ try {
   assert.ok(teacherRequest.studentContext?.mastery, 'Rota Hoca must receive mastery context');
   await assertCleanRender(page, 'Rota Hoca');
 
+  // Behavior hardening: Daha sonra must be reversible without duplicate evidence,
+  // Atla must reschedule the task, and both signals must survive a real reload.
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  let behaviorTask = space.plan.find(p => !p.done);
+  assert.ok(behaviorTask, 'Behavior hardening needs an open task');
+  if (behaviorTask.date !== (await page.evaluate(() => {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }))) {
+    await setDay(page, behaviorTask.date);
+  } else {
+    await navigate(page, 'today');
+  }
+
+  const laterButton = page.locator('[data-action="route-later"][data-id="' + behaviorTask.id + '"]');
+  await laterButton.waitFor({ state: 'visible' });
+  await laterButton.click();
+
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  assert.equal(space.plan.find(p => p.id === behaviorTask.id)?.taskState, 'later', 'Daha sonra must mark the task as later');
+  assert.equal(
+    space.taskEvents.filter(e => e.taskId === behaviorTask.id && e.action === 'later').length,
+    1,
+    'Daha sonra must create one behavior event'
+  );
+
+  await laterButton.click();
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  assert.equal(space.plan.find(p => p.id === behaviorTask.id)?.taskState, 'open', 'Second Daha sonra click must restore normal order');
+  assert.equal(
+    space.taskEvents.filter(e => e.taskId === behaviorTask.id && e.action === 'later').length,
+    1,
+    'Restoring order must not duplicate the later event'
+  );
+
+  const skipButton = page.locator('[data-action="route-skip"][data-id="' + behaviorTask.id + '"]');
+  await skipButton.waitFor({ state: 'visible' });
+  await skipButton.click();
+
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  assert.equal(
+    space.taskEvents.filter(e => e.taskId === behaviorTask.id && e.action === 'skip').length,
+    1,
+    'Atla must create exactly one skip event'
+  );
+  const movedBehaviorTask = space.plan.find(p => p.id === behaviorTask.id);
+  assert.ok(movedBehaviorTask && !movedBehaviorTask.done, 'Atla must keep the task open');
+  assert.ok(
+    String(movedBehaviorTask.date || '') > behaviorTask.date || String(movedBehaviorTask.deferUntil || '') > behaviorTask.date,
+    'Atla must defer or reschedule the task beyond its previous day'
+  );
+
+  const persistedBehavior = {
+    taskId: behaviorTask.id,
+    date: movedBehaviorTask.date,
+    deferUntil: movedBehaviorTask.deferUntil || '',
+    eventCount: space.taskEvents.length,
+    planCount: space.plan.length
+  };
+
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.locator('#app').waitFor({ state: 'visible' });
+  await assertCleanRender(page, 'behavior reload persistence');
+
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  const afterReloadBehaviorTask = space.plan.find(p => p.id === persistedBehavior.taskId);
+  assert.ok(afterReloadBehaviorTask, 'Reload must preserve the rescheduled task');
+  assert.equal(afterReloadBehaviorTask.date, persistedBehavior.date, 'Reload must preserve the rescheduled date');
+  assert.equal(afterReloadBehaviorTask.deferUntil || '', persistedBehavior.deferUntil, 'Reload must preserve deferUntil');
+  assert.equal(space.taskEvents.length, persistedBehavior.eventCount, 'Reload must preserve behavior events without duplication');
+  assert.equal(space.plan.length, persistedBehavior.planCount, 'Reload must not regenerate duplicate plan tasks');
+  assert.equal(
+    space.taskEvents.filter(e => e.taskId === persistedBehavior.taskId && e.action === 'skip').length,
+    1,
+    'Reload must preserve exactly one skip event'
+  );
+
   assert.deepEqual(pageErrors, [], 'Browser page errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Browser console errors:\n' + consoleErrors.join('\n'));
 

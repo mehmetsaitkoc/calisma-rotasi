@@ -51,7 +51,11 @@ for(const marker of [
   'routeRenderPerf',
   'window.__rotaRenderPerf=routeRenderPerf',
   "const FRESH_RESET=FRESH_PREVIEW&&QUERY.get('resume')!=='1'",
-  'if(FRESH_RESET)'
+  'if(FRESH_RESET)',
+  "function workspace(exam){return {schemaVersion:2,exam,configured:false",
+  "if(old.schemaVersion!==undefined&&(!Number.isInteger(old.schemaVersion)||old.schemaVersion<1||old.schemaVersion>2))throw Error('Yedekte desteklenmeyen workspace şeması.')",
+  "if(old.exam!==undefined&&old.exam!==e)throw Error('Yedekte workspace sınav kimliği geçersiz.')",
+  "w.schemaVersion=2;w.exam=e;w.configured=!!old.configured"
 ]) assert.ok(html.includes(marker),'Missing architecture/contract marker: '+marker);
 
 {

@@ -32,8 +32,8 @@ for(const marker of [
   'Rota’nın ayrıntılı analizini gör',
   'Planı ayarla',
   'Verilerin bu tarayıcıda saklanır',
-  'Beta döneminde ödeme sistemi kapalı',
-  'Beta döneminde varsayılan paket Ücretsiz',
+  'Plus üyelik satışı henüz açık değil',
+  'Üyelik satışı açılana kadar varsayılan paket Ücretsiz',
   'Gelişmiş devamlar Plus',
   'Neden bugün?',
   'ROTA PLUS REPORTS V1',
@@ -46,7 +46,9 @@ for(const marker of [
   'Bu 6 aylık dönemde ders kaydı yok.',
   "emptyWeek?'is-empty'",
   "emptyMonth?'is-empty'",
-  '.report-coverage{grid-template-columns:1fr}'
+  '.report-coverage{grid-template-columns:1fr}',
+  '.report-subject-row .grow{min-width:0}',
+  'overflow-wrap:anywhere;word-break:break-word'
 ]) assert.ok(html.includes(marker),'Missing premium product contract marker: '+marker);
 
 assert.ok(
@@ -65,6 +67,9 @@ assert.ok(
 );
 
 assert.ok(!html.includes('Pilot sürüm · Ödeme ve gerçek üyelik aktif değil'),'Primary product surfaces must not use prototype-style pilot warning copy');
+for(const phrase of ['Beta paket tasarımı','Fiyatlar test amaçlıdır','Örnek fiyat','Şu anda beta sürümündesin','BETA · ÜYELİK SATIŞI HENÜZ KAPALI']){
+  assert.ok(!html.includes(phrase),'Membership surfaces must not look like an engineering demo: '+phrase);
+}
 assert.ok(!html.includes('rota-plus:visual-demo'),'Premium UI must not trust sessionStorage as an entitlement authority');
 assert.ok(!html.includes('data-action="paid-tier"'),'Premium UI must not expose a self-service tier switch');
 assert.ok(!html.includes('Plus görünümünü dene'),'Pricing UI must not visually grant Plus before account/payment entitlement exists');

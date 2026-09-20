@@ -5,7 +5,7 @@ const SCHEMA='calisma-rotasi-kpss-practice-v1';
 const VERSION=1;
 const BASIS='KPSS GY-GK ders toplamları esas alınır; konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık ürün planıdır ve ÖSYM konu başına sabit soru sayısı garantisi değildir.';
 const Q=(id,topicId,text,options,answer,explanation)=>({id,topicId,text,options,answer,explanation});
-const T=(id,subjectId,topicTitle,title,questions,minutes=8)=>({id,exam:'kpss',subjectId,topicId:id.replace(/-practice-01$/,''),topicTitle,title,eyebrow:'ROTA KONU PRATİĞİ · KPSS',minutes,level:'Orta',questions,version:1,sourceKind:'original',original:true});
+const T=(id,subjectId,topicTitle,title,questions,minutes=8)=>({id,exam:'kpss',subjectId,topicId:id.replace(/-practice-\d{2}$/,''),topicTitle,title,eyebrow:'ROTA KONU PRATİĞİ · KPSS',minutes,level:'Orta',questions,version:1,sourceKind:'original',original:true});
 
 const topicSets=[
 T('k-tr-1-practice-01','k-tr','Sözcükte anlam','KPSS Sözcükte Anlam · Hızlı Pratik',[
@@ -20,7 +20,7 @@ T('k-tr-2-practice-01','k-tr','Cümlede anlam','KPSS Cümlede Anlam · Hızlı P
  Q('tr2q3','k-tr-2','“Bu kitabı, konuya farklı bir açıdan bakabilmek için okudum.” cümlesinde hangi anlam vardır?',['Amaç-sonuç','Neden-sonuç','Koşul','Yakınma','Öneri'],0,'Okuma eyleminin amacı farklı açıdan bakabilmektir.'),
  Q('tr2q4','k-tr-2','“Yeni yöntem, eskisine göre daha az zaman alıyor.” cümlesinde hangisi vardır?',['Tanım','Karşılaştırma','Öznel yargı','Koşul','Kesinlik'],1,'Yeni ve eski yöntem süre bakımından karşılaştırılmıştır.')
 ]),
-T('k-tr-3-practice-01','k-tr','Paragrafta anlam','KPSS Paragrafta Anlam · Hızlı Pratik',[
+T('k-tr-3-practice-02','k-tr','Paragrafta anlam','KPSS Paragrafta Anlam · Hızlı Pratik',[
  Q('tr3q1','k-tr-3','Bir şehrin belleği yalnız anıtlarda saklı değildir. Mahalle arasındaki fırın, yıllardır aynı köşede duran ağaç ve insanların birbirine sesleniş biçimi de bu belleğin parçalarıdır. Bu parçanın ana düşüncesi hangisidir?',['Şehirler sürekli değişmelidir.','Kent belleği gündelik yaşamın küçük unsurlarında da yaşar.','Anıtlar şehirler için gereksizdir.','Mahalle kültürü yalnız eski şehirlerde görülür.','Ağaçlar tarihî yapılardan daha değerlidir.'],1,'Parça kent belleğinin gündelik ayrıntılarda da sürdüğünü vurgular.'),
  Q('tr3q2','k-tr-3','Bir araştırmacı için iyi soru, cevabı hemen bulunan soru değildir. Bazen doğru soru yeni veriler toplamayı, eski varsayımları yeniden sınamayı gerektirir. Parçada asıl anlatılmak istenen nedir?',['Araştırma yalnız veri toplamaktır.','İyi sorular düşünmeyi ve yeniden sınamayı tetikler.','Eski bilgiler her zaman yanlıştır.','Hızlı cevap bilimsel başarının ölçüsüdür.','Araştırmacı varsayım kurmamalıdır.'],1,'Vurgu iyi sorunun araştırmayı ve sorgulamayı derinleştirmesidir.'),
  Q('tr3q3','k-tr-3','Bir müzik eserini yalnız teknik kusurları arayarak dinlemek, eserin bütününü kaçırmaya yol açabilir. Teknik bilgi önemlidir; ancak ritim, duygu ve yapı birlikte değerlendirilmelidir. Bu parçadan hangisi çıkarılabilir?',['Teknik bilgi gereksizdir.','Müzik yalnız duyguyla anlaşılır.','Değerlendirme hem ayrıntıyı hem bütünü gözetmelidir.','Kusursuz eser yoktur.','Ritim, teknikten her zaman önemlidir.'],2,'Parça ayrıntı ve bütünün birlikte değerlendirilmesini savunur.'),
@@ -135,7 +135,7 @@ T('k-ta-10-practice-01','k-ta','Kurtuluş Savaşı cepheleri','KPSS Kurtuluş Sa
  Q('ta10q3','k-ta-10','Büyük Taarruz hangi tarihte başlamıştır?',['26 Ağustos 1922','30 Ağustos 1922','9 Eylül 1922','23 Ağustos 1921','11 Ekim 1922'],0,'Büyük Taarruz 26 Ağustos 1922’de başladı.'),
  Q('ta10q4','k-ta-10','Doğu Cephesi’nde Ermenistan ile imzalanan antlaşma hangisidir?',['Gümrü','Moskova','Kars','Ankara','Mudanya'],0,'Gümrü Antlaşması TBMM’nin uluslararası alandaki ilk siyasî başarısı kabul edilir.')
 ]),
-T('k-ta-11-practice-01','k-ta','Atatürk ilke ve inkılapları','KPSS Atatürk İlke ve İnkılapları · Hızlı Pratik',[
+T('k-ta-11-practice-02','k-ta','Atatürk ilke ve inkılapları','KPSS Atatürk İlke ve İnkılapları · Hızlı Pratik',[
  Q('ta11q1','k-ta-11','Saltanatın kaldırılması en doğrudan hangi ilkeyle ilişkilidir?',['Cumhuriyetçilik','Devletçilik','Laiklik','İnkılapçılık','Milliyetçilik'],0,'Egemenliğin millete dayandırılması Cumhuriyetçilikle doğrudan ilişkilidir.'),
  Q('ta11q2','k-ta-11','Tevhid-i Tedrisat Kanunu’nun temel amacı nedir?',['Eğitimde birliği sağlamak','Tarımı geliştirmek','Yerel yönetimleri güçlendirmek','Dış ticareti artırmak','Bankacılığı düzenlemek'],0,'Kanun eğitim kurumlarını tek çatı altında birleştirmeyi amaçladı.'),
  Q('ta11q3','k-ta-11','Türk Medeni Kanunu’nun kabulü hangi alanda önemli bir dönüşüm sağlamıştır?',['Özel hukuk ve aile hukuku','Askerî teşkilat','Dış politika','Vergi sistemi','Yerel yönetim'],0,'Medeni Kanun kişi, aile, miras gibi özel hukuk alanlarını düzenledi.'),

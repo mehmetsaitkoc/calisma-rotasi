@@ -37,6 +37,9 @@ jobs:
       - name: Syntax check pilot metrics tests
         run: node --check scripts/pilot-metrics.test.mjs
 
+      - name: Syntax check mini catalog tests
+        run: node --check scripts/mini-catalog.test.mjs
+
       - name: Syntax check server contract tests
         run: node --check scripts/server-contracts.test.mjs
 

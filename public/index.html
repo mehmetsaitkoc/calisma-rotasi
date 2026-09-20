@@ -3277,8 +3277,13 @@ function teacherStudentContext(record){
  const recentMistakes=ww.mistakes.filter(m=>!m.resolved).slice(0,8).map(m=>({subject:subName(m.subjectId,true),topic:R.topic(ww,m.topicId)?.title||m.title,cause:m.cause,reviewDate:m.reviewDate}));
  const recentLogs=[...ww.logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10).map(l=>({date:l.date,subject:subName(l.subjectId,true),minutes:l.minutes,questions:l.questions,title:l.title,outcome:l.outcome||'',difficulty:l.difficulty||'',correct:Number.isInteger(l.correct)?l.correct:null,wrong:Number.isInteger(l.wrong)?l.wrong:null}));
  const teacherSignals=teacherQuestions().filter(q=>['review','stuck'].includes(q.status)).slice(0,8).map(q=>({subject:subName(q.subjectId,true),topic:R.topic(ww,q.topicId)?.title||'',status:q.status,question:q.question.slice(0,180)}));
- const routeDecision=routeAppliedDecision(record.subjectId,selectedTopic),studentModel=routeStudentModel(record.subjectId,selectedTopic),consistency=routeConsistencySignal(),examRisk=selectedTopic?routeTopicExamRisk(record.subjectId,selectedTopic,studentModel):null,mastery=selectedTopic?routeTopicMasterySignal(selectedTopic):null;
- const todayPlan=ww.plan.filter(p=>p.date===today()&&!p.done).sort((a,b)=>((b.priority||0)-(a.priority||0))).slice(0,8).map(p=>{const topicId=R.topic(ww,p.topicId)?p.topicId:'',decision=routeAppliedDecision(p.subjectId,topicId);return {subject:subName(p.subjectId,true),topic:R.topic(ww,p.topicId)?.title||p.title,title:p.title,minutes:p.minutes,targetQuestions:Number.isInteger(p.targetQuestions)?p.targetQuestions:null,reason:routeTaskReason(p),mode:decision.mode,modeLabel:decision.label};});
+ const routeDecision=routeAppliedDecision(record.subjectId,selectedTopic),studentModel=routeStudentModel(record.subjectId,selectedTopic),consistency=routeConsistencySignal(),examRisk=selectedTopic?routeTopicExamRisk(record.subjectId,selectedTopic,studentModel):null,selectedMastery=selectedTopic?routeTopicMasterySignal(selectedTopic):null;
+ const todayOpen=ww.plan.filter(p=>p.date===today()&&!p.done).sort((a,b)=>((b.priority||0)-(a.priority||0))).slice(0,8);
+ const todayPlan=todayOpen.map(p=>{const topicId=R.topic(ww,p.topicId)?p.topicId:'',decision=routeAppliedDecision(p.subjectId,topicId);return {subject:subName(p.subjectId,true),topic:R.topic(ww,p.topicId)?.title||p.title,title:p.title,minutes:p.minutes,targetQuestions:Number.isInteger(p.targetQuestions)?p.targetQuestions:null,reason:routeTaskReason(p),mode:decision.mode,modeLabel:decision.label};});
+ const mastery=selectedMastery?{scope:'topic',ready:selectedMastery.ready,progress:selectedMastery.progress,total:selectedMastery.total,baseDate:selectedMastery.baseDate,review3:selectedMastery.review3,review7:selectedMastery.review7,openMistake:selectedMastery.openMistake,next:selectedMastery.next}:{
+  scope:'today_plan',
+  topics:todayOpen.filter(p=>R.topic(ww,p.topicId)).filter((p,i,a)=>a.findIndex(x=>x.topicId===p.topicId)===i).slice(0,5).map(p=>{const m=routeTopicMasterySignal(p.topicId);return {subject:subName(p.subjectId,true),topic:R.topic(ww,p.topicId)?.title||p.title,ready:m.ready,progress:m.progress,total:m.total,baseDate:m.baseDate,review3:m.review3,review7:m.review7,openMistake:m.openMistake,next:m.next};})
+ };
  return {
   exam:examLabel(),track:trackLabel(),target:ww.settings.target||'',targetDate:ww.settings.targetDate||'',dailyMinutes:ww.settings.dailyMinutes,topicStatus:selectedTopic?(ww.topicState[selectedTopic]?.status||0):null,
   routeSummary:{lastReason:ww.route?.lastReason||'',lastChanged:ww.route?.lastChanged||0,lastRun:ww.route?.lastRun||''},
@@ -3287,7 +3292,7 @@ function teacherStudentContext(record){
   routeDecision:{mode:routeDecision.mode,label:routeDecision.label,note:routeDecision.note||'',confidence:routeDecision.confidence||0,evidence:Array.isArray(routeDecision.evidence)?routeDecision.evidence.slice(0,6):[]},
   studentModel:{state:studentModel.state,label:studentModel.label,confidence:studentModel.confidence,learningNeed:studentModel.learningNeed,performance:studentModel.performance,retention:studentModel.retention,execution:studentModel.execution,nextAction:studentModel.nextAction,openMistakes:studentModel.openMistakes,trend:studentModel.trend?.direction||'unknown',personalNorm:studentModel.personalNorm?.direction||'unknown',velocity:studentModel.velocityLabel||''},
   examRisk:examRisk?{score:examRisk.score,label:examRisk.label,action:examRisk.action,reasons:(examRisk.reasons||[]).slice(0,5)}:null,
-  mastery:mastery?{ready:mastery.ready,progress:mastery.progress,total:mastery.total,baseDate:mastery.baseDate,review3:mastery.review3,review7:mastery.review7,openMistake:mastery.openMistake,next:mastery.next}:null,
+  mastery,
   recentExams,recentMistakes,recentLogs,teacherSignals
  };
 }

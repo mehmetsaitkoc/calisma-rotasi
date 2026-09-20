@@ -102,4 +102,26 @@ assert.equal(empty.plan.completionRate,null);
 assert.deepEqual(empty.subjects,[]);
 assert.deepEqual(empty.examTypes,[]);
 
-console.log('Report analytics passed: monthly evidence + partial month + plan adherence + separate comparable exam trends');
+const sparse={
+  logs:[{id:'s1',date:'2026-09-05',subjectId:'very-long-subject-name',minutes:35,questions:12}],
+  plan:[],
+  exams:[exam('s-e1','KPSS','2026-09-06',50,20)]
+};
+const sparseMonth=A.aggregateMonth(sparse,'2026-09',{today:'2026-09-20'});
+assert.equal(sparseMonth.plan.completionRate,null,'No plan history must remain unknown, not 0%');
+assert.equal(sparseMonth.examTypes.length,1);
+assert.equal(sparseMonth.examTypes[0].comparisonReason,'no_previous','A single exam must not invent a comparison');
+assert.equal(sparseMonth.examTypes[0].delta,null);
+
+const sparseTrend=A.longTerm(sparse,'2026-09',{today:'2026-09-20',months:6});
+assert.equal(sparseTrend.evidence.monthsWithLogs,1);
+assert.equal(sparseTrend.evidence.studyTrendReady,false,'One month of study data is not enough for a trend claim');
+assert.equal(sparseTrend.evidence.monthsWithPlan,0);
+assert.equal(sparseTrend.evidence.planTrendReady,false,'Missing plan history must not create a plan trend');
+assert.equal(sparseTrend.evidence.monthsWithExams,1);
+assert.equal(sparseTrend.evidence.examTrendReady,false,'One exam must not create an exam trend');
+assert.equal(sparseTrend.examTypes[0].count,1);
+assert.equal(sparseTrend.examTypes[0].comparable,false);
+assert.equal(sparseTrend.examTypes[0].delta,null);
+
+console.log('Report analytics passed: monthly evidence + sparse/empty states + partial month + plan adherence + separate comparable exam trends');

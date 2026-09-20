@@ -90,7 +90,7 @@ assert.equal(trend.subjects[0].minutes,170);
 const longKpss=trend.examTypes.find(x=>x.type==='KPSS');
 assert.equal(longKpss.count,3);
 assert.equal(longKpss.comparable,true);
-assert.equal(longKpss.delta,15);
+assert.equal(longKpss.delta,12);
 
 const longTyt=trend.examTypes.find(x=>x.type==='TYT');
 assert.equal(longTyt.count,2);

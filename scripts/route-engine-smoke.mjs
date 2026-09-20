@@ -41,7 +41,12 @@ for(const marker of [
   'pilotMetrics?.collectEvents',
   "featureEnabled('monthly_report')",
   'routeRenderDecisionCache',
-  'routeDecisionForRender'
+  'routeDecisionForRender',
+  'STUDENT MODEL BOUNDARY',
+  'ROUTE SCHEDULER BOUNDARY',
+  'ROUTE UI BOUNDARY',
+  'routeRenderPerf',
+  'window.__rotaRenderPerf=routeRenderPerf'
 ]) assert.ok(html.includes(marker),'Missing architecture/contract marker: '+marker);
 
 {
@@ -2071,7 +2076,7 @@ for(const marker of [
   'masteryExact',
   'horizons:{7',
   "observability:metrics,events",
-  'Mode bounce',
+  'Karar geri dönüşü',
   'ONARIM→DENGELİ',
   '3/7 kaçırma'
 ]) assert.ok(html.includes(marker),`Missing pilot telemetry marker: ${marker}`);

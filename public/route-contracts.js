@@ -6,6 +6,23 @@ const BACKUP_SCHEMA='calisma-rotasi-backup';
 const BACKUP_VERSION=2;
 const WORKSPACE_SCHEMA_VERSION=2;
 
+const FEATURE_FLAGS=Object.freeze({
+  core_route:{free:true,plus:true},
+  mini_exams:{free:true,plus:true},
+  exam_wrong_repair:{free:true,plus:true},
+  mistake_notebook:{free:true,plus:true},
+  basic_analysis:{free:true,plus:true},
+  backup_export:{free:true,plus:true},
+  monthly_report:{free:false,plus:true},
+  long_term_trends:{free:false,plus:true},
+  advanced_teacher_insights:{free:false,plus:true}
+});
+function featureEnabled(tier,key){
+  const rule=FEATURE_FLAGS[key];
+  if(!rule)return false;
+  return !!rule[tier==='plus'?'plus':'free'];
+}
+
 const MODE_COPY=Object.freeze({
   repair:{label:'ONARIM',short:'Önce açığı kapat, sonra yeni yük ekle.',action:'Yanlış veya eksik kanıtı düzelt.'},
   steady:{label:'DENGELİ',short:'Mevcut tempoyu koru ve yeni kanıt toplamaya devam et.',action:'Planlanan dozu sürdür.'},
@@ -158,6 +175,8 @@ root.RotaContracts={
   BACKUP_SCHEMA,
   BACKUP_VERSION,
   WORKSPACE_SCHEMA_VERSION,
+  FEATURE_FLAGS,
+  featureEnabled,
   MODE_COPY,
   SOURCE_REASON,
   studentText,

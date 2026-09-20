@@ -33,7 +33,7 @@ for(const marker of [
   'Planı ayarla',
   'Verilerin bu tarayıcıda saklanır',
   'Beta döneminde ödeme sistemi kapalı',
-  'Production beta fail-closed Free',
+  'Beta döneminde varsayılan paket Ücretsiz',
   'Gelişmiş devamlar Plus',
   'Neden bugün?',
   'ROTA PLUS REPORTS V1',
@@ -42,7 +42,11 @@ for(const marker of [
   'report-week-bars',
   'report-trend-bars',
   '6 aylık trendler',
-  'Çalışmanın izini, varsayım katmadan gör.'
+  'Çalışmanın izini, varsayım katmadan gör.',
+  'Bu 6 aylık dönemde ders kaydı yok.',
+  "emptyWeek?'is-empty'",
+  "emptyMonth?'is-empty'",
+  '.report-coverage{grid-template-columns:1fr}'
 ]) assert.ok(html.includes(marker),'Missing premium product contract marker: '+marker);
 
 assert.ok(
@@ -66,5 +70,10 @@ assert.ok(!html.includes('data-action="paid-tier"'),'Premium UI must not expose 
 assert.ok(!html.includes('Plus görünümünü dene'),'Pricing UI must not visually grant Plus before account/payment entitlement exists');
 assert.ok(html.includes("fetch('/api/entitlements'"),'Premium UI must load its entitlement from the server boundary');
 assert.ok(html.includes("featureEnabled('advanced_teacher_insights')"),'Advanced teacher continuations must obey the central feature policy');
+for(const phrase of ['Production beta fail-closed','server entitlement','entitlement kaynağı','Sunucu yetkisi']){
+  assert.ok(!html.includes(phrase),'User-facing product copy must not expose technical access jargon: '+phrase);
+}
+assert.ok(html.includes('Plus erişimi yalnız doğrulanmış üyelikle açılacak'),'Membership copy must explain Plus access in user language');
+assert.ok(html.includes('Plus paketini incele'),'Pricing CTA must not imply that payment is already live');
 
-console.log('Premium UI contract passed: living UI + server-sourced Free/Plus gates + no client tier escalation');
+console.log('Premium UI contract passed: living UI + server-sourced Free/Plus gates + polished user copy + honest empty report states');

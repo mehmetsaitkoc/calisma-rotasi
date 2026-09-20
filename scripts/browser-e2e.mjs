@@ -108,6 +108,7 @@ async function submitWizard(page) {
   const premiumWelcome = page.locator('[data-premium-surface="welcome"]');
   await premiumWelcome.waitFor({ state: 'visible' });
   assert.equal(await page.locator('.premium-proof-item').count(), 3, 'Premium landing must render the three product-value signals');
+  await page.locator('.premium-trust-strip').waitFor({ state: 'visible' });
   await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
 
@@ -156,6 +157,9 @@ async function submitWizard(page) {
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
   await page.locator('[data-premium-surface="today"]').waitFor({ state: 'visible' });
   assert.ok(await page.locator('.premium-signal-rail').isVisible(), 'Premium Today signal rail must stay visible');
+  await page.locator('.route-today-kicker').waitFor({ state: 'visible' });
+  await page.locator('.route-tools > summary').waitFor({ state: 'visible' });
+  assert.equal((await page.locator('.route-tools > summary').innerText()).trim().includes('Planı ayarla'), true, 'Secondary route controls must stay behind the quiet plan menu');
   assert.equal(await page.locator('.premium-deep-dive').count(), 1, 'Advanced route diagnostics must stay behind a single progressive-disclosure control');
 }
 

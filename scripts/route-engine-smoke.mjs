@@ -49,7 +49,9 @@ for(const marker of [
   'ROUTE SCHEDULER BOUNDARY',
   'ROUTE UI BOUNDARY',
   'routeRenderPerf',
-  'window.__rotaRenderPerf=routeRenderPerf'
+  'window.__rotaRenderPerf=routeRenderPerf',
+  "const FRESH_RESET=FRESH_PREVIEW&&QUERY.get('resume')!=='1'",
+  'if(FRESH_RESET)'
 ]) assert.ok(html.includes(marker),'Missing architecture/contract marker: '+marker);
 
 {

@@ -2137,7 +2137,8 @@ for(const marker of [
   "observability:metrics,events",
   'Karar geri dönüşü',
   'ONARIM→DENGE/İLERLEME',
-  '3/7 kaçırma'
+  '3 gün kaçırma',
+  '7 gün kaçırma'
 ]) assert.ok(html.includes(marker),`Missing pilot telemetry marker: ${marker}`);
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.

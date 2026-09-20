@@ -19,6 +19,10 @@ const TTS_MODEL = process.env.ROTA_TTS_MODEL || 'gpt-4o-mini-tts';
 const MALE_VOICE = process.env.ROTA_TTS_MALE_VOICE || 'cedar';
 const FEMALE_VOICE = process.env.ROTA_TTS_FEMALE_VOICE || 'marin';
 const MAX_BODY = 7 * 1024 * 1024;
+const TEACHER_RATE_LIMIT = 20;
+const TTS_RATE_LIMIT = 36;
+const RATE_WINDOW_MS = 60_000;
+const TEACHER_MAX_OUTPUT_TOKENS = 1400;
 const buckets = new Map();
 
 const PROFILE_MODELS = {
@@ -109,81 +113,34 @@ const schema = {
 
 
 function demoTeacherAnswer(body, reason='quota'){
-  const q=cleanText(body?.question,5000).trim();
   const subject=cleanText(body?.subject,140);
   const topic=cleanText(body?.topic,200);
   const photo=!!body?.photo;
-  const n=(q+' '+subject+' '+topic).toLocaleLowerCase('tr-TR');
-
-  let direct='Demo test cevabı';
-  let message='Bu cevap Demo Test Modu tarafından üretildi; gerçek OpenAI modeli kullanılmadı.';
-  let diagnosis='Amaç soru gönderme, cevap kartı, geçmiş ve rota sinyali akışını ücretsiz test etmektir.';
-  let steps=[{title:'Demo kontrolü',text:'Arayüz ve kayıt akışı çalışıyor.'}];
-  let summary='Demo akışı başarıyla çalıştı.';
-  let detectedSubject=subject||'';
-  let detectedTopic=topic||'';
-  let difficulty='basic';
-
-  if(photo){
-    direct='';
-    message='Demo Test Modu fotoğrafın yüklendiğini doğruladı ancak görselin içeriğini analiz etmedi.';
-    diagnosis='Gerçek fotoğraf çözümü yalnız gerçek AI kredisi olduğunda çalışır.';
-    steps=[
-      {title:'Fotoğraf yükleme',text:'Dosya uygulamadan sunucuya ulaştı.'},
-      {title:'Görsel analiz',text:'Demo modunda bilinçli olarak yapılmadı; görüntüden cevap uydurulmadı.'}
-    ];
-    summary='Fotoğraf akışı test edildi; gerçek görsel çözüm yapılmadı.';
-  } else if((/osmanl/.test(n)&&/kuruc/.test(n)) || (/kuruluş dönemi/.test(n)&&/kurucusu/.test(n))){
-    direct='Osman Gazi';
-    message='Demo örnek cevabı: Osmanlı Devleti’nin kurucusu Osman Gazi kabul edilir.';
-    diagnosis='Bu, demo modunda önceden tanımlanmış temel tarih testidir.';
-    steps=[
-      {title:'Kavramı eşleştir',text:'Soru Osmanlı Devleti’nin kuruluşunu ve kurucusunu soruyor.'},
-      {title:'Cevap',text:'Kurucu olarak Osman Gazi verilir.'}
-    ];
-    summary='Cevap: Osman Gazi.';
-    detectedSubject=subject||'Tarih';
-    detectedTopic=topic||'Osmanlı kuruluş dönemi';
-  } else {
-    const m=q.replace(/\s+/g,'').match(/^([+-]?\d*)x([+-]\d+(?:[.,]\d+)?)=([+-]?\d+(?:[.,]\d+)?)$/i);
-    if(m){
-      let a=m[1];
-      a=(a===''||a==='+')?1:(a==='-'?-1:Number(a.replace(',','.')));
-      const b=Number(m[2].replace(',','.'));
-      const rhs=Number(m[3].replace(',','.'));
-      if(Number.isFinite(a)&&a!==0&&Number.isFinite(b)&&Number.isFinite(rhs)){
-        const x=(rhs-b)/a;
-        direct='x = '+String(Number(x.toFixed(6)));
-        message='Demo modunda basit doğrusal denklem yerel olarak çözüldü.';
-        diagnosis='Eşitliğin iki tarafında aynı işlemleri uygulamak yeterli.';
-        steps=[
-          {title:'Sabit terimi taşı',text:`${a}x = ${rhs} - (${b}) = ${rhs-b}`},
-          {title:'Katsayıya böl',text:`x = ${rhs-b} / ${a} = ${Number(x.toFixed(6))}`}
-        ];
-        summary='Cevap: '+direct+'.';
-        detectedSubject=subject||'Matematik';
-        difficulty='basic';
-      }
-    }
-  }
-
+  const reasonText=reason==='not_configured'
+    ? 'Rota Hoca gerçek AI bağlantısı şu anda yapılandırılmamış.'
+    : 'Rota Hoca gerçek AI kotasına şu anda erişemiyor.';
   return {
-    kind: photo?'clarify':(/tarih|osmanl/i.test(n)?'fact':'solution'),
-    direct_answer:direct,
-    message,
-    diagnosis,
-    steps,
-    summary,
-    confidence: photo?1:0.99,
-    detected_subject:detectedSubject,
-    detected_topic:detectedTopic,
-    difficulty,
-    needs_clarification:photo,
-    verification:{status:'not_needed',methods:['Demo Test Modu'],note:'Gerçek model çağrısı yapılmadı.'},
-    route_signal:{importance:0,reason:'Demo yanıtı rota puanını etkilemez.'},
-    source_notes:['DEMO TEST MODU — gerçek AI kullanılmadı.'],
+    kind:'clarify',
+    direct_answer:'',
+    message:reasonText+' Bu soru için tahmin veya demo içerik cevabı göstermiyorum.',
+    diagnosis:'Gerçek model çağrısı yapılmadığı için güvenilir bir ders cevabı üretilemez.',
+    steps:[
+      {title:'Sorunu koru',text:'Sorunu değiştirmeden daha sonra tekrar gönderebilirsin.'},
+      {title:'Rotana devam et',text:'Bu geçici durum Student Model veya rota kararını etkilemez.'}
+    ],
+    summary:'Gerçek AI yeniden kullanılabilir olduğunda soruyu tekrar gönder.',
+    confidence:1,
+    detected_subject:subject||'',
+    detected_topic:topic||'',
+    difficulty:'basic',
+    needs_clarification:true,
+    verification:{status:'uncertain',methods:[],note:'Gerçek model çağrısı yapılmadı.'},
+    route_signal:{importance:0,reason:'AI unavailable fallback rota kararını etkilemez.'},
+    source_notes:['GERÇEK AI KULLANILMADI — ders cevabı üretilmedi.'],
     _demo:true,
-    _demo_reason:reason
+    _demo_reason:reason,
+    _unavailable:true,
+    _photo_received:photo
   };
 }
 function isQuotaError(status,data,raw){
@@ -193,7 +150,7 @@ function isQuotaError(status,data,raw){
 }
 
 async function callTeacher(body){
-  if (!runtimeApiKey) throw Object.assign(new Error('Rota Hoca AI henüz bağlanmadı.'), {status:503});
+  if (!runtimeApiKey) return {answer:demoTeacherAnswer(body,'not_configured'),model:'unavailable',responseId:'',usage:null,demo:true,demoReason:'Gerçek AI bağlantısı yapılandırılmamış.',meta:{mode:'unavailable',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS}};
   const question = cleanText(body.question, 5000).trim();
   const photo = safePhoto(body.photo);
   if(!question && !photo) throw Object.assign(new Error('Sorunu yaz veya fotoğraf ekle.'),{status:400});
@@ -242,21 +199,21 @@ ${previousText?`Önceki cevap/bağlam: ${previousText}\n`:''}İstenen devam modu
     tools,
     text:{format:{type:'json_schema',name:'rota_hoca_answer',strict:true,schema}},
     reasoning:{effort:photo?'medium':(needsHeavyCode(subject,question)?'medium':(isStem(subject,question)?'low':'none'))},
-    max_output_tokens:1400
+    max_output_tokens:TEACHER_MAX_OUTPUT_TOKENS
   };
   const response = await fetch(OPENAI_BASE_URL + '/responses', {method:'POST',headers:{'authorization':`Bearer ${runtimeApiKey}`,'content-type':'application/json'},body:JSON.stringify(payload)});
   const raw = await response.text();
   let data; try { data=JSON.parse(raw); } catch { data={}; }
   if (!response.ok) {
     if (isQuotaError(response.status,data,raw)) {
-      return {answer:demoTeacherAnswer(body,'no_credits'),model:'demo-local',responseId:'',usage:null,demo:true,demoReason:'API kredisi yok; ücretsiz Demo Test Modu kullanıldı.'};
+      return {answer:demoTeacherAnswer(body,'no_credits'),model:'unavailable',responseId:'',usage:null,demo:true,demoReason:'Gerçek AI kotası kullanılamıyor; içerik cevabı üretilmedi.',meta:{mode:'unavailable',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS}};
     }
     throw Object.assign(new Error(data?.error?.message || `AI isteği başarısız (${response.status}).`), {status:502});
   }
   const text = extractOutputText(data);
   if (!text) throw Object.assign(new Error('Model yapılandırılmış cevap döndürmedi.'), {status:502});
   let answer; try { answer=validateAnswer(JSON.parse(text)); } catch(e) { throw Object.assign(new Error('Model cevabı çözümlenemedi: '+e.message), {status:502}); }
-  return {answer, model:data.model || runtimeModel, responseId:data.id || '', usage:data.usage || null};
+  return {answer, model:data.model || runtimeModel, responseId:data.id || '', usage:data.usage || null,meta:{mode:'live',profile:runtimeProfile,rateLimitPerMinute:TEACHER_RATE_LIMIT,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS}};
 }
 
 async function callTTS(body){
@@ -298,7 +255,7 @@ const server=http.createServer(async (req,res)=>{
   res.setHeader('x-content-type-options','nosniff');
   res.setHeader('referrer-policy','no-referrer');
   res.setHeader('x-frame-options','SAMEORIGIN');
-  if(req.method==='GET'&&req.url==='/api/health'){ const ip=req.socket.remoteAddress||''; const local=ip==='127.0.0.1'||ip==='::1'||ip==='::ffff:127.0.0.1'; return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:true,configurable:local&&!runtimeApiKey,deploy:{provider:process.env.RENDER==='true'?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }
+  if(req.method==='GET'&&req.url==='/api/health'){ const ip=req.socket.remoteAddress||''; const local=ip==='127.0.0.1'||ip==='::1'||ip==='::ffff:127.0.0.1'; return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:false,honestUnavailableFallback:true,teacherPolicy:{rateLimitPerMinute:TEACHER_RATE_LIMIT,windowMs:RATE_WINDOW_MS,maxBodyBytes:MAX_BODY,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,costProfile:runtimeProfile},configurable:local&&!runtimeApiKey,deploy:{provider:process.env.RENDER==='true'?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }
 
   if(req.method==='POST'&&req.url==='/api/configure'){
     const ip = req.socket.remoteAddress || '';
@@ -323,11 +280,11 @@ const server=http.createServer(async (req,res)=>{
     }catch(e){return json(res,e.status||500,{error:e.message||'AI bağlantısı kurulamadı.'});}
   }
   if(req.method==='POST'&&req.url==='/api/teacher'){
-    if(!rateLimit(req,20)) return json(res,429,{error:'Çok hızlı istek gönderildi. Biraz sonra tekrar dene.'});
+    if(!rateLimit(req,TEACHER_RATE_LIMIT,RATE_WINDOW_MS)) return json(res,429,{error:'Çok hızlı istek gönderildi. Biraz sonra tekrar dene.',code:'RATE_LIMITED',retryAfterSeconds:60});
     try{const body=await readJson(req);const out=await callTeacher(body);return json(res,200,out);}catch(e){return json(res,e.status||500,{error:e.message||'Rota Hoca isteği başarısız.'});}
   }
   if(req.method==='POST'&&req.url==='/api/tts'){
-    if(!rateLimit(req,36)) return json(res,429,{error:'Ses istek limiti aşıldı.'});
+    if(!rateLimit(req,TTS_RATE_LIMIT,RATE_WINDOW_MS)) return json(res,429,{error:'Ses istek limiti aşıldı.',code:'RATE_LIMITED',retryAfterSeconds:60});
     try{const body=await readJson(req);const audio=await callTTS(body);res.writeHead(200,{'content-type':'audio/mpeg','content-length':audio.length,'cache-control':'no-store','x-rota-voice-profile':body.gender==='female'?'female':'male'});return res.end(audio);}catch(e){return json(res,e.status||500,{error:e.message||'Ses üretilemedi.'});}
   }
   if(req.method==='GET') return serve(req,res);

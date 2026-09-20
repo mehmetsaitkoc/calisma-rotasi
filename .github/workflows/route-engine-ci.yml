@@ -52,6 +52,9 @@ jobs:
       - name: Syntax check server contract tests
         run: node --check scripts/server-contracts.test.mjs
 
+      - name: Syntax check server runtime tests
+        run: node --check scripts/server-runtime.test.mjs
+
       - name: Syntax check smoke runner
         run: node --check scripts/route-engine-smoke.mjs
 

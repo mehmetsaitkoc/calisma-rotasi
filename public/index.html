@@ -2009,7 +2009,6 @@ const C=window.RotaCatalog,R=window.RotaCore,A=window.RotaAnalysis,KEY=BASE_KEY+
 if(FRESH_RESET){
  try{
   for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith(BASE_KEY+':fresh-preview'))localStorage.removeItem(k);}
-  sessionStorage.removeItem('rota-plus:visual-demo');
  }catch{}
 }
 const $=(q,el=document)=>el.querySelector(q),$$=(q,el=document)=>[...el.querySelectorAll(q)];

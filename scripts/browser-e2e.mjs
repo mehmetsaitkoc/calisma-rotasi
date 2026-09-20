@@ -384,13 +384,19 @@ async function runMiniRepairProvenance(browser) {
   const secondDay = addDays(FIXED_DAY, 1);
   const second = await runBlankMini(secondDay);
   assert.notEqual(second.id, first.id, 'A later-day mini attempt must have a distinct assessment id');
+  const thirdDay = addDays(secondDay, 1);
+  const third = await runBlankMini(thirdDay);
+  assert.notEqual(third.id, second.id, 'A newer weak mini must remain separate evidence');
 
   const snapshot = await appState(page);
   const space = snapshot.value.workspaces.kpss;
   assert.equal(space.exams.length, 0, 'Mini results must stay isolated from full-exam records');
-  const repair = space.plan.find(p => !p.done && p.source === 'mini_repair' && p.sourceAssessmentId === second.id);
-  assert.ok(repair, 'Repeated weak mini evidence must create a mini-repair task linked to the latest real assessment');
-  assert.equal(repair.topicId, second.topicId, 'Mini repair must preserve the measured topic');
+  const repairs = space.plan.filter(p => !p.done && p.source === 'mini_repair' && p.topicId === third.topicId);
+  assert.equal(repairs.length, 1, 'A topic must have only one open mini-repair task');
+  const repair = repairs[0];
+  assert.equal(repair.sourceAssessmentId, third.id, 'Open mini repair must follow the newest real weak assessment');
+  assert.equal(repair.routeKey, 'mini-repair-topic:' + third.topicId, 'Mini repair identity must be topic-stable across newer evidence');
+  assert.equal(repair.topicId, third.topicId, 'Mini repair must preserve the measured topic');
   assert.match(repair.reason || '', /Mini deneme/i, 'Mini repair must explain the mini evidence in student language');
   assert.ok(!space.plan.some(p => p.source === 'mini_repair' && p.sourceAssessmentId && !space.assessments.some(a => a.id === p.sourceAssessmentId)), 'Every mini repair provenance id must resolve to a real assessment');
 

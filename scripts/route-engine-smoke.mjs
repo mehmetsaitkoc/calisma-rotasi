@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
+const externalCatalogJs=fs.readFileSync(new URL('../public/catalog.js',import.meta.url),'utf8');
 
 function between(start,end){
   const a=html.indexOf(start),b=html.indexOf(end,a);
@@ -17,11 +18,13 @@ for(const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){
   new Function(js);
   parsed++;
 }
-assert.ok(parsed>=5,'Expected executable inline scripts');
+assert.ok(parsed>=4,'Expected executable inline scripts after catalog extraction');
 
 // 1a) Architecture and student-facing contract boundary must stay wired.
 for(const marker of [
   '<script src="/route-contracts.js"></script>',
+  '<script src="/catalog.js"></script>',
+  '<script src="/turkish-catalog.js"></script>',
   'ARCHITECTURE BOUNDARY: catalog data',
   'ARCHITECTURE BOUNDARY: route engine + workspace validation',
   'ARCHITECTURE BOUNDARY: application state adapters + UI',
@@ -1887,9 +1890,8 @@ for(const marker of [
 
 // 5) Every mini must resolve to a real catalog subject and exact topic so topic-based evidence cannot silently fall back to subject-only mode.
 {
-  const scriptBodies=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>m[2]||'').filter(Boolean);
-  const catalogJs=scriptBodies.find(x=>x.includes('root.RotaCatalog='));
-  assert.ok(catalogJs,'Catalog script missing');
+  const catalogJs=externalCatalogJs;
+  assert.ok(catalogJs.includes('root.RotaCatalog='),'External catalog module missing');
   const env={};new Function('window','globalThis',catalogJs)(env,env);
   const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition'),data=new Function(src+';return ROTA_MINI_EXAMS;')();
   for(const mini of data){
@@ -1936,7 +1938,7 @@ for(const marker of [
 // 5) Backup validation must round-trip mini answers, subtopic evidence and the stored route decision.
 {
   const scriptBodies=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>m[2]||'').filter(Boolean);
-  const catalogJs=scriptBodies.find(x=>x.includes('root.RotaCatalog='));
+  const catalogJs=externalCatalogJs;
   const coreJs=scriptBodies.find(x=>x.includes('root.RotaCore='));
   assert.ok(catalogJs&&coreJs,'Catalog/core scripts must be available for backup round-trip test');
   const env={};
@@ -1961,7 +1963,7 @@ for(const marker of [
 // 5) Backup validation must preserve route intervention audit history.
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
   const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.interventions=[{id:'iv1',date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'repair',source:'mini_repair',method:'quant',taskId:'task1',taskDate:'2026-09-19',confidence:72,baselineAccuracy:50,baselineCompletion:60,baselineNeed:78,baselineAnswered:20,reason:'Mini açığı',created:1}];
@@ -1976,7 +1978,7 @@ for(const marker of [
 // 5) Backup validation must preserve decision-mode history used by progress hysteresis.
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
   const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.modeHistory=[{date:'2026-09-19',subjectId:'k-ma',topicId:'k-ma-9',mode:'progress',studentState:'steady',confidence:88,performance:73,learningNeed:24,hysteresisHeld:true,easeHysteresisHeld:true,easeEntryHeld:true,easeRecoveryHeld:true,created:1}];
@@ -1993,7 +1995,7 @@ for(const marker of [
 // 5) Pilot telemetry must persist pseudonymous 0/7/14/30 checkpoint snapshots.
 {
   const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>({attrs:m[1]||'',js:m[2]||''})).filter(x=>x.js.trim());
-  const catalogJs=scripts.find(x=>x.js.includes('root.RotaCatalog='))?.js,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
+  const catalogJs=externalCatalogJs,coreJs=scripts.find(x=>x.js.includes('root.RotaCore='))?.js;
   const env={};new Function('window','globalThis','module',catalogJs)(env,env,{exports:{}});new Function('window','globalThis','module',coreJs)(env,env,{exports:{}});
   const backup=env.RotaCore.fresh();backup.activeExam='kpss';
   backup.workspaces.kpss.route.pilot={

@@ -464,6 +464,10 @@ try {
       version: envelope.version,
       checksum: envelope.integrity?.checksum || '',
       restoredExam: restored.activeExam,
+      kpssSchemaVersion: restored.workspaces.kpss.schemaVersion,
+      kpssExam: restored.workspaces.kpss.exam,
+      yksSchemaVersion: restored.workspaces.yks.schemaVersion,
+      yksExam: restored.workspaces.yks.exam,
       tamperRejected
     };
   });
@@ -471,6 +475,10 @@ try {
   assert.equal(backupContract.version, 2, 'Browser backup envelope version must stay at v2');
   assert.match(backupContract.checksum, /^[a-f0-9]{8}$/i, 'Browser backup must include an integrity checksum');
   assert.equal(backupContract.restoredExam, 'kpss', 'Versioned browser backup must restore through RotaCore validation');
+  assert.equal(backupContract.kpssSchemaVersion, 2, 'KPSS workspace must migrate to schema v2');
+  assert.equal(backupContract.kpssExam, 'kpss', 'KPSS workspace identity must be explicit');
+  assert.equal(backupContract.yksSchemaVersion, 2, 'YKS workspace must migrate to schema v2');
+  assert.equal(backupContract.yksExam, 'yks', 'YKS workspace identity must be explicit');
   assert.equal(backupContract.tamperRejected, true, 'Tampered browser backup must be rejected');
 
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must expose Rota Hoca decision');

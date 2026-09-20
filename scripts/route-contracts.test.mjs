@@ -16,6 +16,32 @@ assert.equal(C.featureEnabled('free','monthly_report'),false);
 assert.equal(C.featureEnabled('plus','monthly_report'),true);
 assert.equal(C.featureEnabled('free','advanced_teacher_insights'),false);
 assert.equal(C.featureEnabled('plus','advanced_teacher_insights'),true);
+assert.equal(C.featureEnabled('free','teacher_basic'),true);
+assert.equal(C.featureEnabled('plus','teacher_basic'),true);
+assert.equal(C.featureEnabled('invalid-tier','monthly_report'),false,'Unknown tiers must fail closed to Free');
+assert.equal(C.featureEnabled('plus','unknown_feature'),false,'Unknown features must fail closed');
+
+const freeEntitlement=C.entitlementForTier('free',{source:'public_beta',purchaseEnabled:false,accountRequired:true});
+assert.equal(freeEntitlement.schema,'calisma-rotasi-entitlement-v1');
+assert.equal(freeEntitlement.version,1);
+assert.equal(freeEntitlement.tier,'free');
+assert.equal(freeEntitlement.features.core_route,true);
+assert.equal(freeEntitlement.features.teacher_basic,true);
+assert.equal(freeEntitlement.features.monthly_report,false);
+assert.equal(freeEntitlement.features.advanced_teacher_insights,false);
+assert.equal(freeEntitlement.purchaseEnabled,false);
+assert.equal(freeEntitlement.accountRequired,true);
+
+const plusEntitlement=C.entitlementForTier('plus',{source:'local_dev',status:'dev_plus'});
+assert.equal(plusEntitlement.tier,'plus');
+assert.equal(plusEntitlement.features.monthly_report,true);
+assert.equal(plusEntitlement.features.long_term_trends,true);
+assert.equal(plusEntitlement.features.advanced_teacher_insights,true);
+
+const tamperedEntitlement={...freeEntitlement,tier:'free',features:{...freeEntitlement.features,monthly_report:true}};
+const revalidated=C.validateEntitlement(tamperedEntitlement);
+assert.equal(revalidated.features.monthly_report,false,'Entitlement validation must recompute features from the central policy');
+assert.throws(()=>C.validateEntitlement({...freeEntitlement,schema:'wrong'}),/yetkisi doğrulanamadı/i);
 
 assert.match(C.taskReason({source:'mini_repair'}),/Mini denemede/i);
 assert.match(C.taskReason({source:'spaced_review'}),/hatırlamayı güçlendirmek/i);

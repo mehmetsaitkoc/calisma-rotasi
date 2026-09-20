@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .node-version
 
       - name: Syntax check workspace schema
         run: node --check public/workspace-schema.js
@@ -142,7 +142,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .node-version
 
       - name: Syntax check browser E2E
         run: node --check scripts/browser-e2e.mjs
@@ -172,7 +172,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .node-version
 
       - name: Syntax check production smoke
         run: node --check scripts/production-smoke.mjs

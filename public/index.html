@@ -1544,6 +1544,8 @@ h1,h2,h3,h4{color:var(--v2-ink);letter-spacing:-.035em}
 
 /* Floating mobile dock */
 @media(max-width:760px){
+  html{scroll-padding-top:calc(var(--preview-h,0px) + 86px);scroll-padding-bottom:128px}
+  .route-task,.route-plan-card,.session,.day-column{scroll-margin-top:calc(var(--preview-h,0px) + 86px);scroll-margin-bottom:128px}
   body{background:var(--v2-bg)!important}
   .content{padding:24px 15px 108px!important}
   .topbar{padding-inline:15px!important}

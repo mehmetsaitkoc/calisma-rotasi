@@ -962,8 +962,32 @@ try {
   await page.locator('.report-plan-trend').waitFor({ state: 'visible' });
   await page.locator('.report-coverage').waitFor({ state: 'visible' });
   assert.ok(await page.getByText(/Net yolculuğu · türler ayrı/i).count(), 'Long-term report must keep exam types separate');
-  assert.ok(await page.getByText(/nedensel başarı kanıtı değildir/i).count(), 'Long-term report must not overclaim causal learning effects');
+  assert.ok(await page.getByText(/tek başına öğrenme veya başarı artışını kanıtlamaz/i).count(), 'Long-term report must not overclaim learning effects');
   await assertCleanRender(page, 'Plus six-month trend report');
+  const plusVisibleCopy=(await page.locator('body').innerText()).toLocaleLowerCase('tr-TR');
+  assert.ok(!/entitlement kaynağı|server entitlement|fail-closed/.test(plusVisibleCopy),'Plus user-facing copy must not expose technical access jargon');
+
+  // Empty-data Plus audit: select a period with no study records and verify honest zero-state rendering.
+  await page.locator('[data-action="report-tab"][data-report-tab="month"]').click();
+  const emptyMonthInput=page.locator('#report-month');
+  await emptyMonthInput.fill('2025-01');
+  await emptyMonthInput.dispatchEvent('change');
+  await page.getByRole('heading',{name:'Aylık raporum'}).waitFor({state:'visible'});
+  assert.ok(await page.getByText('Bu ay ders kaydı yok.',{exact:true}).count(),'Empty monthly Plus report must explain missing subject data');
+  assert.ok(await page.getByText('Bu ay deneme kaydı yok.',{exact:true}).count(),'Empty monthly Plus report must explain missing exam data');
+  assert.equal(await page.locator('.report-week-col.is-empty').count(),4,'Every empty monthly week must be rendered as explicitly empty');
+  const weeklyZeroBars=await page.locator('.report-week-col.is-empty .report-week-track i').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('style')||''));
+  assert.ok(weeklyZeroBars.every(style=>/height:\s*0%/.test(style)),'Empty monthly weeks must not draw a fake activity bar');
+  await assertCleanRender(page,'Plus empty monthly report');
+
+  await page.locator('[data-action="report-tab"][data-report-tab="trend"]').click();
+  await page.getByRole('heading',{name:'6 aylık trendler'}).waitFor({state:'visible'});
+  assert.equal(await page.locator('.report-trend-col.is-empty').count(),6,'Every empty long-term month must be rendered as explicitly empty');
+  const trendZeroBars=await page.locator('.report-trend-col.is-empty .report-trend-track i').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('style')||''));
+  assert.ok(trendZeroBars.every(style=>/height:\s*0%/.test(style)),'Empty long-term months must not draw a fake activity bar');
+  assert.ok(await page.getByText('Bu 6 aylık dönemde ders kaydı yok.',{exact:true}).count(),'Empty long-term Plus report must use six-month wording');
+  assert.ok(await page.getByText('Bu dönemde deneme yok.',{exact:true}).count(),'Empty long-term Plus report must explain missing exam evidence');
+  await assertCleanRender(page,'Plus empty six-month report');
 
   // Desktop/YKS hardening: exercise the longer SAY onboarding path in a separate storage context.
   const desktopContext = await browser.newContext({
@@ -1005,7 +1029,7 @@ try {
   await runMiniRepairProvenance(browser);
   await runLargePlanRenderPerf(browser);
 
-  console.log('Browser E2E passed: Free entitlement gates + server-authorized Plus reports + KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
+  console.log('Browser E2E passed: Free entitlement gates + polished mobile Plus reports + honest empty states + KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

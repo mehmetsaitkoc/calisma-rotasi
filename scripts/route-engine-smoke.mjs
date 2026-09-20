@@ -30,7 +30,13 @@ for(const marker of [
   'window.RotaContracts?.teacherContextEnvelope',
   'window.RotaContracts?.makeBackupEnvelope',
   'window.RotaContracts?.unwrapBackup',
-  'route-mode-explain'
+  'route-mode-explain',
+  '<script src="/pilot-metrics.js"></script>',
+  'window.RotaPilotMetrics?.summarize',
+  'window.RotaPilotMetrics?.collectEvents',
+  "featureEnabled('monthly_report')",
+  'routeRenderDecisionCache',
+  'routeDecisionForRender'
 ]) assert.ok(html.includes(marker),'Missing architecture/contract marker: '+marker);
 
 {
@@ -2058,7 +2064,11 @@ for(const marker of [
   'questionAttainmentRatio',
   'studentModelExact',
   'masteryExact',
-  'horizons:{7'
+  'horizons:{7',
+  "observability:metrics,events",
+  'Mode bounce',
+  'ONARIM→DENGELİ',
+  '3/7 kaçırma'
 ]) assert.ok(html.includes(marker),`Missing pilot telemetry marker: ${marker}`);
 
 // 5) Guard Deneme Merkezi persistence and integration against accidental regression.

@@ -1674,7 +1674,9 @@ for(const marker of [
   assert.ok(memo.includes('routeAppliedDecision(subjectId,topicId)'),'Render memo must delegate to the real applied-decision function');
   assert.ok(todayTask.includes('routeDecisionForRender(p.subjectId,p.topicId)'),'Today task badge must use the memoized applied decision');
   assert.ok(planCard.includes('routeDecisionForRender(p.subjectId,p.topicId)'),'Plan task badge must use the memoized applied decision');
-  assert.ok(html.includes("routeRenderDecisionCache.clear();leaveVideo()"),'Render must clear its decision memo before recomputing the UI');
+  const renderSrc=between('function render(){','function commit(message)');
+  assert.ok(renderSrc.includes('routeRenderDecisionCache.clear()'),'Render must clear its decision memo before recomputing the UI');
+  assert.ok(renderSrc.includes('routeRenderPerf.decisionComputes=0')&&renderSrc.includes('routeRenderPerf.reasonCalls=0'),'Render diagnostics must reset per render');
   assert.ok(html.includes('miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,topicId))'),'Mini result snapshot must persist the applied decision');
   assert.ok(html.includes('adaptive=routeAppliedDecision(def.subjectId,topicId)'),'Mini recommendation must use the applied decision');
   assert.ok(html.includes('const adaptive=routeAppliedDecision(p.subjectId,p.topicId),mode='),'Intervention audit must use the applied decision');

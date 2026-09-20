@@ -3382,10 +3382,13 @@ function routeMiniRepairSignals(){
  return [...byTopic.values()].map(function(a){return {assessment:a,adaptive:routeSubjectAdaptiveState(a.subjectId,a.topicId),student:routeStudentModel(a.subjectId,a.topicId)};}).filter(function(x){return x.adaptive.mode==='repair'&&x.student.state==='repair';});
 }
 function routeBuildCandidates(){
- const space=w(),weak=routeExamWeakness(),recovery=routeRecoverySignal(space),seenTopics=new Set(),seenKeys=new Set(),out=[];
+ const space=w(),weak=routeExamWeakness(),recovery=routeRecoverySignal(space),seenTopics=new Set(),seenKeys=new Set(),out=[],miniRepairSignals=routeMiniRepairSignals(),miniRepairByTopic=new Map(miniRepairSignals.map(function(signal){return [signal.assessment.topicId,signal];}));
  const push=function(c){if(!c||seenKeys.has(c.routeKey))return;seenKeys.add(c.routeKey);if(c.topicId&&R.topic(space,c.topicId))seenTopics.add(c.topicId);out.push(c);};
  const horizon=R.dayAdd(today(),13);
- for(const p of space.plan.filter(function(p){return !p.done&&(p.date<=horizon||p.date<today());}))push(routeCandidateFromPlan(p));
+ for(const p of space.plan.filter(function(p){return !p.done&&(p.date<=horizon||p.date<today());})){
+  if(p.source==='mini_repair'&&!miniRepairByTopic.has(p.topicId))continue;
+  push(routeCandidateFromPlan(p));
+ }
  for(const m of space.mistakes.filter(function(m){return !m.resolved;})){
   const key='mistake:'+m.id;if(seenKeys.has(key)||space.plan.some(function(p){return !p.done&&p.sourceMistakeId===m.id;}))continue;const due=m.reviewDate<=today(),goal=routeReviewGoal(m.subjectId,m.topicId,m.title,'mistake');
   push({id:R.uid(),date:today(),subjectId:m.subjectId,topicId:m.topicId||('review-'+m.id),title:('Yanlış tekrarı · '+m.title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceMistakeId:m.id,source:'mistake',priority:due?88:72,reason:due?'Yanlış defterindeki tekrar tarihi geldi.':'Yanlış defterindeki konu yeniden çalışılmalı.',earliest:due?today():m.reviewDate,routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
@@ -3410,13 +3413,15 @@ function routeBuildCandidates(){
   const title=R.topic(space,q.topicId)?.title||q.question||subName(q.subjectId),goal=routeReviewGoal(q.subjectId,q.topicId,title,'spaced');
   push({id:R.uid(),date:today(),subjectId:q.subjectId,topicId:q.topicId||('teacher-'+q.id),title:('Rota Hoca tekrar · '+title).slice(0,180),minutes:goal.minutes,done:false,kind:'review',sourceTeacherQuestionId:q.id,source:'ai_teacher',priority:q.status==='stuck'?82:72,reason:q.status==='stuck'?'Rota Hoca’da “Anlamadım” olarak işaretlediğin soru yeniden çalışılmalı.':'Rota Hoca’da tekrar bakılacak olarak işaretledin.',earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }}catch{}
- for(const signal of routeMiniRepairSignals()){
-  const a=signal.assessment,adaptive=signal.adaptive,skill=adaptive.skillWeakness?.primary?.skill||'',topicTitle=R.topic(space,a.topicId)?.title||a.title||subName(a.subjectId),reason=skill?'Mini denemede “'+skill+'” alt alanında açık görüldü; yeni konu eklemek yerine önce bu eksiği kapatıyoruz.':'Mini deneme bu konuda ONARIM sinyali verdi; yeni konuya geçmeden önce kısa bir düzeltme turu ekleniyor.',goal=routeTaskGoal(a.subjectId,a.topicId,topicTitle);
-  const existingRepair=out.find(function(c){return c.topicId===a.topicId&&c.source==='mini_repair';});
-  if(existingRepair){existingRepair.priority=Math.max(existingRepair.priority||0,84);existingRepair.reason=reason;existingRepair.title=('Mini onarım · '+topicTitle).slice(0,180);existingRepair.kind='review';existingRepair.sourceAssessmentId=a.id;existingRepair.minutes=goal.minutes;existingRepair.targetQuestions=goal.questions;existingRepair.taskGoal=goal.text;continue;}
+ for(const signal of miniRepairSignals){
+  const a=signal.assessment,adaptive=signal.adaptive,skill=adaptive.skillWeakness?.primary?.skill||'',topicTitle=R.topic(space,a.topicId)?.title||a.title||subName(a.subjectId),reason=skill?'Mini denemede “'+skill+'” alt alanında açık görüldü; yeni konu eklemek yerine önce bu eksiği kapatıyoruz.':'Mini deneme bu konuda ONARIM sinyali verdi; yeni konuya geçmeden önce kısa bir düzeltme turu ekleniyor.',goal=routeTaskGoal(a.subjectId,a.topicId,topicTitle),key='mini-repair-topic:'+a.topicId;
+  const repairs=out.filter(function(c){return c.topicId===a.topicId&&c.source==='mini_repair';}),existingRepair=repairs.sort(function(x,y){return (y.priority||0)-(x.priority||0);})[0]||null;
+  if(existingRepair){
+   for(let i=out.length-1;i>=0;i--)if(out[i]!==existingRepair&&out[i].topicId===a.topicId&&out[i].source==='mini_repair')out.splice(i,1);
+   existingRepair.priority=Math.max(existingRepair.priority||0,84);existingRepair.reason=reason;existingRepair.title=('Mini onarım · '+topicTitle).slice(0,180);existingRepair.kind='review';existingRepair.sourceAssessmentId=a.id;existingRepair.routeKey=key;existingRepair.minutes=goal.minutes;existingRepair.targetQuestions=goal.questions;existingRepair.taskGoal=goal.text;seenKeys.add(key);continue;
+  }
   const promotable=out.find(function(c){return c.topicId===a.topicId&&!routeIsReviewLike(c)&&['curriculum','profile','priority','exam','backlog'].includes(c.source);});
-  if(promotable){promotable.source='mini_repair';promotable.kind='review';promotable.sourceAssessmentId=a.id;promotable.priority=Math.max(promotable.priority||0,84);promotable.reason=reason;promotable.title=('Mini onarım · '+topicTitle).slice(0,180);promotable.minutes=goal.minutes;promotable.targetQuestions=goal.questions;promotable.taskGoal=goal.text;continue;}
-  const key='mini-repair:'+a.id;
+  if(promotable){promotable.source='mini_repair';promotable.kind='review';promotable.sourceAssessmentId=a.id;promotable.routeKey=key;promotable.priority=Math.max(promotable.priority||0,84);promotable.reason=reason;promotable.title=('Mini onarım · '+topicTitle).slice(0,180);promotable.minutes=goal.minutes;promotable.targetQuestions=goal.questions;promotable.taskGoal=goal.text;seenKeys.add(key);continue;}
   if(seenKeys.has(key))continue;
   push({id:R.uid(),date:today(),subjectId:a.subjectId,topicId:a.topicId,title:('Mini onarım · '+topicTitle).slice(0,180),minutes:goal.minutes,done:false,kind:'review',source:'mini_repair',sourceAssessmentId:a.id,priority:84,reason,earliest:today(),routeKey:key,taskState:'open',targetQuestions:goal.questions,taskGoal:goal.text});
  }

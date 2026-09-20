@@ -32,8 +32,9 @@ for(const marker of [
   'window.RotaContracts?.unwrapBackup',
   'route-mode-explain',
   '<script src="/pilot-metrics.js"></script>',
-  'window.RotaPilotMetrics?.summarize',
-  'window.RotaPilotMetrics?.collectEvents',
+  'globalThis.RotaPilotMetrics||null',
+  'pilotMetrics?.summarize',
+  'pilotMetrics?.collectEvents',
   "featureEnabled('monthly_report')",
   'routeRenderDecisionCache',
   'routeDecisionForRender'

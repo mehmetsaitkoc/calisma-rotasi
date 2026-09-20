@@ -2136,7 +2136,7 @@ for(const marker of [
   'horizons:{7',
   "observability:metrics,events",
   'Karar geri dönüşü',
-  'ONARIM→DENGELİ',
+  'ONARIM→DENGE/İLERLEME',
   '3/7 kaçırma'
 ]) assert.ok(html.includes(marker),`Missing pilot telemetry marker: ${marker}`);
 

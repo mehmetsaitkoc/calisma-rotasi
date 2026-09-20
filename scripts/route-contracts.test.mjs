@@ -9,6 +9,14 @@ assert.equal(C.modeCopy('steady').label,'DENGELİ');
 assert.equal(C.modeCopy('progress').label,'GELİŞİM');
 assert.equal(C.modeCopy('ease').label,'SÜRDÜRÜLEBİLİR');
 
+assert.equal(C.featureEnabled('free','core_route'),true);
+assert.equal(C.featureEnabled('free','exam_wrong_repair'),true);
+assert.equal(C.featureEnabled('free','mini_exams'),true);
+assert.equal(C.featureEnabled('free','monthly_report'),false);
+assert.equal(C.featureEnabled('plus','monthly_report'),true);
+assert.equal(C.featureEnabled('free','advanced_teacher_insights'),false);
+assert.equal(C.featureEnabled('plus','advanced_teacher_insights'),true);
+
 assert.match(C.taskReason({source:'mini_repair'}),/Mini denemede/i);
 assert.match(C.taskReason({source:'spaced_review'}),/hatırlamayı güçlendirmek/i);
 assert.ok(!/confounded|evidence factor|hysteresis/i.test(C.studentText('confounded evidence factor hysteresis')));

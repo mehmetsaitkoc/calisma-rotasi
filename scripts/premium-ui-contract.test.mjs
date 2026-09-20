@@ -32,6 +32,9 @@ for(const marker of [
   'Rota’nın ayrıntılı analizini gör',
   'Planı ayarla',
   'Verilerin bu tarayıcıda saklanır',
+  'Beta döneminde ödeme sistemi kapalı',
+  'Production beta fail-closed Free',
+  'Gelişmiş devamlar Plus',
   'Neden bugün?'
 ]) assert.ok(html.includes(marker),'Missing premium product contract marker: '+marker);
 
@@ -51,5 +54,10 @@ assert.ok(
 );
 
 assert.ok(!html.includes('Pilot sürüm · Ödeme ve gerçek üyelik aktif değil'),'Primary product surfaces must not use prototype-style pilot warning copy');
+assert.ok(!html.includes('rota-plus:visual-demo'),'Premium UI must not trust sessionStorage as an entitlement authority');
+assert.ok(!html.includes('data-action="paid-tier"'),'Premium UI must not expose a self-service tier switch');
+assert.ok(!html.includes('Plus görünümünü dene'),'Pricing UI must not visually grant Plus before account/payment entitlement exists');
+assert.ok(html.includes("fetch('/api/entitlements'"),'Premium UI must load its entitlement from the server boundary');
+assert.ok(html.includes("featureEnabled('advanced_teacher_insights')"),'Advanced teacher continuations must obey the central feature policy');
 
-console.log('Premium UI contract passed: landing + onboarding + build + Today hierarchy + trust polish');
+console.log('Premium UI contract passed: living UI + server-sourced Free/Plus gates + no client tier escalation');

@@ -97,6 +97,7 @@ for(const marker of [
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',
+  'ACTIVE_LEGACY_MINI_EXAMS',
   'ROTA_ACTIVE_MINI_EXAMS',
   'KPSS_SEED_TOPIC_TESTS.filter',
   'RotaKpssQuestionQuality.auditBank',

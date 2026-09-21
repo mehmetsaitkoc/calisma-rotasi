@@ -882,6 +882,11 @@ try {
   assert.ok(['collect','steady','repair'].includes(teacherRequest.studentContext?.intelligence?.repair?.mode||'collect'),'Rota Hoca repair proposal must use a bounded mode');
   assert.ok(['collect','steady','ease'].includes(teacherRequest.studentContext?.intelligence?.load?.mode||'collect'),'Rota Hoca load prescription must use a bounded mode');
   assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'outcomeMemory'),'Rota Hoca Intelligence context must expose intervention outcome memory');
+  assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'methodMemory'),'Rota Hoca Intelligence context must expose personalized method memory');
+  if(teacherRequest.studentContext?.intelligence?.methodMemory?.current){
+    assert.ok(['collect','hold','change','repeat'].includes(teacherRequest.studentContext.intelligence.methodMemory.current.action),'Method memory must expose a bounded action');
+    assert.ok((teacherRequest.studentContext.intelligence.methodMemory.current.total||0)>=0,'Method memory sample count must be non-negative');
+  }
   if(teacherRequest.studentContext?.intelligence?.outcomeMemory){
     assert.ok(['hold','change','repeat'].includes(teacherRequest.studentContext.intelligence.outcomeMemory.action),'Intervention memory must use a bounded action');
     assert.ok((teacherRequest.studentContext.intelligence.outcomeMemory.total||0)>=0,'Intervention memory sample count must be non-negative');

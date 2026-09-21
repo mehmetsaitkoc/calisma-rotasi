@@ -27,10 +27,10 @@ const OFFICIAL_SCOPE=Object.freeze({
 
 const SUBJECTS=Object.freeze({
   'k-tr':{name:'Türkçe',sectionQuestions:30,trendBasis:'multi-year-approx',topicWeights:{
-    'k-tr-1':1,'k-tr-2':2,'k-tr-3':14,'k-tr-4':4,'k-tr-5':1,'k-tr-6':1,'k-tr-7':1,'k-tr-8':2,'k-tr-9':1,'k-tr-10':1,'k-tr-11':2
+    'k-tr-1':1,'k-tr-2':2,'k-tr-3':15,'k-tr-4':4,'k-tr-5':1,'k-tr-6':1,'k-tr-7':1,'k-tr-8':4,'k-tr-9':1,'k-tr-10':0,'k-tr-11':0
   }},
   'k-ma':{name:'Matematik ve geometri',sectionQuestions:30,trendBasis:'multi-year-approx',topicWeights:{
-    'k-ma-1':2,'k-ma-2':1,'k-ma-3':1,'k-ma-4':1,'k-ma-5':1,'k-ma-6':1,'k-ma-7':2,'k-ma-8':2,'k-ma-9':8,'k-ma-10':1,'k-ma-11':1,'k-ma-12':4,'k-ma-13':1,'k-ma-14':1,'k-ma-15':1,'k-ma-16':1,'k-ma-17':1
+    'k-ma-1':1,'k-ma-2':2,'k-ma-3':1,'k-ma-4':1,'k-ma-5':2,'k-ma-6':2,'k-ma-7':3,'k-ma-8':1,'k-ma-9':5,'k-ma-10':1,'k-ma-11':1,'k-ma-12':6,'k-ma-13':1,'k-ma-14':1,'k-ma-15':1,'k-ma-16':1,'k-ma-17':0
   }},
   'k-ta':{name:'Tarih',sectionQuestions:27,trendBasis:'official-scope-plus-rotation',groups:[
     {id:'preOttoman',questions:3,topics:['k-ta-1','k-ta-2','k-ta-3']},

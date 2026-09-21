@@ -778,3 +778,718 @@ body.app-premium-next-ready .topbar-upgrade.is-plus{
     animation:none!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V1.1 · WORKSPACE SURFACES */
+
+/* Shared hierarchy — calm editorial workspace, not an admin panel */
+body.app-premium-next-ready .page-head{
+  min-height:116px;
+  margin:0 0 22px!important;
+  padding:4px 0 18px!important;
+  align-items:flex-end!important;
+  border-bottom:1px solid #e8ebf1;
+}
+body.app-premium-next-ready .page-head .eyebrow{
+  color:#5d66ee!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  letter-spacing:1.55px!important;
+}
+body.app-premium-next-ready .page-head h1{
+  margin-top:7px!important;
+  color:#101725!important;
+  font-size:44px!important;
+  line-height:1!important;
+  letter-spacing:-2.1px!important;
+}
+body.app-premium-next-ready .page-head .sub{
+  max-width:760px!important;
+  margin-top:9px!important;
+  color:#747e90!important;
+  font-size:13px!important;
+  line-height:1.65!important;
+}
+body.app-premium-next-ready .page-head>.btn{
+  min-height:44px;
+  border:0!important;
+  border-radius:13px!important;
+  background:linear-gradient(135deg,#355cff,#6b55ff)!important;
+  color:#fff!important;
+  box-shadow:0 14px 32px rgba(64,77,255,.18)!important;
+}
+body.app-premium-next-ready .card{
+  border:1px solid var(--pnx-line)!important;
+  border-radius:20px!important;
+  background:rgba(255,255,255,.90)!important;
+  box-shadow:0 12px 34px rgba(28,45,89,.045)!important;
+}
+body.app-premium-next-ready .toolbar{
+  min-height:58px;
+  margin:0 0 17px!important;
+  padding:9px 12px!important;
+  border:1px solid #e8ebf1!important;
+  border-radius:16px!important;
+  background:rgba(255,255,255,.72)!important;
+  box-shadow:0 8px 26px rgba(28,45,89,.03)!important;
+  backdrop-filter:blur(12px);
+}
+body.app-premium-next-ready .tabs{
+  padding:3px!important;
+  border:1px solid #e6e9ef!important;
+  border-radius:12px!important;
+  background:#f5f7fa!important;
+}
+body.app-premium-next-ready .tabs button{
+  border-radius:9px!important;
+  color:#7b8494!important;
+}
+body.app-premium-next-ready .tabs button.active{
+  background:#fff!important;
+  color:#172033!important;
+  box-shadow:0 5px 14px rgba(31,43,70,.08)!important;
+}
+body.app-premium-next-ready .stats{
+  gap:10px!important;
+}
+body.app-premium-next-ready .stat{
+  min-height:112px!important;
+  padding:18px!important;
+  border:1px solid #e7eaf0!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  box-shadow:0 10px 28px rgba(28,45,89,.04)!important;
+}
+body.app-premium-next-ready .stat-label{
+  color:#9098a7!important;
+  font-size:9px!important;
+  letter-spacing:.9px!important;
+}
+body.app-premium-next-ready .stat-value{
+  margin-top:9px!important;
+  color:#151c2b!important;
+  font-size:27px!important;
+  letter-spacing:-1px!important;
+}
+body.app-premium-next-ready .notice{
+  border-color:#e4e8ef!important;
+  border-radius:15px!important;
+  background:#f8f9fc!important;
+  color:#667083!important;
+}
+
+/* Program — weekly route timeline on desktop, vertical day flow on mobile */
+body.app-premium-next-ready .route-week-summary{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px!important;
+  padding:12px 14px!important;
+  border:1px solid #e6e9ef;
+  border-radius:17px;
+  background:linear-gradient(110deg,rgba(238,242,255,.72),rgba(255,255,255,.82));
+}
+body.app-premium-next-ready .route-week-summary .notice{
+  margin:0!important;
+  border:0!important;
+  background:transparent!important;
+  padding:0!important;
+}
+body.app-premium-next-ready .week-wrap{
+  overflow:auto!important;
+  padding:2px 2px 14px!important;
+  scrollbar-width:thin;
+  scrollbar-color:#d8dce5 transparent;
+}
+body.app-premium-next-ready .week-grid{
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(166px,1fr))!important;
+  gap:10px!important;
+  min-width:1160px;
+}
+body.app-premium-next-ready .day-column{
+  position:relative;
+  min-height:430px!important;
+  padding:13px!important;
+  border:1px solid #e7eaf0!important;
+  border-radius:20px!important;
+  background:rgba(255,255,255,.76)!important;
+  box-shadow:0 10px 30px rgba(28,45,89,.035)!important;
+}
+body.app-premium-next-ready .day-column.today{
+  border-color:rgba(70,91,255,.28)!important;
+  background:
+    linear-gradient(180deg,rgba(242,244,255,.96),rgba(255,255,255,.92))!important;
+  box-shadow:0 16px 40px rgba(64,77,255,.08)!important;
+}
+body.app-premium-next-ready .day-column.today:before{
+  content:"BUGÜN";
+  position:absolute;
+  top:12px;
+  right:12px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:#172033;
+  color:#fff;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+body.app-premium-next-ready .day-title{
+  min-height:48px!important;
+  padding:3px 1px 10px!important;
+  border-bottom:1px solid #edf0f5!important;
+}
+body.app-premium-next-ready .day-title span{
+  color:#7d8797!important;
+  font-size:9px!important;
+  font-weight:750!important;
+  text-transform:uppercase;
+  letter-spacing:.9px;
+}
+body.app-premium-next-ready .day-title strong{
+  color:#192131!important;
+  font-size:24px!important;
+  letter-spacing:-.7px;
+}
+body.app-premium-next-ready .route-day-summary{
+  margin:10px 0!important;
+  padding:10px 9px!important;
+  border:1px solid #edf0f5!important;
+  border-radius:13px!important;
+  background:#f8f9fc!important;
+}
+body.app-premium-next-ready .route-day-summary strong{
+  color:#293143!important;
+  font-size:10px!important;
+}
+body.app-premium-next-ready .route-day-summary small,
+body.app-premium-next-ready .route-day-summary span{
+  color:#8992a1!important;
+  font-size:8px!important;
+}
+body.app-premium-next-ready .route-day-summary-chips{
+  gap:4px!important;
+}
+body.app-premium-next-ready .route-day-summary-chips span{
+  border:1px solid #e2e6ef!important;
+  border-radius:999px!important;
+  background:#fff!important;
+  color:#626d82!important;
+}
+body.app-premium-next-ready .route-plan-card{
+  margin:8px 0!important;
+  padding:12px!important;
+  border:1px solid #e8ebf1!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 7px 20px rgba(28,45,89,.035)!important;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+body.app-premium-next-ready .route-plan-card:hover{
+  transform:translateY(-1px);
+  border-color:#d7dceb!important;
+  box-shadow:0 12px 26px rgba(28,45,89,.06)!important;
+}
+body.app-premium-next-ready .route-plan-card h4{
+  margin:9px 0 5px!important;
+  color:#1a2232!important;
+  font-size:13px!important;
+  line-height:1.3!important;
+}
+body.app-premium-next-ready .route-plan-card .route-task-reason{
+  display:-webkit-box;
+  overflow:hidden;
+  margin-top:8px!important;
+  color:#7b8596!important;
+  font-size:9px!important;
+  line-height:1.45!important;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+}
+body.app-premium-next-ready .route-plan-tags{
+  gap:4px!important;
+}
+body.app-premium-next-ready .route-plan-tags>span{
+  min-height:20px!important;
+  padding:0 6px!important;
+  font-size:7px!important;
+}
+body.app-premium-next-ready .route-day-load{
+  margin-top:10px!important;
+  padding-top:9px!important;
+  border-top:1px dashed #e4e8ef!important;
+  color:#929aa8!important;
+  font-size:8px!important;
+}
+
+/* Rota Hoca — premium AI study coach surface */
+body.app-premium-next-ready .teacher-page[data-premium-surface="teacher"]{
+  display:grid;
+  gap:16px;
+}
+body.app-premium-next-ready .teacher-hero{
+  position:relative;
+  overflow:hidden;
+  min-height:178px!important;
+  padding:30px 32px!important;
+  border:1px solid rgba(87,105,255,.21)!important;
+  border-radius:26px!important;
+  background:
+    radial-gradient(circle at 88% 8%,rgba(93,76,255,.35),transparent 30%),
+    radial-gradient(circle at 55% 120%,rgba(42,141,255,.13),transparent 38%),
+    linear-gradient(135deg,#091321 0%,#101a34 62%,#18163b 100%)!important;
+  box-shadow:0 26px 62px rgba(10,20,45,.17)!important;
+}
+body.app-premium-next-ready .teacher-hero:after{
+  content:"";
+  position:absolute;
+  width:300px;
+  height:300px;
+  right:-90px;
+  top:-150px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:50%;
+  box-shadow:0 0 0 56px rgba(255,255,255,.02),0 0 0 112px rgba(255,255,255,.012);
+}
+body.app-premium-next-ready .teacher-hero .eyebrow{
+  color:#7f9bff!important;
+}
+body.app-premium-next-ready .teacher-hero h1{
+  color:#fff!important;
+  font-size:45px!important;
+  letter-spacing:-2px!important;
+}
+body.app-premium-next-ready .teacher-hero p{
+  max-width:720px!important;
+  color:#aab6ce!important;
+  line-height:1.65!important;
+}
+body.app-premium-next-ready .teacher-ai-badge{
+  position:relative;
+  z-index:2;
+  border:1px solid rgba(139,151,255,.22)!important;
+  background:rgba(255,255,255,.07)!important;
+  color:#d5dcff!important;
+  backdrop-filter:blur(12px);
+}
+body.app-premium-next-ready .teacher-premium-flow{
+  gap:8px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+}
+body.app-premium-next-ready .teacher-premium-flow span{
+  min-height:54px!important;
+  padding:12px 13px!important;
+  border:1px solid #e6e9ef!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  color:#697386!important;
+  box-shadow:0 8px 24px rgba(28,45,89,.035)!important;
+}
+body.app-premium-next-ready .teacher-premium-flow b{
+  color:#5865f2!important;
+}
+body.app-premium-next-ready .teacher-tabs{
+  width:max-content;
+  max-width:100%;
+  padding:4px!important;
+  border:1px solid #e6e9ef!important;
+  border-radius:13px!important;
+  background:#f4f6fa!important;
+}
+body.app-premium-next-ready .teacher-tabs button{
+  border-radius:9px!important;
+  color:#7d8697!important;
+}
+body.app-premium-next-ready .teacher-tabs button.active{
+  background:#fff!important;
+  color:#172033!important;
+  box-shadow:0 5px 15px rgba(28,45,89,.08)!important;
+}
+body.app-premium-next-ready .teacher-layout{
+  gap:15px!important;
+  grid-template-columns:minmax(0,1.55fr) minmax(270px,.55fr)!important;
+}
+body.app-premium-next-ready .teacher-avatar-stage{
+  border:1px solid #e4e8f0!important;
+  border-radius:22px!important;
+  background:
+    radial-gradient(circle at 90% 0,rgba(80,99,255,.09),transparent 35%),
+    #fff!important;
+  box-shadow:0 14px 38px rgba(28,45,89,.05)!important;
+}
+body.app-premium-next-ready .teacher-question-card{
+  padding:23px!important;
+  border-radius:22px!important;
+}
+body.app-premium-next-ready .teacher-question-top h2{
+  color:#171e2d!important;
+  font-size:24px!important;
+  letter-spacing:-.9px!important;
+}
+body.app-premium-next-ready .teacher-question-top p{
+  max-width:760px;
+  color:#7b8596!important;
+}
+body.app-premium-next-ready .teacher-selects{
+  gap:10px!important;
+}
+body.app-premium-next-ready .teacher-compose{
+  overflow:hidden;
+  border:1px solid #dfe4ed!important;
+  border-radius:18px!important;
+  background:#fbfcfe!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;
+}
+body.app-premium-next-ready .teacher-compose textarea{
+  min-height:146px!important;
+  padding:18px!important;
+  color:#222b3c!important;
+  background:transparent!important;
+}
+body.app-premium-next-ready .teacher-compose-bottom{
+  padding:11px 12px!important;
+  border-top:1px solid #e7eaf0!important;
+  background:#fff!important;
+}
+body.app-premium-next-ready .teacher-send{
+  min-height:41px!important;
+  border:0!important;
+  border-radius:11px!important;
+  background:linear-gradient(135deg,#355fff,#7257ff)!important;
+  box-shadow:0 10px 24px rgba(63,78,255,.18)!important;
+}
+body.app-premium-next-ready .teacher-local-note{
+  border:1px solid #e6eaf1!important;
+  border-radius:13px!important;
+  background:#f7f9fc!important;
+  color:#768094!important;
+}
+body.app-premium-next-ready .teacher-side{
+  gap:12px!important;
+}
+body.app-premium-next-ready .teacher-side .card{
+  padding:19px!important;
+  border-radius:19px!important;
+  box-shadow:0 10px 30px rgba(28,45,89,.04)!important;
+}
+body.app-premium-next-ready .teacher-mini{
+  border-color:#edf0f5!important;
+}
+
+/* Deneme Merkezi — make the exam → analysis → route loop visible */
+body.app-premium-next-ready .exam-center[data-premium-surface="exams"]{
+  margin-bottom:22px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body.app-premium-next-ready .exam-center-head{
+  position:relative;
+  overflow:hidden;
+  min-height:168px;
+  padding:27px 29px!important;
+  border:1px solid rgba(83,104,255,.19)!important;
+  border-radius:24px!important;
+  background:
+    radial-gradient(circle at 88% 0,rgba(92,76,255,.34),transparent 31%),
+    linear-gradient(135deg,#0a1425,#111a35 66%,#17183c)!important;
+  box-shadow:0 22px 54px rgba(12,24,51,.14)!important;
+}
+body.app-premium-next-ready .exam-center-head .eyebrow{
+  color:#7e99ff!important;
+}
+body.app-premium-next-ready .exam-center-head h2{
+  max-width:760px;
+  color:#fff!important;
+  font-size:31px!important;
+  letter-spacing:-1.2px!important;
+}
+body.app-premium-next-ready .exam-center-head p{
+  max-width:780px;
+  color:#aab5ca!important;
+  line-height:1.65!important;
+}
+body.app-premium-next-ready .exam-center-head>.pill{
+  border-color:rgba(135,151,255,.22)!important;
+  background:rgba(255,255,255,.07)!important;
+  color:#d9dfff!important;
+}
+body.app-premium-next-ready .mini-recommend{
+  margin:12px 0!important;
+  padding:20px 21px!important;
+  border:1px solid rgba(76,98,255,.18)!important;
+  border-radius:20px!important;
+  background:
+    linear-gradient(112deg,rgba(239,243,255,.92),rgba(255,255,255,.96))!important;
+  box-shadow:0 13px 36px rgba(54,69,178,.06)!important;
+}
+body.app-premium-next-ready .mini-recommend .eyebrow{
+  color:#5964ef!important;
+}
+body.app-premium-next-ready .mini-section-head{
+  margin:24px 2px 10px!important;
+}
+body.app-premium-next-ready .mini-section-head h3{
+  color:#192131!important;
+  font-size:22px!important;
+  letter-spacing:-.7px!important;
+}
+body.app-premium-next-ready .mini-exam-grid{
+  gap:10px!important;
+}
+body.app-premium-next-ready .mini-exam-card{
+  min-height:176px!important;
+  padding:18px!important;
+  border-radius:18px!important;
+  box-shadow:0 9px 27px rgba(28,45,89,.038)!important;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+body.app-premium-next-ready .mini-exam-card:hover{
+  transform:translateY(-2px);
+  border-color:#d6dced!important;
+  box-shadow:0 16px 34px rgba(28,45,89,.07)!important;
+}
+body.app-premium-next-ready .mini-exam-card h3{
+  margin-top:12px!important;
+  color:#182031!important;
+  font-size:16px!important;
+}
+body.app-premium-next-ready .mini-last{
+  color:#818b9b!important;
+}
+body.app-premium-next-ready .official-source-block,
+body.app-premium-next-ready .mini-history{
+  border:1px solid #e6eaf0!important;
+  border-radius:20px!important;
+  background:rgba(255,255,255,.82)!important;
+}
+body.app-premium-next-ready .official-source{
+  border-color:#eceff4!important;
+  border-radius:14px!important;
+}
+
+/* Deneme analysis — explainability over dashboard noise */
+body.app-premium-next-ready .analysis-panel{
+  overflow:hidden;
+  margin:20px 0!important;
+  padding:0!important;
+  border-radius:24px!important;
+  box-shadow:0 18px 46px rgba(28,45,89,.06)!important;
+}
+body.app-premium-next-ready .analysis-top{
+  padding:24px 25px 19px!important;
+  border-bottom:1px solid #e8ebf1!important;
+  background:
+    radial-gradient(circle at 90% 0,rgba(79,98,255,.08),transparent 31%),
+    linear-gradient(135deg,#fbfcff,#f4f6fb)!important;
+}
+body.app-premium-next-ready .analysis-top h2{
+  margin-top:5px!important;
+  color:#151d2c!important;
+  font-size:27px!important;
+  letter-spacing:-1px!important;
+}
+body.app-premium-next-ready .analysis-top p{
+  max-width:800px;
+  color:#727c8e!important;
+  line-height:1.6!important;
+}
+body.app-premium-next-ready .analysis-flow{
+  display:grid!important;
+  grid-template-columns:1fr auto 1fr auto 1fr;
+  gap:7px!important;
+  align-items:center;
+  margin-top:18px!important;
+  color:#a0a8b6!important;
+}
+body.app-premium-next-ready .analysis-flow span{
+  min-height:37px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #e3e7ef!important;
+  border-radius:11px!important;
+  background:#fff!important;
+  color:#7b8496!important;
+}
+body.app-premium-next-ready .analysis-flow span.active{
+  border-color:rgba(73,94,255,.24)!important;
+  background:#eef1ff!important;
+  color:#4f5be8!important;
+}
+body.app-premium-next-ready .analysis-body{
+  padding:23px 24px!important;
+}
+body.app-premium-next-ready .analysis-grid{
+  gap:10px!important;
+}
+body.app-premium-next-ready .analysis-test{
+  padding:16px!important;
+  border:1px solid #e8ebf1!important;
+  border-radius:16px!important;
+  background:#fff!important;
+}
+body.app-premium-next-ready .test-score{
+  color:#1b2333!important;
+}
+body.app-premium-next-ready .analysis-guidance{
+  border-color:#e5e9f0!important;
+  border-radius:14px!important;
+  background:#f8f9fc!important;
+  color:#707b8e!important;
+}
+body.app-premium-next-ready .analysis-notes{
+  border-color:#e8ebf1!important;
+  border-radius:18px!important;
+}
+body.app-premium-next-ready .analysis-note{
+  border-color:#edf0f5!important;
+}
+
+/* Supporting workspace surfaces */
+body.app-premium-next-ready .subject-grid,
+body.app-premium-next-ready .mistake-grid,
+body.app-premium-next-ready .setting-grid{
+  gap:12px!important;
+}
+body.app-premium-next-ready .subject-card,
+body.app-premium-next-ready .mistake{
+  border-radius:18px!important;
+  box-shadow:0 8px 26px rgba(28,45,89,.035)!important;
+}
+body.app-premium-next-ready .subject-card summary{
+  padding:17px!important;
+}
+body.app-premium-next-ready .topic-row{
+  border-color:#edf0f5!important;
+}
+body.app-premium-next-ready .table-wrap{
+  border:1px solid #edf0f5;
+  border-radius:15px;
+  overflow:auto;
+}
+body.app-premium-next-ready table th{
+  background:#f7f8fb!important;
+  color:#8b94a4!important;
+  font-size:8px!important;
+  letter-spacing:1px!important;
+}
+body.app-premium-next-ready table td{
+  border-color:#edf0f5!important;
+}
+body.app-premium-next-ready .report-premium-hero{
+  border-radius:24px!important;
+  background:
+    radial-gradient(circle at 90% 0,rgba(79,98,255,.12),transparent 35%),
+    linear-gradient(135deg,#fff,#f5f7fb)!important;
+  box-shadow:0 18px 46px rgba(28,45,89,.055)!important;
+}
+
+/* Mobile — vertical day flow and one-hand app navigation */
+@media(max-width:760px){
+  body.app-premium-next-ready .page-head{
+    min-height:0;
+    align-items:flex-start!important;
+    gap:15px!important;
+  }
+  body.app-premium-next-ready .page-head h1{
+    font-size:37px!important;
+    letter-spacing:-1.6px!important;
+  }
+  body.app-premium-next-ready .page-head>.btn{
+    width:100%;
+  }
+  body.app-premium-next-ready .route-week-summary{
+    grid-template-columns:1fr;
+  }
+  body.app-premium-next-ready .week-wrap{
+    overflow:visible!important;
+  }
+  body.app-premium-next-ready .week-grid{
+    display:flex!important;
+    flex-direction:column!important;
+    min-width:0!important;
+    gap:10px!important;
+  }
+  body.app-premium-next-ready .day-column{
+    min-height:0!important;
+    padding:14px!important;
+    border-radius:18px!important;
+  }
+  body.app-premium-next-ready .teacher-layout{
+    grid-template-columns:1fr!important;
+  }
+  body.app-premium-next-ready .teacher-hero{
+    min-height:0!important;
+    padding:24px 21px!important;
+  }
+  body.app-premium-next-ready .teacher-hero h1{
+    font-size:37px!important;
+  }
+  body.app-premium-next-ready .teacher-ai-badge{
+    margin-top:18px!important;
+  }
+  body.app-premium-next-ready .teacher-premium-flow{
+    grid-template-columns:1fr 1fr!important;
+  }
+  body.app-premium-next-ready .teacher-compose-bottom{
+    align-items:stretch!important;
+  }
+  body.app-premium-next-ready .teacher-send{
+    width:100%;
+  }
+  body.app-premium-next-ready .exam-center-head{
+    min-height:0;
+    padding:23px 20px!important;
+  }
+  body.app-premium-next-ready .exam-center-head h2{
+    font-size:27px!important;
+  }
+  body.app-premium-next-ready .analysis-flow{
+    grid-template-columns:1fr!important;
+  }
+  body.app-premium-next-ready .analysis-flow{
+    font-size:0;
+  }
+  body.app-premium-next-ready .analysis-flow span{
+    font-size:10px;
+  }
+  body.app-premium-next-ready .mobile-dock{
+    left:10px!important;
+    right:10px!important;
+    bottom:9px!important;
+    padding:6px 7px calc(6px + env(safe-area-inset-bottom))!important;
+    border:1px solid rgba(20,31,54,.10)!important;
+    border-radius:20px!important;
+    background:rgba(255,255,255,.91)!important;
+    box-shadow:0 18px 46px rgba(17,27,49,.18)!important;
+    backdrop-filter:blur(20px) saturate(135%)!important;
+  }
+  body.app-premium-next-ready .mobile-dock button{
+    min-height:48px!important;
+    border-radius:13px!important;
+    color:#7b8495!important;
+  }
+  body.app-premium-next-ready .mobile-dock button.active{
+    background:#101a2d!important;
+    color:#fff!important;
+    box-shadow:0 8px 20px rgba(16,26,45,.17)!important;
+  }
+}
+
+@media(max-width:430px){
+  body.app-premium-next-ready .teacher-premium-flow{
+    grid-template-columns:1fr!important;
+  }
+  body.app-premium-next-ready .teacher-selects{
+    grid-template-columns:1fr!important;
+  }
+  body.app-premium-next-ready .stats{
+    grid-template-columns:1fr 1fr!important;
+  }
+}

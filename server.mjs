@@ -132,7 +132,7 @@ function readJson(req) {
 }
 function cleanText(v, max=5000){ return typeof v === 'string' ? v.slice(0,max) : ''; }
 const TEACHER_CONTEXT_VERSION = 2;
-const TEACHER_CONTEXT_KEYS = new Set(['contextVersion','exam','track','selected','target','targetDate','dailyMinutes','topicStatus','routeSummary','completion','todaySummary','todayPlan','routeMode','routeDecision','studentModel','examRisk','mastery','recentExams','recentMistakes','recentLogs','teacherSignals','contextHealth']);
+const TEACHER_CONTEXT_KEYS = new Set(['contextVersion','exam','track','selected','target','targetDate','dailyMinutes','topicStatus','routeSummary','completion','todaySummary','todayPlan','routeMode','routeDecision','studentModel','examRisk','mastery','recentExams','recentMistakes','recentLogs','teacherSignals','contextHealth','intelligence']);
 function sanitizeContextValue(value,depth=0){
   if(depth>5)return null;
   if(typeof value==='string')return cleanText(value,700);

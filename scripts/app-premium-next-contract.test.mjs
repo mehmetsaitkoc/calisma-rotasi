@@ -70,4 +70,7 @@ assert.ok(
   'Premium layout must move the real interactive nodes instead of cloning product actions'
 );
 
+assert.ok(css.includes('APP PREMIUM NEXT V2.7 · MOBILE ROUTE HIT TARGET INTEGRITY'),'Missing mobile route hit-target integrity guard');
+assert.ok(css.includes('overflow:visible!important;'),'Mobile route queue must not become a nested scroll hit-target trap');
+
 console.log('App Premium Next contract passed: presentation-only Today composition + real-data progress + mobile/reduced-motion guards');

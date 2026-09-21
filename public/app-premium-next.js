@@ -37,9 +37,23 @@
   }
 
   function firstName(header) {
-    const current = text(header.querySelector('h1'));
+    const cached = String(header?.dataset?.pnxStudentName || '').trim();
+    if (cached) return cached;
+
+    const current = text(header?.querySelector('h1'));
     const match = current.match(/^([^,]+),/);
-    return (match?.[1] || '').trim() || 'Öğrenci';
+    let name = (match?.[1] || '').trim();
+
+    // The V3 title starts with “Bugün,” after the first composition pass.
+    // Never let subsequent MutationObserver passes overwrite the real student name.
+    if (!name || name.toLocaleLowerCase('tr-TR') === 'bugün') {
+      const existing = text(document.querySelector('.pnx-profile-copy strong'));
+      if (existing && existing.toLocaleLowerCase('tr-TR') !== 'bugün') name = existing;
+    }
+    if (!name || name.toLocaleLowerCase('tr-TR') === 'bugün') name = 'Öğrenci';
+
+    if (header) header.dataset.pnxStudentName = name;
+    return name;
   }
 
   function polishHeading(header) {
@@ -171,6 +185,20 @@
     return text(root.querySelector('.route-task .route-task-reason')) || text(fallback?.querySelector('p')) || '';
   }
 
+  function startPreviewTimer(root, hero) {
+    const start = hero.querySelector(':scope > .route-start-big[data-action="focus-session"]');
+    if (!start) return;
+    start.click();
+
+    // focus-session prepares the real application timer and re-renders Today.
+    // Start the real timer immediately after that render so the large 40:00
+    // card behaves like a timer instead of being a decorative control.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const toggle = document.querySelector('#timer-toggle');
+      if (toggle) toggle.click();
+    }));
+  }
+
   function ensureFocusHero(root, hero, reason) {
     hero.classList.add('pnx-reference-hero','pnx3-focus-card');
 
@@ -182,22 +210,41 @@
     if (!hero.querySelector('.pnx3-focus-tabs')) {
       const tabs = document.createElement('div');
       tabs.className = 'pnx3-focus-tabs';
-      tabs.innerHTML = '<span class="active">Pomodoro</span><span>Geri Sayım</span><span>Serbest</span>';
+      tabs.innerHTML =
+        '<button type="button" class="active" data-pnx-timer-mode="pomodoro">Pomodoro</button>' +
+        '<button type="button" data-pnx-timer-mode="countdown">Geri Sayım</button>' +
+        '<button type="button" data-pnx-timer-mode="free">Serbest</button>';
+
+      const pomodoro = tabs.querySelector('[data-pnx-timer-mode="pomodoro"]');
+      const countdown = tabs.querySelector('[data-pnx-timer-mode="countdown"]');
+      const free = tabs.querySelector('[data-pnx-timer-mode="free"]');
+
+      pomodoro?.addEventListener('click', () => {
+        tabs.querySelectorAll('button').forEach((button) => button.classList.toggle('active', button === pomodoro));
+      });
+      countdown?.addEventListener('click', () => {
+        tabs.querySelectorAll('button').forEach((button) => button.classList.toggle('active', button === countdown));
+        startPreviewTimer(root, hero);
+      });
+      free?.addEventListener('click', () => {
+        const addLog = root.querySelector('[data-action="add-log"]');
+        if (addLog) addLog.click();
+      });
       hero.prepend(tabs);
     }
 
     if (!hero.querySelector('.pnx-pomodoro')) {
       const meta = text(grow.querySelector('p'));
-      const minutes = Number(meta.match(/(\d+)\s*dk/i)?.[1] || 40);
+      const minutes = Math.max(1, Number(meta.match(/(\d+)\s*dk/i)?.[1] || 40));
       const timer = document.createElement('div');
-      timer.className = 'pnx-pomodoro';
+      timer.className = 'pnx-pomodoro pnx3-pomodoro-preview';
       timer.innerHTML =
-        '<div class="pnx-pomodoro-ring"><div><strong>' + minutes + ':00</strong>' +
-        '<button type="button" class="pnx-pomodoro-play" aria-label="Pomodoro ile başla">▶</button></div></div>' +
+        '<button type="button" class="pnx-pomodoro-ring" aria-label="' + minutes + ' dakikalık Pomodoro sayacını başlat">' +
+          '<span class="pnx3-preview-timer"><strong>' + minutes + ':00</strong>' +
+          '<i class="pnx-pomodoro-play" aria-hidden="true">▶</i></span>' +
+        '</button>' +
         '<span>Pomodoro ile başla</span>';
-      const play = timer.querySelector('.pnx-pomodoro-play');
-      if (start.dataset.action) play.dataset.action = start.dataset.action;
-      if (start.dataset.id) play.dataset.id = start.dataset.id;
+      timer.querySelector('.pnx-pomodoro-ring')?.addEventListener('click', () => startPreviewTimer(root, hero));
       hero.insertBefore(timer, start);
     }
 
@@ -211,6 +258,16 @@
 
     const why = taskReason(root, reason);
     hero.dataset.reason = why || '';
+  }
+
+  function mountLiveTimer(root, focus, hero) {
+    const live = root.querySelector('.route-focus-card');
+    focus.classList.toggle('pnx3-has-live-timer', !!live);
+    if (!live) return;
+
+    live.classList.add('pnx3-live-timer-card');
+    if (!focus.contains(live)) focus.appendChild(live);
+    hero.setAttribute('aria-hidden', 'true');
   }
 
   function ensureRoutePanel(routePanel, listHead, list) {
@@ -377,7 +434,7 @@
         '</div>' +
       '</div>' +
       '<div class="pnx3-teacher-bubble">Sen sor,<br>birlikte çözelim!</div>' +
-      '<img src="/rota-hoca-avatar.jpg" alt="" class="pnx-teacher-avatar" />';
+      '<img src="/rota-hoca-avatar-v2.svg" alt="" class="pnx-teacher-avatar" />';
   }
 
   function ensureResultsCard(host, targetSignal) {
@@ -482,6 +539,7 @@
 
     ensureRoutePanel(plan, listHead, list);
     ensureFocusHero(root, hero, reason);
+    mountLiveTimer(root, focus, hero);
     ensureWeekCard(side, root);
     ensureGoalsCard(side, target);
     ensureTeacherCard(lower);

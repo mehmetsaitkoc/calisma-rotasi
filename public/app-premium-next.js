@@ -123,7 +123,7 @@
       if (actions.dataset.pnxCompact === '1') return;
       const secondary = Array.from(actions.children).filter((node) => {
         const action = node?.dataset?.action || '';
-        return action && action !== 'focus-session';
+        return action === 'route-later' || action === 'route-skip';
       });
       if (secondary.length) {
         const more = document.createElement('details');

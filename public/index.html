@@ -5199,6 +5199,34 @@ $('#modal').addEventListener('cancel',()=>{ui.confirmFn=null;ui.formContext=null
 setInterval(()=>{for(const e of ['kpss','yks']){const t=timers[e];if(t?.endAt&&remaining(t)===0){t.seconds=0;t.endAt=0;saveTimers();toast(`${e.toLocaleUpperCase('tr-TR')} odak oturumun bitti. Kaydını eklemeyi unutma.`);if(state.activeExam===e&&ui.view==='today')render();}}if(state.activeExam&&ui.view==='today'){const t=timer(),clock=$('#clock');if(clock)clock.textContent=clockText(remaining(t));}},250);
 // İki sekmenin sessizce birbirinin kayıtlarını ezmesini önle.
 window.addEventListener('storage',e=>{if(e.key===KEY){storageBlocked=true;storageProblem='Başka bir sekmede kayıt değişti. Üzerine yazmamak için bu sekmede kalıcı kayıt durduruldu. Açık formunu korumak için yedek al veya sayfayı yenile.';showStorageWarning();}});
+/* === INTELLIGENCE RUNTIME BOUNDARY: narrow hook surface for external intelligence modules === */
+window.RotaRuntimeV1={
+ version:1,
+ getWorkspace:()=>w(),
+ getToday:()=>today(),
+ getBindings:()=>({
+  routeStudentModel,
+  routeAppliedDecision,
+  routeTaskReason,
+  routeBuildCandidates,
+  teacherStudentContext,
+  routeSubjectGap:typeof routeSubjectGap==='function'?routeSubjectGap:null,
+  routeDaysToTarget:typeof routeDaysToTarget==='function'?routeDaysToTarget:null,
+  routeTopicMasterySignal:typeof routeTopicMasterySignal==='function'?routeTopicMasterySignal:null,
+  routeTopicMasteryScore:typeof routeTopicMasteryScore==='function'?routeTopicMasteryScore:null,
+  routeRecoverySignal:typeof routeRecoverySignal==='function'?routeRecoverySignal:null
+ }),
+ installIntelligenceHooks:(hooks={})=>{
+  if(typeof hooks.routeStudentModel==='function')routeStudentModel=hooks.routeStudentModel;
+  if(typeof hooks.routeAppliedDecision==='function')routeAppliedDecision=hooks.routeAppliedDecision;
+  if(typeof hooks.routeTaskReason==='function')routeTaskReason=hooks.routeTaskReason;
+  if(typeof hooks.routeBuildCandidates==='function')routeBuildCandidates=hooks.routeBuildCandidates;
+  if(typeof hooks.teacherStudentContext==='function')teacherStudentContext=hooks.teacherStudentContext;
+  routeRenderDecisionCache.clear();
+  routeRenderPlanIndex=null;
+ },
+ refresh:()=>render()
+};
 render();
 void loadEntitlement();
 })();

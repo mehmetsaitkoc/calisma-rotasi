@@ -51,7 +51,9 @@ globalThis.w=()=>({
       {id:'iv1',date:'2026-08-20',subjectId:'k-ma',topicId:'k-ma-topic',mode:'progress',source:'curriculum',method:'quant'},
       {id:'iv2',date:'2026-08-28',subjectId:'k-ma',topicId:'k-ma-topic',mode:'progress',source:'curriculum',method:'quant'},
       {id:'ivr1',date:'2026-08-18',subjectId:'k-ma',topicId:'k-ma-topic',mode:'repair',source:'mini_repair',method:'quant'},
-      {id:'ivr2',date:'2026-08-26',subjectId:'k-ma',topicId:'k-ma-topic',mode:'repair',source:'mini_repair',method:'quant'}
+      {id:'ivr2',date:'2026-08-26',subjectId:'k-ma',topicId:'k-ma-topic',mode:'repair',source:'mini_repair',method:'quant'},
+      {id:'ivr3',date:'2026-08-19',subjectId:'k-ma',topicId:'k-ma-topic-2',mode:'repair',source:'mini_repair',method:'quant'},
+      {id:'ivr4',date:'2026-08-27',subjectId:'k-ma',topicId:'k-ma-topic-2',mode:'repair',source:'mini_repair',method:'quant'}
     ]
   }
 });
@@ -106,6 +108,9 @@ assert.equal(profile.windows.d30.execution.completion,50);
 
 const model=globalThis.routeStudentModel('k-ma','k-ma-topic');
 assert.equal(model.longitudinal.confidence,profile.confidence,'patched student model must expose longitudinal context');
+assert.equal(model.methodProfile.known,true,'student model must expose a subject-wide method profile only after cross-topic evidence');
+assert.ok(model.methodProfile.confidence>=60);
+assert.equal(model.methodProfile.cautions[0].method,'quant');
 
 const decision=globalThis.routeAppliedDecision('k-ma','k-ma-topic');
 assert.equal(decision.mode,'steady','strong repair evidence must suppress premature progress');
@@ -152,6 +157,9 @@ assert.ok(['collect','steady','ease'].includes(bridge.loadPrescription()?.mode||
 assert.equal(teacherContext.intelligence.outcomeMemory?.action,'hold');
 assert.equal(teacherContext.intelligence.methodMemory?.current?.action,'change','Rota Hoca must receive the learned current-method weakness');
 assert.equal(teacherContext.intelligence.methodMemory?.currentMethod,'quant');
+assert.equal(teacherContext.intelligence.subjectMethodProfile?.known,true,'Rota Hoca must receive the cross-topic subject method profile');
+assert.ok(teacherContext.intelligence.subjectMethodProfile.confidence>=60);
+assert.equal(teacherContext.intelligence.subjectMethodProfile.cautions[0].method,'quant');
 
 modelState={
   confidence:90,

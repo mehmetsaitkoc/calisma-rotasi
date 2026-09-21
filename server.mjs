@@ -351,7 +351,7 @@ function serve(req,res){
       const source=data.toString('utf8');
       const enhanced=source
         .replace('</head>','<link rel="stylesheet" href="/landing-final.css"></head>')
-        .replace('</body>','<script src="/landing-final.js" defer></script></body>');
+        .replace('</body>','<script src="/intelligence-v1.js"></script><script src="/intelligence-bridge-v1.js"></script><script src="/landing-final.js" defer></script></body>');
       const body=Buffer.from(enhanced,'utf8');
       res.writeHead(200,{'content-type':'text/html; charset=utf-8','content-length':body.length,'cache-control':'no-store'});
       res.end(body);

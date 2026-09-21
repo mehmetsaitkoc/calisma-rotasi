@@ -165,6 +165,9 @@ jobs:
       - name: Syntax check browser E2E
         run: node --check scripts/browser-e2e.mjs
 
+      - name: Syntax check app visual review
+        run: node --check scripts/app-visual-review.mjs
+
       - name: Install Playwright test runtime
         run: npm install --no-save playwright@1.55.0
 
@@ -182,6 +185,17 @@ jobs:
         with:
           name: landing-visual-review-${{ github.sha }}
           path: artifacts/landing-1512.png
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Capture premium workspace visual review
+        run: node scripts/app-visual-review.mjs
+
+      - name: Upload premium workspace visual review
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-ui-premium-next-${{ github.sha }}
+          path: artifacts/app-ui-premium-next/*.png
           if-no-files-found: error
           retention-days: 7
 

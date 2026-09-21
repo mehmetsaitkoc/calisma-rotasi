@@ -113,6 +113,18 @@ jobs:
       - name: Syntax check KPSS professional section exams
         run: node --check public/kpss-professional-sections.js
 
+      - name: Syntax check KPSS Turkish professional section exam 2
+        run: node --check public/kpss-professional-turkish-sections-02.js
+
+      - name: Syntax check KPSS Turkish professional section exam 3
+        run: node --check public/kpss-professional-turkish-sections-03.js
+
+      - name: Syntax check KPSS Turkish professional section exam 4
+        run: node --check public/kpss-professional-turkish-sections-04.js
+
+      - name: Syntax check KPSS Turkish professional section exam 5
+        run: node --check public/kpss-professional-turkish-sections-05.js
+
       - name: Syntax check KPSS v2 content tests
         run: node --check scripts/kpss-content-v2.test.mjs
 

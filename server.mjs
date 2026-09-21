@@ -348,8 +348,13 @@ function serve(req,res){
   if(p==='/' || p==='/index.html'){
     return fs.readFile(INDEX,(err,data)=>{
       if(err) return json(res,500,{error:'Arayüz dosyası bulunamadı.'});
-      res.writeHead(200,{'content-type':'text/html; charset=utf-8','content-length':data.length,'cache-control':'no-store'});
-      res.end(data);
+      const source=data.toString('utf8');
+      const enhanced=source
+        .replace('</head>','<link rel="stylesheet" href="/premium-v6.css"></head>')
+        .replace('</body>','<script src="/premium-v6.js" defer></script></body>');
+      const body=Buffer.from(enhanced,'utf8');
+      res.writeHead(200,{'content-type':'text/html; charset=utf-8','content-length':body.length,'cache-control':'no-store'});
+      res.end(body);
     });
   }
   const file=path.normalize(path.join(PUBLIC,p));

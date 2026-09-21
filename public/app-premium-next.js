@@ -145,7 +145,7 @@
     const subject = (meta.split('·')[0] || '').trim();
     const now = grow.querySelector('.route-now-label');
     if (now && subject) {
-      now.textContent = subject;
+      if (text(now) !== subject) now.textContent = subject;
       if (!grow.querySelector('.pnx-legacy-now-label')) {
         const legacyNow = document.createElement('span');
         legacyNow.className = 'sr-only pnx-legacy-now-label';
@@ -203,7 +203,8 @@
     }
     if (status) {
       const open = tasks.filter((task) => !task.classList.contains('is-done')).length;
-      status.textContent = 'Bugün ' + open + ' görev seni bekliyor.';
+      const statusText = 'Bugün ' + open + ' görev seni bekliyor.';
+      if (text(status) !== statusText) status.textContent = statusText;
     }
 
     if (!listHead.querySelector('.pnx-route-calendar')) {
@@ -249,9 +250,9 @@
     const heading = reason.querySelector('strong');
     const paragraph = reason.querySelector('p');
 
-    if (kicker) kicker.textContent = 'ROTA KARARI';
+    if (kicker && text(kicker) !== 'ROTA KARARI') kicker.textContent = 'ROTA KARARI';
     if (heading) {
-      heading.textContent = 'Neden bugün?';
+      if (text(heading) !== 'Neden bugün?') heading.textContent = 'Neden bugün?';
       if (!reason.querySelector('.pnx-legacy-reason-label')) {
         const legacy = document.createElement('span');
         legacy.className = 'sr-only pnx-legacy-reason-label';
@@ -263,7 +264,7 @@
     const reasonButton = reason.querySelector('.btn');
     const whyButton = root.querySelector('.route-task [data-action="route-why"]');
     if (reasonButton) {
-      reasonButton.textContent = 'Bu görev neden öne çıktı?';
+      if (text(reasonButton) !== 'Bu görev neden öne çıktı?') reasonButton.textContent = 'Bu görev neden öne çıktı?';
       if (whyButton?.dataset?.id) {
         reasonButton.dataset.action = 'route-why';
         reasonButton.dataset.id = whyButton.dataset.id;
@@ -297,6 +298,9 @@
       intel.appendChild(card);
     }
     const info = modeInfo(root);
+    const signature = [info.label, info.subtitle, info.explanation || ''].join('|');
+    if (card.dataset.pnxSignature === signature) return;
+    card.dataset.pnxSignature = signature;
     card.innerHTML =
       '<div class="pnx-bottom-head"><span class="pnx-stack-icon" aria-hidden="true"></span><strong>Rota modu</strong><span>Modu değiştir</span></div>' +
       '<div class="pnx-mode-body"><span class="pnx-mode-bars" aria-hidden="true"><i></i><i></i><i></i></span><div><strong>' +

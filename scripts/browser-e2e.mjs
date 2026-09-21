@@ -525,6 +525,7 @@ async function runKpssSectionExamContent(browser) {
     assert.ok(await page.getByText('KPSS Türkçe · Yazım Kuralları · Test '+setNo,{exact:true}).count(),'Professional Writing Rules Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Noktalama İşaretleri · Test '+setNo,{exact:true}).count(),'Professional Punctuation Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Sözcük Türleri · Test '+setNo,{exact:true}).count(),'Professional Word Classes Test '+setNo+' must be visible');
+    assert.ok(await page.getByText('KPSS Türkçe · Cümle Türleri · Test '+setNo,{exact:true}).count(),'Professional Sentence Types Test '+setNo+' must be visible');
   }
   assert.equal(await page.getByText('KPSS Sözcükte Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Meaning seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Cümlede Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Sentence Meaning seed must not remain in the active catalog');
@@ -533,6 +534,7 @@ async function runKpssSectionExamContent(browser) {
   assert.equal(await page.getByText('KPSS Yazım Kuralları · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Writing Rules seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Noktalama · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Punctuation seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Sözcük Türleri · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Classes seed must not remain in the active catalog');
+  assert.equal(await page.getByText('KPSS Cümle Türleri · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Sentence Types seed must not remain in the active catalog');
   const professionalStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-tr:k-tr-1:t01"]').first();
   await professionalStart.waitFor({state:'visible'});
   await professionalStart.click();

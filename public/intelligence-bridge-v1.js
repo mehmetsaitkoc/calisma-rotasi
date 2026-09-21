@@ -15,7 +15,7 @@ function fn(name){return typeof root[name]==='function'?root[name]:null;}
 function workspace(){try{return fn('w')?.()||null;}catch{return null;}}
 function todayValue(){try{return fn('today')?.()||new Date().toISOString().slice(0,10);}catch{return new Date().toISOString().slice(0,10);}}
 function intelligence(){return root.RotaIntelligenceV1||null;}
-function finite(v){return Number.isFinite(Number(v));}
+function finite(v){return v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));}
 function cacheKey(space,today){
   if(!space)return today+'|0';
   return [

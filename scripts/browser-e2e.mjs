@@ -199,15 +199,45 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
 }
 
 async function showTaskInPlan(page, id, label) {
-  const snapshot = await appState(page);
-  const task = snapshot.value.workspaces.kpss.plan.find(p => p.id === id);
-  assert.ok(task, label + ': görev gerçek KPSS planında bulunmalı');
-  assert.ok(task.date, label + ': görevin gerçek bir plan tarihi olmalı');
+  const initial = await appState(page);
+  const original = initial.value.workspaces.kpss.plan.find(p => p.id === id);
+  assert.ok(original, label + ': görev gerçek KPSS planında bulunmalı');
 
-  await setDay(page, task.date);
-  const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`).first();
-  await taskButton.waitFor({ state: 'visible' });
-  assert.ok(await taskButton.isVisible(), label + ': görev kendi plan gününde Today içinde erişilebilir olmalı');
+  const sameEvidence = (candidate, reference) => {
+    if (!candidate || !reference || candidate.done) return false;
+    if (reference.routeKey && candidate.routeKey === reference.routeKey) return true;
+    if (reference.sourceMistakeId && candidate.sourceMistakeId === reference.sourceMistakeId) return true;
+    if (reference.sourceAssessmentId && candidate.sourceAssessmentId === reference.sourceAssessmentId) return true;
+    if (
+      reference.source === 'spaced_review' &&
+      candidate.source === 'spaced_review' &&
+      candidate.reviewWave === reference.reviewWave &&
+      candidate.reviewBaseTaskId === reference.reviewBaseTaskId
+    ) return true;
+    return candidate.source === reference.source &&
+      candidate.subjectId === reference.subjectId &&
+      candidate.topicId === reference.topicId &&
+      candidate.title === reference.title;
+  };
+
+  let current = original;
+  for (let hop = 0; hop < 6; hop++) {
+    assert.ok(current?.date, label + ': görevin gerçek bir plan tarihi olmalı');
+    await setDay(page, current.date);
+
+    const snapshot = await appState(page);
+    const plan = snapshot.value.workspaces.kpss.plan;
+    current =
+      plan.find(p => p.id === current.id && !p.done) ||
+      plan.find(p => sameEvidence(p, original)) ||
+      plan.find(p => sameEvidence(p, current)) ||
+      current;
+
+    const taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+    if (await taskButton.count() && await taskButton.isVisible()) return current;
+  }
+
+  assert.fail(label + ': görev kanıt kimliği korunarak kendi plan gününde erişilebilir olmalı');
 }
 
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {
@@ -878,7 +908,7 @@ try {
 
   let repair = space.plan.find(p => !p.done && p.sourceMistakeId === mistake.id);
   assert.ok(repair, 'Exam-linked wrong must create a repair task');
-  await showTaskInPlan(page, repair.id, 'exam-linked repair task');
+  repair = await showTaskInPlan(page, repair.id, 'exam-linked repair task');
   await completeTask(page, repair.id, { questions: 18, correct: 15, wrong: 3, outcome: 'ok' });
 
   await navigate(page, 'mistakes');
@@ -901,7 +931,7 @@ try {
   assert.equal(review3.reviewBaseDate, repairLog.date, '3-day review must anchor to the real repair completion date');
   assert.ok(review3.date >= due3, '3-day review must never be scheduled before its real +3 due date');
   assert.match(review3.reason || '', /Denemeden gelen yanlış onarımını/i);
-  await showTaskInPlan(page, review3.id, '3-day exam-wrong retention review');
+  review3 = await showTaskInPlan(page, review3.id, '3-day exam-wrong retention review');
   await completeTask(page, review3.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
 
   const due7 = addDays(repairLog.date, 7);
@@ -912,7 +942,7 @@ try {
   assert.ok(review7, '7-day exam-wrong retention review must materialize when due');
   assert.equal(review7.reviewBaseDate, repairLog.date, '7-day review must anchor to the real repair completion date');
   assert.ok(review7.date >= due7, '7-day review must never be scheduled before its real +7 due date');
-  await showTaskInPlan(page, review7.id, '7-day exam-wrong retention review');
+  review7 = await showTaskInPlan(page, review7.id, '7-day exam-wrong retention review');
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 

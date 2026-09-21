@@ -25,7 +25,7 @@ for(const marker of [
   '.pnx-progress-signal',
   '.pnx-head-art',
   '.mobile-dock',
-  'hero-journey-final.webp',
+  'kpss-hero-mountain.svg',
   '@media(max-width:650px)',
   '@media(prefers-reduced-motion:reduce)'
 ]) assert.ok(css.includes(marker),'Missing KPSS dashboard CSS contract marker: '+marker);
@@ -47,6 +47,7 @@ for(const marker of [
   'pnx3-teacher-card',
   'pnx3-results-card',
   'pnx3-quote-card',
+  'pnxStudentName',
   'Neden bugün?',
   'ROTA KARARI',
   'Pomodoro ile başla',
@@ -79,6 +80,26 @@ assert.ok(
 assert.ok(
   css.includes('Keep existing sidebar exactly as the current product shell'),
   'V3 must explicitly preserve the existing sidebar'
+);
+assert.ok(
+  css.includes('APP PREMIUM NEXT V3.1 · PLAN HEADER + IDENTITY INTEGRITY'),
+  'V3 must keep the Bugünün Planı header aligned after the calendar affordance is injected'
+);
+assert.ok(
+  js.includes("header.dataset.pnxStudentName = name"),
+  'V3 must cache the real student name so MutationObserver re-renders cannot turn it into “Bugün”'
+);
+assert.ok(
+  css.includes('APP PREMIUM NEXT V3.2 · REFERENCE VISUAL + REAL POMODORO'),
+  'V3 must use the approved mountain/teacher/quote visual direction'
+);
+assert.ok(
+  js.includes('startPreviewTimer(root, hero)') && js.includes("document.querySelector('#timer-toggle')"),
+  'Dashboard Pomodoro must hand off to the real application timer'
+);
+assert.ok(
+  css.includes('pnx3-live-timer-card') && css.includes('kpss-hero-mountain.svg') && css.includes('daily-quote-sunrise.svg'),
+  'Live timer and approved visual assets must be styled in the dashboard layer'
 );
 
 console.log('App Premium Next contract passed: KPSS target dashboard + real route data + unchanged sidebar + responsive/day-night guards');

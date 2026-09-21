@@ -317,12 +317,13 @@ async function runVideoRouteCompletion(browser) {
   const task = space.plan.find(p => !p.done && p.date === FIXED_DAY && p.topicId);
   assert.ok(task, 'Video route fixture needs an open topic-bound task today');
 
-  const opened = await page.evaluate(topicId => {
-    ui.videoTopic = topicId;
-    openVideoLog();
-    return !!document.querySelector('#video-log-form');
-  }, task.topicId);
-  assert.equal(opened, true, 'Video log form must open for the planned topic');
+  await navigate(page, 'videos');
+  const topicButton = page.locator('[data-action="video-open"][data-id="' + task.topicId + '"]').first();
+  await topicButton.waitFor({ state: 'visible' });
+  await topicButton.click();
+  const saveStudy = page.locator('[data-action="video-log"]').first();
+  await saveStudy.waitFor({ state: 'visible' });
+  await saveStudy.click();
 
   const form = page.locator('#video-log-form');
   await form.waitFor({ state: 'visible' });

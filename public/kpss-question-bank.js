@@ -6,6 +6,7 @@ const VERSION=1;
 const TARGET_TESTS_PER_TOPIC=4;
 const QUESTIONS_PER_TEST=12;
 const TARGET_SECTION_EXAMS_PER_SUBJECT=5;
+const SECTION_TOTALS=Object.freeze({'k-tr':30,'k-ma':30,'k-ta':27,'k-co':18,'k-va':9,'k-gu':6});
 const BASIS='Sorular Çalışma Rotası için özgün hazırlanır. ÖSYM soruları kopyalanmaz. Ders toplamları ve geçmiş sınavların ölçme eğilimleri blueprint olarak kullanılır; konu başına sabit soru sayısı garantisi verilmez.';
 const Q=(text,options,answer,explanation,skill='')=>({text,options,answer,explanation,skill});
 function distributeOptions(q,index,testNo){
@@ -207,6 +208,6 @@ function coverage(catalogSubjects=[]){
 }
 validate();
 
-root.RotaKpssQuestionBank={SCHEMA,VERSION,BASIS,TARGET_TESTS_PER_TOPIC,QUESTIONS_PER_TEST,TARGET_SECTION_EXAMS_PER_SUBJECT,topicTests,validateQuestion,validate,coverage};
+root.RotaKpssQuestionBank={SCHEMA,VERSION,BASIS,TARGET_TESTS_PER_TOPIC,QUESTIONS_PER_TEST,TARGET_SECTION_EXAMS_PER_SUBJECT,SECTION_TOTALS,topicTests,validateQuestion,validate,coverage};
 if(typeof module==='object')module.exports=root.RotaKpssQuestionBank;
 })(typeof window!=='undefined'?window:globalThis);

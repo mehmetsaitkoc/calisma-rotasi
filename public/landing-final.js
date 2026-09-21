@@ -323,3 +323,21 @@
     if(w!==mounted || (eligible && w.dataset.pixelMatch!=='1')) schedule();
   }).observe(document.documentElement,{subtree:true,childList:true});
 })();
+
+/* APP PREMIUM NEXT LOADER · keeps the large workspace HTML untouched */
+(() => {
+  if (!document.querySelector('link[data-app-premium-next]')) {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '/app-premium-next.css?v=1';
+    css.dataset.appPremiumNext = '1';
+    document.head.appendChild(css);
+  }
+  if (!document.querySelector('script[data-app-premium-next]')) {
+    const script = document.createElement('script');
+    script.src = '/app-premium-next.js?v=1';
+    script.async = false;
+    script.dataset.appPremiumNext = '1';
+    document.head.appendChild(script);
+  }
+})();

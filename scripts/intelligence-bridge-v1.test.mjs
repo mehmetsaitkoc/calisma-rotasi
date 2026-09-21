@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 await import('../public/intelligence-v1.js');
 
 let recovery=false;
+let gapState={known:true,current:50,target:90,gap:40};
+let daysState=19;
+let outcomeEffects={
+  repair:{known:false,total:0,helpful:0,harmful:0,neutral:0,score:0},
+  ease:{known:false,total:0,helpful:0,harmful:0,neutral:0,score:0},
+  progress:{known:false,total:0,helpful:0,harmful:0,neutral:0,score:0}
+};
 
 let modelState={
   confidence:82,
@@ -40,9 +47,15 @@ globalThis.w=()=>({
   route:{modeHistory:[{date:'2026-09-18',mode:'repair'}]}
 });
 globalThis.today=()=> '2026-09-21';
-globalThis.routeSubjectGap=()=>({known:true,current:50,target:90,gap:40});
-globalThis.routeDaysToTarget=()=>19;
+globalThis.routeSubjectGap=()=>({...gapState});
+globalThis.routeDaysToTarget=()=>daysState;
 globalThis.routeRecoverySignal=()=>({active:recovery});
+globalThis.routeInterventionEffectSignal=(subjectId,topicId,mode)=>({...outcomeEffects[mode]});
+globalThis.routeInterventionPolicyAdjustment=(subjectId,topicId,mode)=>{
+  const effect={...outcomeEffects[mode]};
+  const action=!effect.known||effect.total<2?'hold':effect.score<=-.34?'change':effect.score>=.5?'repeat':'hold';
+  return {action,label:action,effect};
+};
 globalThis.routeTopicMasterySignal=()=>({ready:false,next:'3-day'});
 globalThis.routeStudentModel=()=>({...modelState});
 globalThis.routeAppliedDecision=()=>({
@@ -116,7 +129,36 @@ assert.equal(teacherContext.intelligence.repair.mode,'repair');
 assert.ok(['collect','steady','ease'].includes(teacherContext.intelligence.load?.mode||'collect'));
 assert.ok(Number.isFinite(teacherContext.intelligence.execution30));
 assert.ok(['collect','steady','ease'].includes(bridge.loadPrescription()?.mode||'collect'));
+assert.equal(teacherContext.intelligence.outcomeMemory?.action,'hold');
 
+modelState={
+  confidence:90,
+  performance:88,
+  retention:86,
+  openMistakes:0,
+  errorRepeated:false,
+  trend:{known:true,direction:'up'},
+  personalNorm:{known:true,confidence:70,direction:'up'}
+};
+gapState={known:true,current:82,target:84,gap:2};
+daysState=120;
+outcomeEffects.progress={known:true,total:3,helpful:0,harmful:2,neutral:1,score:-.67};
+bridge.invalidate();
+const harmfulProgress=globalThis.routeAppliedDecision('k-ma','k-ma-topic');
+assert.equal(harmfulProgress.intelligence.outcomeMemory.action,'change');
+assert.equal(harmfulProgress.mode,'steady','mature harmful progress history must hold another difficulty increase');
+assert.equal(harmfulProgress.intelligenceOutcomeGuard,'harmful_progress_hold');
+
+outcomeEffects.progress={known:true,total:4,helpful:3,harmful:0,neutral:1,score:.75};
+bridge.invalidate();
+const helpfulProgress=globalThis.routeAppliedDecision('k-ma','k-ma-topic');
+assert.equal(helpfulProgress.mode,'progress','helpful progress memory may preserve, but not amplify, the original progress decision');
+assert.equal(helpfulProgress.intelligence.outcomeMemory.action,'repeat');
+assert.equal(helpfulProgress.intelligenceOutcomeGuard,'helpful_core_preserved');
+
+outcomeEffects.progress={known:false,total:0,helpful:0,harmful:0,neutral:0,score:0};
+gapState={known:true,current:50,target:90,gap:40};
+daysState=19;
 modelState={
   confidence:18,
   performance:45,
@@ -133,4 +175,4 @@ assert.equal(low.intelligence.repair.mode,'collect');
 const lowCandidates=globalThis.routeBuildCandidates();
 assert.equal(lowCandidates.find(x=>x.routeKey==='topic:k-ma-topic').priority,60,'low-confidence evidence must not alter scheduler priority');
 
-console.log('Intelligence Bridge V1 passed: runtime enrichment + bounded mode/scheduler guards + explainable task reason + Rota Hoca context');
+console.log('Intelligence Bridge V1 passed: runtime enrichment + bounded mode/scheduler guards + intervention outcome learning + explainable task reason + Rota Hoca context');

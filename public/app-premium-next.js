@@ -143,11 +143,14 @@
     const strong = card.querySelector('strong');
     const span = card.querySelector('span:not(.pnx-signal-icon)');
     if (kind === 'tasks' && strong) {
-      const match = text(strong).match(/\d+/);
-      if (match) strong.textContent = match[0];
-      if (span) span.textContent = 'Açık görev';
+      const raw = text(strong);
+      const fraction = raw.match(/\d+\s*\/\s*\d+/);
+      const first = raw.match(/\d+/);
+      if (fraction) strong.textContent = fraction[0].replace(/\s+/g, ' ');
+      else if (first) strong.textContent = first[0];
+      if (span) span.textContent = 'Bugünkü görev';
     } else if (kind === 'load' && span) {
-      span.textContent = 'Kalan yük';
+      span.textContent = 'Kalan süre';
     } else if (kind === 'progress' && span) {
       span.textContent = 'Günlük ilerleme';
     } else if (kind === 'mode' && span) {
@@ -375,6 +378,34 @@
     return card;
   }
 
+  function studyStreak(space) {
+    const days = new Set(
+      (Array.isArray(space?.logs) ? space.logs : [])
+        .filter((log) => log?.date && Math.max(0, Number(log?.minutes) || 0) > 0)
+        .map((log) => String(log.date))
+    );
+    if (!days.size) return 0;
+    const latest = [...days].sort().at(-1);
+    const cursor = new Date(latest + 'T12:00:00');
+    if (Number.isNaN(cursor.getTime())) return 0;
+    let streak = 0;
+    while (days.has(localDay(cursor))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
+
+  function decorateStreakSignal(card) {
+    if (!card) return;
+    const streak = studyStreak(kpssWorkspace());
+    card.dataset.pnxKind = 'streak';
+    card.classList.add('pnx-streak-signal');
+    card.innerHTML =
+      '<span class="pnx-signal-icon" aria-hidden="true"></span>' +
+      '<small>SERİ</small><strong>' + streak + ' gün</strong><span>Çalışma serisi</span>';
+  }
+
   function kpssWorkspace() {
     try {
       const space = window.RotaDashboardEvidence?.kpssWorkspace?.();
@@ -526,26 +557,50 @@
       '<strong>“Zorluklar, seni daha güçlü bir sen haline getirir.”</strong>';
   }
 
-  function ensureTeacherCard(host) {
-    let card = host.querySelector('.pnx-teacher-card');
+  function ensureHighlightsCard(host, root) {
+    let card = host.querySelector('.pnx3-highlights-card');
     if (!card) {
       card = document.createElement('section');
-      card.className = 'pnx-teacher-card pnx3-teacher-card';
+      card.className = 'pnx3-highlights-card';
       host.appendChild(card);
     }
+
+    const tasks = Array.from(root.querySelectorAll('.route-task'));
+    const grouped = new Map();
+    tasks.forEach((task) => {
+      const raw = text(
+        task.querySelector('.route-task-title strong, .route-task-title, h4, .route-task-copy strong, strong')
+      );
+      const label = raw
+        .replace(/^\d+\s*[.)-]?\s*/, '')
+        .split(/\s+[·–—-]\s+/)[0]
+        .trim();
+      if (!label || label.length > 46) return;
+      grouped.set(label, (grouped.get(label) || 0) + 1);
+    });
+
+    const items = [...grouped.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'))
+      .slice(0, 4);
+
+    const safe = (value) => String(value).replace(/[&<>"]/g, (char) => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'
+    }[char]));
+
     card.innerHTML =
-      '<div class="pnx3-teacher-main">' +
-        '<header><strong>Rota Hoca</strong><span>● &nbsp; Çevrimiçi</span></header>' +
-        '<p>KPSS yolculuğunda yanındayım.<br>Merak ettiğin her şeyi sor, birlikte ilerleyelim.</p>' +
-        '<button type="button" class="pnx3-teacher-input" data-action="nav" data-view="teacher">Örneğin: Anayasa’da temel haklar... <b>→</b></button>' +
-        '<div class="pnx3-teacher-tools">' +
-          '<button type="button" data-action="nav" data-view="teacher">▣ &nbsp; Fotoğraf</button>' +
-          '<button type="button" data-action="nav" data-view="teacher">♩ &nbsp; Mikrofon</button>' +
-          '<button type="button" data-action="nav" data-view="teacher">▤ &nbsp; Dosya Yükle</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="pnx3-teacher-bubble">Sen sor,<br>birlikte çözelim!</div>' +
-      '<img src="/rota-hoca-avatar-v2.svg" alt="" class="pnx-teacher-avatar" />';
+      '<header class="pnx3-highlights-head">' +
+        '<div><span class="pnx3-highlights-icon" aria-hidden="true">✦</span><strong>Bu Hafta Öne Çıkan Konular</strong></div>' +
+        '<button type="button" data-action="nav" data-view="topics">Tümünü gör →</button>' +
+      '</header>' +
+      (items.length
+        ? '<div class="pnx3-highlights-list">' + items.map(([label, count], index) =>
+            '<button type="button" data-action="nav" data-view="topics">' +
+              '<span class="pnx3-highlight-dot" data-tone="' + ((index % 4) + 1) + '"></span>' +
+              '<strong>' + safe(label) + '</strong>' +
+              '<small>' + count + ' görev</small><b aria-hidden="true">›</b>' +
+            '</button>'
+          ).join('') + '</div>'
+        : '<div class="pnx3-highlights-empty">Bugünkü rota oluştuğunda öne çıkan konular burada görünecek.</div>');
   }
 
   function ensureResultsCard(host) {
@@ -605,11 +660,31 @@
     }
   }
 
+  function removeTeacherUi() {
+    const teacherSurface = document.querySelector('.teacher-page,[data-premium-surface="teacher"]');
+    if (teacherSurface) {
+      const today = document.querySelector('[data-action="nav"][data-view="today"]');
+      if (today) {
+        today.click();
+        return;
+      }
+      teacherSurface.remove();
+    }
+
+    document.querySelectorAll('[data-view="teacher"]').forEach((node) => {
+      const wrapper = node.closest('.nav-item,.side-link,.sidebar-item,li');
+      if (wrapper && /rota\s*hoca/i.test(text(wrapper))) wrapper.remove();
+      else node.remove();
+    });
+    document.querySelectorAll('.pnx3-teacher-card,.pnx-teacher-card').forEach((node) => node.remove());
+  }
+
   function composeToday(header) {
     const root = header.closest('.content') || header.parentElement;
     if (!root) return;
 
     document.body.classList.add(BODY_CLASS, TODAY_CLASS, DASH_CLASS);
+    removeTeacherUi();
     polishHeading(header);
     ensureTopbar(header);
     ensureHeaderArt(header);
@@ -628,6 +703,7 @@
     const mode = signalByLabel(rail, 'ROTA MODU');
     const target = signalByLabel(rail, 'HEDEF SİNYALİ');
     decorateSignals(rail, { today, load, progress, mode });
+    decorateStreakSignal(mode);
     if (target) target.hidden = true;
 
     let dashboard = root.querySelector('.pnx3-dashboard');
@@ -668,8 +744,8 @@
     mountLiveTimer(root, focus, hero);
     ensureWeekCard(side, root);
     ensureGoalsCard(side);
-    ensureTeacherCard(lower);
     ensureResultsCard(lower);
+    ensureHighlightsCard(lower, root);
     ensureQuoteCard(lower);
 
     const archive = ensureInsightArchive(root, reason);
@@ -684,6 +760,7 @@
 
   function sync() {
     queued = false;
+    removeTeacherUi();
     const shell = document.querySelector('.app-shell');
     const header = document.querySelector('.route-v1-head[data-premium-surface="today"]');
     document.body.classList.toggle(BODY_CLASS, !!shell);

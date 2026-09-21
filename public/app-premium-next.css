@@ -5747,3 +5747,208 @@ body.pnx3-dashboard-ready .pnx3-quote-card strong{
   .premium-ob-ready-art{min-height:270px}
   .premium-ob-laptop{left:18px;right:18px;top:35px;min-height:190px}
 }
+
+/* APP PREMIUM NEXT V4.3 · KPSS APPROVED DASHBOARD · NO ROTA HOCA */
+body.app-premium-next-ready [data-view="teacher"],
+body.app-premium-next-ready .teacher-page,
+body.app-premium-next-ready [data-premium-surface="teacher"],
+body.pnx3-dashboard-ready .pnx3-teacher-card,
+body.pnx3-dashboard-ready .pnx-teacher-card{
+  display:none!important;
+}
+
+body.pnx3-dashboard-ready .premium-signal[data-pnx-kind="streak"] .pnx-signal-icon,
+body.pnx3-dashboard-ready .pnx-streak-signal .pnx-signal-icon{
+  background:
+    radial-gradient(circle at 50% 50%,#fff 0 20%,transparent 22%),
+    linear-gradient(145deg,#ffb34a,#ff8b29)!important;
+  box-shadow:0 7px 18px rgba(255,143,43,.20)!important;
+}
+body.pnx3-dashboard-ready .premium-signal[data-pnx-kind="streak"] .pnx-signal-icon:before,
+body.pnx3-dashboard-ready .pnx-streak-signal .pnx-signal-icon:before{
+  content:"★";
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  color:#fff;
+  font-size:17px;
+  font-weight:900;
+}
+
+body.pnx3-dashboard-ready .pnx3-lower{
+  grid-template-columns:minmax(250px,.92fr) minmax(330px,1.12fr) minmax(260px,.78fr)!important;
+  align-items:stretch!important;
+}
+
+body.pnx3-dashboard-ready .pnx3-highlights-card{
+  min-height:173px;
+  padding:13px 14px!important;
+  border:1px solid #e4eaf4!important;
+  border-radius:18px!important;
+  background:
+    radial-gradient(circle at 100% 0,rgba(50,111,255,.055),transparent 34%),
+    #fff!important;
+  box-shadow:0 12px 28px rgba(28,45,78,.055)!important;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-head>div{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-icon{
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  border-radius:9px;
+  background:#edf3ff;
+  color:#315ff5;
+  font-size:13px;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-head strong{
+  overflow:hidden;
+  color:#151d42;
+  font-size:12px;
+  line-height:1.2;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-head button{
+  flex:0 0 auto;
+  border:0;
+  background:none;
+  color:#2767fb;
+  font-size:8px;
+  cursor:pointer;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-list{
+  display:grid;
+  gap:5px;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-list>button{
+  min-height:28px;
+  display:grid;
+  grid-template-columns:22px minmax(0,1fr) auto 10px;
+  align-items:center;
+  gap:7px;
+  padding:4px 7px;
+  border:1px solid #edf1f7;
+  border-radius:10px;
+  background:#fbfcff;
+  color:#23335d;
+  text-align:left;
+  cursor:pointer;
+  transition:transform .15s ease,border-color .15s ease,background .15s ease;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-list>button:hover{
+  transform:translateX(1px);
+  border-color:#dce5f5;
+  background:#f7faff;
+}
+body.pnx3-dashboard-ready .pnx3-highlight-dot{
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  border-radius:7px;
+  background:#eafaf4;
+}
+body.pnx3-dashboard-ready .pnx3-highlight-dot:before{
+  content:"";
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#18b787;
+}
+body.pnx3-dashboard-ready .pnx3-highlight-dot[data-tone="2"]{background:#edf3ff}
+body.pnx3-dashboard-ready .pnx3-highlight-dot[data-tone="2"]:before{background:#3d73ff}
+body.pnx3-dashboard-ready .pnx3-highlight-dot[data-tone="3"]{background:#fff2e8}
+body.pnx3-dashboard-ready .pnx3-highlight-dot[data-tone="3"]:before{background:#ff8b37}
+body.pnx3-dashboard-ready .pnx3-highlight-dot[data-tone="4"]{background:#f2edff}
+body.pnx3-dashboard-ready .pnx3-highlight-dot[data-tone="4"]:before{background:#7a63f4}
+body.pnx3-dashboard-ready .pnx3-highlights-list strong{
+  min-width:0;
+  overflow:hidden;
+  color:#29385f;
+  font-size:9px;
+  font-weight:750;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-list small{
+  color:#7382a1;
+  font-size:7px;
+  white-space:nowrap;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-list b{
+  color:#4772f4;
+  font-size:13px;
+  font-weight:500;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-empty{
+  min-height:112px;
+  display:grid;
+  place-items:center;
+  padding:14px;
+  border:1px dashed #dce4f2;
+  border-radius:12px;
+  background:#fafcff;
+  color:#7e8ba7;
+  font-size:9px;
+  line-height:1.45;
+  text-align:center;
+}
+
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-highlights-card{
+  border-color:#27334b!important;
+  background:#111a2b!important;
+}
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-highlights-head strong,
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-highlights-list strong{
+  color:#edf3ff!important;
+}
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-highlights-list>button,
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-highlights-empty{
+  border-color:#293750!important;
+  background:#0d1626!important;
+}
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-highlights-list small,
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-highlights-empty{
+  color:#9aabc7!important;
+}
+
+@media(max-width:1180px){
+  body.pnx3-dashboard-ready .pnx3-lower{
+    grid-template-columns:1fr 1fr!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-quote-card{
+    grid-column:1/-1!important;
+  }
+}
+@media(max-width:900px){
+  body.pnx3-dashboard-ready .pnx3-lower{
+    grid-template-columns:1fr!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-quote-card{
+    grid-column:auto!important;
+  }
+}
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .pnx3-highlights-head strong{
+    font-size:11px;
+  }
+  body.pnx3-dashboard-ready .pnx3-highlights-list>button{
+    min-height:34px;
+    grid-template-columns:24px minmax(0,1fr) auto 10px;
+  }
+}

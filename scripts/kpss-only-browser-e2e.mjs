@@ -25,6 +25,26 @@ async function waitServer() {
   throw new Error('KPSS-only E2E server did not start.\n' + serverLog);
 }
 
+async function gotoLegacyResume(page, url) {
+  let lastError = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+    } catch (error) {
+      lastError = error;
+      if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error;
+    }
+    try {
+      await page.locator('.app-shell').waitFor({ state: 'visible', timeout: 6000 });
+      return;
+    } catch (error) {
+      lastError = error;
+      await sleep(160);
+    }
+  }
+  throw lastError || new Error('Legacy KPSS resume did not reach the configured app shell');
+}
+
 async function appState(page) {
   return page.evaluate(() => {
     const preferred = new URLSearchParams(location.search).get('fresh') === '1'
@@ -136,7 +156,7 @@ try {
     return { workspaceId };
   });
 
-  await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  await gotoLegacyResume(page, BASE + '/?fresh=1&resume=1');
   await page.locator('.app-shell').waitFor({ state: 'visible' });
   snapshot = await appState(page);
   assert.equal(snapshot.value.activeExam, 'kpss', 'Legacy active YKS state must redirect to KPSS');

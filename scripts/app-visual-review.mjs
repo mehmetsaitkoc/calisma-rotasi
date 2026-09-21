@@ -157,7 +157,8 @@ try{
   assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(),'Center focus card must expose the Pomodoro ring');
   assert.ok(await page.locator('.pnx3-week-card').isVisible(),'Today must expose the Bu Hafta card');
   assert.ok(await page.locator('.pnx3-goals-card').isVisible(),'Today must expose the KPSS goals card');
-  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(),'Today must expose the larger Rota Hoca card');
+  assert.ok(await page.locator('.pnx3-highlights-card').isVisible(),'Today must expose the KPSS highlights card');
+  assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must be removed');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(),'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(),'Today must expose the daily quote card');
   assert.ok(await page.locator('.pnx3-insight-archive').count(),'Explainability must remain available below the first-screen dashboard');
@@ -178,11 +179,6 @@ try{
   assert.equal(await page.locator('.week-grid > .day-column.pnx-program-active-day').count(),1,'Program must focus one selected day without deleting the weekly route DOM');
   await noOverflow(page,'Program 1512');
   await page.screenshot({path:OUT+'/program-1512.png',fullPage:false});
-
-  await navigateDesktop(page,'teacher');
-  await page.locator('[data-premium-surface="teacher"]').waitFor({state:'visible'});
-  await noOverflow(page,'Rota Hoca 1512');
-  await page.screenshot({path:OUT+'/rota-hoca-1512.png',fullPage:false});
 
   await navigateDesktop(page,'exams');
   await page.locator('[data-premium-surface="exams"]').waitFor({state:'visible'});
@@ -235,7 +231,7 @@ try{
   console.log(JSON.stringify({
     screenshots:[
       'today-1512.png','today-1440.png','program-1512.png',
-      'rota-hoca-1512.png','deneme-1512.png','ders-analizi-1512.png','today-390.png','today-360.png','program-390.png','program-360.png'
+      'deneme-1512.png','ders-analizi-1512.png','today-390.png','today-360.png','program-390.png','program-360.png'
     ],
     mobileProgram:mobileFlow
   },null,2));

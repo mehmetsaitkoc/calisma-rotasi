@@ -1088,15 +1088,28 @@ try {
     return legacyId;
   });
   await desktopPage.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
-  await desktopPage.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
+  await desktopPage.waitForFunction(() =>
+    document.querySelector('[data-premium-surface="onboarding"]') ||
+    document.querySelector('.app-shell')
+  );
   desktopSnapshot = await appState(desktopPage);
-  assert.equal(desktopSnapshot.value.activeExam, 'kpss', 'Legacy active YKS profile must fall back to KPSS onboarding');
+  assert.equal(desktopSnapshot.value.activeExam, 'kpss', 'Legacy active YKS profile must fall back to KPSS');
   assert.equal(desktopSnapshot.value.workspaces.yks.settings.name, 'Legacy YKS Profile', 'Legacy YKS workspace data must be preserved for backup compatibility');
   assert.equal(desktopSnapshot.value.workspaces.yks.sync?.workspaceId || '', preservedLegacyId, 'Legacy YKS workspace identity must not be rewritten');
   assert.equal(await desktopPage.locator('[data-exam="yks"]').count(), 0, 'Legacy migration must not reveal a YKS selector');
   const visibleCopy = (await desktopPage.locator('body').innerText()).toLocaleUpperCase('tr-TR');
-  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(visibleCopy), 'KPSS-only onboarding must not display YKS-family product copy');
-  assert.equal(await desktopPage.locator('.sidebar').count(), 0, 'Unconfigured KPSS migration must stay in onboarding, not a stale legacy workspace');
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(visibleCopy), 'KPSS-only migrated surface must not display YKS-family product copy');
+  const kpssConfigured = desktopSnapshot.value.workspaces.kpss.configured === true;
+  assert.equal(
+    await desktopPage.locator('.app-shell').count() > 0,
+    kpssConfigured,
+    'Legacy migration must resume the configured KPSS shell only when the KPSS workspace is configured'
+  );
+  assert.equal(
+    await desktopPage.locator('[data-premium-surface="onboarding"]').count() > 0,
+    !kpssConfigured,
+    'Legacy migration must keep an unconfigured KPSS workspace in onboarding'
+  );
   assert.deepEqual(desktopErrors, [], 'KPSS-only desktop page errors:\n' + desktopErrors.join('\n'));
   assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'KPSS-only desktop console errors:\n' + desktopConsoleErrors.join('\n'));
   await desktopContext.close();

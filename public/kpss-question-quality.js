@@ -10,6 +10,9 @@ const FORBIDDEN_OPTION_PATTERNS=[/^hepsi$/i,/^hiçbiri$/i,/^a ve b$/i,/^b ve c$/
 function norm(v){return String(v??'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9çğıöşü]+/gi,' ').replace(/\s+/g,' ').trim();}
 function assert(condition,message){if(!condition)throw new Error(message);}
 function maxRun(xs){let best=0,run=0,last=null;for(const x of xs){if(x===last)run++;else{last=x;run=1;}best=Math.max(best,run);}return best;}
+function tokenSet(v){return new Set(norm(v).split(' ').filter(x=>x.length>=3));}
+function jaccard(a,b){const A=tokenSet(a),B=tokenSet(b);if(!A.size||!B.size)return 0;let intersection=0;for(const x of A)if(B.has(x))intersection++;return intersection/(A.size+B.size-intersection);}
+function suspiciouslySimilar(a,b){const A=tokenSet(a),B=tokenSet(b);if(Math.min(A.size,B.size)<8)return false;return jaccard(a,b)>=.86;}
 function difficultyCounts(questions){return questions.reduce((o,q)=>(o[q.difficulty]=(o[q.difficulty]||0)+1,o),{easy:0,medium:0,hard:0});}
 
 function validateQuestion(q,{topicId='',requireMetadata=true}={}){
@@ -40,6 +43,11 @@ function validateTopicTest(test,profile){
   assert(Array.isArray(test.questions)&&test.questions.length===12,'Profesyonel konu testi 12 soru olmalı: '+test.id);
   assert(QUALITY_STATUSES.has(test.qualityStatus),'Kalite durumu geçersiz: '+test.id);
   assert(test.sourceKind==='original'&&test.copyrightPolicy==='original-only','Test özgün içerik olmalı: '+test.id);
+  if(test.subjectId==='k-gu'){
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(test.contentAsOf||''),'Güncel Bilgiler testi contentAsOf taşımalı: '+test.id);
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(test.reviewAfter||''),'Güncel Bilgiler testi reviewAfter taşımalı: '+test.id);
+    assert(test.reviewAfter>test.contentAsOf,'Güncel Bilgiler yenileme tarihi içerik tarihinden sonra olmalı: '+test.id);
+  }
   const ids=new Set(),stems=new Set();
   test.questions.forEach(q=>{
     validateQuestion(q,{topicId:test.topicId,requireMetadata:true});
@@ -58,7 +66,7 @@ function validateTopicTest(test,profile){
   return test;
 }
 function auditBank(tests,{profiles=[],requireApproved=false}={}){
-  const ids=new Set(),stems=new Set(),byTopic=new Map(),errors=[];
+  const ids=new Set(),stems=new Set(),questionRows=[],byTopic=new Map(),errors=[];
   for(const test of tests||[]){
     try{
       const profile=profiles.find(p=>p.setNo===test.setNo);
@@ -67,13 +75,15 @@ function auditBank(tests,{profiles=[],requireApproved=false}={}){
       const key=test.subjectId+'|'+test.topicId,x=byTopic.get(key)||[];x.push(test);byTopic.set(key,x);
       for(const q of test.questions){
         if(ids.has(q.id))throw new Error('Banka genelinde soru kimliği tekrar ediyor: '+q.id);ids.add(q.id);
-        const stem=norm(q.text);if(stems.has(stem))throw new Error('Banka genelinde aynı soru kökü tekrar ediyor: '+q.id);stems.add(stem);
+        const stem=norm(q.text);if(stems.has(stem))throw new Error('Banka genelinde aynı soru kökü tekrar ediyor: '+q.id);
+        const near=questionRows.find(prev=>suspiciouslySimilar(prev.text,q.text));if(near)throw new Error('Banka genelinde aşırı benzer soru kökü: '+near.id+' ↔ '+q.id);
+        stems.add(stem);questionRows.push({id:q.id,text:q.text});
       }
     }catch(e){errors.push({testId:test?.id||'',message:e.message});}
   }
   return {schema:SCHEMA,tests:(tests||[]).length,questions:ids.size,topics:byTopic.size,errors,valid:errors.length===0};
 }
 
-root.RotaKpssQuestionQuality={SCHEMA,DIFFICULTIES,COGNITIVE,QUALITY_STATUSES,norm,maxRun,difficultyCounts,validateQuestion,validateTopicTest,auditBank};
+root.RotaKpssQuestionQuality={SCHEMA,DIFFICULTIES,COGNITIVE,QUALITY_STATUSES,norm,tokenSet,jaccard,suspiciouslySimilar,maxRun,difficultyCounts,validateQuestion,validateTopicTest,auditBank};
 if(typeof module==='object')module.exports=root.RotaKpssQuestionQuality;
 })(typeof window!=='undefined'?window:globalThis);

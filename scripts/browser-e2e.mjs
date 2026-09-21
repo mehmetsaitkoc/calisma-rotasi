@@ -514,7 +514,8 @@ async function runKpssSectionExamContent(browser) {
 
   assert.ok(await page.getByText('KPSS Türkçe Bölüm Denemesi · Profesyonel #01', { exact: true }).count(), 'Professional KPSS Turkish section exam must be visible');
   assert.equal(await page.getByText('KPSS Türkçe Bölüm Denemesi #01', { exact: true }).count(),0,'Superseded Turkish section seed must not remain active');
-  assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi #01', { exact: true }).count(), 'KPSS history section seed must remain visible until its professional replacement is approved');
+  assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi · Profesyonel #01', { exact: true }).count(), 'Professional KPSS History section exam must be visible');
+  assert.equal(await page.getByText('KPSS Tarih Bölüm Denemesi #01', { exact: true }).count(),0,'Superseded History section seed must not remain active');
 
   for(let setNo=1;setNo<=4;setNo++){
     assert.ok(await page.getByText('KPSS Türkçe · Sözcükte Anlam · Test '+setNo,{exact:true}).count(),'Professional Word Meaning Test '+setNo+' must be visible');
@@ -578,6 +579,32 @@ async function runKpssSectionExamContent(browser) {
   assert.ok(Array.isArray(result.weakSkills)&&result.weakSkills.length>0,'Blank professional section fixture must persist weak-skill signals');
   assert.ok(await page.getByText(/Zayıf kazanım sinyalleri:/i).count(),'Professional section result must surface weak skill signals to the student');
   await assertCleanRender(page, 'KPSS Turkish section exam result');
+  await page.locator('[data-action="close-modal"]').first().click();
+
+  const historySectionStart=page.locator('[data-action="start-section-exam"][data-id="kpss-professional-tarih-section-01"]').first();
+  await historySectionStart.waitFor({state:'visible'});
+  await historySectionStart.click();
+  const historySectionForm=page.locator('#section-exam-form');
+  await historySectionForm.waitFor({state:'visible'});
+  assert.equal(await historySectionForm.locator('.mini-question').count(),27,'Prime History section exam must render exactly 27 questions');
+  await historySectionForm.locator('button[type="submit"]').click();
+  await page.getByText('Bölüm denemesi sonucu',{exact:true}).waitFor({state:'visible'});
+  assert.ok(await page.getByText('0 / 27 doğru',{exact:true}).count(),'Blank History section fixture must score zero correct');
+  const historySnapshot=await appState(page);
+  const historyAttempts=historySnapshot.value.workspaces.kpss.assessments.filter(a=>a.sectionId==='kpss-professional-tarih-section-01');
+  assert.equal(historyAttempts.length,1,'History section exam must persist one assessment');
+  const historyResult=historyAttempts[0];
+  assert.equal(historyResult.total,27);
+  assert.equal(historyResult.correct,0);
+  assert.equal(historyResult.blank,27);
+  assert.equal(historyResult.net,0);
+  assert.equal(historyResult.topicBreakdown.reduce((n,x)=>n+x.total,0),27,'History topic breakdown totals must equal 27');
+  assert.ok(historyResult.skillBreakdown.every(x=>x.topicId&&x.skill),'History section skill evidence must remain tied to topic');
+  assert.equal((historySnapshot.value.workspaces.kpss.exams||[]).filter(x=>x.sectionId==='kpss-professional-tarih-section-01').length,0,'History section result must not be stored as a full KPSS exam');
+  const historyScopeNotice=page.locator('.notice').filter({hasText:'Bu sonuç tam KPSS GY–GK neti değildir'}).first();
+  await historyScopeNotice.waitFor({state:'visible'});
+  assert.match(await historyScopeNotice.innerText(),/tam KPSS GY–GK neti değildir[\s\S]*Tarih bölüm denemesidir/i,'History section result must not present itself as the full KPSS');
+
   assert.deepEqual(pageErrors, [], 'KPSS section exam page errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'KPSS section exam console errors:\n' + consoleErrors.join('\n'));
   await context.close();

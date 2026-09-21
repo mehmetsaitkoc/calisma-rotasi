@@ -113,7 +113,9 @@ const teacherContext=globalThis.teacherStudentContext({subjectId:'k-ma',topicId:
 assert.equal(teacherContext.intelligence.version,1);
 assert.equal(teacherContext.intelligence.targetRisk.band,'high');
 assert.equal(teacherContext.intelligence.repair.mode,'repair');
+assert.ok(['collect','steady','ease'].includes(teacherContext.intelligence.load?.mode||'collect'));
 assert.ok(Number.isFinite(teacherContext.intelligence.execution30));
+assert.ok(['collect','steady','ease'].includes(bridge.loadPrescription()?.mode||'collect'));
 
 modelState={
   confidence:18,

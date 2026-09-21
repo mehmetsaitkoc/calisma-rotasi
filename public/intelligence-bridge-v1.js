@@ -167,18 +167,48 @@ function methodStrategyMemoryFor(subjectId,topicId='',mode=''){
 function safeInterventions(space){
   return Array.isArray(space?.route?.interventions)?space.route.interventions:[];
 }
+function subjectMethodProfileFor(subjectId){
+  const I=intelligence(),space=workspace(),evaluate=helper('routeInterventionEvaluation');
+  if(!I?.subjectMethodProfile||!space||typeof evaluate!=='function'||!subjectId)return null;
+  const baseKey=cacheKey(space,todayValue());
+  if(methodCache.key!==baseKey)methodCache={key:baseKey,values:new Map()};
+  const cacheId='subject-profile|'+subjectId;
+  if(methodCache.values.has(cacheId))return methodCache.values.get(cacheId);
+  const rows=safeInterventions(space).filter(x=>x.subjectId===subjectId).slice(-40);
+  const samples=rows.map(iv=>{
+    let evaluation=null;try{evaluation=evaluate(iv);}catch{}
+    if(!evaluation||!['helpful','neutral','harmful'].includes(evaluation.status))return null;
+    return {
+      topicId:iv.topicId||'',
+      method:iv.method||'',
+      mode:iv.mode||'',
+      source:iv.source||'',
+      status:evaluation.status,
+      maturity:Number(evaluation.maturity)||0,
+      score:Number(evaluation.score)||0
+    };
+  }).filter(Boolean);
+  const value={subjectId,...I.subjectMethodProfile({samples})};
+  methodCache.values.set(cacheId,value);
+  return value;
+}
 function methodMemoryForTask(task,mode){
   if(!task?.subjectId||!['repair','ease','progress'].includes(mode))return null;
   const I=intelligence(),study=helper('routeStudyMethod');
   let method='';try{method=study?.(task.subjectId,task.topicId||'',task.title||'')?.key||'';}catch{}
   const memory=methodStrategyMemoryFor(task.subjectId,task.topicId||'',mode);
   if(!memory||!I?.methodStrategyKey)return memory;
-  const currentKey=I.methodStrategyKey(method,mode),current=memory.strategies?.find(x=>x.key===currentKey)||memory.current||null;
-  return {...memory,currentMethod:method,currentKey,current};
+  const currentKey=I.methodStrategyKey(method,mode),subjectProfile=subjectMethodProfileFor(task.subjectId);
+  let current=memory.strategies?.find(x=>x.key===currentKey)||memory.current||null;
+  if(memory.scope==='subject'){
+    const subjectCurrent=subjectProfile?.strategies?.find(x=>x.key===currentKey&&x.subjectKnown)||null;
+    current=subjectCurrent||null;
+  }
+  return {...memory,currentMethod:method,currentKey,current,subjectProfile};
 }
 function adaptTaskMethod(task,mode){
   const I=intelligence(),memory=methodMemoryForTask(task,mode),current=memory?.current;
-  if(!I?.methodVariation||!current?.known||!['change','repeat'].includes(current.action))return {task,memory};
+  if(!I?.methodVariation||!current?.known||(Number(current.confidence)||0)<60||!['change','repeat'].includes(current.action))return {task,memory};
   const variation=I.methodVariation(memory.currentMethod,mode,current.action);
   if(!variation)return {task,memory};
   const next={...task};
@@ -192,7 +222,7 @@ function adaptTaskMethod(task,mode){
   }else{
     const note=' Öğrenen yöntem hafızası: bu çalışma biçiminin çekirdeği geçmişte çoğunlukla işe yaradı.';
     const reason=String(next.reason||'');
-    next.reason=(reason.includes('Öğrenen yöntem hafızası:')?reason:reason+note).slice(0,700);
+    next.reason=(reason.includes('Öğrenen yöntem hafızası:')?reason:reason+note).slice(0,500);
   }
   return {task:next,memory};
 }
@@ -320,7 +350,7 @@ function install(){
 
   const patchedStudentModel=function(subjectId,topicId=''){
     const model=originals.routeStudentModel(subjectId,topicId);
-    const p=profile();
+    const p=profile(),methodProfile=subjectMethodProfileFor(subjectId);
     return {...model,longitudinal:p?{
       confidence:p.confidence,
       trend:p.trend,
@@ -328,6 +358,14 @@ function install(){
       d7:p.windows?.d7||null,
       d30:p.windows?.d30||null,
       d60:p.windows?.d60||null
+    }:null,methodProfile:methodProfile?{
+      known:!!methodProfile.known,
+      state:methodProfile.state,
+      confidence:methodProfile.confidence,
+      topicCount:methodProfile.topicCount,
+      preferred:methodProfile.preferred?{method:methodProfile.preferred.method,label:methodProfile.preferred.label,score:methodProfile.preferred.score,confidence:methodProfile.preferred.confidence,total:methodProfile.preferred.total}:null,
+      cautions:(methodProfile.cautions||[]).slice(0,2).map(x=>({method:x.method,label:x.label,score:x.score,confidence:x.confidence,total:x.total})),
+      summary:methodProfile.summary
     }:null};
   };
 
@@ -464,7 +502,16 @@ function install(){
           score:Number.isFinite(snap.methodMemory.preferred.score)?snap.methodMemory.preferred.score:null,
           total:Number(snap.methodMemory.preferred.total)||0
         }:null
-      }:null
+      }:null,
+      subjectMethodProfile:(subjectId?subjectMethodProfileFor(subjectId):null)?(()=>{
+        const mp=subjectMethodProfileFor(subjectId);
+        return {
+          known:!!mp.known,state:mp.state||'collect',confidence:Number(mp.confidence)||0,topicCount:Number(mp.topicCount)||0,
+          preferred:mp.preferred?{method:mp.preferred.method||'',label:mp.preferred.label||'',score:Number.isFinite(mp.preferred.score)?mp.preferred.score:null,confidence:Number(mp.preferred.confidence)||0,total:Number(mp.preferred.total)||0}:null,
+          cautions:(mp.cautions||[]).slice(0,2).map(x=>({method:x.method||'',label:x.label||'',score:Number.isFinite(x.score)?x.score:null,confidence:Number(x.confidence)||0,total:Number(x.total)||0})),
+          summary:mp.summary||''
+        };
+      })():null
     }};
   }:null;
 
@@ -486,6 +533,7 @@ function install(){
     loadPrescription,
     outcomeMemoryFor,
     methodStrategyMemoryFor,
+    subjectMethodProfileFor,
     methodMemoryForTask,
     snapshotForSubject:(subjectId,topicId='')=>snapshot(subjectId,topicId,null),
     snapshotForTask:(task)=>snapshot(task?.subjectId||'',task?.topicId||'',task),

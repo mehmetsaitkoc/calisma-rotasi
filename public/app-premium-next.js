@@ -92,7 +92,15 @@
         const kicker = reason.querySelector('.route-reason-kicker');
         const heading = reason.querySelector('strong');
         if (kicker) kicker.textContent = 'ROTA KARARI · AÇIKLANABİLİR';
-        if (heading) heading.textContent = 'Neden bugün?';
+        if (heading) {
+          heading.textContent = 'Neden bugün?';
+          if (!reason.querySelector('.pnx-legacy-reason-label')) {
+            const legacyLabel = document.createElement('span');
+            legacyLabel.className = 'sr-only pnx-legacy-reason-label';
+            legacyLabel.textContent = 'Bu plan neden böyle?';
+            heading.insertAdjacentElement('afterend', legacyLabel);
+          }
+        }
         intel.appendChild(reason);
       }
 

@@ -8,6 +8,7 @@ await import('../public/kpss-professional-bank.js');
 await import('../public/kpss-professional-turkish-02.js');
 await import('../public/kpss-professional-turkish-03.js');
 await import('../public/kpss-professional-sections.js');
+await import('../public/kpss-professional-history-01.js');
 
 const C=globalThis.RotaCatalog;
 const B=globalThis.RotaKpssContentBlueprint;
@@ -16,7 +17,8 @@ const P=globalThis.RotaKpssProfessionalBank;
 const P2=globalThis.RotaKpssProfessionalTurkish02;
 const P3=globalThis.RotaKpssProfessionalTurkish03;
 const S=globalThis.RotaKpssProfessionalSections;
-assert.ok(C&&B&&Q&&P&&P2&&P3&&S,'KPSS v2 content modules must load');
+const H=globalThis.RotaKpssProfessionalHistory;
+assert.ok(C&&B&&Q&&P&&P2&&P3&&S&&H,'KPSS v2 content modules must load');
 
 const totals=B.totals(C);
 assert.deepEqual(totals,{
@@ -55,6 +57,11 @@ assert.equal(B.OFFICIAL_SCOPE.generalCulture.geographyPct,30);
 assert.equal(B.OFFICIAL_SCOPE.generalCulture.citizenshipPct,15);
 assert.equal(B.OFFICIAL_SCOPE.generalCulture.generalCurrentPct,10);
 assert.equal(B.COPYRIGHT_POLICY,'original-only');
+assert.equal(B.HISTORY_SECTION_PROFILES.length,5);
+assert.deepEqual(B.HISTORY_SECTION_PROFILES.map(x=>Object.values(x.difficulty).reduce((n,v)=>n+v,0)),[27,27,27,27,27]);
+for(let v=0;v<5;v++) assert.deepEqual(B.sectionBlueprint('k-ta',v).rows,B.HISTORY_SECTION_BLUEPRINTS[v].filter(x=>x.count>0));
+const historyAggregate=B.HISTORY_SECTION_BLUEPRINTS.flat().reduce((m,x)=>(m[x.topicId]=(m[x.topicId]||0)+x.count,m),{});
+assert.deepEqual(Object.values(historyAggregate).reduce((n,x)=>n+x,0),135,'Five history section blueprints must total 135 questions');
 
 const professional=[...P.tests,...P2.tests,...P3.tests];
 const audit=Q.auditBank(professional,{profiles:B.TEST_PROFILES,requireApproved:true});
@@ -69,6 +76,15 @@ for(const topicId of ['k-tr-1','k-tr-2','k-tr-3']){
 }
 assert.ok(professional.flatMap(t=>t.questions).every(q=>q.sourceKind==='original'&&q.copyrightPolicy==='original-only'));
 assert.ok(professional.flatMap(t=>t.questions).every(q=>['context','interpretation','reasoning','application','recall'].includes(q.cognitive)));
+
+const historyPilot=H.tests.filter(t=>t.topicId==='k-ta-1');
+const historyAudit=Q.auditBank(historyPilot,{profiles:B.TEST_PROFILES,requireApproved:true});
+assert.equal(historyAudit.valid,true,JSON.stringify(historyAudit.errors,null,2));
+assert.equal(historyPilot.length,4);
+assert.equal(historyPilot.flatMap(t=>t.questions).length,48);
+assert.ok(historyPilot.every(t=>t.subjectId==='k-ta'&&t.questions.length===12&&t.qualityStatus==='approved'));
+assert.ok(historyPilot.flatMap(t=>t.questions).every(q=>q.answerText===q.options[q.answer]&&q.editorialStatus==='reviewed'&&q.factStatus==='stable-historical'));
+assert.ok(historyPilot.every(t=>t.questions.filter(q=>q.cognitive!=='recall').length>=7));
 
 const professionalSection=S.sectionExams[0];
 assert.ok(professionalSection,'Professional Turkish section pilot must exist');

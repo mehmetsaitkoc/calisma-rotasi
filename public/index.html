@@ -3583,11 +3583,16 @@ function videoSubmit(form){
  const ctx=ui.formContext,t=studyClock();if(ctx?.kind!=='video-log'||ctx.topicId!==topic.id||ctx.clockId!==t.id)throw Error('Bu oturum değişti. Kaydet penceresini yeniden aç.');
  const min=Number(f.get('minutes')),q=Number(f.get('questions')),date=String(f.get('date'));if(!Number.isInteger(min)||min<0||min>1440||!Number.isInteger(q)||q<0||q>5000||(!min&&!q))throw Error('En az 1 dakika çalışma veya 1 soru gir.');if(!R.validDate(date)||date>today())throw Error('Bugün veya geçmiş bir tarih seç.');
  const id='video-'+t.id;if(w().logs.some(l=>l.id===id))throw Error('Bu oturum zaten kaydedildi.');
- const v=currentVideo(),note=(String(f.get('note')||'').trim()+(v?'\nVideo kaynağı: '+v.url:'')).trim().slice(0,2000),plan=w().plan.find(p=>p.id===ctx.planId);
- w().logs.push({id,date,subjectId:topic.subjectId,title:('Video / odak · '+topic.title).slice(0,180),minutes:min,questions:q,note,sessionId:plan&&f.get('completePlan')?plan.id:''});
- if(plan&&f.get('completePlan'))plan.done=true;
- if(f.get('completeTopic'))w().topicState[topic.id]={...(w().topicState[topic.id]||{url:'',position:0,note:''}),status:2,updated:Date.now()};
- const oldPause=t.pauseVideo;studyClocks[state.activeExam][topic.id]=V.newClock(t.duration);studyClocks[state.activeExam][topic.id].pauseVideo=oldPause;saveStudyClocks();closeModal();commit('Çalışman günlüğe eklendi. Süre bir kez kaydedildi.');return true;
+ const v=currentVideo(),note=(String(f.get('note')||'').trim()+(v?'\nVideo kaynağı: '+v.url:'')).trim().slice(0,2000),plan=w().plan.find(p=>p.id===ctx.planId),completePlan=!!(plan&&f.get('completePlan')),completeTopic=!!f.get('completeTopic');
+ w().logs.push({id,date,subjectId:topic.subjectId,title:('Video / odak · '+topic.title).slice(0,180),minutes:min,questions:q,note,sessionId:completePlan?plan.id:''});
+ if(completePlan){
+  const wasDone=!!plan.done;plan.done=true;
+  if(!wasDone)routeEvent(plan.id,'complete');
+  const ts=w().topicState[topic.id]||{url:'',position:0,note:''};if((ts.status||0)===0)w().topicState[topic.id]={...ts,status:1,updated:Date.now()};
+ }
+ if(completeTopic){w().topicState[topic.id]={...(w().topicState[topic.id]||{url:'',position:0,note:''}),status:2,updated:Date.now()};routeClearCompletedTopicQueue(topic.id);}
+ if(completePlan||completeTopic)routeRebalance(completePlan?'Video / odak çalışması bağlı plan görevini tamamladı; çalışma kanıtı ve tekrar döngüsü kalan rotaya işlendi.':'Video / odak çalışmasında konu tamamlandığı için açık rota kuyruğu yeniden dengelendi.',true);
+ const oldPause=t.pauseVideo;studyClocks[state.activeExam][topic.id]=V.newClock(t.duration);studyClocks[state.activeExam][topic.id].pauseVideo=oldPause;saveStudyClocks();closeModal();commit(completePlan?'Çalışman günlüğe eklendi; bağlı görev tamamlandı ve rota yeniden dengelendi.':completeTopic?'Çalışman günlüğe eklendi; konu tamamlandı ve rota yeniden dengelendi.':'Çalışman günlüğe eklendi. Süre bir kez kaydedildi.');return true;
 }
 function videoAction(b){
  const action=b.dataset.action,id=b.dataset.id;

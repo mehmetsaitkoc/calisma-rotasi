@@ -722,11 +722,19 @@ try {
   assert.equal(backupContract.yksExam, 'yks', 'YKS workspace identity must be explicit');
   assert.equal(backupContract.tamperRejected, true, 'Tampered browser backup must be rejected');
 
-  assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must expose Rota Hoca decision');
-  assert.ok(await page.getByText('Bu plan neden böyle?').count(), 'Today must explain route logic');
+  assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must preserve the Rota Hoca decision evidence');
+  const insightArchive = page.locator('.pnx3-insight-archive');
+  assert.equal(await insightArchive.count(), 1, 'Today must keep route explainability below the approved dashboard');
+  assert.match(
+    ((await insightArchive.locator('summary').textContent()) || '').trim(),
+    /Rota kararını neden böyle verdi\?/i,
+    'Today must expose the route-explanation disclosure'
+  );
 
-  await page.locator('.route-task [data-action="route-why"]').first().click();
-  assert.ok(await page.getByText('Neden bugün bu görev?').count(), 'Why-this-task modal must open');
+  const hiddenWhy = page.locator('.route-task [data-action="route-why"]').first();
+  assert.ok(await hiddenWhy.count(), 'Why-this-task action must remain wired in the real task DOM');
+  await hiddenWhy.evaluate(node => node.click());
+  assert.ok(await page.getByText('Neden bugün bu görev?').count(), 'Why-this-task modal must still open from the preserved action');
   await page.locator('[data-action="close-modal"]').click();
 
   let snapshot = await appState(page);
@@ -736,7 +744,7 @@ try {
 
   const beforeMode = latestTaskMode(space0, todayTask);
 
-  const startButton = page.locator('.route-task [data-action="focus-session"][data-id="' + todayTask.id + '"]').first();
+  const startButton = page.locator('.pnx3-focus .pnx-pomodoro-play[data-action="focus-session"][data-id="' + todayTask.id + '"]').first();
   await startButton.waitFor({ state: 'visible' });
   await startButton.click();
   const focusCard = page.locator('.route-focus-card');

@@ -69,5 +69,10 @@ assert.equal(context.selected.subject,'Matematik');
 assert.ok(sandbox.RotaIntelligenceV1,'Pure Intelligence V1 boundary must load without browser APIs');
 const memory=sandbox.RotaIntelligenceV1.interventionMemory({mode:'repair',effect:{known:true,total:3,helpful:2,harmful:0,neutral:1,score:.67}});
 assert.equal(memory.action,'repeat','Intelligence boundary must expose normalized intervention memory');
+const methodMemory=sandbox.RotaIntelligenceV1.methodStrategyMemory({currentKey:'quant|repair',samples:[
+  {method:'quant',mode:'repair',status:'helpful',maturity:14},
+  {method:'quant',mode:'repair',status:'helpful',maturity:30}
+]});
+assert.equal(methodMemory.current.action,'repeat','Pure Intelligence boundary must learn a stable method preference without browser state');
 
 console.log('Architecture boundaries passed: presenter + bounded Rota Hoca context + pure Intelligence V1');

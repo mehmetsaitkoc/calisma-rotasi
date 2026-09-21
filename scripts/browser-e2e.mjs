@@ -77,31 +77,53 @@ function latestTaskMode(space, task) {
 }
 
 async function assertTodayContract(page) {
-  await page.getByRole('heading', { name: 'Bugünkü Rotan' }).waitFor({ state: 'visible' });
-  assert.ok(await page.getByText('ŞİMDİ', { exact: true }).count(), 'Today must show the ŞİMDİ priority marker');
+  await page.locator('.route-v1-head[data-premium-surface="today"]').waitFor({ state: 'visible' });
+  await page.locator('.pnx3-dashboard').waitFor({ state: 'visible' });
+  await page.getByRole('heading', { name: 'Bugün, hedefindeki sen için güçlü bir gün!' }).waitFor({ state: 'visible' });
 
-  const cards = page.locator('.route-task');
-  assert.ok((await cards.count()) > 0, 'Today must render at least one route task');
+  assert.match(
+    (await page.locator('.pnx-global-search').innerText()).trim(),
+    /KPSS/i,
+    'Today search affordance must stay KPSS-specific'
+  );
+  assert.equal(
+    await page.locator('.premium-signal-rail > .premium-signal:not([hidden])').count(),
+    4,
+    'Today must expose exactly four visible KPI cards'
+  );
+
+  const cards = page.locator('.pnx3-plan .route-task');
+  assert.ok((await cards.count()) > 0, 'Bugünün Planı must render at least one real route task');
   const card = cards.first();
 
-  const subject = (await card.locator('.tiny.muted').first().innerText()).trim();
   const topic = (await card.locator('h3').first().innerText()).trim();
-  const meta = await card.locator('.route-task-meta').innerText();
-  const reason = (await card.locator('.route-task-reason').innerText()).trim();
-  const modeExplain = (await card.locator('.route-mode-explain').innerText()).trim();
-  assert.ok(subject, 'Today task must show a lesson/subject');
+  const meta = ((await card.locator('.route-task-meta').textContent()) || '').trim();
+  const reason = ((await card.locator('.route-task-reason').textContent()) || '').trim();
+  const modeExplain = ((await card.locator('.route-mode-explain').textContent()) || '').trim();
   assert.ok(topic, 'Today task must show a topic/title');
   assert.match(meta, /\d+\s*dk/, 'Today task must show minutes');
-  const allMeta = await page.locator('.route-task-meta').allInnerTexts();
-  assert.ok(allMeta.some(x => /≈\s*\d+\s*soru/i.test(x)), 'Today must show a question target on a planned practice task');
-  assert.match(meta, /Neden bugün\?/i, 'Today task must expose why it is scheduled today');
-  assert.ok(reason, 'Today task must render its route reason');
-  assert.ok(modeExplain, 'Today task must explain its route mode in student language');
-  assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(reason + ' ' + modeExplain), 'Technical route jargon must not leak into Today');
 
-  for (const label of ['Başla', 'Tamamla', 'Daha sonra', 'Atla']) {
-    assert.ok(await card.getByText(label, { exact: true }).count(), 'Today task must expose action: ' + label);
-  }
+  const allMeta = await page.locator('.pnx3-plan .route-task-meta').allTextContents();
+  assert.ok(
+    allMeta.some(x => /≈\s*\d+\s*soru/i.test(x)),
+    'Today must keep a question target on a planned practice task'
+  );
+  assert.ok(reason, 'Today task must retain its route reason as real product evidence');
+  assert.ok(modeExplain, 'Today task must retain its route-mode explanation');
+  assert.ok(
+    !/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(reason + ' ' + modeExplain),
+    'Technical route jargon must not leak into Today'
+  );
+
+  assert.ok(await card.locator('.route-task-actions .check-btn').isVisible(), 'Bugünün Planı must keep the real completion control');
+  assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(), 'Today must expose the real focus timer');
+  assert.ok(await page.locator('.pnx3-week-card').isVisible(), 'Today must expose the weekly progress card');
+  assert.ok(await page.locator('.pnx3-goals-card').isVisible(), 'Today must expose KPSS goals');
+  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(), 'Today must expose Rota Hoca');
+  assert.ok(await page.locator('.pnx3-results-card').isVisible(), 'Today must expose the last-exam results surface');
+  assert.ok(await page.locator('.pnx3-quote-card').isVisible(), 'Today must expose the daily quote card');
+  assert.equal(await page.locator('.pnx3-insight-archive').count(), 1, 'Explainability must remain available below the dashboard');
+  assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(), 'Today must expose the persistent day/night control');
 }
 
 async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 'today' } = {}) {
@@ -163,10 +185,11 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
     await page.locator('.route-task').first().waitFor({ state: 'visible' });
     await page.locator('[data-premium-surface="today"]').waitFor({ state: 'visible' });
     assert.ok(await page.locator('.premium-signal-rail').isVisible(), 'Premium Today signal rail must stay visible');
-    await page.locator('.route-today-kicker').waitFor({ state: 'visible' });
-    await page.locator('.route-tools > summary').waitFor({ state: 'visible' });
-    assert.equal((await page.locator('.route-tools > summary').innerText()).trim().includes('Planı ayarla'), true, 'Secondary route controls must stay behind the quiet plan menu');
-    assert.equal(await page.locator('.premium-deep-dive').count(), 1, 'Advanced route diagnostics must stay behind a single progressive-disclosure control');
+    await page.locator('.pnx3-dashboard').waitFor({ state: 'visible' });
+    await page.locator('.pnx3-lower').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('.route-tools > summary').count(), 1, 'Secondary route controls must remain in the underlying product DOM');
+    assert.equal(await page.locator('.premium-deep-dive').count(), 1, 'Advanced route diagnostics must remain available in the underlying product DOM');
+    assert.equal(await page.locator('.pnx3-insight-archive').count(), 1, 'Explainable route decisions must remain available below the first-screen dashboard');
   }
 }
 
@@ -211,7 +234,7 @@ async function setDay(page, date) {
   await page.clock.setFixedTime(new Date(date + 'T09:00:00+03:00'));
   assert.equal(new URL(page.url()).searchParams.get('fresh'), '1', 'Day simulation must stay inside the fresh-preview storage namespace');
   await navigate(page, 'today');
-  await page.getByRole('heading', { name: 'Bugünkü Rotan' }).waitFor({ state: 'visible' });
+  await page.locator('.route-v1-head[data-premium-surface="today"]').waitFor({ state: 'visible' });
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
 }
 
@@ -449,7 +472,7 @@ async function runLargePlanRenderPerf(browser) {
   await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
   await page.locator('#app').waitFor({ state: 'visible' });
   await navigate(page, 'today');
-  await page.getByRole('heading', { name: 'Bugünkü Rotan' }).waitFor({ state: 'visible' });
+  await page.locator('.route-v1-head[data-premium-surface="today"]').waitFor({ state: 'visible' });
   const todayPerf = await page.evaluate(() => ({ sample:window.__rotaRenderPerf?.recent?.at(-1), perf:window.__rotaRenderPerf ? { ...window.__rotaRenderPerf } : null }));
   assert.ok(todayPerf.sample && todayPerf.sample.view==='today','Large-history Today render must be measured');
   assert.ok(todayPerf.sample.planIndexBuilds<=1,'Large-history Today must build the plan date index at most once');

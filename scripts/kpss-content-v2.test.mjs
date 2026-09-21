@@ -8,6 +8,7 @@ await import('../public/kpss-professional-bank.js');
 await import('../public/kpss-professional-turkish-02.js');
 await import('../public/kpss-professional-turkish-03.js');
 await import('../public/kpss-professional-turkish-04.js');
+await import('../public/kpss-professional-turkish-06.js');
 await import('../public/kpss-professional-sections.js');
 
 const C=globalThis.RotaCatalog;
@@ -17,8 +18,9 @@ const P=globalThis.RotaKpssProfessionalBank;
 const P2=globalThis.RotaKpssProfessionalTurkish02;
 const P3=globalThis.RotaKpssProfessionalTurkish03;
 const P4=globalThis.RotaKpssProfessionalTurkish04;
+const P6=globalThis.RotaKpssProfessionalTurkish06;
 const S=globalThis.RotaKpssProfessionalSections;
-assert.ok(C&&B&&Q&&P&&P2&&P3&&P4&&S,'KPSS v2 content modules must load');
+assert.ok(C&&B&&Q&&P&&P2&&P3&&P4&&P6&&S,'KPSS v2 content modules must load');
 
 const totals=B.totals(C);
 assert.deepEqual(totals,{
@@ -58,19 +60,30 @@ assert.equal(B.OFFICIAL_SCOPE.generalCulture.citizenshipPct,15);
 assert.equal(B.OFFICIAL_SCOPE.generalCulture.generalCurrentPct,10);
 assert.equal(B.COPYRIGHT_POLICY,'original-only');
 
-const professional=[...P.tests,...P2.tests,...P3.tests,...P4.tests];
+const professional=[...P.tests,...P2.tests,...P3.tests,...P4.tests,...P6.tests];
 const audit=Q.auditBank(professional,{profiles:B.TEST_PROFILES,requireApproved:true});
 assert.equal(audit.valid,true,JSON.stringify(audit.errors,null,2));
-assert.equal(audit.tests,16);
-assert.equal(audit.questions,192);
-assert.equal(audit.topics,4);
-for(const topicId of ['k-tr-1','k-tr-2','k-tr-3','k-tr-4']){
+assert.equal(audit.tests,20);
+assert.equal(audit.questions,240);
+assert.equal(audit.topics,5);
+for(const topicId of ['k-tr-1','k-tr-2','k-tr-3','k-tr-4','k-tr-6']){
   const sets=professional.filter(t=>t.topicId===topicId);
   assert.deepEqual(sets.map(t=>t.setNo),[1,2,3,4]);
   assert.ok(sets.every(t=>t.subjectId==='k-tr'&&t.questions.length===12&&t.qualityStatus==='approved'));
 }
 assert.ok(professional.flatMap(t=>t.questions).every(q=>q.sourceKind==='original'&&q.copyrightPolicy==='original-only'));
 assert.ok(professional.flatMap(t=>t.questions).every(q=>['context','interpretation','reasoning','application','recall'].includes(q.cognitive)));
+assert.ok(P6.tests.flatMap(t=>t.questions).every(q=>q.optionMode==='orthography'),'Writing-rule questions must explicitly declare orthographic option comparison');
+
+const semanticDuplicate={
+  id:'semantic-dup',topicId:'k-tr-1',text:'Bu deneme sorusunda hangi seçenek anlam bakımından diğerlerinden farklıdır?',
+  options:['Örnek','örnek','Deneme','Sınama','Kontrol'],answer:2,
+  explanation:'Normal anlam sorularında yalnız büyük/küçük harfle ayrılan seçenekler bağımsız çeldirici sayılmaz.',
+  difficulty:'medium',cognitive:'context',skill:'Bağlam',sourceKind:'original',copyrightPolicy:'original-only'
+};
+assert.throws(()=>Q.validateQuestion(semanticDuplicate,{topicId:'k-tr-1',requireMetadata:true}),/anlamsal olarak benzersiz/i,'Semantic content must not bypass normalized option uniqueness');
+const orthographySurface={...semanticDuplicate,id:'orthography-surface',topicId:'k-tr-6',skill:'Büyük harf yazımı',optionMode:'orthography'};
+assert.doesNotThrow(()=>Q.validateQuestion(orthographySurface,{topicId:'k-tr-6',requireMetadata:true}),'Writing-rule questions may assess capitalization/spacing as the actual option difference');
 
 const professionalSection=S.sectionExams[0];
 assert.ok(professionalSection,'Professional Turkish section pilot must exist');
@@ -97,6 +110,7 @@ for(const marker of [
   '<script src="/kpss-professional-turkish-02.js"></script>',
   '<script src="/kpss-professional-turkish-03.js"></script>',
   '<script src="/kpss-professional-turkish-04.js"></script>',
+  '<script src="/kpss-professional-turkish-06.js"></script>',
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',
@@ -110,4 +124,4 @@ for(const marker of [
 ]) assert.ok(html.includes(marker),'Missing KPSS v2 integration marker: '+marker);
 assert.ok(html.includes('ROTA_ALL_MINI_EXAMS'),'Archived mini definitions must remain resolvable for old attempts');
 
-console.log('KPSS content v2 passed: 3,672-question target + 192 approved topic questions across 4 Turkish topics + 30-question professional Turkish section pilot');
+console.log('KPSS content v2 passed: 3,672-question target + 240 approved topic questions across 5 Turkish topics + 30-question professional Turkish section pilot');

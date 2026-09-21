@@ -52,10 +52,17 @@
   function protectLegacyActiveExam() {
     const entry = appStateEntry();
     if (legacyMigrating || entry?.value?.activeExam !== LEGACY_EXAM) return;
+
+    // An unconfigured KPSS workspace must enter the existing onboarding flow rather than
+    // resuming a stale legacy shell. A configured KPSS workspace can safely resume in place.
+    if (!entry.value.workspaces?.kpss?.configured) {
+      startKpss();
+      return;
+    }
+
     legacyMigrating = true;
     try {
-      // KPSS-only changes only the selected workspace. The legacy YKS workspace stays intact
-      // so older backups remain readable, but a stale YKS selection can never strand the UI.
+      // Change only the selected workspace. Keep legacy YKS data intact for backup compatibility.
       entry.value.activeExam = PRIMARY_EXAM;
       localStorage.setItem(entry.key, JSON.stringify(entry.value));
       location.reload();

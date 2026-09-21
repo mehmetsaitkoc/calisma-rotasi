@@ -42,10 +42,12 @@ try{
   const dashboard=page.locator('.v6-dashboard');
   const chips=page.locator('.v6-pillar-chip');
   const examCards=page.locator('[data-action="choose-exam"]');
+  const examArt=page.locator('.v6-prep-art');
 
   await Promise.all([title.waitFor(),journey.waitFor(),dashboard.waitFor()]);
   assert.equal(await chips.count(),4,'Journey must render four separate milestone chips');
   assert.equal(await examCards.count(),2,'Landing must render YKS and KPSS exam choices');
+  assert.equal(await examArt.count(),2,'YKS and KPSS cards must each render architectural artwork');
 
   const [titleBox,journeyBox,dashboardBox]=await Promise.all([title.boundingBox(),journey.boundingBox(),dashboard.boundingBox()]);
   assert.ok(titleBox&&titleBox.width>380,'Hero title must keep strong desktop scale');

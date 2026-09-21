@@ -135,17 +135,22 @@ try{
   await page.goto(BASE+'/?fresh=1&app-review=1',{waitUntil:'domcontentloaded'});
   await submitWizard(page);
 
-  assert.ok(await page.locator('body.app-premium-next-ready.pnx-today-reference').count(),'Approved Today reference layer must activate');
-  assert.ok(await page.locator('.pnx-global-search').isVisible(),'Today top bar must expose the premium global search affordance');
+  assert.ok(await page.locator('body.app-premium-next-ready.pnx-today-reference.pnx3-dashboard-ready').count(),'KPSS target dashboard layer must activate');
+  assert.ok(await page.locator('.pnx-global-search').isVisible(),'Today top bar must expose the KPSS search affordance');
+  assert.match(await page.locator('.pnx-global-search').innerText(),/KPSS/i,'Search affordance must be KPSS-specific');
   assert.ok(await page.locator('.pnx-head-art').isVisible(),'Today header must include the journey/date visual');
   assert.equal(await page.locator('.premium-signal-rail > .premium-signal:not([hidden])').count(),4,'Today must expose four premium status cards');
-  assert.ok(await page.locator('.pnx-primary .pnx-reference-hero').isVisible(),'Today must have one dominant primary task');
-  assert.ok(await page.locator('.pnx-pomodoro').isVisible(),'Primary task must expose the Pomodoro focus ring');
-  assert.ok(await page.locator('.pnx-route-panel .route-task').count(),'Today route list must remain visible');
-  assert.ok(await page.getByText('Bugünün Rotası',{exact:true}).count(),'Route panel must use the approved Bugünün Rotası title');
-  assert.ok(await page.getByText('Neden bugün?',{exact:true}).count(),'Today must expose the explainable decision moment');
-  assert.ok(await page.locator('.pnx-mode-card').isVisible(),'Today must expose the route mode card');
-  assert.ok(await page.locator('.pnx-teacher-card').isVisible(),'Today must expose the Rota Hoca card');
+  assert.ok(await page.locator('.pnx3-dashboard').isVisible(),'Today must expose the approved three-column dashboard');
+  assert.ok(await page.locator('.pnx3-plan .route-task').count(),'Bugünün Planı must reuse the real route tasks');
+  assert.ok(await page.getByText('Bugünün Planı',{exact:true}).count(),'Route panel must use the approved Bugünün Planı title');
+  assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(),'Center focus card must expose the Pomodoro ring');
+  assert.ok(await page.locator('.pnx3-week-card').isVisible(),'Today must expose the Bu Hafta card');
+  assert.ok(await page.locator('.pnx3-goals-card').isVisible(),'Today must expose the KPSS goals card');
+  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(),'Today must expose the larger Rota Hoca card');
+  assert.ok(await page.locator('.pnx3-results-card').isVisible(),'Today must expose the last-exam results surface');
+  assert.ok(await page.locator('.pnx3-quote-card').isVisible(),'Today must expose the daily quote card');
+  assert.ok(await page.locator('.pnx3-insight-archive').count(),'Explainability must remain available below the first-screen dashboard');
+  assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(),'Today top bar must expose day/night mode');
   await noOverflow(page,'Today 1512');
   await page.screenshot({path:OUT+'/today-1512.png',fullPage:false});
 

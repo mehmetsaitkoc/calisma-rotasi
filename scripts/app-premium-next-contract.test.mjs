@@ -18,6 +18,11 @@ for(const marker of [
   '.pnx-intel-strip',
   '.pnx-progress-signal',
   '.pnx-target-signal',
+  '.week-grid',
+  '.teacher-page[data-premium-surface="teacher"]',
+  '.exam-center[data-premium-surface="exams"]',
+  '.analysis-panel',
+  '.mobile-dock',
   'hero-journey-final.webp',
   '@media(max-width:430px)',
   '@media(prefers-reduced-motion:reduce)'
@@ -31,7 +36,8 @@ for(const marker of [
   'route-list',
   'Neden bugün?',
   'ROTA KARARI · AÇIKLANABİLİR',
-  'MutationObserver'
+  'MutationObserver',
+  "document.querySelector('.app-shell')"
 ]) assert.ok(js.includes(marker),'Missing app premium JS contract marker: '+marker);
 
 for(const forbidden of [

@@ -1,8 +1,9 @@
-/* APP PREMIUM NEXT V2 · approved Today reference composition
-   Presentation-only: reuses the real rendered route, tasks and actions. */
+/* APP PREMIUM NEXT V3 · KPSS TARGET DASHBOARD
+   Presentation-only: preserves the real sidebar, route tasks, actions and data evidence. */
 (() => {
   const BODY_CLASS = 'app-premium-next-ready';
   const TODAY_CLASS = 'pnx-today-reference';
+  const DASH_CLASS = 'pnx3-dashboard-ready';
   let queued = false;
 
   const text = (node) => (node?.textContent || '').trim();
@@ -31,9 +32,7 @@
     const progress = normalizedProgress(root);
     const value = card.querySelector('strong');
     if (value && text(value) !== progress.label) value.textContent = progress.label;
-    if (card.style.getPropertyValue('--pnx-progress') !== progress.pct + '%') {
-      card.style.setProperty('--pnx-progress', progress.pct + '%');
-    }
+    card.style.setProperty('--pnx-progress', progress.pct + '%');
     return card;
   }
 
@@ -44,62 +43,102 @@
   }
 
   function polishHeading(header) {
-    const h1 = header.querySelector('h1');
-    if (!h1 || h1.dataset.pnxTitle === '2') return;
     const name = firstName(header);
-    h1.innerHTML = '';
-    h1.append(document.createTextNode((name ? name + ', ' : '') + 'bugünkü rotan hazır. '));
-    const wave = document.createElement('span');
-    wave.className = 'pnx-wave';
-    wave.setAttribute('aria-hidden', 'true');
-    wave.textContent = '👋';
-    h1.appendChild(wave);
-    h1.dataset.pnxTitle = '2';
+    let greeting = header.querySelector('.pnx3-greeting');
+    if (!greeting) {
+      greeting = document.createElement('div');
+      greeting.className = 'pnx3-greeting';
+      header.querySelector(':scope > div')?.prepend(greeting);
+    }
+    greeting.textContent = 'GÜNAYDIN ' + name.toLocaleUpperCase('tr-TR') + ',';
+
+    const kicker = header.querySelector('.route-today-kicker');
+    if (kicker) kicker.style.display = 'none';
+
+    const h1 = header.querySelector('h1');
+    if (h1 && h1.dataset.pnxTitle !== '3') {
+      h1.textContent = 'Bugün, hedefindeki sen için güçlü bir gün!';
+      h1.dataset.pnxTitle = '3';
+    }
+
+    const subline = header.querySelector('.route-today-subline');
+    if (subline) {
+      subline.textContent = 'Disiplin, istikrarlı ilerleme ve doğru plan seni KPSS hedefine ulaştırır.';
+    }
   }
 
   function ensureTopbar(header) {
     const topbar = document.querySelector('.topbar');
-    if (!topbar || topbar.dataset.pnxReference === '1') return;
+    if (!topbar) return;
 
-    const search = document.createElement('button');
-    search.type = 'button';
-    search.className = 'pnx-global-search';
-    search.dataset.action = 'nav';
-    search.dataset.view = 'topics';
-    search.innerHTML = '<span class="pnx-search-icon" aria-hidden="true"></span><span>Ders, konu, soru ara...</span>';
+    let search = topbar.querySelector('.pnx-global-search');
+    if (!search) {
+      search = document.createElement('button');
+      search.type = 'button';
+      search.className = 'pnx-global-search';
+      search.dataset.action = 'nav';
+      search.dataset.view = 'topics';
+      search.innerHTML = '<span class="pnx-search-icon" aria-hidden="true"></span><span></span>';
+      topbar.prepend(search);
+    }
+    const searchCopy = search.querySelector('span:last-child');
+    if (searchCopy) searchCopy.textContent = 'KPSS\'de ne çalışmak istersin?';
 
-    const profile = document.createElement('div');
-    profile.className = 'pnx-profile';
+    let profile = topbar.querySelector('.pnx-profile');
+    if (!profile) {
+      profile = document.createElement('div');
+      profile.className = 'pnx-profile';
+      topbar.append(profile);
+    }
+    const name = firstName(header);
     profile.innerHTML =
-      '<span class="pnx-bell" aria-hidden="true"><i></i></span>' +
-      '<span class="pnx-profile-avatar">' + (firstName(header).slice(0,2).toLocaleUpperCase('tr-TR') || 'R') + '</span>' +
-      '<span class="pnx-profile-copy"><strong>' + firstName(header) + '</strong><small>Öğrenci</small></span>' +
+      '<span class="pnx-profile-avatar">' + (name.slice(0,2).toLocaleUpperCase('tr-TR') || 'R') + '</span>' +
+      '<span class="pnx-profile-copy"><strong>' + name + '</strong><small>Öğrenci</small></span>' +
       '<span class="pnx-profile-chevron" aria-hidden="true">⌄</span>';
+    topbar.dataset.pnxReference = '3';
+  }
 
-    topbar.prepend(search);
-    topbar.append(profile);
-    topbar.dataset.pnxReference = '1';
+  function dateParts(header) {
+    const raw = text(header.querySelector('.eyebrow'));
+    const parts = raw.split(/\s+/).filter(Boolean);
+    return {
+      date: parts.slice(0,3).join(' ') || 'Bugün',
+      weekday: parts.slice(3).join(' ') || ''
+    };
   }
 
   function ensureHeaderArt(header) {
-    if (header.querySelector('.pnx-head-art')) return;
-    const rawDate = text(header.querySelector('.eyebrow'));
-    const parts = rawDate.split(/\s+/);
-    const day = parts[0] || '';
-    const month = parts[1] || '';
-    const year = parts[2] || '';
-    const weekday = parts.slice(3).join(' ');
-
-    const art = document.createElement('aside');
-    art.className = 'pnx-head-art';
-    art.setAttribute('aria-label', 'Bugünün motivasyon alanı');
+    let art = header.querySelector('.pnx-head-art');
+    if (!art) {
+      art = document.createElement('aside');
+      art.className = 'pnx-head-art';
+      header.appendChild(art);
+    }
+    const date = dateParts(header);
+    art.setAttribute('aria-label', 'Bugünün motivasyon ve tarih alanı');
     art.innerHTML =
-      '<blockquote>“Küçük adımlar,<br>büyük sonuçlar doğurur.”</blockquote>' +
+      '<div class="pnx3-hand-note">Hedefine<br>biraz daha yakınsın,<br>devam et. 💙</div>' +
       '<div class="pnx-date-card"><span class="pnx-date-icon" aria-hidden="true"></span><div><strong>' +
-        [day, month, year].filter(Boolean).join(' ') +
-      '</strong><small>' + weekday + '</small></div><span class="pnx-date-arrows" aria-hidden="true">‹ &nbsp; ›</span></div>' +
-      '<div class="pnx-better-you">Daha iyi bir sen<br>mümkün. ✨</div>';
-    header.appendChild(art);
+        date.date +
+      '</strong><small>' + date.weekday + '</small></div><span class="pnx-date-arrows" aria-hidden="true">‹ &nbsp; ›</span></div>' +
+      '<blockquote>“Planlı çalışan,<br>hedefine ulaşır.”</blockquote>';
+  }
+
+  function normalizeSignalCopy(card, kind) {
+    if (!card) return;
+    const strong = card.querySelector('strong');
+    const span = card.querySelector('span:not(.pnx-signal-icon)');
+    if (kind === 'tasks' && strong) {
+      const match = text(strong).match(/\d+/);
+      if (match) strong.textContent = match[0];
+      if (span) span.textContent = 'Açık görev';
+    } else if (kind === 'load' && span) {
+      span.textContent = 'Kalan yük';
+    } else if (kind === 'progress' && span) {
+      span.textContent = 'Günlük ilerleme';
+    } else if (kind === 'mode' && span) {
+      span.textContent = 'Rota modu';
+    }
   }
 
   function decorateSignals(rail, cards) {
@@ -111,7 +150,7 @@
     ].filter(([card]) => !!card);
 
     kinds.forEach(([card, kind]) => {
-      if (card.dataset.pnxKind !== kind) card.dataset.pnxKind = kind;
+      card.dataset.pnxKind = kind;
       let icon = card.querySelector('.pnx-signal-icon');
       if (!icon) {
         icon = document.createElement('span');
@@ -119,14 +158,11 @@
         icon.setAttribute('aria-hidden', 'true');
         card.prepend(icon);
       }
-      if (kind === 'progress') {
-        const progressLabel = text(card.querySelector('strong'));
-        if (icon.dataset.progressLabel !== progressLabel) icon.dataset.progressLabel = progressLabel;
-      }
+      if (kind === 'progress') icon.dataset.progressLabel = text(card.querySelector('strong'));
+      normalizeSignalCopy(card, kind);
     });
 
-    const desired = kinds.map(([card]) => card);
-    desired.forEach((card, index) => {
+    kinds.forEach(([card], index) => {
       if (rail.children[index] !== card) rail.insertBefore(card, rail.children[index] || null);
     });
   }
@@ -136,43 +172,22 @@
   }
 
   function ensureFocusHero(root, hero, reason) {
-    hero.classList.add('pnx-reference-hero');
+    hero.classList.add('pnx-reference-hero','pnx3-focus-card');
 
     const grow = hero.querySelector(':scope > .grow');
     const start = hero.querySelector(':scope > .route-start-big');
     const total = hero.querySelector(':scope > .route-total');
     if (!grow || !start || !total) return;
 
-    if (!grow.querySelector('.pnx-next-task')) {
-      const label = document.createElement('div');
-      label.className = 'pnx-next-task';
-      label.innerHTML = '<span aria-hidden="true">▣</span><strong>Sıradaki görev</strong>';
-      grow.prepend(label);
-    }
-
-    const meta = text(grow.querySelector('p'));
-    const subject = (meta.split('·')[0] || '').trim();
-    const now = grow.querySelector('.route-now-label');
-    if (now && subject) {
-      if (text(now) !== subject) now.textContent = subject;
-      if (!grow.querySelector('.pnx-legacy-now-label')) {
-        const legacyNow = document.createElement('span');
-        legacyNow.className = 'sr-only pnx-legacy-now-label';
-        legacyNow.textContent = 'ŞİMDİ';
-        now.insertAdjacentElement('afterend', legacyNow);
-      }
-    }
-
-    if (!grow.querySelector('.pnx-task-why')) {
-      const why = document.createElement('div');
-      why.className = 'pnx-task-why';
-      why.innerHTML = '<span aria-hidden="true">“</span><p></p>';
-      why.querySelector('p').textContent =
-        taskReason(root, reason) || 'Bu görev, bugünkü rota önceliğine göre sıraya alındı.';
-      grow.appendChild(why);
+    if (!hero.querySelector('.pnx3-focus-tabs')) {
+      const tabs = document.createElement('div');
+      tabs.className = 'pnx3-focus-tabs';
+      tabs.innerHTML = '<span class="active">Pomodoro</span><span>Geri Sayım</span><span>Serbest</span>';
+      hero.prepend(tabs);
     }
 
     if (!hero.querySelector('.pnx-pomodoro')) {
+      const meta = text(grow.querySelector('p'));
       const minutes = Number(meta.match(/(\d+)\s*dk/i)?.[1] || 40);
       const timer = document.createElement('div');
       timer.className = 'pnx-pomodoro';
@@ -186,16 +201,20 @@
       hero.insertBefore(timer, start);
     }
 
-    if (!hero.querySelector('.pnx-focus-quote')) {
-      const note = document.createElement('div');
-      note.className = 'pnx-focus-quote';
-      note.innerHTML = '<span aria-hidden="true">♧</span> Disiplin, hayallerini gerçeğe dönüştürür. ✨';
-      hero.appendChild(note);
+    let quote = hero.querySelector('.pnx3-focus-quote');
+    if (!quote) {
+      quote = document.createElement('p');
+      quote.className = 'pnx3-focus-quote';
+      hero.appendChild(quote);
     }
+    quote.textContent = '“Küçük adımlar, büyük sonuçlar doğurur.”';
+
+    const why = taskReason(root, reason);
+    hero.dataset.reason = why || '';
   }
 
   function ensureRoutePanel(routePanel, listHead, list) {
-    routePanel.classList.add('pnx-reference-route-panel');
+    routePanel.classList.add('pnx-reference-route-panel','pnx3-plan-card');
     const tasks = Array.from(list.querySelectorAll('.route-task'));
     tasks.forEach((task, index) => {
       task.dataset.pnxIndex = String(index + 1);
@@ -203,18 +222,10 @@
     });
 
     const h2 = listHead.querySelector('h2');
+    if (h2) h2.textContent = 'Bugünün Planı';
+
     const status = listHead.querySelector('.route-list-status');
-    if (h2 && h2.dataset.pnxLabel !== '2') {
-      const previous = text(h2);
-      h2.dataset.pnxOriginal = previous;
-      h2.textContent = 'Bugünün Rotası';
-      h2.dataset.pnxLabel = '2';
-    }
-    if (status) {
-      const open = tasks.filter((task) => !task.classList.contains('is-done')).length;
-      const statusText = 'Bugün ' + open + ' görev seni bekliyor.';
-      if (text(status) !== statusText) status.textContent = statusText;
-    }
+    if (status) status.textContent = 'Bugün ' + tasks.filter((task) => !task.classList.contains('is-done')).length + ' görev seni bekliyor.';
 
     if (!listHead.querySelector('.pnx-route-calendar')) {
       const icon = document.createElement('span');
@@ -223,17 +234,18 @@
       listHead.prepend(icon);
     }
 
-    if (!listHead.querySelector('.pnx-route-see-all')) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'pnx-route-see-all';
-      button.textContent = 'Tümünü gör →';
-      button.addEventListener('click', () => {
-        const expanded = routePanel.classList.toggle('pnx-expanded');
-        button.textContent = expanded ? 'Daralt ↑' : 'Tümünü gör →';
-      });
-      listHead.appendChild(button);
+    let seeAll = listHead.querySelector('.pnx-route-see-all');
+    if (!seeAll) {
+      seeAll = document.createElement('button');
+      seeAll.type = 'button';
+      seeAll.className = 'pnx-route-see-all';
+      listHead.appendChild(seeAll);
     }
+    seeAll.textContent = 'Tümünü gör →';
+    seeAll.onclick = () => {
+      const expanded = routePanel.classList.toggle('pnx-expanded');
+      seeAll.textContent = expanded ? 'Daralt ↑' : 'Tümünü gör →';
+    };
   }
 
   function modeInfo(root) {
@@ -257,35 +269,15 @@
     reason.classList.add('pnx-reason-card');
     const kicker = reason.querySelector('.route-reason-kicker');
     const heading = reason.querySelector('strong');
+    if (kicker) kicker.textContent = 'ROTA KARARI';
+    if (heading) heading.textContent = 'Neden bugün?';
+
     const paragraph = reason.querySelector('p');
-
-    if (kicker && text(kicker) !== 'ROTA KARARI') kicker.textContent = 'ROTA KARARI';
-    if (heading) {
-      if (text(heading) !== 'Neden bugün?') heading.textContent = 'Neden bugün?';
-      if (!reason.querySelector('.pnx-legacy-reason-label')) {
-        const legacy = document.createElement('span');
-        legacy.className = 'sr-only pnx-legacy-reason-label';
-        legacy.textContent = 'Bu plan neden böyle?';
-        heading.insertAdjacentElement('afterend', legacy);
-      }
-    }
-
-    const reasonButton = reason.querySelector('.btn');
-    const whyButton = root.querySelector('.route-task [data-action="route-why"]');
-    if (reasonButton) {
-      if (text(reasonButton) !== 'Bu görev neden öne çıktı?') reasonButton.textContent = 'Bu görev neden öne çıktı?';
-      if (whyButton?.dataset?.id) {
-        reasonButton.dataset.action = 'route-why';
-        reasonButton.dataset.id = whyButton.dataset.id;
-        delete reasonButton.dataset.view;
-      }
-    }
-
     if (paragraph && !reason.querySelector('.pnx-reason-list')) {
       const candidates = unique([
-        ...Array.from(root.querySelectorAll('.route-task .route-task-reason')).slice(0,3).map(text),
+        ...Array.from(root.querySelectorAll('.route-task .route-task-reason')).slice(0,4).map(text),
         text(paragraph)
-      ]).slice(0,3);
+      ]).slice(0,4);
       const list = document.createElement('div');
       list.className = 'pnx-reason-list';
       candidates.forEach((item) => {
@@ -299,45 +291,142 @@
     }
   }
 
-  function ensureModeCard(root, intel) {
-    let card = intel.querySelector('.pnx-mode-card');
+  function ensureModeCard(root, host) {
+    let card = host.querySelector('.pnx-mode-card');
     if (!card) {
       card = document.createElement('section');
       card.className = 'pnx-mode-card';
-      intel.appendChild(card);
+      host.appendChild(card);
     }
     const info = modeInfo(root);
-    const signature = [info.label, info.subtitle, info.explanation || ''].join('|');
-    if (card.dataset.pnxSignature === signature) return;
-    card.dataset.pnxSignature = signature;
     card.innerHTML =
       '<div class="pnx-bottom-head"><span class="pnx-stack-icon" aria-hidden="true"></span><strong>Rota modu</strong><span>Modu değiştir</span></div>' +
       '<div class="pnx-mode-body"><span class="pnx-mode-bars" aria-hidden="true"><i></i><i></i><i></i></span><div><strong>' +
       info.label + '</strong><span>' + info.subtitle + '</span></div></div>' +
       '<p>' + (info.explanation || 'Bugünkü rota modu; yük, tekrar ve ilerleme sinyallerini birlikte dengeler.') + '</p>';
+    return card;
   }
 
-  function ensureTeacherCard(intel) {
-    if (intel.querySelector('.pnx-teacher-card')) return;
-    const card = document.createElement('section');
-    card.className = 'pnx-teacher-card';
+  function ensureWeekCard(host, root) {
+    let card = host.querySelector('.pnx3-week-card');
+    if (!card) {
+      card = document.createElement('section');
+      card.className = 'pnx3-side-card pnx3-week-card';
+      host.appendChild(card);
+    }
+    const progress = normalizedProgress(root).pct;
+    const labels = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+    const day = new Date().getDay();
+    const mondayIndex = day === 0 ? 6 : day - 1;
+    const bars = labels.map((label,index) => {
+      const active = index === mondayIndex;
+      const height = active ? Math.max(18, Math.round(progress * .62)) : 16;
+      return '<span class="' + (active ? 'active' : '') + '"><i style="height:' + height + '%"></i><b>' + label + '</b></span>';
+    }).join('');
     card.innerHTML =
-      '<div class="pnx-teacher-copy"><div class="pnx-bottom-head"><span class="pnx-teacher-spark" aria-hidden="true">✦</span><strong>Rota Hoca</strong><span>→</span></div>' +
-      '<p>Bugünkü rotanı ve son eksiklerini biliyorum.</p>' +
-      '<div class="pnx-teacher-actions">' +
-      '<button type="button" data-action="nav" data-view="teacher">◯ &nbsp; Soru sor</button>' +
-      '<button type="button" data-action="nav" data-view="teacher">♧ &nbsp; Daha basit anlat</button>' +
-      '</div></div>' +
-      '<div class="pnx-teacher-bubble">Nasıl<br>yardımcı olabilirim?</div>' +
+      '<header><strong>Bu Hafta</strong><span>Detay →</span></header>' +
+      '<div class="pnx3-week-bars">' + bars + '</div>' +
+      '<footer><span>Bugünkü ilerleme</span><strong>%' + progress + '</strong></footer>' +
+      '<div class="pnx3-week-progress"><i style="width:' + progress + '%"></i></div>';
+  }
+
+  function ensureGoalsCard(host, targetSignal) {
+    let card = host.querySelector('.pnx3-goals-card');
+    if (!card) {
+      card = document.createElement('section');
+      card.className = 'pnx3-side-card pnx3-goals-card';
+      host.appendChild(card);
+    }
+    const gap = text(targetSignal?.querySelector('strong')) || 'Veri bekleniyor';
+    const detail = text(targetSignal?.querySelector('span')) || 'İlk denemeyle netleşecek';
+    card.innerHTML =
+      '<header><strong>Hedeflerim</strong><span>Düzenle →</span></header>' +
+      '<div class="pnx3-goal-row"><span class="g green"></span><div><b>KPSS Genel Net</b><small>' + gap + '</small></div><em>' + detail + '</em></div>' +
+      '<div class="pnx3-goal-row"><span class="g blue"></span><div><b>Tarih Netim</b><small>Performans verisi birikiyor</small></div><em>—</em></div>' +
+      '<div class="pnx3-goal-row"><span class="g orange"></span><div><b>Vatandaşlık Netim</b><small>Performans verisi birikiyor</small></div><em>—</em></div>';
+  }
+
+  function ensureQuoteCard(host) {
+    let card = host.querySelector('.pnx3-quote-card');
+    if (!card) {
+      card = document.createElement('section');
+      card.className = 'pnx3-quote-card';
+      host.appendChild(card);
+    }
+    card.innerHTML =
+      '<span>✧ &nbsp; Günün Sözü</span>' +
+      '<strong>“Zorluklar, seni daha güçlü bir sen haline getirir.”</strong>';
+  }
+
+  function ensureTeacherCard(host) {
+    let card = host.querySelector('.pnx-teacher-card');
+    if (!card) {
+      card = document.createElement('section');
+      card.className = 'pnx-teacher-card pnx3-teacher-card';
+      host.appendChild(card);
+    }
+    card.innerHTML =
+      '<div class="pnx3-teacher-main">' +
+        '<header><strong>Rota Hoca</strong><span>● &nbsp; Çevrimiçi</span></header>' +
+        '<p>KPSS yolculuğunda yanındayım.<br>Merak ettiğin her şeyi sor, birlikte ilerleyelim.</p>' +
+        '<button type="button" class="pnx3-teacher-input" data-action="nav" data-view="teacher">Örneğin: Anayasa’da temel haklar... <b>→</b></button>' +
+        '<div class="pnx3-teacher-tools">' +
+          '<button type="button" data-action="nav" data-view="teacher">▣ &nbsp; Fotoğraf</button>' +
+          '<button type="button" data-action="nav" data-view="teacher">♩ &nbsp; Mikrofon</button>' +
+          '<button type="button" data-action="nav" data-view="teacher">▤ &nbsp; Dosya Yükle</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pnx3-teacher-bubble">Sen sor,<br>birlikte çözelim!</div>' +
       '<img src="/rota-hoca-avatar.jpg" alt="" class="pnx-teacher-avatar" />';
-    intel.appendChild(card);
+  }
+
+  function ensureResultsCard(host, targetSignal) {
+    let card = host.querySelector('.pnx3-results-card');
+    if (!card) {
+      card = document.createElement('section');
+      card.className = 'pnx3-results-card';
+      host.appendChild(card);
+    }
+    const gap = text(targetSignal?.querySelector('strong'));
+    const hasSignal = !!gap && !/veri/i.test(gap);
+    card.innerHTML =
+      '<header><strong>Son Deneme Sonuçlarım</strong><button type="button" data-action="nav" data-view="exams">Detaylı Analiz →</button></header>' +
+      '<div class="pnx3-result-rings">' +
+        '<div class="pnx3-result-ring"><span>' + (hasSignal ? gap.replace(/\s*fark/i,'') : '—') + '</span><small>Hedef farkı</small></div>' +
+        '<div class="pnx3-result-ring coral"><span>' + (hasSignal ? 'Aktif' : '—') + '</span><small>Başarı sinyali</small></div>' +
+      '</div>' +
+      '<p>' + (hasSignal ? 'Son deneme verin hedef mesafesini güncelledi.' : 'İlk denemeni eklediğinde sonuçların burada görünecek.') + '</p>';
+  }
+
+  function ensureInsightArchive(root, reason) {
+    let archive = root.querySelector('.pnx3-insight-archive');
+    if (!archive) {
+      archive = document.createElement('details');
+      archive.className = 'pnx3-insight-archive';
+      archive.innerHTML = '<summary>Rota kararını neden böyle verdi?</summary><div class="pnx-intel-strip"></div>';
+    }
+    const host = archive.querySelector('.pnx-intel-strip');
+    if (!host.contains(reason)) host.appendChild(reason);
+    ensureReasonCard(root, reason);
+    ensureModeCard(root, host);
+    return archive;
+  }
+
+  function ensureFooter(root) {
+    let footer = root.querySelector('.pnx3-footer');
+    if (!footer) {
+      footer = document.createElement('footer');
+      footer.className = 'pnx3-footer';
+      footer.innerHTML = '<span>ÇALIŞMA ROTASI &nbsp; | &nbsp; HERKESİN ÇALIŞMA PROGRAMI AYNI OLMAK ZORUNDA DEĞİL.</span><b>Daha iyi bir sen, mümkün. ♥</b>';
+      root.appendChild(footer);
+    }
   }
 
   function composeToday(header) {
     const root = header.closest('.content') || header.parentElement;
     if (!root) return;
 
-    document.body.classList.add(BODY_CLASS, TODAY_CLASS);
+    document.body.classList.add(BODY_CLASS, TODAY_CLASS, DASH_CLASS);
     polishHeading(header);
     ensureTopbar(header);
     ensureHeaderArt(header);
@@ -355,46 +444,53 @@
     const load = signalByLabel(rail, 'KALAN YÜK');
     const mode = signalByLabel(rail, 'ROTA MODU');
     const target = signalByLabel(rail, 'HEDEF SİNYALİ');
-
-    if (target?.isConnected) target.remove();
     decorateSignals(rail, { today, load, progress, mode });
+    if (target) target.hidden = true;
 
-    if (header.dataset.pnxMounted !== '2') {
-      const stage = document.createElement('section');
-      stage.className = 'pnx-stage pnx-focus-layout';
-      stage.setAttribute('aria-label', 'Bugünün ana çalışma alanı');
+    let dashboard = root.querySelector('.pnx3-dashboard');
+    if (!dashboard) {
+      dashboard = document.createElement('section');
+      dashboard.className = 'pnx-stage pnx3-dashboard';
 
-      const primary = document.createElement('div');
-      primary.className = 'pnx-primary';
-      primary.appendChild(hero);
+      const plan = document.createElement('section');
+      plan.className = 'pnx-route-panel pnx3-plan';
+      plan.append(listHead, list);
 
-      const routePanel = document.createElement('aside');
-      routePanel.className = 'pnx-route-panel';
-      routePanel.setAttribute('aria-label', 'Bugünün Rotası');
-      routePanel.append(listHead, list);
+      const focus = document.createElement('section');
+      focus.className = 'pnx-primary pnx3-focus';
+      focus.appendChild(hero);
 
-      stage.append(primary, routePanel);
-      command.insertAdjacentElement('afterend', stage);
+      const side = document.createElement('aside');
+      side.className = 'pnx3-side-stack';
 
-      const intel = document.createElement('section');
-      intel.className = 'pnx-intel-strip';
-      intel.setAttribute('aria-label', 'Bugünün rota açıklaması');
-      intel.appendChild(reason);
-      stage.insertAdjacentElement('afterend', intel);
+      dashboard.append(plan, focus, side);
+      command.insertAdjacentElement('afterend', dashboard);
 
-      header.dataset.pnxMounted = '2';
+      const lower = document.createElement('section');
+      lower.className = 'pnx3-lower';
+      dashboard.insertAdjacentElement('afterend', lower);
     }
 
-    const stage = root.querySelector('.pnx-stage');
-    const routePanel = stage?.querySelector('.pnx-route-panel');
-    const intel = root.querySelector('.pnx-intel-strip');
-    if (!stage || !routePanel || !intel) return;
+    const plan = dashboard.querySelector('.pnx3-plan');
+    const focus = dashboard.querySelector('.pnx3-focus');
+    const side = dashboard.querySelector('.pnx3-side-stack');
+    const lower = root.querySelector('.pnx3-lower');
+    if (!plan || !focus || !side || !lower) return;
 
+    if (!plan.contains(listHead)) plan.append(listHead, list);
+    if (!focus.contains(hero)) focus.appendChild(hero);
+
+    ensureRoutePanel(plan, listHead, list);
     ensureFocusHero(root, hero, reason);
-    ensureRoutePanel(routePanel, listHead, list);
-    ensureReasonCard(root, reason);
-    ensureModeCard(root, intel);
-    ensureTeacherCard(intel);
+    ensureWeekCard(side, root);
+    ensureGoalsCard(side, target);
+    ensureTeacherCard(lower);
+    ensureResultsCard(lower, target);
+    ensureQuoteCard(lower);
+
+    const archive = ensureInsightArchive(root, reason);
+    if (!archive.isConnected) lower.insertAdjacentElement('afterend', archive);
+    ensureFooter(root);
 
     root.querySelectorAll('.route-task').forEach((task) => {
       const done = task.querySelector('.check-btn.done');
@@ -408,6 +504,7 @@
     const header = document.querySelector('.route-v1-head[data-premium-surface="today"]');
     document.body.classList.toggle(BODY_CLASS, !!shell);
     document.body.classList.toggle(TODAY_CLASS, !!header);
+    document.body.classList.toggle(DASH_CLASS, !!header);
     if (header) composeToday(header);
   }
 

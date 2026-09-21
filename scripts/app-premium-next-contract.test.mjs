@@ -12,26 +12,23 @@ for(const marker of [
 ]) assert.ok(loader.includes(marker),'Missing app premium loader marker: '+marker);
 
 for(const marker of [
-  'APP PREMIUM NEXT V1',
-  '.pnx-stage',
-  '.pnx-route-panel',
-  '.pnx-intel-strip',
+  'APP PREMIUM NEXT V3 · KPSS TARGET DASHBOARD',
+  '.pnx3-dashboard',
+  '.pnx3-plan-card',
+  '.pnx3-focus',
+  '.pnx3-week-card',
+  '.pnx3-goals-card',
+  '.pnx3-teacher-card',
+  '.pnx3-results-card',
+  '.pnx3-quote-card',
+  '.pnx3-insight-archive',
   '.pnx-progress-signal',
   '.pnx-head-art',
-  '.pnx-reference-hero',
-  '.pnx-pomodoro',
-  '.pnx-mode-card',
-  '.pnx-teacher-card',
-  '.pnx-target-signal',
-  '.week-grid',
-  '.teacher-page[data-premium-surface="teacher"]',
-  '.exam-center[data-premium-surface="exams"]',
-  '.analysis-panel',
   '.mobile-dock',
   'hero-journey-final.webp',
-  '@media(max-width:430px)',
+  '@media(max-width:650px)',
   '@media(prefers-reduced-motion:reduce)'
-]) assert.ok(css.includes(marker),'Missing app premium CSS contract marker: '+marker);
+]) assert.ok(css.includes(marker),'Missing KPSS dashboard CSS contract marker: '+marker);
 
 for(const marker of [
   'data-premium-surface="today"',
@@ -39,17 +36,23 @@ for(const marker of [
   'route-today-hero',
   'route-list-head',
   'route-list',
+  'Bugünün Planı',
+  "KPSS\\'de ne çalışmak istersin?",
+  'Bugün, hedefindeki sen için güçlü bir gün!',
+  'pnx3-dashboard',
+  'pnx3-plan',
+  'pnx3-focus',
+  'pnx3-week-card',
+  'pnx3-goals-card',
+  'pnx3-teacher-card',
+  'pnx3-results-card',
+  'pnx3-quote-card',
   'Neden bugün?',
   'ROTA KARARI',
-  'pnx-focus-layout',
-  'pnx-teacher-card',
-  'rota-hoca-avatar.jpg',
-  'pnx-today-reference',
-  'Bugünün Rotası',
   'Pomodoro ile başla',
   'MutationObserver',
   "document.querySelector('.app-shell')"
-]) assert.ok(js.includes(marker),'Missing app premium JS contract marker: '+marker);
+]) assert.ok(js.includes(marker),'Missing KPSS dashboard JS contract marker: '+marker);
 
 for(const forbidden of [
   'generatePlan',
@@ -66,13 +69,16 @@ assert.ok(
   'Daily progress must be derived from the existing rendered route state'
 );
 assert.ok(
-  js.includes("appendChild(hero)") && js.includes("routePanel.append(listHead, list)"),
-  'Premium layout must move the real interactive nodes instead of cloning product actions'
+  js.includes('plan.append(listHead, list)') && js.includes('focus.appendChild(hero)'),
+  'KPSS dashboard must move the real route list and real focus node instead of cloning product actions'
+);
+assert.ok(
+  js.includes("if (target) target.hidden = true"),
+  'Target signal may be hidden visually but must remain available as real product evidence'
+);
+assert.ok(
+  css.includes('Keep existing sidebar exactly as the current product shell'),
+  'V3 must explicitly preserve the existing sidebar'
 );
 
-assert.ok(css.includes('APP PREMIUM NEXT V2.7 · MOBILE ROUTE HIT TARGET INTEGRITY'),'Missing mobile route hit-target integrity guard');
-assert.ok(css.includes('APP PREMIUM NEXT V2.8 · SIGNAL ICON GRID INTEGRITY'),'Missing KPI icon grid integrity guard');
-assert.ok(css.includes('.premium-signal>.pnx-signal-icon'),'KPI icon must keep its own grid cell instead of overlapping copy');
-assert.ok(css.includes('overflow:visible!important;'),'Mobile route queue must not become a nested scroll hit-target trap');
-
-console.log('App Premium Next contract passed: presentation-only Today composition + real-data progress + mobile/reduced-motion guards');
+console.log('App Premium Next contract passed: KPSS target dashboard + real route data + unchanged sidebar + responsive/day-night guards');

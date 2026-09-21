@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-const BASE = (process.env.PRODUCTION_URL || 'https://calisma-rotasi.onrender.com').replace(/\/$/,'');
+const BASE = (process.env.PRODUCTION_URL || 'https://calisma-rotasi-1.onrender.com').replace(/\/$/,'');
 const EXPECTED_SHA = (process.env.EXPECTED_SHA || process.env.GITHUB_SHA || '').trim();
 const DEPLOY_WAIT_MS = Number(process.env.PRODUCTION_DEPLOY_WAIT_MS || 8 * 60 * 1000);
 const POLL_MS = Number(process.env.PRODUCTION_POLL_MS || 10_000);
@@ -196,12 +196,12 @@ try {
 
   await finishKpssOnboarding(page);
   await page.locator('.app-shell').waitFor({ state: 'visible', timeout: 20_000 });
-  await page.locator('.pnx-stage').waitFor({ state: 'visible', timeout: 20_000 });
-  await page.locator('.pnx-intel-strip').waitFor({ state: 'visible', timeout: 20_000 });
-  assert.ok(await page.locator('.pnx-route-panel .route-task').count(), 'Production premium dashboard must render the real Today route');
-  assert.ok(await page.locator('.pnx-reason-card').count(), 'Production premium dashboard must render the real “Neden bugün?” card');
-  assert.ok(await page.locator('.pnx-mode-card').count(), 'Production premium dashboard must render the route mode card');
-  assert.ok(await page.locator('.pnx-teacher-card').count(), 'Production premium dashboard must render the Rota Hoca card');
+  await page.locator('.pnx3-dashboard').waitFor({ state: 'visible', timeout: 20_000 });
+  await page.locator('.pnx3-lower').waitFor({ state: 'visible', timeout: 20_000 });
+  assert.ok(await page.locator('.pnx3-plan .route-task').count(), 'Production KPSS dashboard must render the real Today route');
+  assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(), 'Production KPSS dashboard must render the real focus timer');
+  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(), 'Production KPSS dashboard must render the Rota Hoca card');
+  assert.ok(await page.locator('.pnx3-insight-archive').count(), 'Production KPSS dashboard must preserve explainability');
   assert.ok(await page.locator('.mobile-dock').isVisible(), 'Production 360px dashboard must expose the mobile navigation dock');
   const dashboardCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(dashboardCopy), 'Production dashboard must remain KPSS-only');
@@ -215,7 +215,7 @@ try {
   );
 
   console.log(
-    'Production smoke passed: deploy identity + KPSS-only onboarding + premium Today dashboard · ' +
+    'Production smoke passed: deploy identity + KPSS-only onboarding + approved KPSS Today dashboard · ' +
     (actualSha || 'commit-unavailable')
   );
 } finally {

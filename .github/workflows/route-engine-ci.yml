@@ -76,6 +76,17 @@ jobs:
       - name: Syntax check server runtime tests
         run: node --check scripts/server-runtime.test.mjs
 
+      - name: Syntax check account cloud modules
+        run: |
+          node --check public/supabase-client.js
+          node --check public/login.js
+          node --check public/account-sync.js
+          node --check public/admin.js
+          node --check scripts/account-cloud-contract.test.mjs
+
+      - name: Guard account cloud contract
+        run: node scripts/account-cloud-contract.test.mjs
+
       - name: Syntax check premium UI contract
         run: node --check scripts/premium-ui-contract.test.mjs
 

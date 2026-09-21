@@ -12,6 +12,8 @@ const PUBLIC = path.join(__dirname, 'public');
 const INDEX = path.join(PUBLIC, 'index.html');
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
+const SUPABASE_URL = String(process.env.SUPABASE_URL || 'https://neokmmnibcyduhjrxlbj.supabase.co').replace(/\/$/,'');
+const SUPABASE_PUBLISHABLE_KEY = String(process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_lIiYfMGLt01P2mSdJzEyCg_yJORWVr5');
 const IS_RENDER = process.env.RENDER === 'true';
 const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/,'');
 let runtimeApiKey = process.env.OPENAI_API_KEY || '';
@@ -368,6 +370,7 @@ const server=http.createServer(async (req,res)=>{
   res.setHeader('x-frame-options','SAMEORIGIN');
   if(req.method==='GET'&&req.url==='/api/health'){ const local=isLocalRequest(req),entitlement=runtimeEntitlement(); return json(res,200,{ok:true,aiConfigured:!!runtimeApiKey,ttsConfigured:!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:false,honestUnavailableFallback:true,entitlement:{tier:entitlement.tier,source:entitlement.source,purchaseEnabled:entitlement.purchaseEnabled,accountRequired:entitlement.accountRequired},teacherPolicy:{rateLimitPerMinute:TEACHER_RATE_LIMIT,windowMs:RATE_WINDOW_MS,maxBodyBytes:MAX_BODY,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,costProfile:runtimeProfile,contextSchemaVersion:TEACHER_CONTEXT_VERSION},configurable:local&&!runtimeApiKey,deploy:{provider:IS_RENDER?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }
   if(req.method==='GET'&&req.url==='/api/entitlements'){ return json(res,200,runtimeEntitlement()); }
+  if(req.method==='GET'&&req.url==='/api/public-config'){ return json(res,200,{supabase:{enabled:!!(SUPABASE_URL&&SUPABASE_PUBLISHABLE_KEY),requireAuth:IS_RENDER&&process.env.ROTA_REQUIRE_AUTH!=='0',url:SUPABASE_URL,publishableKey:SUPABASE_PUBLISHABLE_KEY}}); }
 
   if(req.method==='POST'&&req.url==='/api/configure'){
     if(!isLocalRequest(req)) return json(res,403,{error:'AI anahtarı yalnızca yerel uygulama çalıştırmasında bağlanabilir.'});

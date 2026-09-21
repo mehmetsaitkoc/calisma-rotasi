@@ -121,6 +121,37 @@ const sparseMethod=I.methodStrategyMemory({
 assert.equal(sparseMethod.known,false,'one mature method outcome must not create a method preference');
 assert.equal(sparseMethod.current.action,'collect');
 
+const subjectProfile=I.subjectMethodProfile({
+  samples:[
+    {topicId:'math-a',method:'quant',mode:'repair',status:'harmful',maturity:14},
+    {topicId:'math-a',method:'quant',mode:'repair',status:'harmful',maturity:30},
+    {topicId:'math-b',method:'quant',mode:'repair',status:'harmful',maturity:14},
+    {topicId:'math-b',method:'quant',mode:'repair',status:'harmful',maturity:30},
+    {topicId:'math-a',method:'quant:alt',mode:'repair',status:'helpful',maturity:14},
+    {topicId:'math-a',method:'quant:alt',mode:'repair',status:'helpful',maturity:30},
+    {topicId:'math-b',method:'quant:alt',mode:'repair',status:'helpful',maturity:14},
+    {topicId:'math-b',method:'quant:alt',mode:'repair',status:'helpful',maturity:30}
+  ]
+});
+assert.equal(subjectProfile.known,true,'subject method profile needs repeated evidence across more than one topic');
+assert.ok(subjectProfile.confidence>=60);
+assert.equal(subjectProfile.preferred.method,'quant:alt');
+assert.equal(subjectProfile.preferred.label,'Yeniden çöz + hata satırı');
+assert.equal(subjectProfile.cautions[0].method,'quant');
+assert.equal(subjectProfile.topicCount,2);
+
+const oneTopicProfile=I.subjectMethodProfile({
+  samples:[
+    {topicId:'only-topic',method:'history',mode:'repair',status:'helpful',maturity:14},
+    {topicId:'only-topic',method:'history',mode:'repair',status:'helpful',maturity:30},
+    {topicId:'only-topic',method:'history',mode:'repair',status:'helpful',maturity:30}
+  ]
+});
+assert.equal(oneTopicProfile.known,false,'one topic must not be generalized into a subject-wide method claim');
+assert.ok(oneTopicProfile.confidence<=54);
+assert.equal(I.methodHumanLabel('history'),'Aktif hatırlama + kronoloji');
+assert.equal(I.methodHumanLabel('geography'),'Harita + geri çağırma');
+
 const quantVariation=I.methodVariation('quant','repair','change');
 assert.match(quantVariation,/çözümlü örneği kapatıp kendin yeniden kur/i);
 assert.equal(I.methodVariation('quant','repair','hold'),'');

@@ -763,12 +763,44 @@ try {
 
   const clock = focusCard.locator('#clock');
   await clock.waitFor({ state: 'visible' });
+  await focusCard.getByText('Duraklat', { exact: false }).waitFor({ state: 'visible' });
   const initialClock = (await clock.innerText()).trim();
   assert.equal(initialClock, String(todayTask.minutes).padStart(2, '0') + ':00', 'Real timer must honor the planned task minutes');
+
   await page.clock.fastForward(2000);
   const runningClock = (await clock.innerText()).trim();
   assert.notEqual(runningClock, initialClock, 'Real Pomodoro clock must count down after the dashboard play control is pressed');
-  assert.ok(await focusCard.getByText('Duraklat', { exact: false }).count(), 'Running Pomodoro must expose pause control');
+  if (todayTask.minutes === 40) {
+    assert.match(runningClock, /^39:\d{2}$/, 'A 40-minute real task must enter the 39:xx range after it starts');
+  }
+
+  const pauseToggle = focusCard.locator('#timer-toggle');
+  await pauseToggle.click();
+  await focusCard.getByText('Başlat', { exact: false }).waitFor({ state: 'visible' });
+  const pausedClock = (await focusCard.locator('#clock').innerText()).trim();
+  await page.clock.fastForward(1600);
+  assert.equal((await focusCard.locator('#clock').innerText()).trim(), pausedClock, 'Paused Pomodoro must keep its remaining time');
+
+  await focusCard.locator('#timer-toggle').click();
+  await focusCard.getByText('Duraklat', { exact: false }).waitFor({ state: 'visible' });
+  await page.clock.fastForward(1600);
+  const resumedClock = (await focusCard.locator('#clock').innerText()).trim();
+  assert.notEqual(resumedClock, pausedClock, 'Resumed Pomodoro must continue the existing real countdown');
+
+  await navigate(page, 'today');
+  const rerenderedFocus = page.locator('.pnx3-focus .route-focus-card');
+  await rerenderedFocus.waitFor({ state: 'visible' });
+  assert.ok((await rerenderedFocus.innerText()).includes(todayTask.title), 'Today rerender must preserve the task-bound focus session');
+  const beforeRerenderAdvance = (await rerenderedFocus.locator('#clock').innerText()).trim();
+  await page.clock.fastForward(1200);
+  const afterRerenderAdvance = (await rerenderedFocus.locator('#clock').innerText()).trim();
+  assert.notEqual(afterRerenderAdvance, beforeRerenderAdvance, 'Today rerender must not stop or replace the real running timer');
+
+  assert.ok(await rerenderedFocus.locator('[data-action="timer-log"]').count(), 'Task-bound real timer must preserve its log action');
+  await rerenderedFocus.locator('[data-action="timer-reset"]').click();
+  const resetClock = page.locator('#clock').first();
+  await resetClock.waitFor({ state: 'visible' });
+  assert.equal((await resetClock.innerText()).trim(), String(todayTask.minutes).padStart(2, '0') + ':00', 'Reset must restore the planned duration');
 
   snapshot = await appState(page);
   const spaceAfterFocus = snapshot.value.workspaces.kpss;

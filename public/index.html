@@ -1638,6 +1638,7 @@ h1,h2,h3,h4{color:var(--v2-ink);letter-spacing:-.035em}
 <!-- KPSS CONTENT V2: reviewed professional topic-test bank -->
 <script src="/kpss-professional-bank.js"></script>
 <script src="/kpss-professional-turkish-02.js"></script>
+<script src="/kpss-professional-turkish-03.js"></script>
 <script src="/kpss-professional-sections.js"></script>
 <!-- ARCHITECTURE BOUNDARY: workspace state schema -->
 <script src="/workspace-schema.js"></script>
@@ -4001,7 +4002,8 @@ function miniQuestionSkill(def,index){return def.questions?.[index]?.skill||MINI
 const KPSS_PROFESSIONAL_TESTS=(()=>{
  const tests=[
   ...(Array.isArray(window.RotaKpssProfessionalBank?.tests)?window.RotaKpssProfessionalBank.tests:[]),
-  ...(Array.isArray(window.RotaKpssProfessionalTurkish02?.tests)?window.RotaKpssProfessionalTurkish02.tests:[])
+  ...(Array.isArray(window.RotaKpssProfessionalTurkish02?.tests)?window.RotaKpssProfessionalTurkish02.tests:[]),
+  ...(Array.isArray(window.RotaKpssProfessionalTurkish03?.tests)?window.RotaKpssProfessionalTurkish03.tests:[])
  ];
  const audit=window.RotaKpssQuestionQuality?.auditBank?window.RotaKpssQuestionQuality.auditBank(tests,{profiles:window.RotaKpssContentBlueprint?.TEST_PROFILES||[],requireApproved:true}):{valid:false,errors:[{message:'Kalite modülü yüklenemedi.'}]};
  if(!audit.valid){console.error('KPSS profesyonel içerik kalite kapısını geçemedi.',audit.errors);return [];}

@@ -11,6 +11,15 @@
 
   function appStateEntry() {
     try {
+      const params = new URLSearchParams(location.search);
+      const preferredKey = params.get('fresh') === '1' ? STATE_PREFIX + ':fresh-preview' : STATE_PREFIX;
+      const preferredRaw = localStorage.getItem(preferredKey);
+      if (preferredRaw) {
+        const preferredValue = JSON.parse(preferredRaw);
+        if (preferredValue?.workspaces?.kpss && preferredValue?.workspaces?.yks) {
+          return { key: preferredKey, value: preferredValue };
+        }
+      }
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (!key || !key.startsWith(STATE_PREFIX)) continue;

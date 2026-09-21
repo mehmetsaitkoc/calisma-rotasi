@@ -69,7 +69,8 @@ globalThis.routeAppliedDecision=()=>({
 globalThis.routeTaskReason=()=> 'Eski genel neden.';
 globalThis.routeBuildCandidates=()=>[
   {routeKey:'topic:k-ma-topic',subjectId:'k-ma',topicId:'k-ma-topic',source:'curriculum',priority:60,reason:'Temel rota.'},
-  {routeKey:'mistake:m1',subjectId:'k-ma',topicId:'k-ma-topic',source:'mistake',priority:88,reason:'Kritik yanlış.'}
+  {routeKey:'mistake:m1',subjectId:'k-ma',topicId:'k-ma-topic',source:'mistake',priority:88,reason:'Kritik yanlış.'},
+  {routeKey:'spaced:3:k-ma-topic',subjectId:'k-ma',topicId:'k-ma-topic',source:'spaced_review',reviewWave:3,reviewVariant:'challenge',priority:64,title:'Seviye yoklama · Problemler',reason:'Güçlü performans sonrası seçici tekrar.',taskGoal:'Seviye yoklama: 12 soru çöz · Son bölümde 2 daha seçici veya karma soru çöz; amaç daha çok soru değil, bilgiyi farklı biçimde kullanabildiğini görmek.'}
 ];
 globalThis.teacherStudentContext=(record)=>({
   contextVersion:2,
@@ -148,6 +149,11 @@ const harmfulProgress=globalThis.routeAppliedDecision('k-ma','k-ma-topic');
 assert.equal(harmfulProgress.intelligence.outcomeMemory.action,'change');
 assert.equal(harmfulProgress.mode,'steady','mature harmful progress history must hold another difficulty increase');
 assert.equal(harmfulProgress.intelligenceOutcomeGuard,'harmful_progress_hold');
+const harmfulCandidates=globalThis.routeBuildCandidates();
+const convertedReview=harmfulCandidates.find(x=>x.routeKey==='spaced:3:k-ma-topic');
+assert.equal(convertedReview.reviewVariant,undefined,'harmful progress memory must cancel the next challenge variant');
+assert.match(convertedReview.title,/3 gün tekrarı/);
+assert.match(convertedReview.reason,/normal kalıcılık tekrarı/);
 
 outcomeEffects.progress={known:true,total:4,helpful:3,harmful:0,neutral:1,score:.75};
 bridge.invalidate();
@@ -155,6 +161,8 @@ const helpfulProgress=globalThis.routeAppliedDecision('k-ma','k-ma-topic');
 assert.equal(helpfulProgress.mode,'progress','helpful progress memory may preserve, but not amplify, the original progress decision');
 assert.equal(helpfulProgress.intelligence.outcomeMemory.action,'repeat');
 assert.equal(helpfulProgress.intelligenceOutcomeGuard,'helpful_core_preserved');
+const helpfulCandidates=globalThis.routeBuildCandidates();
+assert.equal(helpfulCandidates.find(x=>x.routeKey==='spaced:3:k-ma-topic').reviewVariant,'challenge','helpful progress memory may keep an already justified challenge review');
 
 outcomeEffects.progress={known:false,total:0,helpful:0,harmful:0,neutral:0,score:0};
 gapState={known:true,current:50,target:90,gap:40};

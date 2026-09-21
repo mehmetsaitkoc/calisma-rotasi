@@ -81,71 +81,69 @@ async function assertCleanRender(page, label) {
 }
 
 
-async function fillKpssStep(page) {
+async function finishKpssOnboarding(page) {
   const form = page.locator('#setup-wizard-form');
   await form.waitFor({ state: 'visible', timeout: 20_000 });
 
-  const name = form.locator('[name="name"]');
-  if (await name.count()) await name.fill('Production Smoke Öğrenci');
+  // Stage 1 · premium welcome
+  await form.locator('button[type="submit"]').click();
 
-  const habit = form.locator('[name="studyHabit"][value="yes"]');
-  if (await habit.count()) await habit.check();
-
-  const currentNet = form.locator('[name="currentNet"]');
-  if (await currentNet.count()) await currentNet.fill('48');
-
-  const targetNet = form.locator('[name="targetNet"]');
-  if (await targetNet.count()) await targetNet.fill('82');
-
-  const targetScore = form.locator('[name="targetScore"]');
-  if (await targetScore.count()) await targetScore.fill('88');
-
-  const target = form.locator('[name="target"]');
-  if (await target.count()) await target.fill('KPSS Lisans hedef rotası');
-
-  const minuteSelect = form.locator('select[name="dailyMinutes"]');
-  if (await minuteSelect.count()) {
-    await minuteSelect.selectOption('240');
-  } else {
-    const minuteRadio = form.locator('[name="dailyMinutes"][value="240"]');
-    if (await minuteRadio.count()) await minuteRadio.check();
-  }
+  // Stage 2 · goals and available time
+  await form.locator('[name="targetScore"][value="85"]').evaluate(el => {
+    el.checked = true;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await form.locator('[name="targetNet"]').fill('82');
+  await form.locator('[name="dailyMinutes"][value="240"]').evaluate(el => {
+    el.checked = true;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
 
   const days = form.locator('[name="days"]');
   for (let i = 0; i < await days.count(); i++) {
     const box = days.nth(i);
-    if (!(await box.isChecked())) await box.check({ force: true });
-  }
-
-  const levels = form.locator('select[name^="level:"]');
-  for (let i = 0; i < await levels.count(); i++) {
-    const select = levels.nth(i);
-    const values = await select.locator('option').evaluateAll(options => options.map(o => o.value).filter(Boolean));
-    if (values.length) await select.selectOption(values[Math.min(i === 0 ? 0 : 2, values.length - 1)]);
-  }
-
-  const numbers = form.locator('input[type="number"][name]');
-  for (let i = 0; i < await numbers.count(); i++) {
-    const input = numbers.nth(i);
-    if (await input.inputValue()) continue;
-    const field = (await input.getAttribute('name')) || '';
-    await input.fill(/target/i.test(field) ? '80' : '40');
-  }
-
-  await form.locator('button[type="submit"]').click();
-}
-
-async function finishKpssOnboarding(page) {
-  for (let step = 0; step < 12; step++) {
-    const build = page.locator('[data-action="summary-build"]');
-    if (await build.count() && await build.isVisible()) {
-      await build.click();
-      await page.locator('.route-task').first().waitFor({ state: 'visible', timeout: 20_000 });
-      return;
+    if (!(await box.isChecked())) {
+      await box.evaluate(el => {
+        el.checked = true;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      });
     }
-    await fillKpssStep(page);
   }
-  throw new Error('Production KPSS onboarding did not reach route summary');
+  await form.locator('button[type="submit"]').click();
+
+  // Stage 3 · situation analysis
+  await form.locator('[name="currentNetApprox"][value="50"]').evaluate(el => {
+    el.checked = true;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await form.locator('[name="studyHabit"][value="yes"]').evaluate(el => {
+    el.checked = true;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  const weakMath = form.locator('[name="weakSubjects"][value="k-ma"]');
+  if (await weakMath.count()) {
+    await weakMath.evaluate(el => {
+      el.checked = true;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+
+  const strongTurkish = form.locator('[name="strongSubjects"][value="k-tr"]');
+  if (await strongTurkish.count()) {
+    await strongTurkish.evaluate(el => {
+      el.checked = true;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+  await form.locator('button[type="submit"]').click();
+
+  // Stage 4 · summary -> route build
+  const build = page.locator('[data-action="summary-build"]');
+  await build.waitFor({ state: 'visible', timeout: 20_000 });
+  await build.click();
+  await page.locator('.route-building-card').waitFor({ state: 'visible', timeout: 20_000 });
+  await page.locator('.route-task').first().waitFor({ state: 'visible', timeout: 30_000 });
 }
 
 const health = await waitForExpectedDeploy();
@@ -190,7 +188,8 @@ try {
 
   const wizard = page.locator('#setup-wizard-form');
   await wizard.waitFor({ state: 'visible', timeout: 20_000 });
-  assert.ok(await wizard.locator('[name="name"]').count(), 'Production onboarding must render the student name step');
+  assert.ok(await page.locator('[data-premium-surface="onboarding"]').isVisible(), 'Production must open the premium KPSS onboarding surface');
+  assert.ok(await wizard.locator('button[type="submit"]').count(), 'Production onboarding must render the premium welcome stage');
   assert.equal(await wizard.locator('select[name="track"]').count(), 0, 'Production KPSS onboarding must not render a YKS track selector');
   await assertCleanRender(page, 'production onboarding');
 

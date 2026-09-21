@@ -20,6 +20,8 @@ assert.match(boundary, /entry\.value\.activeExam = PRIMARY_EXAM/, 'A stale YKS s
 assert.match(boundary, /localStorage\.setItem\(entry\.key, JSON\.stringify\(entry\.value\)\)/, 'KPSS-only migration must persist only the selected workspace switch');
 assert.match(boundary, /location\.reload\(\)/, 'A legacy YKS resume must reload against the migrated KPSS selection');
 assert.doesNotMatch(boundary, /delete\s+[^;\n]*workspaces/i, 'Compatibility boundary must never delete a legacy workspace');
+assert.match(boundary, /function setText\(node, value\)/, 'Academy scrubbing must be idempotent under the MutationObserver');
+assert.match(boundary, /if \(node && node\.textContent !== value\) node\.textContent = value/, 'Academy copy updates must not create endless observer churn');
 assert.doesNotMatch(boundary, /fetch\s*\(/, 'KPSS-only presentation boundary must not own network behavior');
 assert.doesNotMatch(boundary, /routeRebalance|routeEnsure|generatePlan|StudentIntelligence/i, 'KPSS-only boundary must not own Route Engine or Intelligence behavior');
 

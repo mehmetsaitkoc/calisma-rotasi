@@ -28,11 +28,19 @@ async function waitServer() {
 async function gotoRedirectSafe(page, url) {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      // The KPSS-only runtime may immediately replace a legacy YKS URL with the
+      // canonical KPSS workspace. Waiting for the original DOMContentLoaded can
+      // therefore report ERR_ABORTED even though the product redirect is valid.
+      // Commit is the stable navigation boundary; the following product locator
+      // assertions still verify that the redirected workspace rendered correctly.
+      await page.goto(url, { waitUntil: 'commit' });
+      await page.waitForLoadState('domcontentloaded').catch(error => {
+        if (!String(error).includes('ERR_ABORTED')) throw error;
+      });
       return;
     } catch (error) {
-      if (!String(error).includes('ERR_ABORTED') || attempt === 2) throw error;
-      await sleep(120);
+      if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error)) || attempt === 2) throw error;
+      await sleep(160);
     }
   }
 }

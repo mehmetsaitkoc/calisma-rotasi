@@ -210,12 +210,12 @@ function explainTask(input={}){
   if(String(task.source||'').includes('exam'))reasons.push('Son deneme sonucu bu alanı yeniden önceliklendirdi.');
   if(decision.mode==='repair')reasons.push('Öğrenci modeli bu konuda onarım modu öneriyor.');
   else if(decision.mode==='progress')reasons.push('Son kanıtların yeterli olduğu için ilerleme modu seçildi.');
+  if(outcomeMemory?.known&&outcomeMemory.action==='change')reasons.push('Aynı müdahale geçmişte yeterli sonuç vermediği için bu kez yöntem değiştiriliyor.');
+  else if(outcomeMemory?.known&&outcomeMemory.action==='repeat')reasons.push('Bu müdahalenin çekirdeği geçmişte işe yaradığı için korunuyor.');
   if(model.trend?.direction==='down'||model.trend==='down')reasons.push('Son performans eğilimi aşağı yönlü.');
   if(Number(model.openMistakes)>=3)reasons.push('Açık yanlışların bu konunun önceliğini artırıyor.');
   if(mastery&&mastery.ready===false&&mastery.next)reasons.push('3/7 kalıcılık döngüsünde sıradaki kontrol zamanı geldi.');
   if(risk?.band==='high')reasons.push('Hedef riski yükseldiği için yüksek getirili çalışmalara ağırlık veriliyor.');
-  if(outcomeMemory?.known&&outcomeMemory.action==='change')reasons.push('Aynı müdahale geçmişte yeterli sonuç vermediği için bu kez yöntem değiştiriliyor.');
-  else if(outcomeMemory?.known&&outcomeMemory.action==='repeat')reasons.push('Bu müdahalenin çekirdeği geçmişte işe yaradığı için korunuyor.');
   if(!reasons.length&&task.reason)reasons.push(String(task.reason));
   if(!reasons.length)reasons.push('Bu görev haftalık yük, hedef ve mevcut konu sırasına göre seçildi.');
   return {headline:'Neden bugün?',reasons:reasons.slice(0,3),text:reasons.slice(0,2).join(' ')};

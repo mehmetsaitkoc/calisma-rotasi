@@ -70,7 +70,13 @@
     ['İKİ HEDEF, TEK ÇALIŞMA ALANI', 'TEK HEDEF, AKILLI ÇALIŞMA ALANI'],
     ['İki sınavın yedeğini yükle?', 'Çalışma yedeğini yükle?'],
     ['Bu işlem KPSS ve YKS alanlarının tüm mevcut kayıtlarını yedekle değiştirir.', 'Bu işlem mevcut yerel çalışma kayıtlarını yedekle değiştirir.'],
-    ['Kütüphanede başka alana bakman, haftalık çalışma planındaki YKS alanını değiştirmez.', 'Kütüphane KPSS çalışma alanınla aynı kapsamda kalır.']
+    ['Kütüphanede başka alana bakman, haftalık çalışma planındaki YKS alanını değiştirmez.', 'Kütüphane KPSS çalışma alanınla aynı kapsamda kalır.'],
+    ['İlk soru: Hangi sınava hazırlanıyorsun?', 'KPSS rotanı oluşturmaya başla.'],
+    ['Diğer sınava her zaman geçebilirsin.', 'Ayarlarını daha sonra güncelleyebilirsin.'],
+    ['Sınav değiştir, kaydını koru', 'Rotanı güvenle koru'],
+    ['Yedek dosyası iki sınavı da içerir. Yükleme, bu uygulamadaki mevcut kayıtların tamamını değiştirir; önce dışa aktar.', 'Yedek dosyası mevcut çalışma kayıtlarını içerir. Yükleme, bu uygulamadaki mevcut kayıtların tamamını değiştirir; önce dışa aktar.'],
+    ['Bu işlem seçili sınavın yerel kayıtlarını siler. Diğer sınavın verilerine dokunmaz.', 'Bu işlem KPSS çalışma alanının yerel kayıtlarını siler.'],
+    ['Bu sınavın tüm yerel kayıtları silinir. Önce yedek al. YKS kayıtların korunur.', 'KPSS çalışma alanının tüm yerel kayıtları silinir. Önce yedek al.']
   ];
 
   function cleanCopy(raw) {
@@ -141,7 +147,7 @@
   function schedule() {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(reconcile);
+    queueMicrotask(reconcile);
   }
 
   document.addEventListener('click', (event) => {

@@ -23,6 +23,10 @@ await import('../public/kpss-professional-history-12.js');
 await import('../public/kpss-professional-history-13.js');
 await import('../public/kpss-professional-history-editorial-fixes.js');
 await import('../public/kpss-professional-history-sections-01.js');
+await import('../public/kpss-professional-history-sections-02.js');
+await import('../public/kpss-professional-history-sections-03.js');
+await import('../public/kpss-professional-history-sections-04.js');
+await import('../public/kpss-professional-history-sections-05.js');
 
 const C=globalThis.RotaCatalog;
 const B=globalThis.RotaKpssContentBlueprint;
@@ -106,21 +110,40 @@ assert.ok(historyPrime.flatMap(t=>t.questions).every(q=>q.answerText===q.options
 assert.ok(historyPrime.every(t=>t.questions.filter(q=>q.cognitive!=='recall').length>=7));
 assert.ok(historyPrime.every(t=>new Set(t.questions.map(q=>q.historyForm)).size>=4));
 
-const historySection1=H.sectionExams.find(x=>x.id==='kpss-professional-tarih-section-01');
-assert.ok(historySection1,'Prime History section exam 1 must exist');
-Q.validateSectionExam(historySection1,{
-  blueprint:B.sectionBlueprint('k-ta',0),
-  profile:B.HISTORY_SECTION_PROFILES[0]
-});
-assert.equal(historySection1.qualityStatus,'approved');
-assert.equal(historySection1.questions.length,27);
-assert.deepEqual(Q.difficultyCounts(historySection1.questions),B.HISTORY_SECTION_PROFILES[0].difficulty);
-assert.ok(historySection1.questions.every(q=>q.answerText===q.options[q.answer]&&q.editorialStatus==='reviewed'&&q.factStatus==='stable-historical'));
-assert.ok(historySection1.questions.every(q=>q.sourceKind==='original'&&q.copyrightPolicy==='original-only'));
-assert.deepEqual(
-  historySection1.questions.reduce((m,q)=>(m[q.topicId]=(m[q.topicId]||0)+1,m),{}),
-  Object.fromEntries(B.HISTORY_SECTION_BLUEPRINTS[0].filter(x=>x.count>0).map(x=>[x.topicId,x.count]))
-);
+const historySections=[...H.sectionExams].filter(x=>x.subjectId==='k-ta').sort((a,b)=>a.sectionNo-b.sectionNo);
+assert.equal(historySections.length,5,'Five prime History section exams must exist');
+const historySectionQuestionIds=new Set();
+const historySectionRows=[];
+for(const [i,section] of historySections.entries()){
+  Q.validateSectionExam(section,{
+    blueprint:B.sectionBlueprint('k-ta',i),
+    profile:B.HISTORY_SECTION_PROFILES[i]
+  });
+  assert.equal(section.qualityStatus,'approved');
+  assert.equal(section.questions.length,27);
+  assert.deepEqual(Q.difficultyCounts(section.questions),B.HISTORY_SECTION_PROFILES[i].difficulty);
+  assert.ok(section.questions.every(q=>q.answerText===q.options[q.answer]&&q.editorialStatus==='reviewed'&&q.factStatus==='stable-historical'));
+  assert.ok(section.questions.every(q=>q.sourceKind==='original'&&q.copyrightPolicy==='original-only'));
+  assert.deepEqual(
+    section.questions.reduce((m,q)=>(m[q.topicId]=(m[q.topicId]||0)+1,m),{}),
+    Object.fromEntries(B.HISTORY_SECTION_BLUEPRINTS[i].filter(x=>x.count>0).map(x=>[x.topicId,x.count]))
+  );
+  for(const q of section.questions){
+    assert.ok(!historySectionQuestionIds.has(q.id),'History section question id must be globally unique: '+q.id);
+    for(const previous of historySectionRows){
+      assert.notEqual(Q.norm(previous.text),Q.norm(q.text),'History section exams must not repeat exact stems: '+previous.id+' ↔ '+q.id);
+      assert.ok(!Q.suspiciouslySimilar(previous.text,q.text),'History section exams must not contain near-duplicate stems: '+previous.id+' ↔ '+q.id);
+    }
+    for(const topicQ of historyPrime.flatMap(t=>t.questions)){
+      assert.notEqual(Q.norm(topicQ.text),Q.norm(q.text),'History topic and section banks must not repeat exact stems: '+topicQ.id+' ↔ '+q.id);
+      assert.ok(!Q.suspiciouslySimilar(topicQ.text,q.text),'History topic and section banks must not contain near-duplicate stems: '+topicQ.id+' ↔ '+q.id);
+    }
+    historySectionQuestionIds.add(q.id);
+    historySectionRows.push({id:q.id,text:q.text});
+  }
+}
+assert.equal(historySectionQuestionIds.size,135,'Five History section exams must contribute 135 unique question ids');
+assert.equal(historyPrime.flatMap(t=>t.questions).length+historySectionQuestionIds.size,759,'Prime KPSS History package must contain 759 original questions');
 
 const professionalSection=S.sectionExams[0];
 assert.ok(professionalSection,'Professional Turkish section pilot must exist');
@@ -151,6 +174,7 @@ for(const marker of [
   '<script src="/kpss-professional-history-13.js"></script>',
   '<script src="/kpss-professional-history-editorial-fixes.js"></script>',
   '<script src="/kpss-professional-history-sections-01.js"></script>',
+  '<script src="/kpss-professional-history-sections-05.js"></script>',
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',

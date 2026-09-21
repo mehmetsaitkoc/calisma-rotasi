@@ -1,5 +1,3 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/+esm';
-
 let clientPromise = null;
 
 async function loadPublicConfig(){
@@ -14,6 +12,7 @@ export async function getSupabase(){
     const config = await loadPublicConfig();
     const cloud = config?.supabase || {};
     if(!cloud.enabled || !cloud.url || !cloud.publishableKey) return null;
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/+esm');
     return createClient(cloud.url, cloud.publishableKey, {
       auth: {
         persistSession: true,

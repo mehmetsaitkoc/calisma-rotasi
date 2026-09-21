@@ -6,6 +6,7 @@ await import('../public/kpss-content-blueprint.js');
 await import('../public/kpss-question-quality.js');
 await import('../public/kpss-professional-bank.js');
 await import('../public/kpss-professional-turkish-02.js');
+await import('../public/kpss-professional-turkish-03.js');
 await import('../public/kpss-professional-sections.js');
 
 const C=globalThis.RotaCatalog;
@@ -13,8 +14,9 @@ const B=globalThis.RotaKpssContentBlueprint;
 const Q=globalThis.RotaKpssQuestionQuality;
 const P=globalThis.RotaKpssProfessionalBank;
 const P2=globalThis.RotaKpssProfessionalTurkish02;
+const P3=globalThis.RotaKpssProfessionalTurkish03;
 const S=globalThis.RotaKpssProfessionalSections;
-assert.ok(C&&B&&Q&&P&&P2&&S,'KPSS v2 content modules must load');
+assert.ok(C&&B&&Q&&P&&P2&&P3&&S,'KPSS v2 content modules must load');
 
 const totals=B.totals(C);
 assert.deepEqual(totals,{
@@ -54,13 +56,13 @@ assert.equal(B.OFFICIAL_SCOPE.generalCulture.citizenshipPct,15);
 assert.equal(B.OFFICIAL_SCOPE.generalCulture.generalCurrentPct,10);
 assert.equal(B.COPYRIGHT_POLICY,'original-only');
 
-const professional=[...P.tests,...P2.tests];
+const professional=[...P.tests,...P2.tests,...P3.tests];
 const audit=Q.auditBank(professional,{profiles:B.TEST_PROFILES,requireApproved:true});
 assert.equal(audit.valid,true,JSON.stringify(audit.errors,null,2));
-assert.equal(audit.tests,8);
-assert.equal(audit.questions,96);
-assert.equal(audit.topics,2);
-for(const topicId of ['k-tr-1','k-tr-2']){
+assert.equal(audit.tests,12);
+assert.equal(audit.questions,144);
+assert.equal(audit.topics,3);
+for(const topicId of ['k-tr-1','k-tr-2','k-tr-3']){
   const sets=professional.filter(t=>t.topicId===topicId);
   assert.deepEqual(sets.map(t=>t.setNo),[1,2,3,4]);
   assert.ok(sets.every(t=>t.subjectId==='k-tr'&&t.questions.length===12&&t.qualityStatus==='approved'));
@@ -91,6 +93,7 @@ for(const marker of [
   '<script src="/kpss-question-quality.js"></script>',
   '<script src="/kpss-professional-bank.js"></script>',
   '<script src="/kpss-professional-turkish-02.js"></script>',
+  '<script src="/kpss-professional-turkish-03.js"></script>',
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',
@@ -103,4 +106,4 @@ for(const marker of [
 ]) assert.ok(html.includes(marker),'Missing KPSS v2 integration marker: '+marker);
 assert.ok(html.includes('ROTA_ALL_MINI_EXAMS'),'Archived mini definitions must remain resolvable for old attempts');
 
-console.log('KPSS content v2 passed: 3,672-question target + 96 approved topic questions + 30-question professional Turkish section pilot');
+console.log('KPSS content v2 passed: 3,672-question target + 144 approved topic questions across 3 Turkish topics + 30-question professional Turkish section pilot');

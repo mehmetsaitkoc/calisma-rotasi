@@ -26,6 +26,7 @@ must(admin.includes("select('id,is_admin')"),'admin authorization check missing'
 must(admin.includes("from('workspace_state')"),'admin workspace read missing');
 
 must(server.includes('/api/public-config'),'public Supabase config endpoint missing');
+must(server.includes('requireAuth:IS_RENDER'),'production-only auth requirement missing');
 must(server.includes('SUPABASE_PUBLISHABLE_KEY'),'publishable key config missing');
 must(!server.includes('SUPABASE_SERVICE_ROLE'),'service-role key must not be exposed');
 

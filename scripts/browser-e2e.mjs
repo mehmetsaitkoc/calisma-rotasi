@@ -521,10 +521,12 @@ async function runKpssSectionExamContent(browser) {
     assert.ok(await page.getByText('KPSS Türkçe · Cümlede Anlam · Test '+setNo,{exact:true}).count(),'Professional Sentence Meaning Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Paragrafta Anlam · Test '+setNo,{exact:true}).count(),'Professional Paragraph Meaning Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Sözel Mantık · Test '+setNo,{exact:true}).count(),'Professional Verbal Logic Test '+setNo+' must be visible');
+    assert.ok(await page.getByText('KPSS Türkçe · Yazım Kuralları · Test '+setNo,{exact:true}).count(),'Professional Writing Rules Test '+setNo+' must be visible');
   }
   assert.equal(await page.getByText('KPSS Sözcükte Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Meaning seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Cümlede Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Sentence Meaning seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Türkçe Paragrafta Anlam Mini #01',{exact:true}).count(),0,'Superseded legacy paragraph mini must not remain in the active catalog');
+  assert.equal(await page.getByText('KPSS Yazım Kuralları · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Writing Rules seed must not remain in the active catalog');
   const professionalStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-tr:k-tr-1:t01"]').first();
   await professionalStart.waitFor({state:'visible'});
   await professionalStart.click();
@@ -545,6 +547,13 @@ async function runKpssSectionExamContent(browser) {
   const logicForm=page.locator('#mini-exam-form');
   await logicForm.waitFor({state:'visible'});
   assert.equal(await logicForm.locator('.mini-question').count(),12,'Professional Verbal Logic Test 4 must render exactly 12 questions');
+  await page.locator('[data-action="close-modal"]').first().click();
+  const writingStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-tr:k-tr-6:t01"]').first();
+  await writingStart.waitFor({state:'visible'});
+  await writingStart.click();
+  const writingForm=page.locator('#mini-exam-form');
+  await writingForm.waitFor({state:'visible'});
+  assert.equal(await writingForm.locator('.mini-question').count(),12,'Professional Writing Rules Test 1 must render exactly 12 questions');
   await page.locator('[data-action="close-modal"]').first().click();
   assert.ok(await page.getByText(/konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık/i).count(), 'Section-exam distribution must be described as approximate, not official-fixed');
 

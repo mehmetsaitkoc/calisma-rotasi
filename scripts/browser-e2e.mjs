@@ -524,6 +524,7 @@ async function runKpssSectionExamContent(browser) {
     assert.ok(await page.getByText('KPSS Türkçe · Ses Bilgisi · Test '+setNo,{exact:true}).count(),'Professional Phonology Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Yazım Kuralları · Test '+setNo,{exact:true}).count(),'Professional Writing Rules Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Noktalama İşaretleri · Test '+setNo,{exact:true}).count(),'Professional Punctuation Test '+setNo+' must be visible');
+    assert.ok(await page.getByText('KPSS Türkçe · Sözcük Türleri · Test '+setNo,{exact:true}).count(),'Professional Word Classes Test '+setNo+' must be visible');
   }
   assert.equal(await page.getByText('KPSS Sözcükte Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Meaning seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Cümlede Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Sentence Meaning seed must not remain in the active catalog');
@@ -531,6 +532,7 @@ async function runKpssSectionExamContent(browser) {
   assert.equal(await page.getByText('KPSS Ses Bilgisi · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Phonology seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Yazım Kuralları · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Writing Rules seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Noktalama · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Punctuation seed must not remain in the active catalog');
+  assert.equal(await page.getByText('KPSS Sözcük Türleri · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Classes seed must not remain in the active catalog');
   const professionalStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-tr:k-tr-1:t01"]').first();
   await professionalStart.waitFor({state:'visible'});
   await professionalStart.click();
@@ -572,6 +574,13 @@ async function runKpssSectionExamContent(browser) {
   const punctuationForm=page.locator('#mini-exam-form');
   await punctuationForm.waitFor({state:'visible'});
   assert.equal(await punctuationForm.locator('.mini-question').count(),12,'Professional Punctuation Test 4 must render exactly 12 questions');
+  await page.locator('[data-action="close-modal"]').first().click();
+  const wordClassesStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-tr:k-tr-8:t04"]').first();
+  await wordClassesStart.waitFor({state:'visible'});
+  await wordClassesStart.click();
+  const wordClassesForm=page.locator('#mini-exam-form');
+  await wordClassesForm.waitFor({state:'visible'});
+  assert.equal(await wordClassesForm.locator('.mini-question').count(),12,'Professional Word Classes Test 4 must render exactly 12 questions');
   await page.locator('[data-action="close-modal"]').first().click();
   assert.ok(await page.getByText(/konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık/i).count(), 'Section-exam distribution must be described as approximate, not official-fixed');
 

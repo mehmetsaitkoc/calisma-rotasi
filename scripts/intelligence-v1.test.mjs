@@ -100,6 +100,26 @@ const sparseLoad=I.executionPrescription({
 });
 assert.equal(sparseLoad.mode,'collect','sparse execution evidence must not force workload changes');
 
+const sparseMemory=I.interventionMemory({
+  mode:'repair',
+  effect:{known:true,total:1,helpful:0,harmful:1,neutral:0,score:-1}
+});
+assert.equal(sparseMemory.known,false,'one mature intervention is not enough to learn a method preference');
+assert.equal(sparseMemory.action,'hold');
+
+const harmfulMemory=I.interventionMemory({
+  mode:'progress',
+  effect:{known:true,total:3,helpful:0,harmful:2,neutral:1,score:-0.67}
+});
+assert.equal(harmfulMemory.known,true);
+assert.equal(harmfulMemory.action,'change');
+
+const helpfulMemory=I.interventionMemory({
+  mode:'repair',
+  effect:{known:true,total:4,helpful:3,harmful:0,neutral:1,score:0.75}
+});
+assert.equal(helpfulMemory.action,'repeat');
+
 const repair=I.repairProposal({
   confidence:80,performance:51,retention:54,openMistakes:6,repeatedError:true,trend:'down'
 });
@@ -115,7 +135,8 @@ const explanation=I.explainTask({
   model:{openMistakes:4,trend:{direction:'down'}},
   decision:{mode:'repair'},
   risk:{band:'high'},
-  mastery:{ready:false,next:'3-day'}
+  mastery:{ready:false,next:'3-day'},
+  outcomeMemory:harmfulMemory
 });
 assert.equal(explanation.headline,'Neden bugün?');
 assert.ok(explanation.reasons[0].includes('yanlış'));

@@ -4,12 +4,15 @@ for(let n=1;n<=13;n++) await import('../public/kpss-professional-history-'+Strin
 await import('../public/kpss-professional-history-editorial-fixes.js');
 for(let n=1;n<=5;n++) await import('../public/kpss-professional-history-sections-'+String(n).padStart(2,'0')+'.js');
 await import('../public/kpss-professional-history-editorial-pass2.js');
+await import('../public/kpss-professional-history-editorial-pass3.js');
 
 const H=globalThis.RotaKpssProfessionalHistory;
 const E=globalThis.RotaKpssHistoryEditorialPass2;
-assert.ok(H&&E,'Prime History modules and editorial pass must load');
+const E3=globalThis.RotaKpssHistoryEditorialPass3;
+assert.ok(H&&E&&E3,'Prime History modules and editorial passes must load');
 assert.equal(E.reviewedSample,100,'Human editorial sample must remain 100 questions');
 assert.equal(E.rewrittenQuestions,37,'Editorial pass 2 must keep the 37 reviewed rewrites');
+assert.equal(E3.rebalancedOptions,30,'Editorial pass 3 must keep 30 distractor rebalances');
 
 const topicQuestions=(H.tests||[]).flatMap(t=>t.questions||[]);
 const sectionQuestions=(H.sectionExams||[]).flatMap(s=>s.questions||[]);
@@ -53,9 +56,10 @@ console.log(JSON.stringify({
   sectionQuestions:sectionQuestions.length,
   reviewedSample:E.reviewedSample,
   rewritten:E.rewrittenQuestions,
+  rebalancedOptions:E3.rebalancedOptions,
   recall:recall.length,
   knowledge:knowledge.length,
   directFact:directFact.length,
   longAnswerClueWatch:longAnswerClues.length
 },null,2));
-console.log('KPSS History editorial audit passed: 100-question human review + 37 rewrites + anti-regression gates');
+console.log('KPSS History editorial audit passed: 100-question human review + 37 rewrites + 30 distractor rebalances + anti-regression gates');

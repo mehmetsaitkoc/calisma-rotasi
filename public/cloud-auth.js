@@ -311,6 +311,17 @@
       button.textContent=user?'Hesabım':'Giriş Yap';
       button.setAttribute('aria-label',user?'Hesabım':'Giriş Yap');
     });
+    document.querySelectorAll('.pnx-profile').forEach((profile)=>{
+      profile.style.cursor='pointer';
+      profile.setAttribute('role','button');
+      profile.setAttribute('tabindex','0');
+      profile.setAttribute('aria-label','Hesabım');
+      if(profile.dataset.cloudAccountBound==='1')return;
+      const go=()=>{location.href='/login.html';};
+      profile.addEventListener('click',go);
+      profile.addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();go();}});
+      profile.dataset.cloudAccountBound='1';
+    });
   }
 
   async function startAutoSync(){

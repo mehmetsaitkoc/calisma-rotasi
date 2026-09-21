@@ -2491,7 +2491,7 @@ function readProfile(form){
 }
 function settingsFields(s,setup=false){return `<div class="form-grid"><label class="field">Sana nasıl hitap edelim?<input name="name" value="${esc(s.name)}" maxlength="60" placeholder="Adın (isteğe bağlı)" autocomplete="given-name"></label><label class="field">${state.activeExam==='yks'?'YKS alanın':'Sınav kapsamın'}${state.activeExam==='yks'?`<select name="track">${Object.entries(C.TRACKS).map(([k,v])=>`<option value="${k}" ${s.track===k?'selected':''}>${v}</option>`).join('')}</select>`:'<input value="KPSS Lisans · Genel Yetenek / Genel Kültür" readonly><input name="track" type="hidden" value="lisans">'}</label><label class="field">Çalışma günlerinde ayıracağın süre<select name="dailyMinutes">${[30,60,90,120,150,180,240,300,360].map(n=>`<option value="${n}" ${n===s.dailyMinutes?'selected':''}>${duration(n)} / gün</option>`).join('')}</select><span class="field-help">Görev süresi konu ve ihtiyaca göre yaklaşık 20–45 dakika ayarlanır; bloklar arasında 5 dakika pay bırakılır.</span></label><label class="field">Hedef tarihi (isteğe bağlı)<input name="targetDate" type="date" value="${esc(s.targetDate)}"><span class="field-help">Kendi hedefin; resmî sınav tarihi otomatik atanmaz.</span></label><label class="field full">Hedefin ne?<input name="target" maxlength="160" value="${esc(s.target)}" placeholder="Örneğin: Hedef bölümüm / düzenli hazırlanmak"></label><div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Hangi günler çalışabilirsin?</div><div class="check-group">${[[1,'Pzt'],[2,'Sal'],[3,'Çar'],[4,'Per'],[5,'Cum'],[6,'Cmt'],[0,'Paz']].map(([n,label])=>`<label class="check-chip"><input type="checkbox" name="days" value="${n}" ${s.days.includes(n)?'checked':''}>${label}</label>`).join('')}</div></div>${!setup?`<div class="field full"><div class="small mb" style="margin-bottom:8px;font-weight:600">Öncelikli dersler <span class="muted tiny">· Daha çok oturum ayrılır</span></div><div class="check-group">${subjects().map(sub=>`<label class="check-chip"><input type="checkbox" name="priorities" value="${sub.id}" ${s.priorities.includes(sub.id)?'checked':''}>${esc((state.activeExam==='yks'?sub.stage+' ':'')+sub.name)}</label>`).join('')}</div></div>`:''}</div>`;}
 
-function setupSteps(){if(state.activeExam!=='yks')return ['name','habit','currentNet','net','time','days','goal','levels'];const base=['name','track','habit','currentNet','net'];if(w().settings.track!=='tyt')base.push('stageNet');return base.concat(['time','days','goal','levels']);}
+function setupSteps(){if(state.activeExam==='kpss')return ['intro','goals','analysis'];if(state.activeExam!=='yks')return ['name','habit','currentNet','net','time','days','goal','levels'];const base=['name','track','habit','currentNet','net'];if(w().settings.track!=='tyt')base.push('stageNet');return base.concat(['time','days','goal','levels']);}
 function setupStepKey(){const steps=setupSteps();ui.setupStep=Math.max(0,Math.min(ui.setupStep,steps.length-1));return steps[ui.setupStep];}
 function setupProgress(){const steps=setupSteps(),pct=Math.round(((ui.setupStep+1)/steps.length)*100);return '<div class="onboard-progress"><div class="onboard-progress-track"><span style="width:'+pct+'%"></span></div><small>'+(ui.setupStep+1)+' / '+steps.length+'</small></div>';}
 function setupBackButton(){return ui.setupStep===0?btn('← Sınav seçimine dön','select','ghost'):btn('← Geri','setup-prev','ghost');}
@@ -2544,7 +2544,171 @@ function setupQuestion(){
  }
  return {title:'Son soru: Derslerde kendini nerede görüyorsun?',desc:'İlk rota için yaklaşık seviyen yeterli. Deneme ve çalışma kayıtların geldikçe gerçek performans bu beyanın önüne geçecek.',body:'<div class="onboard-level-list">'+setupLevelRows()+'</div>'};
 }
-function setupWizardSubmit(form){
+function premiumKpssStageRail(active){
+ const labels=['Hoş Geldin','Hedeflerin','Durum Analizi','Rota Hazır'];
+ return '<div class="premium-ob-steps">'+labels.map(function(label,i){
+   const n=i+1,cls=n<active?'done':n===active?'active':'';
+   return '<div class="premium-ob-step '+cls+'"><span>'+(n<active?'✓':n)+'</span><b>'+label+'</b></div>';
+ }).join('')+'</div>';
+}
+
+function premiumKpssSidebar(active){
+ const labels=['Başlangıç','Hedeflerin','Durum Analizi','Rota Hazır'];
+ return '<aside class="premium-ob-side">'+
+   '<div class="premium-ob-brand">'+logo()+'<p>Daha planlı.<br>Daha istikrarlı.<br>Daha sen.</p></div>'+
+   '<nav><div class="premium-ob-side-active">'+icon('target')+'<div><strong>Onboarding</strong><small>'+labels[Math.max(0,active-1)]+'</small></div></div>'+
+   '<span>'+icon('grid')+' Programım</span><span>'+icon('book')+' Dersler</span><span>'+icon('chart')+' Analizler</span><span>'+icon('spark')+' Rota Hoca</span></nav>'+
+   '<div class="premium-ob-side-foot"><div class="premium-ob-road"></div><strong>Hedefine giden<br>yol burada başlar.</strong><i></i><small>Küçük adımlar,<br>büyük sonuçlar.</small></div>'+
+ '</aside>';
+}
+
+function premiumKpssLayout(active,content){
+ return '<div class="premium-ob-page">'+premiumKpssSidebar(active)+'<section class="premium-ob-main">'+
+   '<header class="premium-ob-top"><span>KPSS’ye giden yolda, yalnız değilsin.</span><small>“Plan, hayalleri hedefe dönüştürür.”</small></header>'+
+   '<div class="premium-ob-canvas">'+premiumKpssStageRail(active)+content+'</div>'+
+ '</section></div>';
+}
+
+function premiumKpssSubjectPills(name,selected){
+ const set=new Set(selected||[]);
+ return '<div class="premium-ob-pills">'+subjects().map(function(sub){
+   return '<label><input type="checkbox" name="'+name+'" value="'+sub.id+'" '+(set.has(sub.id)?'checked':'')+'><span>'+esc(sub.name)+'</span></label>';
+ }).join('')+'</div>';
+}
+
+function premiumKpssIntroView(){
+ const body='<form id="setup-wizard-form" class="premium-ob-intro-form">'+
+   '<section class="premium-ob-intro">'+
+     '<div class="premium-ob-intro-copy"><span class="premium-ob-kicker">KİŞİSEL KPSS ROTASI</span>'+
+       '<h1>Sana göre çalışan<br><em>çalışma programı.</em></h1>'+
+       '<p>KPSS yolculuğunu analiz ediyor, hedeflerine ve mevcut seviyene göre sana özel bir rota oluşturuyoruz.</p>'+
+       '<div class="premium-ob-intro-meta">'+icon('clock')+' Kurulum yaklaşık 2–3 dakika sürer.</div>'+
+       '<button class="btn primary premium-ob-primary" type="submit">Başlayalım '+icon('arrow')+'</button>'+
+     '</div>'+
+     '<div class="premium-ob-intro-art"><div class="premium-ob-art-copy">Planla.<br>Çalış.<br>Başar.</div></div>'+
+   '</section>'+
+   '<section class="premium-ob-feature-grid">'+
+     '<article><span>'+icon('target')+'</span><h3>Kişisel rota</h3><p>Hedeflerine, sürene ve seviyene göre sana özel başlangıç ağırlıkları.</p></article>'+
+     '<article><span>'+icon('refresh')+'</span><h3>Akıllı tekrar sistemi</h3><p>3. ve 7. gün tekrarlarıyla bilginin kalıcı olmasını destekleyen akış.</p></article>'+
+     '<article><span>'+icon('chart')+'</span><h3>Netlerine göre analiz</h3><p>Deneme ve çalışma verileri geldikçe rota kararlarını güncelleyen sistem.</p></article>'+
+   '</section>'+
+ '</form>';
+ return premiumKpssLayout(1,body);
+}
+
+function premiumKpssGoalsView(){
+ const p=w().profile||{},s=w().settings,score=Number(p.targetScore)||85,targetNet=Number(p.targetNet)||85,minutes=Number(s.dailyMinutes)||120;
+ const scoreChoices=[70,75,80,85,90],timeChoices=[[60,'1 saat'],[120,'2 saat'],[180,'3 saat'],[240,'4 saat'],[300,'5+ saat']];
+ const dayChoices=[[1,'Pzt'],[2,'Sal'],[3,'Çar'],[4,'Per'],[5,'Cum'],[6,'Cmt'],[0,'Paz']],priorities=Array.isArray(s.priorities)?s.priorities:[];
+ const body='<form id="setup-wizard-form" class="premium-ob-form">'+
+   '<div class="premium-ob-title"><div><span class="premium-ob-kicker">HEDEFLERİN</span><h1>Hedeflerinle <em>başlayalım.</em></h1><p>Sana uygun ve sürdürülebilir bir çalışma rotası kurmak için birkaç temel bilgi yeterli.</p></div>'+
+   '<span class="premium-ob-time-badge">'+icon('clock')+' 2 dakikada tamamlanır</span></div>'+
+   '<div class="premium-ob-goal-layout"><div class="premium-ob-form-grid">'+
+     '<section class="premium-ob-field-card"><header><span>'+icon('chart')+'</span><div><h3>Hedef KPSS puanın</h3><p>Ulaşmak istediğin yaklaşık puanı seç.</p></div></header><div class="premium-ob-segment">'+scoreChoices.map(function(v){return '<label><input type="radio" name="targetScore" value="'+v+'" '+(score===v?'checked':'')+'><span>'+v+'+</span></label>';}).join('')+'</div></section>'+
+     '<section class="premium-ob-field-card"><header><span>'+icon('target')+'</span><div><h3>Hedef toplam netin</h3><p>Rota motorunun hedef mesafesini hesaplaması için.</p></div></header><label class="premium-ob-inline-input"><input name="targetNet" type="number" min="1" max="120" step="0.25" value="'+targetNet+'" required><span>net</span></label></section>'+
+     '<section class="premium-ob-field-card"><header><span>'+icon('clock')+'</span><div><h3>Günlük ayırabileceğin süre</h3><p>Bir çalışma günündeki gerçekçi üst sınırın.</p></div></header><div class="premium-ob-segment compact">'+timeChoices.map(function(x){return '<label><input type="radio" name="dailyMinutes" value="'+x[0]+'" '+(minutes===x[0]?'checked':'')+'><span>'+x[1]+'</span></label>';}).join('')+'</div></section>'+
+     '<section class="premium-ob-field-card"><header><span>'+icon('calendar')+'</span><div><h3>Hangi günler çalışabilirsin?</h3><p>Planı seçtiğin günlere yerleştireceğiz.</p></div></header><div class="premium-ob-days">'+dayChoices.map(function(x){return '<label><input type="checkbox" name="days" value="'+x[0]+'" '+(s.days.includes(x[0])?'checked':'')+'><span>'+x[1]+'</span></label>';}).join('')+'</div></section>'+
+     '<section class="premium-ob-field-card"><header><span>'+icon('calendar')+'</span><div><h3>Hedef sınav tarihi</h3><p>İstersen plan süresini bu tarihe göre takip ederiz.</p></div></header><input class="premium-ob-date" name="targetDate" type="date" value="'+esc(s.targetDate||'')+'"></section>'+
+     '<section class="premium-ob-field-card wide"><header><span>'+icon('book')+'</span><div><h3>Öncelik vermek istediğin dersler</h3><p>Seçtiklerin ilk rota ağırlığında biraz daha sık öne çıkar.</p></div></header>'+premiumKpssSubjectPills('priorities',priorities)+'</section>'+
+   '</div>'+
+   '<aside class="premium-ob-preview"><span class="premium-ob-preview-label">'+icon('eye')+' Rotanın Önizlemesi</span><div class="premium-ob-ring"><b>KPSS</b><strong>'+score+'+</strong><small>Hedef puan</small></div>'+
+     '<dl><div><dt>Hedef net</dt><dd>'+format(targetNet,0)+'</dd></div><div><dt>Günlük tempo</dt><dd>'+duration(minutes)+'</dd></div><div><dt>Çalışma günü</dt><dd>'+s.days.length+' gün</dd></div></dl>'+
+     '<p>Bu bilgilerle sana gerçekçi ve sürdürülebilir bir rota hazırlayacağız.</p></aside></div>'+
+   '<div class="premium-ob-actions">'+btn('← Geri','setup-prev','ghost')+'<button class="btn primary premium-ob-primary" type="submit">Devam et '+icon('arrow')+'</button></div>'+
+   '<div class="form-error" role="alert"></div>'+
+ '</form>';
+ return premiumKpssLayout(2,body);
+}
+
+function premiumKpssCurrentNetChoice(value){
+ const n=Number(value);
+ if(!Number.isFinite(n))return 30;
+ if(n<=20)return 10;if(n<=40)return 30;if(n<=60)return 50;if(n<=80)return 70;if(n<=100)return 90;return 110;
+}
+
+function premiumKpssAnalysisView(){
+ const p=w().profile||{},current=premiumKpssCurrentNetChoice(p.currentNet),habit=['yes','sometimes','no'].includes(p.studyHabit)?p.studyHabit:'sometimes';
+ const levels=p.subjectLevels||{},strong=subjects().filter(function(s){return Number(levels[s.id])>=3;}).map(function(s){return s.id;}),weak=subjects().filter(function(s){return Number(levels[s.id])<=1;}).map(function(s){return s.id;});
+ const resources=Array.isArray(p.resourceHabits)?p.resourceHabits:['book','bank','video'],ranges=[[10,'0–20'],[30,'21–40'],[50,'41–60'],[70,'61–80'],[90,'81–100'],[110,'101+']],resourceChoices=[['book','Konu anlatım kitabı'],['bank','Soru bankası'],['video','Video ders'],['mock','Deneme sınavı'],['notes','Ders notları']];
+ const body='<form id="setup-wizard-form" class="premium-ob-form">'+
+   '<div class="premium-ob-title"><div><span class="premium-ob-kicker">DURUM ANALİZİ</span><h1>Seni daha iyi <em>tanıyalım.</em></h1><p>Seviyene göre doğru yoğunlukta bir rota hazırlayacağız.</p></div></div>'+
+   '<div class="premium-ob-analysis-layout"><div class="premium-ob-analysis-grid">'+
+     '<section class="premium-ob-field-card wide"><header><span class="premium-ob-number">1</span><div><h3>En güçlü derslerin hangileri?</h3><p>Kendini daha rahat hissettiğin dersleri seçebilirsin.</p></div></header>'+premiumKpssSubjectPills('strongSubjects',strong)+'</section>'+
+     '<section class="premium-ob-field-card wide"><header><span class="premium-ob-number">2</span><div><h3>En zorlandığın dersler hangileri?</h3><p>Daha fazla desteğe ihtiyaç duyduğun dersleri seç.</p></div></header>'+premiumKpssSubjectPills('weakSubjects',weak)+'</section>'+
+     '<section class="premium-ob-field-card"><header><span class="premium-ob-number">3</span><div><h3>Son denemelerde toplam net aralığın</h3><p>Yaklaşık aralık yeterli.</p></div></header><div class="premium-ob-segment compact">'+ranges.map(function(x){return '<label><input type="radio" name="currentNetApprox" value="'+x[0]+'" '+(current===x[0]?'checked':'')+'><span>'+x[1]+'</span></label>';}).join('')+'</div></section>'+
+     '<section class="premium-ob-field-card"><header><span class="premium-ob-number">4</span><div><h3>Düzenli çalışma seviyen</h3><p>Son aylardaki genel ritmini düşün.</p></div></header><div class="premium-ob-habit">'+[['yes','Düzenli çalışıyorum'],['sometimes','Zaman zaman çalışıyorum'],['no','Düzensiz çalışıyorum']].map(function(x){return '<label><input type="radio" name="studyHabit" value="'+x[0]+'" '+(habit===x[0]?'checked':'')+'><span>'+x[1]+'</span></label>';}).join('')+'</div></section>'+
+     '<section class="premium-ob-field-card wide"><header><span class="premium-ob-number">5</span><div><h3>Kaynak kullanım alışkanlığın</h3><p>En sık kullandığın kaynak türlerini seçebilirsin.</p></div></header><div class="premium-ob-pills">'+resourceChoices.map(function(x){return '<label><input type="checkbox" name="resourceHabits" value="'+x[0]+'" '+(resources.includes(x[0])?'checked':'')+'><span>'+x[1]+'</span></label>';}).join('')+'</div></section>'+
+   '</div>'+
+   '<aside class="premium-ob-analysis-side"><span class="premium-ob-preview-label">'+icon('eye')+' İlk analiz</span><div class="premium-ob-ring small"><b>Seviye</b><strong>Başlangıç–Orta</strong><small>İlk rota profili</small></div>'+
+     '<article><span>'+icon('refresh')+'</span><div><strong>Tekrar ihtiyacı</strong><p>Zayıf seçtiğin derslerde tekrar görevleri daha görünür olacak.</p></div></article>'+
+     '<article><span>'+icon('target')+'</span><div><strong>Odak önerisi</strong><p>Seviye seçimlerin başlangıç ders ağırlıklarını doğrudan etkileyecek.</p></div></article>'+
+     '<blockquote>“Kendini tanımak, doğru planın ilk adımıdır.”</blockquote></aside></div>'+
+   '<div class="premium-ob-actions">'+btn('← Geri','setup-prev','ghost')+'<button class="btn primary premium-ob-primary" type="submit">Devam et '+icon('arrow')+'</button></div>'+
+   '<div class="form-error" role="alert"></div>'+
+ '</form>';
+ return premiumKpssLayout(3,body);
+}
+
+function premiumKpssSetup(){
+ const key=setupStepKey();
+ if(key==='intro')return premiumKpssIntroView();
+ if(key==='goals')return premiumKpssGoalsView();
+ return premiumKpssAnalysisView();
+}
+
+function premiumKpssSetupSubmit(form){
+ const fd=new FormData(form),key=setupStepKey(),steps=setupSteps();
+ if(key==='intro'){
+   ui.setupStep=Math.min(ui.setupStep+1,steps.length-1);render();window.scrollTo({top:0,behavior:'instant'});return;
+ }
+ if(key==='goals'){
+   const score=Number(fd.get('targetScore')),targetNet=Number(fd.get('targetNet')),dailyMinutes=Number(fd.get('dailyMinutes')),days=fd.getAll('days').map(Number);
+   if(![70,75,80,85,90].includes(score))throw Error('Hedef KPSS puanını seç.');
+   if(!Number.isFinite(targetNet)||targetNet<1||targetNet>120)throw Error('Hedef netin 1–120 arasında olmalı.');
+   if(![60,120,180,240,300].includes(dailyMinutes))throw Error('Günlük çalışma süreni seç.');
+   if(!days.length)throw Error('En az bir çalışma günü seç.');
+   const targetDate=String(fd.get('targetDate')||'');if(targetDate&&!R.validDate(targetDate))throw Error('Hedef tarihini kontrol et.');
+   const valid=new Set(subjects().map(function(s){return s.id;})),priorities=fd.getAll('priorities').map(String).filter(function(id){return valid.has(id);});
+   w().settings.dailyMinutes=dailyMinutes;w().settings.days=[...new Set(days)];w().settings.targetDate=targetDate;w().settings.priorities=priorities;w().settings.target='KPSS '+score+'+ hedefi';
+   w().profile={...(w().profile||{}),version:4,targetScore:score,targetNet,completed:false,updated:Date.now()};
+   save();ui.setupStep=Math.min(ui.setupStep+1,steps.length-1);render();window.scrollTo({top:0,behavior:'instant'});return;
+ }
+ const currentNet=Number(fd.get('currentNetApprox')),studyHabit=String(fd.get('studyHabit')||''),validIds=new Set(subjects().map(function(s){return s.id;}));
+ if(![10,30,50,70,90,110].includes(currentNet))throw Error('Mevcut net aralığını seç.');
+ if(!['yes','sometimes','no'].includes(studyHabit))throw Error('Çalışma düzenini seç.');
+ const strong=fd.getAll('strongSubjects').map(String).filter(function(id){return validIds.has(id);}),weak=fd.getAll('weakSubjects').map(String).filter(function(id){return validIds.has(id);});
+ if(strong.some(function(id){return weak.includes(id);} ))throw Error('Bir dersi aynı anda hem güçlü hem zorlandığın ders olarak seçme.');
+ const levels={};subjects().forEach(function(s){levels[s.id]=2;});strong.forEach(function(id){levels[id]=3;});weak.forEach(function(id){levels[id]=1;});
+ const resources=fd.getAll('resourceHabits').map(String).filter(function(v){return ['book','bank','video','mock','notes'].includes(v);});
+ const target=Number(w().profile?.targetNet)||0;if(target&&currentNet>target)throw Error('Mevcut net aralığın hedef netinden yüksek görünüyor; hedeflerini kontrol et.');
+ w().profile={...(w().profile||{}),version:4,currentNet,studyHabit,subjectLevels:levels,resourceHabits:resources,completed:true,summaryConfirmed:false,updated:Date.now()};
+ w().configured=true;save();ui.view='summary';ui.setupStep=0;render();window.scrollTo({top:0,behavior:'instant'});
+}
+
+function premiumKpssSummaryView(){
+ const p=w().profile||{},s=w().settings,cap=routeEffectiveDailyMinutes(),days=[...s.days],weak=subjects().filter(function(sub){return (p.subjectLevels?.[sub.id]??2)<=1;}),priority=subjects().filter(function(sub){return (s.priorities||[]).includes(sub.id);});
+ const weeklyMax=Math.max(1,Math.floor(cap/30))*Math.max(1,days.length),score=Number(p.targetScore)||0,targetNet=Number(p.targetNet)||0,current=Number.isFinite(p.currentNet)?p.currentNet:null;
+ const weakText=weak.length?weak.slice(0,2).map(function(s){return s.name;}).join(' + '):'Dengeli başlangıç',focusText=priority.length?priority.slice(0,2).map(function(s){return s.name;}).join(' + '):weakText;
+ const body='<section class="premium-ob-ready">'+
+   '<div class="premium-ob-ready-copy"><span class="premium-ob-kicker">KURULUM TAMAMLANDI</span><h1>Rotan <em>hazır.</em></h1><p>Verdiğin cevaplara göre ilk çalışma planını oluşturmaya hazırız.</p>'+
+     '<div class="premium-ob-success">'+icon('check')+' <div><strong>Kişisel profil tamamlandı</strong><span>Hedef, tempo, çalışma günleri ve ders seviyelerin rota motoruna bağlandı.</span></div></div>'+
+     '<div class="premium-ob-ready-grid">'+
+       '<article><span>'+icon('target')+'</span><small>Hedef</small><strong>KPSS '+(score?format(score,0)+'+':'—')+'</strong></article>'+
+       '<article><span>'+icon('clock')+'</span><small>Günlük tempo</small><strong>'+duration(cap)+'</strong></article>'+
+       '<article><span>'+icon('book')+'</span><small>Odak alanı</small><strong>'+esc(focusText)+'</strong></article>'+
+       '<article><span>'+icon('refresh')+'</span><small>Tekrar sistemi</small><strong>3 gün / 7 gün</strong></article>'+
+       '<article><span>'+icon('chart')+'</span><small>Net rotası</small><strong>'+(current===null?'Başlangıç verisi':format(current,0)+' → '+format(targetNet,0))+'</strong></article>'+
+       '<article><span>'+icon('calendar')+'</span><small>İlk hafta</small><strong>≤ '+weeklyMax+' odak oturumu</strong></article>'+
+     '</div>'+
+     '<div class="premium-ob-ready-actions">'+btn('← Cevaplarımı düzenle','summary-edit','ghost')+btn('ROTAMI OLUŞTUR '+icon('arrow'),'summary-build','primary premium-ob-primary')+'</div>'+
+   '</div>'+
+   '<aside class="premium-ob-ready-art"><div class="premium-ob-laptop"><div><strong>İlk haftanın planı</strong><span>Pzt · Matematik</span><span>Sal · Türkçe</span><span>Çar · '+esc(weakText)+'</span><span>Per · 3. gün tekrarı</span><span>Cum · Deneme + analiz</span></div></div><blockquote>“Planlı adımlar, büyük başarılara götürür.”</blockquote></aside>'+
+ '</section>'+
+ '<section class="premium-ob-ready-features"><article><span>'+icon('refresh')+'</span><div><strong>Akıllı tekrar açık</strong><p>3. ve 7. gün tekrarları rotaya otomatik yerleşecek.</p></div></article><article><span>'+icon('chart')+'</span><div><strong>Deneme analizi hazır</strong><p>Yeni denemelerin geldikçe ağırlıklar güncellenecek.</p></div></article><article><span>'+icon('spark')+'</span><div><strong>Rota Hoca aktif</strong><p>Takıldığın konularda çalışma akışının yanında.</p></div></article></section>';
+ return premiumKpssLayout(4,body);
+}
+
+function setupWizardSubmit(form){if(state.activeExam==='kpss')return premiumKpssSetupSubmit(form);
  const fd=new FormData(form),key=setupStepKey(),steps=setupSteps();
  if(key==='name')w().settings.name=String(fd.get('name')||'').trim().slice(0,60);
  if(key==='track'){
@@ -2597,11 +2761,11 @@ function setupWizardSubmit(form){
  }
  save();ui.setupStep=Math.min(ui.setupStep+1,steps.length-1);render();window.scrollTo({top:0,behavior:'instant'});
 }
-function setup(){
+function setup(){if(state.activeExam==='kpss')return premiumKpssSetup();
  const q=setupQuestion(),last=setupStepKey()==='levels';
  return '<div class="welcome"><nav class="welcome-nav">'+logo()+btn(icon('switch')+' Sınav değiştir','select','ghost sm')+'</nav><main class="onboard-shell" data-premium-surface="onboarding"><div class="onboard-premium-context"><span>'+icon('spark')+' ROTA MOTORU · KİŞİSEL KURULUM</span><small>Yanıtların yalnız ilk rotanın başlangıç ağırlıklarını belirler.</small></div><div class="step-indicator"><span class="step-num">'+(ui.setupStep+2)+'</span><span class="small">'+examLabel()+' kişisel rota kurulumu</span></div>'+setupProgress()+'<form id="setup-wizard-form" class="onboard-card"><div class="onboard-question-number">SORU '+(ui.setupStep+2)+'</div><h1>'+esc(q.title)+'</h1><p class="muted">'+esc(q.desc)+'</p><div class="onboard-answer">'+q.body+'</div><div class="form-error" role="alert"></div><div class="onboard-actions">'+setupBackButton()+'<button class="btn primary" type="submit">'+(last?'Programımı hazırla '+icon('arrow'):'Devam et '+icon('arrow'))+'</button></div></form></main></div>';
 }
-function onboardingSummaryView(){
+function onboardingSummaryView(){if(state.activeExam==='kpss')return premiumKpssSummaryView();
  const p=w().profile||{},s=w().settings,cap=routeEffectiveDailyMinutes(),max=s.dailyMinutes,name=s.name?esc(s.name)+', ':'';
  const habit=profileHabitValue(p),habitLabel=profileHabitLabel(habit),days=[...s.days].sort(function(a,b){return a-b;}),dayNames={0:'Paz',1:'Pzt',2:'Sal',3:'Çar',4:'Per',5:'Cum',6:'Cmt'},gap=routeNetGap(),stageGap=routeStageGap();
  const weak=profileSubjects().filter(function(sub){return (p.subjectLevels?.[sub.id]??2)<=1;}),weakNames=weak.map(function(sub){return sub.name;});

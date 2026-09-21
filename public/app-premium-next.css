@@ -4701,3 +4701,322 @@ html[data-cr-color-mode="dark"] body.app-premium-next-ready .route-day-summary-c
   border-color:#2b3953!important;
   color:#aebad0!important;
 }
+
+
+
+/* APP PREMIUM NEXT V3.1 · PLAN HEADER + IDENTITY INTEGRITY */
+body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head{
+  display:grid!important;
+  grid-template-columns:30px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head>div{
+  grid-column:2!important;
+  grid-row:1!important;
+  min-width:0!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .pnx-route-calendar{
+  grid-column:1!important;
+  grid-row:1!important;
+  position:static!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .pnx-route-see-all{
+  grid-column:3!important;
+  grid-row:1!important;
+  position:static!important;
+  justify-self:end!important;
+  white-space:nowrap!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head h2{
+  overflow:visible!important;
+  white-space:nowrap!important;
+  text-overflow:clip!important;
+}
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head{
+    grid-template-columns:28px minmax(0,1fr) auto!important;
+    gap:8px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head h2{
+    font-size:17px!important;
+  }
+}
+
+
+/* APP PREMIUM NEXT V3.2 · REFERENCE VISUAL + REAL POMODORO */
+body.pnx3-dashboard-ready .route-v1-head:before{
+  background:
+    linear-gradient(90deg,rgba(248,251,255,.99) 0%,rgba(247,251,255,.94) 30%,rgba(239,247,255,.32) 54%,rgba(239,247,255,.03) 78%,rgba(248,251,255,.40) 100%),
+    url("/kpss-hero-mountain.svg") 64% 50%/cover no-repeat!important;
+  filter:none!important;
+  opacity:1!important;
+}
+body.pnx3-dashboard-ready .route-v1-head:after{
+  background:linear-gradient(90deg,rgba(249,252,255,.96),rgba(249,252,255,.22) 46%,transparent 72%)!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art .pnx3-hand-note{
+  color:#173c83!important;
+  font-size:16px!important;
+  line-height:1.16!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.85)!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art blockquote{
+  color:#405b90!important;
+  font-weight:750!important;
+}
+
+body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
+  background:
+    linear-gradient(180deg,rgba(4,15,34,.18),rgba(4,16,38,.92)),
+    url("/kpss-hero-mountain.svg") 67% 54%/cover no-repeat!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus-tabs{
+  z-index:7!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus-tabs button{
+  min-height:30px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#8fa4ca;
+  font-size:9px;
+  font-weight:750;
+  cursor:pointer;
+}
+body.pnx3-dashboard-ready .pnx3-focus-tabs button:hover{color:#fff}
+body.pnx3-dashboard-ready .pnx3-focus-tabs button.active{
+  background:#1675ff;
+  color:#fff;
+  box-shadow:0 6px 16px rgba(22,117,255,.28);
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring{
+  position:relative!important;
+  width:185px!important;
+  height:185px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-radius:50%!important;
+  cursor:pointer!important;
+  background:conic-gradient(#2ba8ff 0 36%,#294f82 36% 100%)!important;
+  box-shadow:0 0 0 8px rgba(19,54,94,.38),0 16px 36px rgba(0,0,0,.22)!important;
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring:before{
+  content:"";
+  position:absolute;
+  inset:16px;
+  border-radius:50%;
+  background:rgba(8,22,46,.95);
+  box-shadow:inset 0 0 36px rgba(19,91,186,.18);
+}
+body.pnx3-dashboard-ready .pnx3-preview-timer{
+  position:relative;
+  z-index:2;
+  display:grid;
+  justify-items:center;
+  gap:12px;
+}
+body.pnx3-dashboard-ready .pnx3-preview-timer strong{
+  color:#fff!important;
+  font-size:29px!important;
+  line-height:1!important;
+  letter-spacing:-1.1px!important;
+}
+body.pnx3-dashboard-ready .pnx3-preview-timer .pnx-pomodoro-play{
+  width:54px!important;
+  height:54px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:linear-gradient(145deg,#3c86ff,#1759ef)!important;
+  color:#fff!important;
+  font-style:normal!important;
+  font-size:18px!important;
+  box-shadow:0 0 0 7px rgba(52,119,255,.14),0 9px 24px rgba(31,99,244,.34)!important;
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 0 8px rgba(19,54,94,.40),0 20px 40px rgba(0,0,0,.28)!important;
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring:focus-visible{
+  outline:3px solid rgba(64,154,255,.45);
+  outline-offset:5px;
+}
+
+/* Once a task is prepared, show the application's real timer in the same center card. */
+body.pnx3-dashboard-ready .pnx3-focus.pnx3-has-live-timer .pnx-reference-hero{
+  display:none!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus.pnx3-has-live-timer{
+  border-radius:19px!important;
+  overflow:hidden!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card{
+  width:100%!important;
+  height:348px!important;
+  min-height:348px!important;
+  margin:0!important;
+  padding:14px 16px 15px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  border:1px solid rgba(92,120,178,.22)!important;
+  border-radius:19px!important;
+  color:#fff!important;
+  background:
+    linear-gradient(180deg,rgba(5,15,33,.28),rgba(5,16,37,.94)),
+    url("/kpss-hero-mountain.svg") 68% 55%/cover no-repeat!important;
+  box-shadow:0 16px 34px rgba(8,21,47,.18)!important;
+  overflow:hidden!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .card-head{
+  width:100%;
+  position:absolute!important;
+  top:14px;
+  left:16px;
+  right:16px;
+  padding:0!important;
+  border:0!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .card-head h3{
+  max-width:210px;
+  overflow:hidden;
+  color:#f5f8ff!important;
+  font-size:11px!important;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .card-head>.icon{display:none!important}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .eyebrow{
+  color:#73b5ff!important;
+  font-size:8px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-meta{
+  display:block;
+  margin-top:2px;
+  color:#9fb1ce!important;
+  font-size:8px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-presets{
+  position:absolute!important;
+  top:14px;
+  right:14px;
+  display:flex!important;
+  gap:5px!important;
+  padding:3px!important;
+  border-radius:10px!important;
+  background:rgba(4,13,30,.62)!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-presets button{
+  min-width:42px!important;
+  min-height:27px!important;
+  padding:0 8px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  color:#8fa4ca!important;
+  font-size:8px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-presets button.active{
+  background:#1675ff!important;
+  color:#fff!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .clock{
+  position:relative!important;
+  width:185px!important;
+  height:185px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:22px 0 0!important;
+  border:16px solid #284f83!important;
+  border-top-color:#2ba8ff!important;
+  border-right-color:#2ba8ff!important;
+  border-radius:50%!important;
+  background:rgba(8,22,46,.95)!important;
+  color:#fff!important;
+  font-size:29px!important;
+  font-weight:850!important;
+  letter-spacing:-1.1px!important;
+  box-shadow:0 0 0 8px rgba(19,54,94,.38),inset 0 0 36px rgba(19,91,186,.18),0 16px 36px rgba(0,0,0,.22)!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-status{
+  max-width:250px;
+  color:#b7c4da!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+  text-align:center!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject{
+  display:none!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls{
+  justify-content:center!important;
+  gap:6px!important;
+  margin:1px 0 0!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls .btn{
+  min-height:30px!important;
+  padding:0 11px!important;
+  border-radius:9px!important;
+  border-color:rgba(255,255,255,.12)!important;
+  background:rgba(7,18,39,.62)!important;
+  color:#e8f1ff!important;
+  font-size:8px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls .btn.primary{
+  background:#1675ff!important;
+  border-color:#1675ff!important;
+  color:#fff!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-note{display:none!important}
+
+/* Rota Hoca should use the friendly illustrated teacher from the approved direction. */
+body.pnx3-dashboard-ready .pnx3-teacher-card .pnx-teacher-avatar{
+  width:150px!important;
+  height:190px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  filter:drop-shadow(0 12px 18px rgba(24,40,76,.16))!important;
+}
+
+/* Match the warm sunrise daily-quote card instead of the old dark adventure image. */
+body.pnx3-dashboard-ready .pnx3-quote-card{
+  background:
+    linear-gradient(90deg,rgba(20,30,48,.72),rgba(20,30,48,.18)),
+    url("/daily-quote-sunrise.svg") 50% 52%/cover no-repeat!important;
+  color:#fff!important;
+}
+body.pnx3-dashboard-ready .pnx3-quote-card:before{
+  background:linear-gradient(90deg,rgba(17,28,47,.55),rgba(17,28,47,.05))!important;
+}
+body.pnx3-dashboard-ready .pnx3-quote-card span,
+body.pnx3-dashboard-ready .pnx3-quote-card strong{
+  position:relative!important;
+  z-index:2!important;
+  color:#fff!important;
+}
+
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .pnx3-live-timer-card{
+    height:330px!important;
+    min-height:330px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-live-timer-card .clock{
+    width:160px!important;
+    height:160px!important;
+    border-width:14px!important;
+    font-size:25px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-presets{
+    position:static!important;
+    order:-1;
+    margin-bottom:1px!important;
+  }
+}

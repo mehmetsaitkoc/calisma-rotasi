@@ -35,6 +35,8 @@ assert.ok(src.includes("route_signal:{importance:0"),'Fallback must not affect t
 assert.ok(src.includes("code:'RATE_LIMITED'"),'Rate limiting must return a machine-readable code');
 assert.ok(src.includes('honestUnavailableFallback:true'),'Health endpoint must expose honest fallback policy');
 assert.ok(src.includes("if(!isLocalRequest(req)) return json(res,403"),'Render must not expose runtime API-key configuration');
+assert.ok(src.includes("sınav odaklı bir KPSS öğretmenisin."),'Rota Hoca system prompt must be scoped to the KPSS-only product');
+assert.ok(!src.includes("KPSS/YKS öğretmenisin"),'Rota Hoca system prompt must not advertise retired YKS support');
 assert.ok(!src.includes("direct='Demo test cevabı'"),'Server must not fabricate a generic demo answer');
 
 console.log('Server contracts passed: schema + body/photo guards + bounded context + honest fallback + rate limits + Free/Plus entitlement gates');

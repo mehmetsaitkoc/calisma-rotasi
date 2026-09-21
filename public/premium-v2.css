@@ -445,3 +445,17 @@ html[data-ui-theme="cyan"] .btn.primary{background:linear-gradient(135deg,#129bb
   .route-today-hero,.premium-signal-rail,.route-coach-insight,.onboard-card,.onboarding-summary-head,.plus-gate,.route-task{animation:none!important}
   .route-task,.exam-card,.nav-item,.btn{transition:none!important}
 }
+
+
+/* Locked insight preview inside Plus gate */
+.v2-insight-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:20px 0}
+.v2-insight-preview article{position:relative;min-width:0;padding:14px 13px;border:1px solid #e0e6f2;border-radius:13px;background:rgba(255,255,255,.72)}
+.v2-insight-preview small{display:block;font-size:8px;font-weight:850;letter-spacing:1.3px;color:#6b7dc1;margin-bottom:8px}
+.v2-insight-preview strong{display:block;font-size:12px;line-height:1.35;color:#1d2845}
+.v2-insight-preview span{display:block;margin-top:5px;font-size:9px;line-height:1.55;color:#788297}
+@media(max-width:760px){.v2-insight-preview{grid-template-columns:1fr}.v2-insight-preview article{padding:12px 13px}}
+
+/* Give secondary navigation less visual weight without hiding capability. */
+.nav-secondary-group{padding-bottom:4px}
+.nav-secondary-group .plus-badge{margin-left:auto;transform:scale(.88);transform-origin:right center}
+.nav-primary-group+.sidebar-group-divider{opacity:.9}

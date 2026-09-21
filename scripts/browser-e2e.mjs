@@ -494,6 +494,58 @@ async function runLargePlanRenderPerf(browser) {
   await context.close();
 }
 
+
+async function runKpssSectionExamContent(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
+  });
+  const page = await context.newPage();
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', e => pageErrors.push(String(e?.stack || e)));
+  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+
+  await page.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
+  await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await submitWizard(page);
+  await navigate(page, 'exams');
+
+  assert.ok(await page.getByText('KPSS Türkçe Bölüm Denemesi #01', { exact: true }).count(), 'KPSS Turkish section exam must be visible');
+  assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi #01', { exact: true }).count(), 'KPSS history section exam must be visible');
+  assert.ok(await page.getByText(/konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık/i).count(), 'Section-exam distribution must be described as approximate, not official-fixed');
+
+  const start = page.locator('[data-action="start-section-exam"][data-id="kpss-turkce-section-01"]').first();
+  await start.waitFor({ state: 'visible' });
+  await start.click();
+  const form = page.locator('#section-exam-form');
+  await form.waitFor({ state: 'visible' });
+  assert.equal(await form.locator('.mini-question').count(), 30, 'Turkish section exam must render exactly 30 questions');
+  await form.locator('button[type="submit"]').click();
+  await page.getByText('Bölüm denemesi sonucu', { exact: true }).waitFor({ state: 'visible' });
+  assert.ok(await page.getByText('0 / 30 doğru', { exact: true }).count(), 'Blank section fixture must score zero correct');
+  const sectionScopeNotice=page.locator('.notice').filter({hasText:'Bu sonuç tam KPSS GY–GK neti değildir'}).first();
+  await sectionScopeNotice.waitFor({state:'visible'});
+  assert.match(await sectionScopeNotice.innerText(),/tam KPSS GY–GK neti değildir[\s\S]*Türkçe bölüm denemesidir/i,'Section result must not present itself as the full KPSS');
+
+  const snapshot = await appState(page);
+  const attempts = snapshot.value.workspaces.kpss.assessments.filter(a => a.sectionId === 'kpss-turkce-section-01');
+  assert.equal(attempts.length, 1, 'Section exam must persist one assessment');
+  const result = attempts[0];
+  assert.equal(result.total, 30);
+  assert.equal(result.correct, 0);
+  assert.equal(result.blank, 30);
+  assert.equal(result.net, 0);
+  assert.equal(result.topicBreakdown.length, 11, 'Turkish section result must preserve all 11 topic breakdown rows');
+  assert.equal(result.topicBreakdown.reduce((n,x)=>n+x.total,0),30,'Topic breakdown totals must equal the section question count');
+  assert.ok(result.skillBreakdown.some(x => x.skill === 'Paragrafta anlam' && x.total === 14), 'Paragraph weight must be preserved in stored evidence');
+  await assertCleanRender(page, 'KPSS Turkish section exam result');
+  assert.deepEqual(pageErrors, [], 'KPSS section exam page errors:\n' + pageErrors.join('\n'));
+  assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'KPSS section exam console errors:\n' + consoleErrors.join('\n'));
+  await context.close();
+}
+
 const server = spawn(process.execPath, ['server.mjs'], {
   cwd: process.cwd(),
   env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', OPENAI_API_KEY: '' },
@@ -954,6 +1006,11 @@ try {
   assert.ok(await page.locator('.report-week-bars').isVisible(), 'Premium monthly report must expose within-month rhythm');
   assert.ok(await page.getByText(/öğrenme başarısı skoru üretmez/i).count(), 'Monthly report must preserve evidence-safe language');
   await assertCleanRender(page, 'Plus premium monthly report');
+  const reportSubjectName=page.locator('.report-subject-row strong').first();
+  if(await reportSubjectName.count()){
+    await reportSubjectName.evaluate(node=>{node.textContent='Uluslararası İlişkiler ve Çağdaş Dünya Tarihi Çok Uzun Ders Adı';});
+    await assertCleanRender(page,'Plus premium monthly report with long subject name');
+  }
 
   const trendTab = page.locator('[data-action="report-tab"][data-report-tab="trend"]');
   await trendTab.click();
@@ -1025,11 +1082,12 @@ try {
   assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'YKS desktop console errors:\n' + desktopConsoleErrors.join('\n'));
   await desktopContext.close();
 
+  await runKpssSectionExamContent(browser);
   await runRestDayInitialRouteVisibility(browser);
   await runMiniRepairProvenance(browser);
   await runLargePlanRenderPerf(browser);
 
-  console.log('Browser E2E passed: Free entitlement gates + polished mobile Plus reports + honest empty states + KPSS learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
+  console.log('Browser E2E passed: Free entitlement gates + polished mobile Plus reports + honest empty states + KPSS topic/section content + learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

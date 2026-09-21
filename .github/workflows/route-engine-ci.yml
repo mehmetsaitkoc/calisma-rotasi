@@ -64,6 +64,12 @@ jobs:
       - name: Syntax check mini catalog tests
         run: node --check scripts/mini-catalog.test.mjs
 
+      - name: Syntax check KPSS practice catalog
+        run: node --check public/kpss-practice-catalog.js
+
+      - name: Syntax check KPSS practice catalog tests
+        run: node --check scripts/kpss-practice-catalog.test.mjs
+
       - name: Syntax check server contract tests
         run: node --check scripts/server-contracts.test.mjs
 

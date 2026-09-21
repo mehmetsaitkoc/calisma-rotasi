@@ -102,4 +102,55 @@ assert.equal(empty.plan.completionRate,null);
 assert.deepEqual(empty.subjects,[]);
 assert.deepEqual(empty.examTypes,[]);
 
-console.log('Report analytics passed: monthly evidence + partial month + plan adherence + separate comparable exam trends');
+const sparse={
+  logs:[{id:'s1',date:'2026-09-05',subjectId:'very-long-subject-name',minutes:35,questions:12}],
+  plan:[],
+  exams:[exam('s-e1','KPSS','2026-09-06',50,20)]
+};
+const sparseMonth=A.aggregateMonth(sparse,'2026-09',{today:'2026-09-20'});
+assert.equal(sparseMonth.plan.completionRate,null,'No plan history must remain unknown, not 0%');
+assert.equal(sparseMonth.examTypes.length,1);
+assert.equal(sparseMonth.examTypes[0].comparisonReason,'no_previous','A single exam must not invent a comparison');
+assert.equal(sparseMonth.examTypes[0].delta,null);
+
+const sparseComparison=A.compareMonth(sparse,'2026-09',{today:'2026-09-20'});
+for(const key of ['minutes','questions','activeDays']){
+  assert.equal(sparseComparison.deltas[key].known,false,'Missing previous-month study evidence must keep '+key+' delta unknown');
+  assert.equal(sparseComparison.deltas[key].value,null,'Missing previous-month study evidence must not fabricate a zero-baseline '+key+' delta');
+  assert.equal(sparseComparison.deltas[key].reason,'missing_previous','Missing previous-month study evidence must be identified precisely for '+key);
+}
+assert.equal(sparseComparison.deltas.examCount.known,false,'A single current-month exam must not create an exam-count delta against missing evidence');
+assert.equal(sparseComparison.deltas.examCount.value,null);
+assert.equal(sparseComparison.deltas.examCount.reason,'missing_previous');
+
+const previousOnly={
+  logs:[{id:'p1',date:'2026-08-05',subjectId:'math',minutes:50,questions:20}],
+  plan:[],
+  exams:[exam('p-e1','KPSS','2026-08-06',55,20)]
+};
+const missingCurrent=A.compareMonth(previousOnly,'2026-09',{today:'2026-09-20'});
+for(const key of ['minutes','questions','activeDays']){
+  assert.equal(missingCurrent.deltas[key].known,false,'Missing current-month study evidence must keep '+key+' delta unknown');
+  assert.equal(missingCurrent.deltas[key].value,null,'Missing current-month study evidence must not fabricate a negative delta for '+key);
+  assert.equal(missingCurrent.deltas[key].reason,'missing_current','Missing current-month study evidence must be identified precisely for '+key);
+}
+assert.equal(missingCurrent.deltas.examCount.known,false);
+assert.equal(missingCurrent.deltas.examCount.value,null);
+assert.equal(missingCurrent.deltas.examCount.reason,'missing_current');
+
+const missingBoth=A.compareMonth({logs:[],plan:[],exams:[]},'2026-09',{today:'2026-09-20'});
+assert.equal(missingBoth.deltas.minutes.reason,'missing_both','Two empty months must expose missing_both rather than blaming the previous month');
+assert.equal(missingBoth.deltas.examCount.reason,'missing_both');
+
+const sparseTrend=A.longTerm(sparse,'2026-09',{today:'2026-09-20',months:6});
+assert.equal(sparseTrend.evidence.monthsWithLogs,1);
+assert.equal(sparseTrend.evidence.studyTrendReady,false,'One month of study data is not enough for a trend claim');
+assert.equal(sparseTrend.evidence.monthsWithPlan,0);
+assert.equal(sparseTrend.evidence.planTrendReady,false,'Missing plan history must not create a plan trend');
+assert.equal(sparseTrend.evidence.monthsWithExams,1);
+assert.equal(sparseTrend.evidence.examTrendReady,false,'One exam must not create an exam trend');
+assert.equal(sparseTrend.examTypes[0].count,1);
+assert.equal(sparseTrend.examTypes[0].comparable,false);
+assert.equal(sparseTrend.examTypes[0].delta,null);
+
+console.log('Report analytics passed: monthly evidence + sparse/empty states + partial month + plan adherence + separate comparable exam trends');

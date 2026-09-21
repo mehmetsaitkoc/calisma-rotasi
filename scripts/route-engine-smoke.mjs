@@ -4,6 +4,9 @@ import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 const externalCatalogJs=fs.readFileSync(new URL('../public/catalog.js',import.meta.url),'utf8');
 const externalWorkspaceJs=fs.readFileSync(new URL('../public/workspace-schema.js',import.meta.url),'utf8');
+await import('../public/kpss-practice-catalog.js');
+const kpssPracticeCatalog=globalThis.RotaKpssPractice;
+assert.ok(kpssPracticeCatalog,'KPSS practice catalog must load for route smoke tests');
 
 function between(start,end){
   const a=html.indexOf(start),b=html.indexOf(end,a);
@@ -39,6 +42,7 @@ for(const marker of [
   'route-mode-explain',
   '<script src="/pilot-metrics.js"></script>',
   '<script src="/mini-catalog.js"></script>',
+  '<script src="/kpss-practice-catalog.js"></script>',
   'function miniCatalogInfo',
   'function miniCatalogCoverage',
   'İçerik derinliği iskeleti:',
@@ -1421,8 +1425,12 @@ for(const marker of [
 {
   const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition');
   const data=new Function(src+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES,MINI_SKILL_MAP};')();
-  assert.equal(data.ROTA_MINI_EXAMS.length,24);
-  assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),["kpss-problemler-01","yks-paragraf-01","kpss-tarih-01","kpss-cografya-01","tyt-biyoloji-hucre-01","ayt-edebiyat-tanzimat-01","ydt-grammar-01","ydt-vocab-01","ydt-reading-01","kpss-vatandaslik-01","tyt-matematik-temel-01","tyt-fizik-hareket-01","ayt-matematik-fonksiyon-01","tyt-kimya-atom-01","ayt-fizik-vektor-01","ayt-biyoloji-sinir-01","ayt-tarih1-ilkcag-01","ayt-kimya-modern-atom-01","ayt-cografya1-dogal-01","ayt-felsefe-tarih-01","kpss-turkce-paragraf-01","tyt-tarih-zaman-01","tyt-cografya-harita-01","ayt-geometri-ucgen-01"]);
+  const legacyIds=["kpss-problemler-01","yks-paragraf-01","kpss-tarih-01","kpss-cografya-01","tyt-biyoloji-hucre-01","ayt-edebiyat-tanzimat-01","ydt-grammar-01","ydt-vocab-01","ydt-reading-01","kpss-vatandaslik-01","tyt-matematik-temel-01","tyt-fizik-hareket-01","ayt-matematik-fonksiyon-01","tyt-kimya-atom-01","ayt-fizik-vektor-01","ayt-biyoloji-sinir-01","ayt-tarih1-ilkcag-01","ayt-kimya-modern-atom-01","ayt-cografya1-dogal-01","ayt-felsefe-tarih-01","kpss-turkce-paragraf-01","tyt-tarih-zaman-01","tyt-cografya-harita-01","ayt-geometri-ucgen-01"];
+  assert.equal(data.ROTA_MINI_EXAMS.length,24,'Legacy inline mini seed catalog must stay at 24 definitions');
+  assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),legacyIds,'Legacy mini seeds must remain intact and in place');
+  assert.equal(kpssPracticeCatalog.topicSets.length,24,'External KPSS practice catalog must contribute 24 topic-practice sets');
+  assert.equal(kpssPracticeCatalog.sectionExams.find(x=>x.subjectId==='k-tr')?.questions.length,30,'KPSS Turkish section exam must contain 30 original questions');
+  assert.equal(kpssPracticeCatalog.sectionExams.find(x=>x.subjectId==='k-ta')?.questions.length,27,'KPSS history section exam must contain 27 original questions');
   assert.equal(new Set(data.ROTA_MINI_EXAMS.map(x=>x.id)).size,data.ROTA_MINI_EXAMS.length,'Mini ids must be unique');
   assert.deepEqual(data.ROTA_MINI_EXAMS.filter(x=>x.subjectId==='d-yd').map(x=>x.topicTitle).sort(),['Dil bilgisi','Kelime çalışması','Okuduğunu anlama'].sort(),'YDT must keep vocabulary, grammar and reading measurements separate');
   assert.ok(data.ROTA_MINI_EXAMS.some(x=>x.subjectId==='k-va'&&x.topicTitle==='Hukukun temel kavramları'),'KPSS citizenship mini must exist');
@@ -1444,7 +1452,7 @@ for(const marker of [
   for(const exam of data.ROTA_MINI_EXAMS){
     assert.ok(exam.questions.length>=8,exam.id+' should contain at least 8 pilot questions');
     assert.equal(new Set(exam.questions.map(q=>q.id)).size,exam.questions.length,'Question ids must be unique');
-    assert.equal(data.MINI_SKILL_MAP[exam.id]?.length,exam.questions.length,'Every mini question must have one skill label');
+    assert.equal(data.MINI_SKILL_MAP[exam.id]?.length,exam.questions.length,'Every legacy mini question must have one skill label');
     for(const q of exam.questions){
       assert.equal(q.options.length,5);
       assert.equal(new Set(q.options).size,q.options.length,'Mini answer choices must be unique');
@@ -1910,7 +1918,7 @@ for(const marker of [
     {id:'untouched-repair',exam:'kpss',subjectId:'s3',title:'Untouched repair'}
   ];
   let repairDays=1;
-  const fn=new Function('subjects','ROTA_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
+  const fn=new Function('subjects','ROTA_ALL_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
     src+';return miniRecommendation;'
   )(
     ()=>[{id:'s1'},{id:'s2'},{id:'s3'}],defs,{activeExam:'kpss'},
@@ -1931,7 +1939,7 @@ for(const marker of [
   const catalogJs=externalCatalogJs;
   assert.ok(catalogJs.includes('root.RotaCatalog='),'External catalog module missing');
   const env={};new Function('window','globalThis',catalogJs)(env,env);
-  const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition'),data=new Function(src+';return ROTA_MINI_EXAMS;')();
+  const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition'),data=new Function('window',src+';return ROTA_MINI_EXAMS;')({RotaKpssPractice:kpssPracticeCatalog});
   for(const mini of data){
     const subject=env.RotaCatalog.subjects.find(s=>s.id===mini.subjectId);
     assert.ok(subject,'Mini subject missing from catalog: '+mini.id);

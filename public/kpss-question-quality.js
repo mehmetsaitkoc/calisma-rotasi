@@ -22,7 +22,12 @@ function validateQuestion(q,{topicId='',requireMetadata=true}={}){
   assert(Array.isArray(q.options)&&q.options.length===5,'Soru 5 seçenekli olmalı: '+q.id);
   const opts=q.options.map(x=>String(x).trim());
   assert(opts.every(x=>x.length>0),'Boş seçenek olamaz: '+q.id);
-  assert(new Set(opts.map(norm)).size===5,'Seçenekler benzersiz olmalı: '+q.id);
+  assert(new Set(opts).size===5,'Seçenekler yüzey biçiminde benzersiz olmalı: '+q.id);
+  if(q.optionMode==='orthography'){
+    assert(q.skill&&/yaz|harf|ek|kısaltma|sayı|özel ad|kurum|eser|birleşik|bağlaç|ki|de\/da|soru eki/i.test(q.skill),'Orthography istisnası yalnız yazım kazanımlarında kullanılabilir: '+q.id);
+  }else{
+    assert(new Set(opts.map(norm)).size===5,'Seçenekler anlamsal olarak benzersiz olmalı: '+q.id);
+  }
   assert(!opts.some(o=>FORBIDDEN_OPTION_PATTERNS.some(re=>re.test(o))),'Zayıf toplama seçeneği kullanılamaz: '+q.id);
   assert(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<5,'Cevap anahtarı geçersiz: '+q.id);
   assert(typeof q.explanation==='string'&&q.explanation.trim().length>=32,'Açıklama yetersiz: '+q.id);

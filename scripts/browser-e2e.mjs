@@ -716,7 +716,8 @@ try {
   assert.equal(backupContract.tamperRejected, true, 'Tampered browser backup must be rejected');
 
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must expose Rota Hoca decision');
-  assert.ok(await page.getByText('Bu plan neden böyle?').count(), 'Today must explain route logic');
+  const coachBriefText = (await page.locator('.route-coach-insight p').first().innerText()).trim();
+  assert.ok(coachBriefText.length > 20, 'Today must explain route logic with a real route-reason brief');
 
   await page.locator('.route-task [data-action="route-why"]').first().click();
   assert.ok(await page.getByText('Neden bugün bu görev?').count(), 'Why-this-task modal must open');

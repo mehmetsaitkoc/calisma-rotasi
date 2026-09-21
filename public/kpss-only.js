@@ -175,6 +175,12 @@
     const button = event.target?.closest?.('[data-action]');
     if (!button) return;
     const action = button.dataset.action;
+    if (button.matches('.v6-outline-btn')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      location.href='/login.html';
+      return;
+    }
     if (action === 'choose-exam' && button.dataset.exam === LEGACY_EXAM) {
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -195,4 +201,12 @@
   }
 
   new MutationObserver(schedule).observe(document.documentElement, { subtree: true, childList: true });
+
+  if (!document.querySelector('script[data-rota-cloud]')) {
+    const cloud=document.createElement('script');
+    cloud.src='/cloud-auth.js?v=1';
+    cloud.async=true;
+    cloud.dataset.rotaCloud='1';
+    document.head.appendChild(cloud);
+  }
 })();

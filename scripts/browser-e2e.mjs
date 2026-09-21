@@ -81,6 +81,11 @@ async function assertTodayContract(page) {
   await page.locator('.pnx3-dashboard').waitFor({ state: 'visible' });
   await page.getByRole('heading', { name: 'Bugün, hedefindeki sen için güçlü bir gün!' }).waitFor({ state: 'visible' });
 
+  const greeting = ((await page.locator('.pnx3-greeting').textContent()) || '').trim();
+  const profileName = ((await page.locator('.pnx-profile-copy strong').textContent()) || '').trim();
+  assert.ok(greeting && !/GÜNAYDIN\s+BUGÜN/i.test(greeting), 'Dashboard greeting must keep the real student identity');
+  assert.ok(profileName && profileName.toLocaleLowerCase('tr-TR') !== 'bugün', 'Topbar profile must keep the real student identity');
+
   assert.match(
     (await page.locator('.pnx-global-search').innerText()).trim(),
     /KPSS/i,

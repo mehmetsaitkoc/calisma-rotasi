@@ -17,6 +17,11 @@ for(const marker of [
   '.pnx-route-panel',
   '.pnx-intel-strip',
   '.pnx-progress-signal',
+  '.pnx-head-art',
+  '.pnx-reference-hero',
+  '.pnx-pomodoro',
+  '.pnx-mode-card',
+  '.pnx-teacher-card',
   '.pnx-target-signal',
   '.week-grid',
   '.teacher-page[data-premium-surface="teacher"]',
@@ -39,6 +44,9 @@ for(const marker of [
   'pnx-focus-layout',
   'pnx-today-teacher',
   'rota-hoca-avatar.jpg',
+  'pnx-today-reference',
+  'Bugünün Rotası',
+  'Pomodoro ile başla',
   'MutationObserver',
   "document.querySelector('.app-shell')"
 ]) assert.ok(js.includes(marker),'Missing app premium JS contract marker: '+marker);

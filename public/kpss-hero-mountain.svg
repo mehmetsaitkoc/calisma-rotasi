@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" role="img" aria-label="Dağlara doğru ilerleyen öğrenci illüstrasyonu">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f9fbff"/>
+      <stop offset=".42" stop-color="#dbe9ff"/>
+      <stop offset="1" stop-color="#aac9fa"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff4cf" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#ffd59a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="m1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f8ff"/>
+      <stop offset="1" stop-color="#9cb8ea"/>
+    </linearGradient>
+    <linearGradient id="m2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dce9ff"/>
+      <stop offset="1" stop-color="#668acb"/>
+    </linearGradient>
+    <linearGradient id="m3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b6ccf2"/>
+      <stop offset="1" stop-color="#3f67ad"/>
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="1600" height="420" fill="url(#sky)"/>
+  <circle cx="1160" cy="78" r="130" fill="url(#sun)" filter="url(#blur)"/>
+  <path d="M0 318 L170 214 L260 278 L410 128 L520 265 L685 172 L795 270 L950 94 L1075 256 L1215 155 L1350 276 L1515 162 L1600 230 L1600 420 L0 420 Z" fill="url(#m1)" opacity=".84"/>
+  <path d="M110 345 L305 212 L390 280 L540 157 L650 298 L825 178 L940 310 L1110 135 L1220 302 L1370 222 L1480 320 L1600 242 L1600 420 L0 420 L0 370 Z" fill="url(#m2)" opacity=".9"/>
+  <path d="M510 420 L780 258 L890 330 L1088 172 L1210 337 L1395 238 L1600 352 L1600 420 Z" fill="url(#m3)" opacity=".88"/>
+  <path d="M955 94 L910 195 L965 168 L1010 236 L1065 181 L1110 135 L1155 215 L1192 197 L1238 257 L1110 135 Z" fill="#f8fbff" opacity=".84"/>
+  <path d="M390 128 L354 202 L399 184 L430 228 L467 191 L510 251 L410 128 Z" fill="#fff" opacity=".72"/>
+  <g opacity=".55" fill="#2d568f">
+    <path d="M118 369 l18-54 18 54z"/><path d="M164 374 l16-47 16 47z"/><path d="M222 369 l20-61 20 61z"/>
+    <path d="M1300 354 l18-54 18 54z"/><path d="M1344 365 l14-43 14 43z"/><path d="M1430 362 l19-57 19 57z"/>
+  </g>
+  <path d="M1120 355 C1190 300 1260 270 1328 245" fill="none" stroke="#6da6ff" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+  <path d="M1121 355 C1191 300 1260 270 1328 245" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".9"/>
+  <g transform="translate(1190 204)">
+    <ellipse cx="48" cy="136" rx="48" ry="10" fill="#28436f" opacity=".25"/>
+    <circle cx="48" cy="26" r="14" fill="#132239"/>
+    <path d="M35 42 Q48 35 61 42 L68 88 Q48 97 28 88 Z" fill="#172b49"/>
+    <path d="M30 48 L15 78" stroke="#172b49" stroke-width="10" stroke-linecap="round"/>
+    <path d="M64 48 L80 78" stroke="#172b49" stroke-width="10" stroke-linecap="round"/>
+    <path d="M37 88 L27 130" stroke="#132239" stroke-width="11" stroke-linecap="round"/>
+    <path d="M59 88 L67 130" stroke="#132239" stroke-width="11" stroke-linecap="round"/>
+    <rect x="18" y="52" width="22" height="34" rx="8" fill="#24549a"/>
+    <path d="M41 46 Q48 40 55 46" stroke="#71a8ff" stroke-width="4" fill="none"/>
+  </g>
+</svg>

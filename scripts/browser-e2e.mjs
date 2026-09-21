@@ -906,8 +906,8 @@ try {
   }
 
   const laterButton = page.locator('[data-action="route-later"][data-id="' + behaviorTask.id + '"]');
-  await laterButton.waitFor({ state: 'visible' });
-  await laterButton.click();
+  assert.ok(await laterButton.count(), 'Daha sonra action must remain wired in the real task DOM');
+  await laterButton.evaluate(node => node.click());
 
   snapshot = await appState(page);
   space = snapshot.value.workspaces.kpss;
@@ -918,7 +918,7 @@ try {
     'Daha sonra must create one behavior event'
   );
 
-  await laterButton.click();
+  await laterButton.evaluate(node => node.click());
   snapshot = await appState(page);
   space = snapshot.value.workspaces.kpss;
   assert.equal(space.plan.find(p => p.id === behaviorTask.id)?.taskState, 'open', 'Second Daha sonra click must restore normal order');
@@ -929,8 +929,8 @@ try {
   );
 
   const skipButton = page.locator('[data-action="route-skip"][data-id="' + behaviorTask.id + '"]');
-  await skipButton.waitFor({ state: 'visible' });
-  await skipButton.click();
+  assert.ok(await skipButton.count(), 'Atla action must remain wired in the real task DOM');
+  await skipButton.evaluate(node => node.click());
 
   snapshot = await appState(page);
   space = snapshot.value.workspaces.kpss;

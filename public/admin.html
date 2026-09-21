@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Yönetici Paneli · Çalışma Rotası</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#182136;background:#f4f6fa}*{box-sizing:border-box}body{margin:0}
+    button{font:inherit}.top{height:72px;background:#11182b;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:4}.brand{display:flex;align-items:center;gap:11px;font-weight:900}.mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#6474ff,#905cff);display:grid;place-items:center}.top-actions{display:flex;gap:8px}.top button{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;border-radius:10px;padding:9px 12px;cursor:pointer}
+    main{max-width:1400px;margin:0 auto;padding:28px}.head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}.head h1{margin:0 0 6px;font-size:31px}.head p{margin:0;color:#6e788c}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}.stat{background:#fff;border:1px solid #e5e9f0;border-radius:18px;padding:18px;box-shadow:0 8px 26px rgba(31,42,69,.04)}.stat span{display:block;color:#737d90;font-size:13px;font-weight:700}.stat strong{font-size:30px;display:block;margin-top:7px}
+    .panel{background:#fff;border:1px solid #e5e9f0;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(31,42,69,.04)}.panel-title{padding:18px 20px;border-bottom:1px solid #edf0f4;font-weight:900}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:960px}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid #edf0f4;font-size:14px}th{font-size:12px;color:#7b8496;text-transform:uppercase;letter-spacing:.04em;background:#fafbfc}tr{cursor:pointer}tbody tr:hover{background:#f8f9fd}td strong{display:block}td small{display:block;color:#81899a;margin-top:3px}
+    .status{display:none;margin-bottom:16px;padding:12px 14px;border-radius:12px;background:#eaf2ff;color:#335187}.status.show{display:block}.status.error{background:#fff0f0;color:#8e2e2e}.gate{background:#fff;border:1px solid #e8eaf0;border-radius:18px;padding:24px}.empty{padding:22px;color:#768094}
+    .detail{position:fixed;top:0;right:0;width:min(640px,100%);height:100vh;background:#fff;box-shadow:-30px 0 70px rgba(26,35,57,.18);z-index:10;padding:24px;overflow:auto;transform:translateX(105%);transition:.22s ease}.detail.show{transform:translateX(0)}.detail-head{display:flex;justify-content:space-between;gap:16px;align-items:start}.detail h2{margin:0}.detail p{color:#6e7789}.close{border:0;background:#eef1f6;border-radius:10px;padding:9px 12px;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0}.metric{background:#f6f8fb;border-radius:14px;padding:13px}.metric span{display:block;font-size:12px;color:#798295}.metric strong{display:block;margin-top:5px;font-size:18px}.detail-meta{border-top:1px solid #eceff4;border-bottom:1px solid #eceff4;padding:12px 0;margin-bottom:16px}.detail-meta p{margin:7px 0;font-size:13px}details{border:1px solid #e4e8ef;border-radius:14px;padding:12px}summary{cursor:pointer;font-weight:800}pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#dce7ff;border-radius:12px;padding:14px;max-height:420px;overflow:auto;font-size:11px}
+    @media(max-width:850px){.stats{grid-template-columns:1fr 1fr}.metric-grid{grid-template-columns:1fr 1fr}.head{align-items:start;flex-direction:column}}@media(max-width:520px){main{padding:18px}.stats{grid-template-columns:1fr}.metric-grid{grid-template-columns:1fr}.top{padding:0 14px}.brand span:last-child{display:none}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="mark">R</span><span>Çalışma Rotası · Yönetim</span></div>
+    <div class="top-actions"><button id="refresh" type="button">Yenile</button><button id="logout" type="button">Çıkış</button></div>
+  </header>
+  <main>
+    <div class="status" id="status"></div>
+    <section class="gate" id="gate" hidden><h2>Yönetici erişimi gerekli</h2><p>Bu panel yalnızca Supabase <code>app_metadata.role = admin</code> yetkisi taşıyan hesaplara açıktır.</p></section>
+    <div id="app" hidden>
+      <div class="head"><div><h1>Öğrenci Merkezi</h1><p>Kullanıcıların çalışma verileri, rota durumu ve son aktivitesi.</p></div></div>
+      <section class="stats">
+        <article class="stat"><span>Toplam öğrenci</span><strong id="total">0</strong></article>
+        <article class="stat"><span>Son 24 saat aktif</span><strong id="today">0</strong></article>
+        <article class="stat"><span>Son 7 gün aktif</span><strong id="week">0</strong></article>
+        <article class="stat"><span>Rotasını kuran</span><strong id="configured">0</strong></article>
+      </section>
+      <section class="panel">
+        <div class="panel-title">Öğrenciler</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Öğrenci</th><th>Durum</th><th>Hedef</th><th>Rota modu</th><th>Test</th><th>Açık yanlış</th><th>Son aktif</th></tr></thead>
+            <tbody id="studentsBody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="empty" hidden>Henüz kayıtlı öğrenci yok.</div>
+      </section>
+    </div>
+  </main>
+  <aside class="detail" id="detail" aria-live="polite"></aside>
+  <script src="/cloud-auth.js?v=1"></script>
+  <script src="/admin.js?v=1"></script>
+</body>
+</html>

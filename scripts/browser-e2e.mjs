@@ -883,6 +883,13 @@ try {
   assert.ok(['collect','steady','ease'].includes(teacherRequest.studentContext?.intelligence?.load?.mode||'collect'),'Rota Hoca load prescription must use a bounded mode');
   assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'outcomeMemory'),'Rota Hoca Intelligence context must expose intervention outcome memory');
   assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'methodMemory'),'Rota Hoca Intelligence context must expose personalized method memory');
+  assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'subjectMethodProfile'),'Rota Hoca Intelligence context must expose subject-level method profile');
+  const subjectMethodProfile=teacherRequest.studentContext?.intelligence?.subjectMethodProfile;
+  if(subjectMethodProfile){
+    assert.ok(['collect','emerging','learning','stable'].includes(subjectMethodProfile.state),'Subject method profile must expose a bounded learning state');
+    assert.ok(Number.isFinite(subjectMethodProfile.confidence)&&subjectMethodProfile.confidence>=0&&subjectMethodProfile.confidence<=100,'Subject method profile confidence must stay bounded');
+    assert.ok((subjectMethodProfile.topicCount||0)>=0,'Subject method profile topic count must be non-negative');
+  }
   if(teacherRequest.studentContext?.intelligence?.methodMemory?.current){
     assert.ok(['collect','hold','change','repeat'].includes(teacherRequest.studentContext.intelligence.methodMemory.current.action),'Method memory must expose a bounded action');
     assert.ok((teacherRequest.studentContext.intelligence.methodMemory.current.total||0)>=0,'Method memory sample count must be non-negative');

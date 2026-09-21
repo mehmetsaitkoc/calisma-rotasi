@@ -6,13 +6,15 @@ await import('../public/kpss-content-blueprint.js');
 await import('../public/kpss-question-quality.js');
 await import('../public/kpss-professional-bank.js');
 await import('../public/kpss-professional-turkish-02.js');
+await import('../public/kpss-professional-sections.js');
 
 const C=globalThis.RotaCatalog;
 const B=globalThis.RotaKpssContentBlueprint;
 const Q=globalThis.RotaKpssQuestionQuality;
 const P=globalThis.RotaKpssProfessionalBank;
 const P2=globalThis.RotaKpssProfessionalTurkish02;
-assert.ok(C&&B&&Q&&P&&P2,'KPSS v2 content modules must load');
+const S=globalThis.RotaKpssProfessionalSections;
+assert.ok(C&&B&&Q&&P&&P2&&S,'KPSS v2 content modules must load');
 
 const totals=B.totals(C);
 assert.deepEqual(totals,{
@@ -44,6 +46,8 @@ for(const subject of kpssSubjects){
   }
 }
 assert.equal(B.sectionPlans().length,30);
+assert.equal(B.SECTION_PROFILES.length,5);
+assert.deepEqual(B.SECTION_PROFILES[0].difficulty,{easy:6,medium:18,hard:6});
 assert.equal(B.OFFICIAL_SCOPE.generalCulture.historyPct,45);
 assert.equal(B.OFFICIAL_SCOPE.generalCulture.geographyPct,30);
 assert.equal(B.OFFICIAL_SCOPE.generalCulture.citizenshipPct,15);
@@ -64,19 +68,39 @@ for(const topicId of ['k-tr-1','k-tr-2']){
 assert.ok(professional.flatMap(t=>t.questions).every(q=>q.sourceKind==='original'&&q.copyrightPolicy==='original-only'));
 assert.ok(professional.flatMap(t=>t.questions).every(q=>['context','interpretation','reasoning','application','recall'].includes(q.cognitive)));
 
+const professionalSection=S.sectionExams[0];
+assert.ok(professionalSection,'Professional Turkish section pilot must exist');
+Q.validateSectionExam(professionalSection,{
+  blueprint:B.sectionBlueprint('k-tr',0),
+  profile:B.SECTION_PROFILES[0]
+});
+assert.equal(professionalSection.qualityStatus,'approved');
+assert.equal(professionalSection.questions.length,30);
+assert.equal(professionalSection.questions.filter(q=>q.topicId==='k-tr-3').length,15,'Professional Turkish section must preserve the 15-question paragraph trend weight');
+assert.deepEqual(Q.difficultyCounts(professionalSection.questions),{easy:6,medium:18,hard:6});
+assert.ok(professionalSection.questions.every(q=>q.sourceKind==='original'&&q.copyrightPolicy==='original-only'));
+for(const q of professional.flatMap(t=>t.questions)){
+  for(const s of professionalSection.questions){
+    assert.ok(!Q.suspiciouslySimilar(q.text,s.text),'Topic and section banks must not contain near-duplicate stems: '+q.id+' ↔ '+s.id);
+  }
+}
+
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 for(const marker of [
   '<script src="/kpss-content-blueprint.js"></script>',
   '<script src="/kpss-question-quality.js"></script>',
   '<script src="/kpss-professional-bank.js"></script>',
   '<script src="/kpss-professional-turkish-02.js"></script>',
+  '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',
   'ROTA_ACTIVE_MINI_EXAMS',
   'KPSS_SEED_TOPIC_TESTS.filter',
   'RotaKpssQuestionQuality.auditBank',
-  'requireApproved:true'
+  'requireApproved:true',
+  'ROTA_ACTIVE_SECTION_EXAMS',
+  'sectionWeakSkills(score)'
 ]) assert.ok(html.includes(marker),'Missing KPSS v2 integration marker: '+marker);
 assert.ok(html.includes('ROTA_ALL_MINI_EXAMS'),'Archived mini definitions must remain resolvable for old attempts');
 
-console.log('KPSS content v2 passed: 3,672-question target + approved-only quality gate + two Turkish 4x12 professional topic packs');
+console.log('KPSS content v2 passed: 3,672-question target + 96 approved topic questions + 30-question professional Turkish section pilot');

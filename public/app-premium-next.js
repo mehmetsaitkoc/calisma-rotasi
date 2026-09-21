@@ -118,6 +118,27 @@
       const done = task.querySelector('.check-btn.done');
       task.classList.toggle('pnx-task-done', !!done);
     });
+
+    root.querySelectorAll('.pnx-route-panel .route-task-actions').forEach((actions) => {
+      if (actions.dataset.pnxCompact === '1') return;
+      const secondary = Array.from(actions.children).filter((node) => {
+        const action = node?.dataset?.action || '';
+        return action && action !== 'focus-session';
+      });
+      if (secondary.length) {
+        const more = document.createElement('details');
+        more.className = 'pnx-task-menu';
+        const summary = document.createElement('summary');
+        summary.setAttribute('aria-label', 'Diğer görev işlemleri');
+        summary.textContent = '•••';
+        const menu = document.createElement('div');
+        menu.className = 'pnx-task-menu-popover';
+        secondary.forEach((node) => menu.appendChild(node));
+        more.append(summary, menu);
+        actions.appendChild(more);
+      }
+      actions.dataset.pnxCompact = '1';
+    });
   }
 
   function sync() {

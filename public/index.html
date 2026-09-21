@@ -1913,6 +1913,7 @@ input:focus,select:focus,textarea:focus{border-color:#aaa6ff!important;box-shado
 <script src="/kpss-professional-turkish-07.js"></script>
 <script src="/kpss-professional-turkish-08.js"></script>
 <script src="/kpss-professional-turkish-09.js"></script>
+<script src="/kpss-professional-turkish-10.js"></script>
 <script src="/kpss-professional-sections.js"></script>
 <!-- ARCHITECTURE BOUNDARY: workspace state schema -->
 <script src="/workspace-schema.js"></script>
@@ -4282,7 +4283,8 @@ const KPSS_PROFESSIONAL_TESTS=(()=>{
   ...(Array.isArray(window.RotaKpssProfessionalTurkish06?.tests)?window.RotaKpssProfessionalTurkish06.tests:[]),
   ...(Array.isArray(window.RotaKpssProfessionalTurkish07?.tests)?window.RotaKpssProfessionalTurkish07.tests:[]),
   ...(Array.isArray(window.RotaKpssProfessionalTurkish08?.tests)?window.RotaKpssProfessionalTurkish08.tests:[]),
-  ...(Array.isArray(window.RotaKpssProfessionalTurkish09?.tests)?window.RotaKpssProfessionalTurkish09.tests:[])
+  ...(Array.isArray(window.RotaKpssProfessionalTurkish09?.tests)?window.RotaKpssProfessionalTurkish09.tests:[]),
+  ...(Array.isArray(window.RotaKpssProfessionalTurkish10?.tests)?window.RotaKpssProfessionalTurkish10.tests:[])
  ];
  const audit=window.RotaKpssQuestionQuality?.auditBank?window.RotaKpssQuestionQuality.auditBank(tests,{profiles:window.RotaKpssContentBlueprint?.TEST_PROFILES||[],requireApproved:true}):{valid:false,errors:[{message:'Kalite modülü yüklenemedi.'}]};
  if(!audit.valid){console.error('KPSS profesyonel içerik kalite kapısını geçemedi.',audit.errors);return [];}

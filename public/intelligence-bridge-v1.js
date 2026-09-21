@@ -201,7 +201,7 @@ function install(){
 }
 
 if(!install()){
-  if(document?.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
-  else setTimeout(install,0);
+  if(typeof document!=='undefined'&&document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+  else if(typeof setTimeout==='function')setTimeout(install,0);
 }
 })(typeof window!=='undefined'?window:globalThis);

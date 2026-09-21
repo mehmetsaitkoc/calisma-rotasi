@@ -107,6 +107,12 @@ async function assertTodayContract(page) {
 async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 'today' } = {}) {
   const premiumWelcome = page.locator('[data-premium-surface="welcome"]');
   await premiumWelcome.waitFor({ state: 'visible' });
+  const intelligenceRuntime = await page.evaluate(() => ({
+    core: !!window.RotaIntelligenceV1,
+    bridge: !!window.RotaIntelligenceBridgeV1,
+    installed: !!window.RotaIntelligenceBridgeV1?.installed?.()
+  }));
+  assert.deepEqual(intelligenceRuntime,{core:true,bridge:true,installed:true},'Intelligence V1 runtime bridge must be active before onboarding');
   assert.equal(await page.locator('.premium-proof-item').count(), 3, 'Premium landing must render the three product-value signals');
   await page.locator('.premium-trust-strip').waitFor({ state: 'visible' });
   await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();

@@ -2928,3 +2928,30 @@ body.app-premium-next-ready .route-v1-head:before{
     width:34px!important;height:34px!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V2.6 · STABLE TASK HIT TARGETS */
+body.app-premium-next-ready .pnx-reference-route-panel .route-task{
+  isolation:isolate!important;
+}
+body.app-premium-next-ready .pnx-reference-route-panel .route-task-main{
+  min-width:0!important;
+  overflow:hidden!important;
+}
+body.app-premium-next-ready .pnx-reference-route-panel .route-task-actions{
+  position:relative!important;
+  z-index:8!important;
+  align-self:center!important;
+  min-width:max-content!important;
+  pointer-events:auto!important;
+}
+body.app-premium-next-ready .pnx-reference-route-panel .route-task-actions>*{
+  position:relative!important;
+  z-index:9!important;
+  pointer-events:auto!important;
+}
+body.app-premium-next-ready .pnx-reference-route-panel .route-task-meta{
+  position:relative!important;
+  z-index:1!important;
+  min-width:0!important;
+}

@@ -2819,3 +2819,112 @@ body.app-premium-next-ready .topbar-right>.topbar-upgrade .icon{
     top:14px!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V2.5 · FINAL VISUAL ALIGNMENT */
+
+/* Exactly four KPI tiles: target signal stays available in product state, not in the first-screen strip */
+body.app-premium-next-ready .pnx-hidden-target[hidden],
+body.app-premium-next-ready .premium-signal[hidden]{
+  display:none!important;
+}
+
+/* One notification control + one profile identity, matching the approved topbar */
+body.app-premium-next-ready .topbar-right>.avatar{display:none!important}
+body.app-premium-next-ready .pnx-bell{display:none!important}
+body.app-premium-next-ready .topbar-right>.topbar-upgrade .icon{display:none!important}
+body.app-premium-next-ready .topbar-right>.topbar-upgrade:before{
+  content:"";
+  width:11px;height:13px;border:2px solid #53658c;border-radius:7px 7px 5px 5px;
+  box-sizing:border-box;
+}
+body.app-premium-next-ready .topbar-right>.topbar-upgrade:after{
+  content:"";
+  position:absolute;right:4px;top:3px;width:6px;height:6px;border-radius:50%;
+  background:#ff4f67;box-shadow:0 0 0 2px #fff;
+}
+
+/* Use the real JS-inserted signal icon instead of empty pseudo blocks */
+body.app-premium-next-ready .premium-signal:before,
+body.app-premium-next-ready .premium-signal:after{
+  display:none!important;
+}
+body.app-premium-next-ready .premium-signal{
+  grid-template-columns:46px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+}
+body.app-premium-next-ready .pnx-signal-icon{
+  grid-column:1!important;
+  grid-row:1/3!important;
+  width:42px;height:42px;display:grid;place-items:center;
+  border-radius:14px;background:linear-gradient(145deg,#edf2ff,#dfe8ff);
+  box-shadow:inset 0 0 0 1px rgba(74,104,255,.08);
+  color:#5574ff;font-size:17px;font-weight:900;
+}
+body.app-premium-next-ready [data-pnx-kind="tasks"] .pnx-signal-icon:before{content:"▣"}
+body.app-premium-next-ready [data-pnx-kind="load"] .pnx-signal-icon{
+  background:linear-gradient(145deg,#f0ecff,#e5ddff);color:#6763ff;
+}
+body.app-premium-next-ready [data-pnx-kind="load"] .pnx-signal-icon:before{content:"◷"}
+body.app-premium-next-ready [data-pnx-kind="progress"] .pnx-signal-icon{
+  border-radius:50%;
+  background:
+    radial-gradient(circle at center,#fff 0 56%,transparent 58%),
+    conic-gradient(#20c3aa var(--pnx-progress,0%),#daf3ee 0);
+  color:#163f46;font-size:10px;
+}
+body.app-premium-next-ready [data-pnx-kind="progress"] .pnx-signal-icon:before{
+  content:attr(data-progress-label);
+}
+body.app-premium-next-ready [data-pnx-kind="mode"] .pnx-signal-icon{
+  background:linear-gradient(145deg,#fff0ee,#ffe2df);color:#ff5e73;
+}
+body.app-premium-next-ready [data-pnx-kind="mode"] .pnx-signal-icon:before{content:"◎"}
+body.app-premium-next-ready .premium-signal>strong{
+  grid-column:2!important;grid-row:1!important;margin:0!important;align-self:end!important;
+}
+body.app-premium-next-ready .premium-signal>span{
+  grid-column:2!important;grid-row:2!important;align-self:start!important;
+}
+
+/* Keep the real subject as the pill, remove the extra exam eyebrow from the hero */
+body.app-premium-next-ready .pnx-reference-hero>.grow>.eyebrow{display:none!important}
+body.app-premium-next-ready .pnx-reference-hero .route-now-label{
+  display:inline-flex!important;
+  width:max-content!important;
+}
+
+/* Reference is a four-row queue; additional real tasks remain scroll-accessible */
+body.app-premium-next-ready .pnx-reference-route-panel .route-list{
+  max-height:260px!important;
+  overflow-y:auto!important;
+  padding-right:3px!important;
+  scrollbar-width:thin;
+  scrollbar-color:#dce2ee transparent;
+}
+
+/* Give bottom intelligence cards the compact height seen in the approved screen */
+body.app-premium-next-ready .pnx-intel-strip{
+  align-items:stretch!important;
+}
+body.app-premium-next-ready .pnx-reason-card,
+body.app-premium-next-ready .pnx-mode-card,
+body.app-premium-next-ready .pnx-teacher-card{
+  min-height:136px!important;
+  max-height:154px!important;
+  overflow:hidden!important;
+}
+
+/* Keep the generated header art cool/blue and quieter than the main task card */
+body.app-premium-next-ready .route-v1-head:before{
+  filter:hue-rotate(8deg) saturate(.70) brightness(1.15)!important;
+  opacity:.38!important;
+}
+
+/* Mobile keeps the same real controls without duplicating the desktop profile */
+@media(max-width:900px){
+  body.app-premium-next-ready .pnx-profile-avatar{
+    width:34px!important;height:34px!important;
+  }
+}

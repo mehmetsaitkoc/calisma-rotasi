@@ -1725,3 +1725,36 @@ body.app-premium-next-ready .route-plan-card .route-task-reason{
     overflow:visible!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V1.3 · ROUTE QUEUE INTERACTION FIX */
+body.app-premium-next-ready .pnx-route-panel .route-list{
+  max-height:316px!important;
+}
+body.app-premium-next-ready .pnx-route-panel .route-task{
+  grid-template-columns:30px minmax(0,1fr)!important;
+  align-items:start!important;
+}
+body.app-premium-next-ready .pnx-route-panel .route-task-main{
+  overflow:visible!important;
+}
+body.app-premium-next-ready .pnx-route-panel .route-task-meta{
+  overflow:visible!important;
+}
+body.app-premium-next-ready .pnx-route-panel .route-task-actions{
+  grid-column:2!important;
+  justify-content:flex-start!important;
+  padding-left:0!important;
+  margin-top:2px!important;
+}
+body.app-premium-next-ready .pnx-route-panel .route-task-actions>[data-action="focus-session"]{
+  min-width:54px!important;
+}
+@media(max-width:650px){
+  body.app-premium-next-ready .pnx-route-panel .route-task{
+    grid-template-columns:30px minmax(0,1fr)!important;
+  }
+  body.app-premium-next-ready .pnx-route-panel .route-task-actions{
+    grid-column:2!important;
+  }
+}

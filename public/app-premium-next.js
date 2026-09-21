@@ -484,9 +484,9 @@
     ensureFocusHero(root, hero, reason);
     ensureWeekCard(side, root);
     ensureGoalsCard(side, target);
-    ensureQuoteCard(side);
     ensureTeacherCard(lower);
     ensureResultsCard(lower, target);
+    ensureQuoteCard(lower);
 
     const archive = ensureInsightArchive(root, reason);
     if (!archive.isConnected) lower.insertAdjacentElement('afterend', archive);

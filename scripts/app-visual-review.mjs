@@ -97,6 +97,7 @@ async function submitWizard(page){
   await page.clock.fastForward(5500);
   await page.locator('[data-premium-surface="today"]').waitFor({state:'visible'});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
+  await page.clock.fastForward(5000);
 }
 async function addRealExam(page){
   await page.locator('[data-action="add-exam"]').first().click();

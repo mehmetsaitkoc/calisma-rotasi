@@ -31,7 +31,7 @@ Bu denetim soru sayısını artırmak için değil, 759 soruluk Tarih paketinde 
 
 ## Sonuç
 
-İlk 100 soruluk sert editoryal turda 37 soru yeniden yazıldı.
+İlk 100 soruluk sert editoryal turda 37 soru yeniden yazıldı. İkinci risk turunda ayrıca doğru cevabın uzunluğundan ipucu verdiği en kötü 30 soruda çeldiriciler yeniden dengelendi.
 
 Başlıca müdahaleler:
 - “hangi yıl / kimdir / hangisidir?” düz bilgi köklerini bağlam ve çıkarım sorularına dönüştürme,
@@ -54,6 +54,8 @@ Ramazan Yetgin'in 2026 “Sorularla Genel Tekrar Kampı” ve “99 Soruda Genel
 - 5 seçenek / tek doğru / açıklama / original-only sözleşmesini,
 - recall ve çıplak knowledge oranının yeniden yükselmemesini,
 - doğrudan bilgi kökü oranının kontrolden çıkmamasını,
+- doğru şıkkın belirgin biçimde tek uzun seçenek olduğu örneklerin izleme metriğini,
+- editoryal pass 3 kapsamındaki 30 çeldirici dengelemesinin yüklenmesini,
 - tartışmalı “Kürşad” tipi sorunun geri dönmemesini
 
 denetler.

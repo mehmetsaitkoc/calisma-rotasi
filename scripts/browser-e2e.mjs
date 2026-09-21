@@ -520,6 +520,7 @@ async function runKpssSectionExamContent(browser) {
     assert.ok(await page.getByText('KPSS Türkçe · Sözcükte Anlam · Test '+setNo,{exact:true}).count(),'Professional Word Meaning Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Cümlede Anlam · Test '+setNo,{exact:true}).count(),'Professional Sentence Meaning Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Paragrafta Anlam · Test '+setNo,{exact:true}).count(),'Professional Paragraph Meaning Test '+setNo+' must be visible');
+    assert.ok(await page.getByText('KPSS Türkçe · Sözel Mantık · Test '+setNo,{exact:true}).count(),'Professional Verbal Logic Test '+setNo+' must be visible');
   }
   assert.equal(await page.getByText('KPSS Sözcükte Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Meaning seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Cümlede Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Sentence Meaning seed must not remain in the active catalog');
@@ -537,6 +538,13 @@ async function runKpssSectionExamContent(browser) {
   const paragraphForm=page.locator('#mini-exam-form');
   await paragraphForm.waitFor({state:'visible'});
   assert.equal(await paragraphForm.locator('.mini-question').count(),12,'Professional Paragraph Test 4 must render exactly 12 questions');
+  await page.locator('[data-action="close-modal"]').first().click();
+  const logicStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-tr:k-tr-4:t04"]').first();
+  await logicStart.waitFor({state:'visible'});
+  await logicStart.click();
+  const logicForm=page.locator('#mini-exam-form');
+  await logicForm.waitFor({state:'visible'});
+  assert.equal(await logicForm.locator('.mini-question').count(),12,'Professional Verbal Logic Test 4 must render exactly 12 questions');
   await page.locator('[data-action="close-modal"]').first().click();
   assert.ok(await page.getByText(/konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık/i).count(), 'Section-exam distribution must be described as approximate, not official-fixed');
 

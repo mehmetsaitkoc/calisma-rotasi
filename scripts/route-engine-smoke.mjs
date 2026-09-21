@@ -1913,14 +1913,14 @@ for(const marker of [
 
 // 5) Automatic recommendation must prefer a fresh alternative over a very recent repair mini.
 {
-  const src=between('function miniRecommendation(){','function denemeCenterSection');
+  const src=between('function miniRecommendation(){','const KPSS_SEED_SECTION_EXAMS');
   const defs=[
     {id:'repair-mini',exam:'kpss',subjectId:'s1',title:'Repair'},
     {id:'fresh-mini',exam:'kpss',subjectId:'s2',title:'Fresh'},
     {id:'untouched-repair',exam:'kpss',subjectId:'s3',title:'Untouched repair'}
   ];
   let repairDays=1;
-  const fn=new Function('subjects','ROTA_ALL_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
+  const fn=new Function('subjects','ROTA_ACTIVE_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
     src+';return miniRecommendation;'
   )(
     ()=>[{id:'s1'},{id:'s2'},{id:'s3'}],defs,{activeExam:'kpss'},
@@ -1941,7 +1941,7 @@ for(const marker of [
   const catalogJs=externalCatalogJs;
   assert.ok(catalogJs.includes('root.RotaCatalog='),'External catalog module missing');
   const env={};new Function('window','globalThis',catalogJs)(env,env);
-  const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition'),data=new Function('window',src+';return ROTA_MINI_EXAMS;')({RotaKpssPractice:kpssPracticeCatalog});
+  const src=between('const ROTA_MINI_EXAMS','const OFFICIAL_EXAM_RESOURCES'),data=new Function(src+';return ROTA_MINI_EXAMS;')();
   for(const mini of data){
     const subject=env.RotaCatalog.subjects.find(s=>s.id===mini.subjectId);
     assert.ok(subject,'Mini subject missing from catalog: '+mini.id);

@@ -2760,3 +2760,38 @@ body.app-premium-next-ready .pnx-intel-strip{
     overflow:hidden!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V2.3 · PLUS CONTRACT IN PREMIUM TOPBAR */
+body.app-premium-next-ready .topbar-right{
+  display:flex!important;
+  grid-column:2!important;
+  justify-self:end!important;
+  gap:0!important;
+}
+body.app-premium-next-ready .topbar-right>.btn{display:none!important}
+body.app-premium-next-ready .topbar-right>.topbar-upgrade{
+  display:inline-flex!important;
+  width:34px!important;
+  min-width:34px!important;
+  height:34px!important;
+  min-height:34px!important;
+  padding:0!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  border:1px solid #e2e6ef!important;
+  border-radius:50%!important;
+  background:#fff!important;
+  color:#5869e8!important;
+  font-size:0!important;
+  box-shadow:0 6px 18px rgba(31,49,89,.06)!important;
+}
+body.app-premium-next-ready .topbar-right>.topbar-upgrade .icon{
+  width:15px!important;height:15px!important;
+}
+@media(max-width:900px){
+  body.app-premium-next-ready .topbar-right{
+    display:none!important;
+  }
+}

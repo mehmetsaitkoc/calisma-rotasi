@@ -188,7 +188,7 @@
     const top=el('div','v6-dash-top');
     const search=el('div','v6-search','Ders, konu veya hedef ara...');
     const profile=el('div','v6-profile'); profile.append(el('span','v6-avatar','MS'),el('div','v6-profile-text'));
-    profile.lastElementChild.append(el('strong','', 'Mehmet Sait'),el('small','', '12. Sınıf · YKS'));
+    profile.lastElementChild.append(el('strong','', 'Mehmet Sait'),el('small','', 'KPSS Lisans Adayı'));
     top.append(search,profile);
 
     const hello=el('div','v6-hello');
@@ -201,14 +201,14 @@
     stats.append(
       statCard('Bugünkü Plan','5/7','Tamamlanan görev','plan'),
       statCard('Net Gelişimi','+18','Son 4 denemeye göre','net'),
-      statCard('Hedefe Kalan','64 gün','YKS 2026','target')
+      statCard('Hedefe Kalan','64 gün','KPSS hedefi','target')
     );
 
     const lower=el('div','v6-dash-lower');
     const perf=el('article','v6-panel v6-performance');
     const perfHead=el('div','v6-panel-head'); perfHead.append(el('strong','', 'Ders Performansım'),el('span','', 'Tümünü Gör →')); perf.append(perfHead);
     [
-      ['Matematik',78,'blue'],['Türkçe',62,'blue2'],['Fizik',54,'cyan'],['Kimya',71,'violet'],['Biyoloji',68,'warm']
+      ['Matematik',78,'blue'],['Türkçe',62,'blue2'],['Tarih',54,'cyan'],['Coğrafya',71,'violet'],['Vatandaşlık',68,'warm']
     ].forEach(([name,val,cls])=>{
       const row=el('div','v6-perf-row'); row.append(el('span','',name));
       const track=el('i','v6-perf-track'); const fill=el('b','v6-perf-fill '+cls); fill.style.width=val+'%'; track.append(fill);
@@ -237,31 +237,29 @@
     return dash;
   }
 
-  function prepArt(kind){
+  function prepArt(){
     const ns='http://www.w3.org/2000/svg';
     const svg=document.createElementNS(ns,'svg');
     svg.setAttribute('viewBox','0 0 240 130');
     svg.setAttribute('aria-hidden','true');
-    svg.classList.add('v6-prep-art',kind);
+    svg.classList.add('v6-prep-art','kpss');
     const path=document.createElementNS(ns,'path');
     path.setAttribute('fill','none');
     path.setAttribute('stroke','currentColor');
     path.setAttribute('stroke-width','3');
     path.setAttribute('stroke-linecap','round');
     path.setAttribute('stroke-linejoin','round');
-    path.setAttribute('d',kind==='yks'
-      ? 'M15 112h210M28 112V67l92-45 92 45v45M48 68h144M64 112V77h31v35m10 0V77h30v35m10 0V77h31v35M22 112h196M120 22V9m0 0 22 10'
-      : 'M18 112h204M36 112V58h168v54M30 58h180L120 20 30 58Zm24 54V72m33 40V72m33 40V72m33 40V72m33 40V72M44 88h152M44 102h152');
+    path.setAttribute('d','M18 112h204M36 112V58h168v54M30 58h180L120 20 30 58Zm24 54V72m33 40V72m33 40V72m33 40V72m33 40V72M44 88h152M44 102h152');
     svg.append(path);
     return svg;
   }
 
   function prepCard(exam,title,desc,kind){
     const b=button('', 'choose-exam', 'v6-prep-card '+kind, {exam});
-    const iconWrap=el('span','v6-prep-icon'); iconWrap.append(icon(kind==='yks'?'cap':'book'));
+    const iconWrap=el('span','v6-prep-icon'); iconWrap.append(icon('book'));
     const copy=el('span','v6-prep-copy'); copy.append(el('strong','',title),el('small','',desc));
     const arrow=el('span','v6-prep-arrow'); arrow.append(icon('arrow'));
-    b.append(prepArt(kind),iconWrap,copy,arrow);
+    b.append(prepArt(),iconWrap,copy,arrow);
     return b;
   }
 
@@ -270,7 +268,7 @@
     box.append(el('div','v6-trust-quote','“Doğru plan,\nbüyük fark yaratır.”'));
     const line=el('div','v6-trust-line');
     [
-      ['book','KPSS + YKS','Tek uygulama'],
+      ['book','KPSS odaklı','Tek çalışma alanı'],
       ['chart','Akıllı rota','Kişiye özel'],
       ['refresh','3 + 7 gün','Tekrar döngüsü']
     ].forEach(([ic,n,label])=>{
@@ -294,9 +292,9 @@
 
     const lower=el('section','v6-lower');
     const cards=el('div','v6-prep-grid');
+    cards.classList.add('kpss-only-grid');
     cards.append(
-      prepCard('yks','YKS’ye Hazırlan','Hayalindeki üniversite için\nadım adım ilerle.','yks'),
-      prepCard('kpss','KPSS’ye Hazırlan','Kamu hayaline giden yolda\ndoğru planla ilerle.','kpss')
+      prepCard('kpss','KPSS Rotanı Kur','Lisans GY–GK için kişisel planını\\noluştur ve çalıştıkça rotanı geliştir.','kpss')
     );
     lower.append(cards,trust());
 
@@ -322,4 +320,29 @@
     const eligible=!!w&&(w.dataset.pixelMatch==='1'||!!w.querySelector('.welcome-main[data-premium-surface="welcome"]'));
     if(w!==mounted || (eligible && w.dataset.pixelMatch!=='1')) schedule();
   }).observe(document.documentElement,{subtree:true,childList:true});
+})();
+
+/* APP PREMIUM NEXT LOADER · keeps the large workspace HTML untouched */
+(() => {
+  if (!document.querySelector('link[data-app-premium-next]')) {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '/app-premium-next.css?v=1';
+    css.dataset.appPremiumNext = '1';
+    document.head.appendChild(css);
+  }
+  if (!document.querySelector('script[data-app-premium-next]')) {
+    const script = document.createElement('script');
+    script.src = '/app-premium-next.js?v=1';
+    script.async = false;
+    script.dataset.appPremiumNext = '1';
+    document.head.appendChild(script);
+  }
+  if (!document.querySelector('script[data-kpss-only]')) {
+    const product = document.createElement('script');
+    product.src = '/kpss-only.js?v=1';
+    product.async = false;
+    product.dataset.kpssOnly = '1';
+    document.head.appendChild(product);
+  }
 })();

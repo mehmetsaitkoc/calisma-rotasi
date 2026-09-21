@@ -80,6 +80,74 @@ async function assertCleanRender(page, label) {
   );
 }
 
+
+async function fillKpssStep(page) {
+  const form = page.locator('#setup-wizard-form');
+  await form.waitFor({ state: 'visible', timeout: 20_000 });
+
+  const name = form.locator('[name="name"]');
+  if (await name.count()) await name.fill('Production Smoke Öğrenci');
+
+  const habit = form.locator('[name="studyHabit"][value="yes"]');
+  if (await habit.count()) await habit.check();
+
+  const currentNet = form.locator('[name="currentNet"]');
+  if (await currentNet.count()) await currentNet.fill('48');
+
+  const targetNet = form.locator('[name="targetNet"]');
+  if (await targetNet.count()) await targetNet.fill('82');
+
+  const targetScore = form.locator('[name="targetScore"]');
+  if (await targetScore.count()) await targetScore.fill('88');
+
+  const target = form.locator('[name="target"]');
+  if (await target.count()) await target.fill('KPSS Lisans hedef rotası');
+
+  const minuteSelect = form.locator('select[name="dailyMinutes"]');
+  if (await minuteSelect.count()) {
+    await minuteSelect.selectOption('240');
+  } else {
+    const minuteRadio = form.locator('[name="dailyMinutes"][value="240"]');
+    if (await minuteRadio.count()) await minuteRadio.check();
+  }
+
+  const days = form.locator('[name="days"]');
+  for (let i = 0; i < await days.count(); i++) {
+    const box = days.nth(i);
+    if (!(await box.isChecked())) await box.check({ force: true });
+  }
+
+  const levels = form.locator('select[name^="level:"]');
+  for (let i = 0; i < await levels.count(); i++) {
+    const select = levels.nth(i);
+    const values = await select.locator('option').evaluateAll(options => options.map(o => o.value).filter(Boolean));
+    if (values.length) await select.selectOption(values[Math.min(i === 0 ? 0 : 2, values.length - 1)]);
+  }
+
+  const numbers = form.locator('input[type="number"][name]');
+  for (let i = 0; i < await numbers.count(); i++) {
+    const input = numbers.nth(i);
+    if (await input.inputValue()) continue;
+    const field = (await input.getAttribute('name')) || '';
+    await input.fill(/target/i.test(field) ? '80' : '40');
+  }
+
+  await form.locator('button[type="submit"]').click();
+}
+
+async function finishKpssOnboarding(page) {
+  for (let step = 0; step < 12; step++) {
+    const build = page.locator('[data-action="summary-build"]');
+    if (await build.count() && await build.isVisible()) {
+      await build.click();
+      await page.locator('.route-task').first().waitFor({ state: 'visible', timeout: 20_000 });
+      return;
+    }
+    await fillKpssStep(page);
+  }
+  throw new Error('Production KPSS onboarding did not reach route summary');
+}
+
 const health = await waitForExpectedDeploy();
 const actualSha = deployedSha(health);
 assert.equal(health.body?.ok, true, 'Production health must report ok=true');
@@ -111,14 +179,33 @@ try {
   assert.ok((await app.innerText()).trim().length > 20, 'Production app must not render a blank shell');
   await assertCleanRender(page, 'production welcome');
 
-  const examChoice = page.locator('[data-action="choose-exam"][data-exam="kpss"]');
-  await examChoice.waitFor({ state: 'visible', timeout: 20_000 });
-  await examChoice.click();
+  assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'Production must not expose a YKS product control');
+  assert.equal(await page.locator('[data-exam="kpss"]').count(), 1, 'Production must expose one KPSS entry point');
+  const welcomeCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(welcomeCopy), 'Production welcome must be KPSS-only');
+
+  const primaryCta = page.locator('.v6-main-cta');
+  await primaryCta.waitFor({ state: 'visible', timeout: 20_000 });
+  await primaryCta.click();
 
   const wizard = page.locator('#setup-wizard-form');
   await wizard.waitFor({ state: 'visible', timeout: 20_000 });
   assert.ok(await wizard.locator('[name="name"]').count(), 'Production onboarding must render the student name step');
+  assert.equal(await wizard.locator('select[name="track"]').count(), 0, 'Production KPSS onboarding must not render a YKS track selector');
   await assertCleanRender(page, 'production onboarding');
+
+  await finishKpssOnboarding(page);
+  await page.locator('.app-shell').waitFor({ state: 'visible', timeout: 20_000 });
+  await page.locator('.pnx-stage').waitFor({ state: 'visible', timeout: 20_000 });
+  await page.locator('.pnx-intel-strip').waitFor({ state: 'visible', timeout: 20_000 });
+  assert.ok(await page.locator('.pnx-route-panel .route-task').count(), 'Production premium dashboard must render the real Today route');
+  assert.ok(await page.locator('.pnx-reason-card').count(), 'Production premium dashboard must render the real “Neden bugün?” card');
+  assert.ok(await page.locator('.pnx-mode-card').count(), 'Production premium dashboard must render the route mode card');
+  assert.ok(await page.locator('.pnx-teacher-card').count(), 'Production premium dashboard must render the Rota Hoca card');
+  assert.ok(await page.locator('.mobile-dock').isVisible(), 'Production 360px dashboard must expose the mobile navigation dock');
+  const dashboardCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(dashboardCopy), 'Production dashboard must remain KPSS-only');
+  await assertCleanRender(page, 'production premium dashboard');
 
   assert.deepEqual(pageErrors, [], 'Production page JavaScript errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(
@@ -128,7 +215,7 @@ try {
   );
 
   console.log(
-    'Production smoke passed: deploy identity + real Chromium render + onboarding · ' +
+    'Production smoke passed: deploy identity + KPSS-only onboarding + premium Today dashboard · ' +
     (actualSha || 'commit-unavailable')
   );
 } finally {

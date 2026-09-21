@@ -1,0 +1,43 @@
+name: KPSS-only CI
+
+on:
+  push:
+    branches:
+      - gpt/kpss-only-yks-retirement
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  kpss-only-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Syntax check KPSS-only runtime
+        run: node --check public/kpss-only.js
+
+      - name: Syntax check KPSS-only browser test
+        run: node --check scripts/kpss-only-browser-e2e.mjs
+
+      - name: Run KPSS-only contract
+        run: node scripts/kpss-only-contract.test.mjs
+
+      - name: Install Playwright test runtime
+        run: npm install --no-save playwright@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run KPSS-only browser E2E
+        run: node scripts/kpss-only-browser-e2e.mjs

@@ -300,22 +300,6 @@ async function fillAdaptiveWizardStep(page, exam) {
   await form.locator('button[type="submit"]').click();
 }
 
-async function submitYksWizard(page) {
-  await page.locator('[data-action="choose-exam"][data-exam="yks"]').click();
-
-  for (let step = 0; step < 14; step++) {
-    const build = page.locator('[data-action="summary-build"]');
-    if (await build.count() && await build.isVisible()) break;
-    await fillAdaptiveWizardStep(page, 'yks');
-  }
-
-  const build = page.locator('[data-action="summary-build"]');
-  await build.waitFor({ state: 'visible' });
-  await build.click();
-  await page.clock.fastForward(5000);
-  await page.locator('.route-task').first().waitFor({ state: 'visible' });
-}
-
 async function runRestDayInitialRouteVisibility(browser) {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -1065,7 +1049,8 @@ try {
   assert.ok(await page.getByText('Bu dönemde deneme yok.',{exact:true}).count(),'Empty long-term Plus report must explain missing exam evidence');
   await assertCleanRender(page,'Plus empty six-month report');
 
-  // Desktop/YKS hardening: exercise the longer SAY onboarding path in a separate storage context.
+  // KPSS-only hardening: the public CTA bypasses exam choice and legacy YKS-active state
+  // is redirected without deleting its stored workspace.
   const desktopContext = await browser.newContext({
     viewport: { width: 1280, height: 900 },
     locale: 'tr-TR',
@@ -1078,27 +1063,55 @@ try {
   desktopPage.on('console', msg => { if (msg.type() === 'error') desktopConsoleErrors.push(msg.text()); });
   await desktopPage.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
   await desktopPage.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
-  await submitYksWizard(desktopPage);
-  await assertCleanRender(desktopPage, 'YKS desktop onboarding');
+  await desktopPage.locator('.welcome.premium-landing-final').waitFor({ state: 'visible' });
+  assert.equal(await desktopPage.locator('[data-exam="yks"]').count(), 0, 'KPSS-only landing must not expose a YKS product control');
+  assert.equal(await desktopPage.locator('[data-exam="kpss"]').count(), 1, 'KPSS-only landing must keep one KPSS entry point');
+  await desktopPage.locator('.v6-main-cta').click();
+  await desktopPage.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
+  let desktopSnapshot = await appState(desktopPage);
+  assert.equal(desktopSnapshot.value.activeExam, 'kpss', 'Primary CTA must enter KPSS onboarding directly');
 
-  const desktopSnapshot = await appState(desktopPage);
-  const yksSpace = desktopSnapshot.value.workspaces.yks;
-  assert.equal(desktopSnapshot.value.activeExam, 'yks', 'YKS desktop onboarding must keep YKS active');
-  assert.equal(yksSpace.configured, true, 'YKS workspace must be configured');
-  assert.equal(yksSpace.settings.track, 'say', 'YKS desktop fixture must preserve SAY track');
-  assert.equal(yksSpace.profile.completed, true, 'YKS profile must be completed');
-  assert.equal(yksSpace.profile.currentNet, 58, 'YKS TYT current net must be stored');
-  assert.equal(yksSpace.profile.targetNet, 92, 'YKS TYT target net must be stored');
-  assert.ok(Number.isFinite(yksSpace.profile.currentStageNet), 'SAY onboarding must store current AYT net');
-  assert.ok(Number(yksSpace.profile.targetStageNet) > Number(yksSpace.profile.currentStageNet), 'SAY onboarding must store a higher AYT target');
-  assert.ok(yksSpace.plan.length > 0, 'YKS onboarding must generate a plan');
-  assert.ok(new Set(yksSpace.plan.map(p => p.subjectId)).size >= 2, 'YKS plan must include more than one subject');
-  assert.ok(await desktopPage.locator('.sidebar').isVisible(), 'Desktop must show the sidebar');
-  if (await desktopPage.locator('.mobile-dock').count()) {
-    assert.equal(await desktopPage.locator('.mobile-dock').isVisible(), false, 'Desktop must hide the mobile dock');
-  }
-  assert.deepEqual(desktopErrors, [], 'YKS desktop page errors:\n' + desktopErrors.join('\n'));
-  assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'YKS desktop console errors:\n' + desktopConsoleErrors.join('\n'));
+  const preservedLegacyId = await desktopPage.evaluate(() => {
+    let selected = null;
+    for (const [key, raw] of Object.entries(localStorage)) {
+      try {
+        const value = JSON.parse(raw);
+        if (value?.workspaces?.kpss && value?.workspaces?.yks) { selected = { key, value }; break; }
+      } catch {}
+    }
+    if (!selected) throw new Error('KPSS-only legacy migration fixture state missing');
+    selected.value.activeExam = 'yks';
+    selected.value.workspaces.yks.configured = true;
+    selected.value.workspaces.yks.settings.name = 'Legacy YKS Profile';
+    const legacyId = selected.value.workspaces.yks.sync?.workspaceId || '';
+    localStorage.setItem(selected.key, JSON.stringify(selected.value));
+    return legacyId;
+  });
+  await desktopPage.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  await desktopPage.waitForFunction(() =>
+    document.querySelector('[data-premium-surface="onboarding"]') ||
+    document.querySelector('.app-shell')
+  );
+  desktopSnapshot = await appState(desktopPage);
+  assert.equal(desktopSnapshot.value.activeExam, 'kpss', 'Legacy active YKS profile must fall back to KPSS');
+  assert.equal(desktopSnapshot.value.workspaces.yks.settings.name, 'Legacy YKS Profile', 'Legacy YKS workspace data must be preserved for backup compatibility');
+  assert.equal(desktopSnapshot.value.workspaces.yks.sync?.workspaceId || '', preservedLegacyId, 'Legacy YKS workspace identity must not be rewritten');
+  assert.equal(await desktopPage.locator('[data-exam="yks"]').count(), 0, 'Legacy migration must not reveal a YKS selector');
+  const visibleCopy = (await desktopPage.locator('body').innerText()).toLocaleUpperCase('tr-TR');
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(visibleCopy), 'KPSS-only migrated surface must not display YKS-family product copy');
+  const kpssConfigured = desktopSnapshot.value.workspaces.kpss.configured === true;
+  assert.equal(
+    await desktopPage.locator('.app-shell').count() > 0,
+    kpssConfigured,
+    'Legacy migration must resume the configured KPSS shell only when the KPSS workspace is configured'
+  );
+  assert.equal(
+    await desktopPage.locator('[data-premium-surface="onboarding"]').count() > 0,
+    !kpssConfigured,
+    'Legacy migration must keep an unconfigured KPSS workspace in onboarding'
+  );
+  assert.deepEqual(desktopErrors, [], 'KPSS-only desktop page errors:\n' + desktopErrors.join('\n'));
+  assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'KPSS-only desktop console errors:\n' + desktopConsoleErrors.join('\n'));
   await desktopContext.close();
 
   await runKpssSectionExamContent(browser);
@@ -1106,7 +1119,7 @@ try {
   await runMiniRepairProvenance(browser);
   await runLargePlanRenderPerf(browser);
 
-  console.log('Browser E2E passed: Free entitlement gates + polished mobile Plus reports + honest empty states + KPSS topic/section content + learning loop + behavior persistence + YKS desktop onboarding + rest-day visibility + mini repair provenance + large plan/log render observability');
+  console.log('Browser E2E passed: Free entitlement gates + polished mobile Plus reports + honest empty states + KPSS topic/section content + learning loop + behavior persistence + KPSS-only CTA + legacy migration + rest-day visibility + mini repair provenance + large plan/log render observability');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

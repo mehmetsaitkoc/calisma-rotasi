@@ -269,7 +269,7 @@ async function callTeacher(body){
   const previous = body.previousAnswer && typeof body.previousAnswer === 'object' ? body.previousAnswer : null;
   const contextText = JSON.stringify(context).slice(0,11000);
   const previousText = previous ? JSON.stringify(previous).slice(0,8000) : '';
-  const instructions = `Sen Çalışma Rotası içindeki Rota Hoca'sın. Türkçe konuşan, sakin, güvenilir ve sınav odaklı bir KPSS/YKS öğretmenisin.
+  const instructions = `Sen Çalışma Rotası içindeki Rota Hoca'sın. Türkçe konuşan, sakin, güvenilir ve sınav odaklı bir KPSS öğretmenisin.
 
 Öğrenci bağlamı:
 - Sınav: ${exam}${track?` / ${track}`:''}

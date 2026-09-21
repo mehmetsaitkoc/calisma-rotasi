@@ -51,6 +51,11 @@ globalThis.routeAppliedDecision=()=>({
   easeRecoveryHeld:false
 });
 globalThis.routeTaskReason=()=> 'Eski genel neden.';
+globalThis.teacherStudentContext=(record)=>({
+  contextVersion:2,
+  selected:{subject:record?.subjectId||'',topic:record?.topicId||''},
+  studentModel:{state:'repair'}
+});
 
 await import('../public/intelligence-bridge-v1.js');
 
@@ -79,6 +84,12 @@ const snap=bridge.snapshotForTask(task);
 assert.equal(snap.risk.band,'high');
 assert.equal(snap.repair.mode,'repair');
 assert.equal(snap.explanation.headline,'Neden bugün?');
+
+const teacherContext=globalThis.teacherStudentContext({subjectId:'k-ma',topicId:'k-ma-topic'});
+assert.equal(teacherContext.intelligence.version,1);
+assert.equal(teacherContext.intelligence.targetRisk.band,'high');
+assert.equal(teacherContext.intelligence.repair.mode,'repair');
+assert.ok(Number.isFinite(teacherContext.intelligence.execution30));
 
 modelState={
   confidence:18,

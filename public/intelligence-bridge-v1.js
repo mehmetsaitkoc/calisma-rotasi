@@ -8,6 +8,7 @@ let installed=false;
 let originalStudentModel=null;
 let originalAppliedDecision=null;
 let originalTaskReason=null;
+let originalTeacherStudentContext=null;
 let profileCache={key:'',value:null};
 
 function fn(name){return typeof root[name]==='function'?root[name]:null;}
@@ -183,6 +184,37 @@ function install(){
       const snap=snapshot(subjectId,topicId,task);
       const text=snap.explanation?.text;
       return text&&text.length>=12?text:base;
+    };
+  }
+
+  originalTeacherStudentContext=fn('teacherStudentContext');
+  if(originalTeacherStudentContext){
+    root.teacherStudentContext=function(record){
+      const base=originalTeacherStudentContext.call(root,record)||{};
+      const subjectId=record?.subjectId||'',topicId=record?.topicId||'';
+      const snap=subjectId?snapshot(subjectId,topicId,null):{profile:profile(),risk:null,repair:null,model:null};
+      const p=snap.profile;
+      return {...base,intelligence:{
+        version:1,
+        profileConfidence:Number(p?.confidence)||0,
+        trend:p?.trend||'unknown',
+        trendDelta:Number.isFinite(p?.trendDelta)?p.trendDelta:null,
+        execution7:Number.isFinite(p?.windows?.d7?.execution?.completion)?p.windows.d7.execution.completion:null,
+        execution30:Number.isFinite(p?.windows?.d30?.execution?.completion)?p.windows.d30.execution.completion:null,
+        activeDays30:Number(p?.windows?.d30?.activeDays)||0,
+        targetRisk:snap.risk?{
+          score:Number.isFinite(snap.risk.score)?snap.risk.score:null,
+          band:snap.risk.band,
+          label:snap.risk.label,
+          action:snap.risk.action,
+          reasons:(snap.risk.reasons||[]).slice(0,4)
+        }:null,
+        repair:snap.repair?{
+          mode:snap.repair.mode,
+          priority:Number(snap.repair.priority)||0,
+          reason:snap.repair.reason
+        }:null
+      }};
     };
   }
 

@@ -25,24 +25,24 @@ async function waitServer() {
   throw new Error('KPSS-only E2E server did not start.\n' + serverLog);
 }
 
-async function gotoRedirectSafe(page, url) {
+async function gotoLegacyResume(page, url) {
+  let lastError = null;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      // The KPSS-only runtime may immediately replace a legacy YKS URL with the
-      // canonical KPSS workspace. Waiting for the original DOMContentLoaded can
-      // therefore report ERR_ABORTED even though the product redirect is valid.
-      // Commit is the stable navigation boundary; the following product locator
-      // assertions still verify that the redirected workspace rendered correctly.
-      await page.goto(url, { waitUntil: 'commit' });
-      await page.waitForLoadState('domcontentloaded').catch(error => {
-        if (!String(error).includes('ERR_ABORTED')) throw error;
-      });
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+    } catch (error) {
+      lastError = error;
+      if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error;
+    }
+    try {
+      await page.locator('.app-shell').waitFor({ state: 'visible', timeout: 6000 });
       return;
     } catch (error) {
-      if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error)) || attempt === 2) throw error;
+      lastError = error;
       await sleep(160);
     }
   }
+  throw lastError || new Error('Legacy KPSS resume did not reach the configured app shell');
 }
 
 async function appState(page) {
@@ -125,7 +125,7 @@ try {
   page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   await page.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
 
-  await gotoRedirectSafe(page, BASE + '/?fresh=1');
+  await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
   await page.locator('.welcome.premium-landing-final').waitFor({ state: 'visible' });
   assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'YKS must not be selectable on the public surface');
   assert.equal(await page.locator('[data-exam="kpss"]').count(), 1, 'Exactly one KPSS product entry must remain');
@@ -156,7 +156,7 @@ try {
     return { workspaceId };
   });
 
-  await gotoRedirectSafe(page, BASE + '/?fresh=1&resume=1');
+  await gotoLegacyResume(page, BASE + '/?fresh=1&resume=1');
   await page.locator('.app-shell').waitFor({ state: 'visible' });
   snapshot = await appState(page);
   assert.equal(snapshot.value.activeExam, 'kpss', 'Legacy active YKS state must redirect to KPSS');

@@ -292,7 +292,20 @@ function install(){
     if(!Array.isArray(rows)||recoveryActive()||loadPrescription()?.mode==='ease')return rows;
     const reviewSources=new Set(['mistake','mini_repair','retention_refresh','ai_teacher','spaced_review','checkpoint']);
     return rows.map(candidate=>{
-      if(!candidate?.subjectId||reviewSources.has(candidate.source)||!candidate.topicId)return candidate;
+      if(!candidate?.subjectId||!candidate.topicId)return candidate;
+      if(candidate.source==='spaced_review'&&candidate.reviewVariant==='challenge'){
+        const memory=outcomeMemoryFor(candidate.subjectId,candidate.topicId,'progress');
+        if(memory?.known&&memory.action==='change'){
+          const next={...candidate};
+          delete next.reviewVariant;
+          next.title=String(next.title||'').replace(/^Seviye yoklama · /,'3 gün tekrarı · ');
+          next.priority=Math.max(68,Math.min(Number(next.priority)||68,72));
+          next.reason='Önceki seviye artışları olgun geri testlerde yeterli sonuç vermedi. Bu yüzden seçici seviye yoklaması yerine normal kalıcılık tekrarı uygulanıyor.';
+          next.taskGoal=('Kısa tut: amaç zorluğu artırmak değil kalıcılığı doğrulamak. '+String(next.taskGoal||'').replace(/^Seviye yoklama:\s*/,'').replace(/ · Son bölümde 2 daha seçici veya karma soru çöz; amaç daha çok soru değil, bilgiyi farklı biçimde kullanabildiğini görmek\./,'')).trim();
+          return next;
+        }
+      }
+      if(reviewSources.has(candidate.source))return candidate;
       const snap=snapshot(candidate.subjectId,candidate.topicId,null);
       const risk=snap.risk,repair=snap.repair,model=snap.model;
       if(!risk?.reliable||risk.band!=='high'||repair?.mode!=='repair'||(model?.confidence||0)<55)return candidate;

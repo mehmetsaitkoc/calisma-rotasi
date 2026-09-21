@@ -4954,7 +4954,32 @@ body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-status{
   text-align:center!important;
 }
 body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject{
-  display:none!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  max-width:250px!important;
+  margin:0!important;
+  padding:6px 9px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:10px!important;
+  background:rgba(7,18,39,.46)!important;
+  color:#dce7f8!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject>.icon{
+  width:15px!important;
+  height:15px!important;
+  flex:0 0 auto!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject strong{
+  color:#eef5ff!important;
+  font-size:8px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject span{
+  display:block!important;
+  margin-top:1px!important;
+  color:#9fb0c9!important;
+  font-size:7px!important;
+  line-height:1.25!important;
 }
 body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls{
   justify-content:center!important;

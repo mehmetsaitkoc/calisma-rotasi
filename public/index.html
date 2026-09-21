@@ -1918,6 +1918,8 @@ input:focus,select:focus,textarea:focus{border-color:#aaa6ff!important;box-shado
 <script src="/kpss-professional-sections.js"></script>
 <script src="/kpss-professional-turkish-sections-02.js"></script>
 <script src="/kpss-professional-turkish-sections-03.js"></script>
+<script src="/kpss-professional-turkish-sections-04.js"></script>
+<script src="/kpss-professional-turkish-sections-05.js"></script>
 <!-- ARCHITECTURE BOUNDARY: workspace state schema -->
 <script src="/workspace-schema.js"></script>
 <!-- ARCHITECTURE BOUNDARY: catalog data -->
@@ -4389,7 +4391,7 @@ function miniRecommendation(){
 }
 const KPSS_SEED_SECTION_EXAMS=[...(window.RotaKpssPractice?.sectionExams||[])];
 const KPSS_PROFESSIONAL_SECTION_EXAMS=(()=>{
- const defs=[...(window.RotaKpssProfessionalSections?.sectionExams||[]),...(window.RotaKpssProfessionalTurkishSections02?.sectionExams||[]),...(window.RotaKpssProfessionalTurkishSections03?.sectionExams||[])];
+ const defs=[...(window.RotaKpssProfessionalSections?.sectionExams||[]),...(window.RotaKpssProfessionalTurkishSections02?.sectionExams||[]),...(window.RotaKpssProfessionalTurkishSections03?.sectionExams||[]),...(window.RotaKpssProfessionalTurkishSections04?.sectionExams||[]),...(window.RotaKpssProfessionalTurkishSections05?.sectionExams||[])];
  const accepted=[];
  for(const def of defs){
   try{

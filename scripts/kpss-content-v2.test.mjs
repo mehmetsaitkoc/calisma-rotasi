@@ -9,6 +9,13 @@ await import('../public/kpss-professional-turkish-02.js');
 await import('../public/kpss-professional-turkish-03.js');
 await import('../public/kpss-professional-sections.js');
 await import('../public/kpss-professional-history-01.js');
+await import('../public/kpss-professional-history-02.js');
+await import('../public/kpss-professional-history-03.js');
+await import('../public/kpss-professional-history-04.js');
+await import('../public/kpss-professional-history-05.js');
+await import('../public/kpss-professional-history-06.js');
+await import('../public/kpss-professional-history-07.js');
+await import('../public/kpss-professional-history-08.js');
 
 const C=globalThis.RotaCatalog;
 const B=globalThis.RotaKpssContentBlueprint;
@@ -77,14 +84,20 @@ for(const topicId of ['k-tr-1','k-tr-2','k-tr-3']){
 assert.ok(professional.flatMap(t=>t.questions).every(q=>q.sourceKind==='original'&&q.copyrightPolicy==='original-only'));
 assert.ok(professional.flatMap(t=>t.questions).every(q=>['context','interpretation','reasoning','application','recall'].includes(q.cognitive)));
 
-const historyPilot=H.tests.filter(t=>t.topicId==='k-ta-1');
-const historyAudit=Q.auditBank(historyPilot,{profiles:B.TEST_PROFILES,requireApproved:true});
+const historyTopics=['k-ta-1','k-ta-2','k-ta-3','k-ta-4','k-ta-5','k-ta-6','k-ta-7','k-ta-8'];
+const historyPrime=H.tests.filter(t=>historyTopics.includes(t.topicId));
+const historyAudit=Q.auditBank(historyPrime,{profiles:B.TEST_PROFILES,requireApproved:true});
 assert.equal(historyAudit.valid,true,JSON.stringify(historyAudit.errors,null,2));
-assert.equal(historyPilot.length,4);
-assert.equal(historyPilot.flatMap(t=>t.questions).length,48);
-assert.ok(historyPilot.every(t=>t.subjectId==='k-ta'&&t.questions.length===12&&t.qualityStatus==='approved'));
-assert.ok(historyPilot.flatMap(t=>t.questions).every(q=>q.answerText===q.options[q.answer]&&q.editorialStatus==='reviewed'&&q.factStatus==='stable-historical'));
-assert.ok(historyPilot.every(t=>t.questions.filter(q=>q.cognitive!=='recall').length>=7));
+assert.equal(historyPrime.length,32,'Eight prime history topics must expose 4 tests each');
+assert.equal(historyPrime.flatMap(t=>t.questions).length,384,'Eight prime history topics must contribute 384 questions');
+for(const topicId of historyTopics){
+  const sets=historyPrime.filter(t=>t.topicId===topicId);
+  assert.deepEqual(sets.map(t=>t.setNo),[1,2,3,4],topicId+' must expose tests 1-4');
+  assert.ok(sets.every(t=>t.subjectId==='k-ta'&&t.questions.length===12&&t.qualityStatus==='approved'));
+}
+assert.ok(historyPrime.flatMap(t=>t.questions).every(q=>q.answerText===q.options[q.answer]&&q.editorialStatus==='reviewed'&&q.factStatus==='stable-historical'));
+assert.ok(historyPrime.every(t=>t.questions.filter(q=>q.cognitive!=='recall').length>=7));
+assert.ok(historyPrime.every(t=>new Set(t.questions.map(q=>q.historyForm)).size>=4));
 
 const professionalSection=S.sectionExams[0];
 assert.ok(professionalSection,'Professional Turkish section pilot must exist');
@@ -110,6 +123,8 @@ for(const marker of [
   '<script src="/kpss-professional-bank.js"></script>',
   '<script src="/kpss-professional-turkish-02.js"></script>',
   '<script src="/kpss-professional-turkish-03.js"></script>',
+  '<script src="/kpss-professional-history-01.js"></script>',
+  '<script src="/kpss-professional-history-08.js"></script>',
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',

@@ -13,6 +13,12 @@ const addDays = (date, days) => {
   return d.toISOString().slice(0, 10);
 };
 
+const addMonths = (month, months) => {
+  const [year, value] = String(month).split('-').map(Number);
+  const d = new Date(Date.UTC(year, value - 1 + months, 1, 12));
+  return d.toISOString().slice(0, 7);
+};
+
 async function waitServer() {
   for (let i = 0; i < 80; i++) {
     try {
@@ -1157,10 +1163,22 @@ try {
     await assertCleanRender(page,'Plus premium monthly report with long subject name');
   }
 
-  // Sparse-evidence UI regression: previous month has real logs while the selected month is empty.
-  // The report must blame the missing current-month evidence, never the previous month.
+  // Sparse-evidence UI regression: use the month immediately after the latest real
+  // study log. Retention work can legitimately cross a calendar boundary, so a
+  // hard-coded October fixture is no longer guaranteed to be empty.
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  const latestLogMonth = space.logs.map(log => String(log.date || '').slice(0, 7)).filter(Boolean).sort().at(-1);
+  assert.match(latestLogMonth || '', /^\d{4}-\d{2}$/, 'Sparse report regression needs a real previous-month study log');
+  const emptySelectedMonth = addMonths(latestLogMonth, 1);
+  assert.equal(
+    space.logs.some(log => String(log.date || '').startsWith(emptySelectedMonth)),
+    false,
+    'Sparse report regression must select a genuinely empty month'
+  );
+
   const missingCurrentMonthInput = page.locator('#report-month');
-  await missingCurrentMonthInput.fill('2026-10');
+  await missingCurrentMonthInput.fill(emptySelectedMonth);
   await missingCurrentMonthInput.dispatchEvent('change');
   await page.getByRole('heading', { name: 'Aylık raporum' }).waitFor({ state: 'visible' });
   assert.ok(
@@ -1172,7 +1190,7 @@ try {
     0,
     'Missing current-month evidence must never be mislabeled as missing previous-month evidence'
   );
-  await page.locator('#report-month').fill('2026-09');
+  await page.locator('#report-month').fill(latestLogMonth);
   await page.locator('#report-month').dispatchEvent('change');
   await page.getByRole('heading', { name: 'Aylık raporum' }).waitFor({ state: 'visible' });
 

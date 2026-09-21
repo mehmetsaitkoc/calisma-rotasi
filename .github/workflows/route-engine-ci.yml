@@ -152,6 +152,9 @@ jobs:
       - name: Syntax check KPSS v2 content tests
         run: node --check scripts/kpss-content-v2.test.mjs
 
+      - name: Syntax check KPSS History editorial audit
+        run: node --check scripts/kpss-history-editorial-audit.test.mjs
+
       - name: Syntax check server contract tests
         run: node --check scripts/server-contracts.test.mjs
 

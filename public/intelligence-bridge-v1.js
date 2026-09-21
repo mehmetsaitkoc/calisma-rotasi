@@ -28,7 +28,9 @@ function currentBindings(){
     routeDaysToTarget:legacyFn('routeDaysToTarget'),
     routeTopicMasterySignal:legacyFn('routeTopicMasterySignal'),
     routeTopicMasteryScore:legacyFn('routeTopicMasteryScore'),
-    routeRecoverySignal:legacyFn('routeRecoverySignal')
+    routeRecoverySignal:legacyFn('routeRecoverySignal'),
+    routeInterventionPolicyAdjustment:legacyFn('routeInterventionPolicyAdjustment'),
+    routeInterventionEffectSignal:legacyFn('routeInterventionEffectSignal')
   };
 }
 function helper(name){
@@ -121,6 +123,41 @@ function loadPrescription(){
   if(!I?.executionPrescription||!p)return null;
   try{return I.executionPrescription(p);}catch{return null;}
 }
+function outcomeMemoryFor(subjectId,topicId,mode){
+  const I=intelligence();
+  if(!I?.interventionMemory||!['repair','ease','progress'].includes(mode))return null;
+  try{
+    const policyFn=helper('routeInterventionPolicyAdjustment');
+    const effectFn=helper('routeInterventionEffectSignal');
+    const policy=policyFn?policyFn(subjectId,topicId,mode):null;
+    const effect=policy?.effect||(effectFn?effectFn(subjectId,topicId,mode):null);
+    return I.interventionMemory({mode,effect:effect||{}});
+  }catch{return null;}
+}
+function applyOutcomeMemory(decision,memory){
+  const out={...decision};
+  let guard='none',strategy='hold';
+  if(!memory?.known)return {...out,intelligenceOutcomeGuard:guard,intelligenceStrategy:strategy};
+  if(memory.action==='repeat')strategy='repeat_core';
+  else if(memory.action==='change')strategy='change_method';
+  if(recoveryActive())return {...out,intelligenceOutcomeGuard:'recovery_preserved',intelligenceStrategy:strategy};
+  if(memory.action==='change'&&memory.mode==='progress'&&out.mode==='progress'){
+    out.mode='steady';
+    out.label='GELİŞİM BEKLETİLDİ';
+    out.note='Önceki seviye artışları uzun dönem geri testte yeterli sonuç vermedi. Yeni zorluk artışı bekletildi; bir güçlü doğrulama daha gerekiyor.';
+    guard='harmful_progress_hold';
+  }else if(memory.action==='change'&&['repair','ease'].includes(memory.mode)&&out.mode===memory.mode){
+    const prefix=memory.mode==='repair'
+      ?'Aynı onarım yaklaşımı geçmişte yeterli sonuç vermedi; onarım ihtiyacı sürüyor ama yöntem varyasyonu gerekiyor.'
+      :'Yalnızca görev hacmini küçültmek geçmişte yeterli olmadı; sürdürülebilir doz korunurken sürtünmenin nedeni ayrıca değiştirilmelidir.';
+    out.note=(out.note?out.note+' ':'')+prefix;
+    guard='method_change_required';
+  }else if(memory.action==='repeat'&&out.mode===memory.mode){
+    out.note=(out.note?out.note+' ':'')+'Bu müdahalenin çekirdeği önceki olgun geri testlerde çoğunlukla işe yaradı; aynı temel yaklaşım korunuyor.';
+    guard='helpful_core_preserved';
+  }
+  return {...out,intelligenceOutcomeGuard:guard,intelligenceStrategy:strategy};
+}
 function redFlags(model){
   if(!model)return 0;
   let n=0;
@@ -184,12 +221,15 @@ function masteryFor(topicId){
 function snapshot(subjectId,topicId='',task=null){
   const I=intelligence(),model=rawModel(subjectId,topicId),p=profile(),risk=targetRiskFor(subjectId,model),repair=repairFor(model),load=loadPrescription();
   const baseDecision=rawDecision(subjectId,topicId);
-  const decision=baseDecision?applyGuard(baseDecision,model,risk,repair,load):null;
+  const guarded=baseDecision?applyGuard(baseDecision,model,risk,repair,load):null;
+  const memoryMode=['repair','ease','progress'].includes(guarded?.mode)?guarded.mode:(['repair','ease','progress'].includes(baseDecision?.mode)?baseDecision.mode:'');
+  const outcomeMemory=memoryMode?outcomeMemoryFor(subjectId,topicId,memoryMode):null;
+  const decision=guarded?applyOutcomeMemory(guarded,outcomeMemory):null;
   let explanation=null;
   if(I&&task){
-    try{explanation=I.explainTask({task,model:model||{},decision:decision||{},risk,mastery:masteryFor(topicId)});}catch{}
+    try{explanation=I.explainTask({task,model:model||{},decision:decision||{},risk,mastery:masteryFor(topicId),outcomeMemory});}catch{}
   }
-  return {version:1,profile:p,model,risk,repair,load,decision,explanation};
+  return {version:1,profile:p,model,risk,repair,load,outcomeMemory,decision,explanation};
 }
 function installHooks(hooks){
   const rt=runtime();
@@ -232,7 +272,10 @@ function install(){
     const risk=targetRiskFor(subjectId,model);
     const repair=repairFor(model),load=loadPrescription();
     const guarded=applyGuard(decision,model,risk,repair,load);
-    return {...guarded,intelligence:{risk,repair,load,profileConfidence:profile()?.confidence||0}};
+    const memoryMode=['repair','ease','progress'].includes(guarded.mode)?guarded.mode:(['repair','ease','progress'].includes(decision.mode)?decision.mode:'');
+    const outcomeMemory=memoryMode?outcomeMemoryFor(subjectId,topicId,memoryMode):null;
+    const learned=applyOutcomeMemory(guarded,outcomeMemory);
+    return {...learned,intelligence:{risk,repair,load,outcomeMemory,profileConfidence:profile()?.confidence||0}};
   };
 
   const patchedTaskReason=typeof originals.routeTaskReason==='function'?function(task){
@@ -291,6 +334,18 @@ function install(){
         completion7:Number.isFinite(snap.load.completion7)?snap.load.completion7:null,
         completion30:Number.isFinite(snap.load.completion30)?snap.load.completion30:null,
         reason:snap.load.reason
+      }:null,
+      outcomeMemory:snap.outcomeMemory?{
+        known:!!snap.outcomeMemory.known,
+        mode:snap.outcomeMemory.mode||'',
+        action:snap.outcomeMemory.action||'hold',
+        label:snap.outcomeMemory.label||'',
+        total:Number(snap.outcomeMemory.total)||0,
+        helpful:Number(snap.outcomeMemory.helpful)||0,
+        harmful:Number(snap.outcomeMemory.harmful)||0,
+        neutral:Number(snap.outcomeMemory.neutral)||0,
+        score:Number.isFinite(snap.outcomeMemory.score)?snap.outcomeMemory.score:null,
+        reason:snap.outcomeMemory.reason||''
       }:null
     }};
   }:null;
@@ -310,6 +365,7 @@ function install(){
     targetRiskFor,
     repairFor,
     loadPrescription,
+    outcomeMemoryFor,
     snapshotForSubject:(subjectId,topicId='')=>snapshot(subjectId,topicId,null),
     snapshotForTask:(task)=>snapshot(task?.subjectId||'',task?.topicId||'',task),
     invalidate:()=>{profileCache={key:'',value:null};},

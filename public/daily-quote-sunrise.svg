@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-label="Gün doğumu ve filiz illüstrasyonu">
+  <defs>
+    <linearGradient id="qsky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6c58d"/>
+      <stop offset=".48" stop-color="#df8a6e"/>
+      <stop offset="1" stop-color="#33405f"/>
+    </linearGradient>
+    <radialGradient id="qsun">
+      <stop offset="0" stop-color="#fffbe5"/>
+      <stop offset=".45" stop-color="#ffd992"/>
+      <stop offset="1" stop-color="#ffb56b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="300" fill="url(#qsky)"/>
+  <circle cx="560" cy="75" r="86" fill="url(#qsun)"/>
+  <circle cx="560" cy="75" r="26" fill="#ffe5a4"/>
+  <path d="M0 225 L130 155 L225 198 L330 135 L420 197 L530 140 L720 208 L720 300 L0 300 Z" fill="#283650" opacity=".78"/>
+  <path d="M0 250 L180 190 L295 235 L420 180 L560 230 L720 190 L720 300 L0 300 Z" fill="#1b293f"/>
+  <path d="M557 267 C558 218 553 185 562 157" stroke="#273b27" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M562 192 C536 183 526 165 525 146 C548 146 563 158 567 179" fill="#4b7d3e"/>
+  <path d="M560 170 C577 148 597 140 616 145 C610 170 590 184 565 184" fill="#6d9e4b"/>
+  <path d="M554 219 C530 211 515 196 511 178 C535 178 552 190 560 207" fill="#4c7d3e"/>
+</svg>

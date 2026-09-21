@@ -215,6 +215,15 @@ body:has(.welcome.premium-v6-pixel){
 }
 .v6-feature-item .v6-icon{color:#3e91ff;width:20px;height:20px}
 .v6-feature-item b{font-weight:650}
+.v6-feature-item.premium-proof-item{
+  min-height:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
 .v6-journey{
   position:relative;z-index:2;
   min-height:570px;
@@ -454,6 +463,17 @@ body:has(.welcome.premium-v6-pixel){
   min-height:174px;
   display:flex;flex-direction:column;justify-content:center;
   padding:10px 8px 0 0;
+}
+.v6-trust.premium-trust-strip{
+  width:auto!important;
+  display:flex!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  margin:0!important;
+  padding:10px 8px 0 0!important;
+  color:inherit!important;
 }
 .v6-trust-quote{
   text-align:center;

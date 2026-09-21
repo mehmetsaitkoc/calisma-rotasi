@@ -881,6 +881,11 @@ try {
   assert.ok(['insufficient','low','watch','high'].includes(teacherRequest.studentContext?.intelligence?.targetRisk?.band||'insufficient'),'Rota Hoca target risk must use a bounded band');
   assert.ok(['collect','steady','repair'].includes(teacherRequest.studentContext?.intelligence?.repair?.mode||'collect'),'Rota Hoca repair proposal must use a bounded mode');
   assert.ok(['collect','steady','ease'].includes(teacherRequest.studentContext?.intelligence?.load?.mode||'collect'),'Rota Hoca load prescription must use a bounded mode');
+  assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'outcomeMemory'),'Rota Hoca Intelligence context must expose intervention outcome memory');
+  if(teacherRequest.studentContext?.intelligence?.outcomeMemory){
+    assert.ok(['hold','change','repeat'].includes(teacherRequest.studentContext.intelligence.outcomeMemory.action),'Intervention memory must use a bounded action');
+    assert.ok((teacherRequest.studentContext.intelligence.outcomeMemory.total||0)>=0,'Intervention memory sample count must be non-negative');
+  }
   assert.ok((teacherRequest.studentContext?.todayPlan||[]).length <= 8, 'Rota Hoca todayPlan must stay bounded');
   const teacherContextText = JSON.stringify(teacherRequest.studentContext);
   assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(teacherContextText), 'Technical route jargon must not leak into teacher context');

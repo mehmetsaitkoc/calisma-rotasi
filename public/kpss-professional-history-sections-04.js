@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 const KEY=[3,0,2,4,1,3,0,4,2,1,3,0,4,2,1,3,0,4,2,1,3,0,4,2,1,3,0];
-const DIFF=['easy','medium','medium','hard','medium','medium','hard','medium','easy','medium','hard','medium','medium','easy','hard','medium','medium','hard','medium','easy','hard','medium','medium','hard','medium','hard','medium'];
+const DIFF=['easy','medium','medium','medium','medium','medium','hard','medium','easy','medium','hard','medium','medium','easy','hard','medium','medium','hard','medium','easy','hard','medium','medium','hard','medium','hard','medium'];
 const TITLES={'k-ta-1':'İslamiyet öncesi Türk tarihi','k-ta-2':'İlk Türk İslam devletleri','k-ta-3':'Türkiye Selçuklu Devleti','k-ta-4':'Osmanlı kuruluş dönemi','k-ta-5':'Osmanlı yükselme dönemi','k-ta-6':'Osmanlı kültür ve medeniyeti','k-ta-7':'Osmanlı yenileşme hareketleri','k-ta-8':'20. yüzyılda Osmanlı Devleti','k-ta-9':'Millî Mücadele hazırlık dönemi','k-ta-10':'Kurtuluş Savaşı cepheleri','k-ta-11':'Atatürk ilke ve inkılapları','k-ta-12':'Atatürk dönemi dış politika','k-ta-13':'Çağdaş Türk ve dünya tarihi'};
 const BLUEPRINT=[['k-ta-1',1],['k-ta-2',1],['k-ta-4',1],['k-ta-6',3],['k-ta-7',2],['k-ta-8',3],['k-ta-9',4],['k-ta-10',2],['k-ta-11',5],['k-ta-12',2],['k-ta-13',3]];
 function Q(n,topicId,text,correct,distractors,explanation,cognitive,skill,historyForm,distractorPolicy='same-era'){const answer=KEY[n-1],options=[...distractors];options.splice(answer,0,correct);return{id:`kta-sec4-q${String(n).padStart(2,'0')}`,subjectId:'k-ta',topicId,text,options,answer,answerText:correct,explanation,difficulty:DIFF[n-1],cognitive,skill,historyForm,distractorPolicy,factStatus:'stable-historical',editorialStatus:'reviewed',sourceKind:'original',copyrightPolicy:'original-only'};}

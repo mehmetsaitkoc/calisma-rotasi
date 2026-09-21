@@ -162,9 +162,9 @@
   }, true);
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', schedule, { once: true });
+    document.addEventListener('DOMContentLoaded', reconcile, { once: true });
   } else {
-    schedule();
+    reconcile();
   }
 
   new MutationObserver(schedule).observe(document.documentElement, { subtree: true, childList: true });

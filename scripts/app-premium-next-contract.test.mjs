@@ -106,6 +106,12 @@ assert.ok(
   'Week, goals and latest-exam cards must read persisted KPSS evidence instead of fabricated dashboard values'
 );
 assert.ok(
+  js.includes('APP PREMIUM NEXT V4 · PROGRAM DAILY TIMELINE') &&
+  js.includes('/program-daily-timeline-core.css') &&
+  js.includes('/program-daily-timeline-rail.css'),
+  'Latest main Programım selected-day timeline must survive the dashboard branch sync'
+);
+assert.ok(
   js.includes('Henüz tam deneme kaydı yok') &&
   !js.includes("const hasSignal = !!gap"),
   'Latest exam card must expose a truthful empty state instead of reusing target-gap signals as exam results'

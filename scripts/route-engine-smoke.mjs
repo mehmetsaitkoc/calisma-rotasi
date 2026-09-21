@@ -1771,17 +1771,16 @@ for(const marker of [
 }
 
 
-// 5) Route Coach insight must explain the existing route decision and link to the existing teacher view.
+// 5) Route decision insight must explain the existing route decision without exposing the retired teacher surface.
 for(const marker of [
   'Route Coach Insight v1 — explain the route without adding a second decision source.',
-  'ROTA HOCA · BUGÜNÜN KARARI',
-  'Bu plan neden böyle?',
-  'Rota Hoca’ya sor'
-]) assert.ok(html.includes(marker),`Missing route coach insight marker: ${marker}`);
+  'ROTA KARARI',
+  'Bu plan neden böyle?'
+]) assert.ok(html.includes(marker),`Missing route decision insight marker: ${marker}`);
 {
   const src=between('function routeTodayPage','function baseTodayPage');
-  assert.ok(src.includes("const reason=w().route.lastReason||'Rota motoru çalışma kapasiteni ve mevcut kayıtlarını birlikte değerlendirir.'"),'Coach insight must reuse the existing route reason');
-  assert.ok(src.includes("data-view=\"teacher\""),'Coach insight must navigate to the existing Rota Hoca view');
+  assert.ok(src.includes("const reason=w().route.lastReason||'Rota motoru çalışma kapasiteni ve mevcut kayıtlarını birlikte değerlendirir.'"),'Route decision insight must reuse the existing route reason');
+  assert.ok(!src.includes("data-view=\"teacher\""),'Route decision insight must not expose the retired Rota Hoca navigation');
 }
 
 
@@ -1846,12 +1845,13 @@ for(const marker of [
   'mobile-dock',
   'Hızlı mobil menü',
   '<span>Bugün</span>',
-  '<span>Rota Hoca</span>',
+  '<span>Program</span>',
   '<span>Deneme</span>'
 ]) assert.ok(html.includes(marker),`Missing mobile dock marker: ${marker}`);
 {
   const src=between('function shell(content)','function activeLogs');
-  for(const view of ['today','plan','teacher','exams'])assert.ok(src.includes('data-view="'+view+'"'),'Mobile dock must reuse existing '+view+' navigation target');
+  for(const view of ['today','plan','exams'])assert.ok(src.includes('data-view="'+view+'"'),'Mobile dock must reuse existing '+view+' navigation target');
+  assert.ok(!src.includes('data-view="teacher"'),'Mobile dock must not expose the retired Rota Hoca navigation target');
   assert.ok(src.includes('data-action="menu"'),'Mobile dock menu button must reuse the existing drawer action');
   assert.ok(!src.includes('\\${content}'),'App shell must interpolate main content instead of rendering a literal template token');
   assert.ok(!src.includes('\\${icon('),'Mobile dock icons must be interpolated instead of rendered as literal template tokens');

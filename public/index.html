@@ -4291,8 +4291,7 @@ const ROTA_ALL_MINI_EXAMS=Object.freeze([
 function topicStudyTests(topicId){return KPSS_PROFESSIONAL_HISTORY_TESTS.filter(function(def){return def.topicId===topicId;});}
 function topicStudyTestsHtml(topicId,status){
  const tests=topicStudyTests(topicId);if(!tests.length)return '';
- if(status!==2)return '<div class="row wrap mt"><span class="pill plain">3 konu testi</span><span class="tiny muted">Dersi tamamlayınca açılır.</span></div>';
- return '<div class="row wrap mt" data-topic-tests="'+esc(topicId)+'"><span class="tiny muted"><strong>Konu testleri:</strong></span>'+tests.map(function(def,index){const last=latestMiniResult(def.id),label='Test '+(def.setNo||index+1)+(last?' · '+last.correct+'/'+last.total:'');return btn(label,'start-mini-exam',last?'ghost sm':'primary sm','data-id="'+def.id+'"');}).join('')+'</div>';
+ return '<div class="row wrap mt" data-topic-tests="'+esc(topicId)+'"><span class="tiny muted"><strong>Konu testleri:</strong></span>'+tests.map(function(def,index){const last=latestMiniResult(def.id),label='Test '+(def.setNo||index+1)+(last?' · '+last.correct+'/'+last.total:'');return btn(label,'start-mini-exam',last?'ghost sm':'primary sm','data-id="'+def.id+'"');}).join('')+(status===2?'<span class="tiny muted">Konu tamamlandı.</span>':'<span class="tiny muted">Konuyu bitirmeden de çözebilirsin.</span>')+'</div>';
 }
 function miniCatalogInfo(def){return window.RotaMiniCatalog?.describe(def,ROTA_ALL_MINI_EXAMS)||{setNo:1,targetSets:4,availableCount:1,missingSets:[2,3,4],nextSetNo:2};}
 function miniCatalogCoverage(minis){const ids=[...new Set((minis||[]).map(x=>x.subjectId))];return window.RotaMiniCatalog?.coverage(ROTA_ALL_MINI_EXAMS,{exam:state.activeExam,subjectIds:ids})||null;}

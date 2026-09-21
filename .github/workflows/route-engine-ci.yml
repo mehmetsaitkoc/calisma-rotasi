@@ -70,6 +70,12 @@ jobs:
       - name: Syntax check KPSS practice catalog tests
         run: node --check scripts/kpss-practice-catalog.test.mjs
 
+      - name: Syntax check standardized KPSS question bank
+        run: node --check public/kpss-question-bank.js
+
+      - name: Syntax check standardized KPSS question bank tests
+        run: node --check scripts/kpss-question-bank.test.mjs
+
       - name: Syntax check server contract tests
         run: node --check scripts/server-contracts.test.mjs
 

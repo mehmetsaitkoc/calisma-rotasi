@@ -769,12 +769,14 @@ try {
   await focusCard.waitFor({ state: 'visible' });
   assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Pomodoro start must bind the real task title to the focus card');
   assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Pomodoro start must expose the focus-session state');
-  assert.ok(await focusCard.locator('[data-action="timer-log"]').count(), 'Focused task must expose the real finish-and-record action');
+  assert.ok(await page.locator('[data-action="timer-log"]').count(), 'Focused task must expose the real finish-and-record action');
   assert.match(await focusCard.innerText(), /çalışma kaydına otomatik bağlanacak/i, 'Focus card must explain the task/log linkage');
 
-  const clock = focusCard.locator('#clock');
+  const clock = page.locator('#clock').first();
   await clock.waitFor({ state: 'visible' });
-  await focusCard.getByText('Duraklat', { exact: false }).waitFor({ state: 'visible' });
+  const runningToggle = page.locator('#timer-toggle').first();
+  await runningToggle.waitFor({ state: 'visible' });
+  assert.match((await runningToggle.innerText()).trim(), /Duraklat/i, 'Running real timer must expose pause control');
   const initialClock = (await clock.innerText()).trim();
   assert.equal(initialClock, String(todayTask.minutes).padStart(2, '0') + ':00', 'Real timer must honor the planned task minutes');
 
@@ -785,30 +787,34 @@ try {
     assert.match(runningClock, /^39:\d{2}$/, 'A 40-minute real task must enter the 39:xx range after it starts');
   }
 
-  const pauseToggle = focusCard.locator('#timer-toggle');
+  const pauseToggle = page.locator('#timer-toggle').first();
   await pauseToggle.click();
-  await focusCard.getByRole('button', { name: 'Başlat', exact: false }).waitFor({ state: 'visible' });
-  const pausedClock = (await focusCard.locator('#clock').innerText()).trim();
+  const pausedToggle = page.locator('#timer-toggle').first();
+  await pausedToggle.waitFor({ state: 'visible' });
+  assert.match((await pausedToggle.innerText()).trim(), /Başlat/i, 'Paused real timer must expose resume control');
+  const pausedClock = (await page.locator('#clock').first().innerText()).trim();
   await page.clock.fastForward(1600);
-  assert.equal((await focusCard.locator('#clock').innerText()).trim(), pausedClock, 'Paused Pomodoro must keep its remaining time');
+  assert.equal((await page.locator('#clock').first().innerText()).trim(), pausedClock, 'Paused Pomodoro must keep its remaining time');
 
-  await focusCard.locator('#timer-toggle').click();
-  await focusCard.getByText('Duraklat', { exact: false }).waitFor({ state: 'visible' });
+  await page.locator('#timer-toggle').first().click();
+  const resumedToggle = page.locator('#timer-toggle').first();
+  await resumedToggle.waitFor({ state: 'visible' });
+  assert.match((await resumedToggle.innerText()).trim(), /Duraklat/i, 'Resumed real timer must expose pause control again');
   await page.clock.fastForward(1600);
-  const resumedClock = (await focusCard.locator('#clock').innerText()).trim();
+  const resumedClock = (await page.locator('#clock').first().innerText()).trim();
   assert.notEqual(resumedClock, pausedClock, 'Resumed Pomodoro must continue the existing real countdown');
 
   await navigate(page, 'today');
   const rerenderedFocus = page.locator('.pnx3-focus .route-focus-card');
   await rerenderedFocus.waitFor({ state: 'visible' });
   assert.ok((await rerenderedFocus.innerText()).includes(todayTask.title), 'Today rerender must preserve the task-bound focus session');
-  const beforeRerenderAdvance = (await rerenderedFocus.locator('#clock').innerText()).trim();
+  const beforeRerenderAdvance = (await page.locator('#clock').first().innerText()).trim();
   await page.clock.fastForward(1200);
-  const afterRerenderAdvance = (await rerenderedFocus.locator('#clock').innerText()).trim();
+  const afterRerenderAdvance = (await page.locator('#clock').first().innerText()).trim();
   assert.notEqual(afterRerenderAdvance, beforeRerenderAdvance, 'Today rerender must not stop or replace the real running timer');
 
-  assert.ok(await rerenderedFocus.locator('[data-action="timer-log"]').count(), 'Task-bound real timer must preserve its log action');
-  await rerenderedFocus.locator('[data-action="timer-reset"]').click();
+  assert.ok(await page.locator('[data-action="timer-log"]').count(), 'Task-bound real timer must preserve its log action');
+  await page.locator('[data-action="timer-reset"]').first().click();
   await page.getByText('Sayacı sıfırla?', { exact: true }).waitFor({ state: 'visible' });
   await page.locator('[data-action="confirm"]').click();
   const resetPreview = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();

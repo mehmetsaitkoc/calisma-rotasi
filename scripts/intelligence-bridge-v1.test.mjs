@@ -49,7 +49,9 @@ globalThis.w=()=>({
     modeHistory:[{date:'2026-09-18',mode:'repair'}],
     interventions:[
       {id:'iv1',date:'2026-08-20',subjectId:'k-ma',topicId:'k-ma-topic',mode:'progress',source:'curriculum',method:'quant'},
-      {id:'iv2',date:'2026-08-28',subjectId:'k-ma',topicId:'k-ma-topic',mode:'progress',source:'curriculum',method:'quant'}
+      {id:'iv2',date:'2026-08-28',subjectId:'k-ma',topicId:'k-ma-topic',mode:'progress',source:'curriculum',method:'quant'},
+      {id:'ivr1',date:'2026-08-18',subjectId:'k-ma',topicId:'k-ma-topic',mode:'repair',source:'mini_repair',method:'quant'},
+      {id:'ivr2',date:'2026-08-26',subjectId:'k-ma',topicId:'k-ma-topic',mode:'repair',source:'mini_repair',method:'quant'}
     ]
   }
 });
@@ -66,7 +68,7 @@ globalThis.routeInterventionPolicyAdjustment=(subjectId,topicId,mode)=>{
 globalThis.routeInterventionEvaluation=(iv)=>({
   status:methodEvaluationStatus,
   score:methodEvaluationStatus==='helpful'?1:methodEvaluationStatus==='harmful'?-1:0,
-  maturity:iv.id==='iv2'?30:14
+  maturity:/2$/.test(iv.id)?30:14
 });
 globalThis.routeStudyMethod=()=>({key:'quant',label:'SORU + YANLIŞ ANALİZİ'});
 globalThis.routeTopicMasterySignal=()=>({ready:false,next:'3-day'});
@@ -82,6 +84,7 @@ globalThis.routeAppliedDecision=()=>({
 globalThis.routeTaskReason=()=> 'Eski genel neden.';
 globalThis.routeBuildCandidates=()=>[
   {routeKey:'topic:k-ma-topic',subjectId:'k-ma',topicId:'k-ma-topic',source:'curriculum',priority:60,reason:'Temel rota.'},
+  {routeKey:'mini-repair-topic:k-ma-topic',subjectId:'k-ma',topicId:'k-ma-topic',source:'mini_repair',kind:'review',priority:84,reason:'Mini deneme onarımı.',taskGoal:'12 hedefli soru ve kısa yanlış analizi.'},
   {routeKey:'mistake:m1',subjectId:'k-ma',topicId:'k-ma-topic',source:'mistake',priority:88,reason:'Kritik yanlış.'},
   {routeKey:'spaced:3:k-ma-topic',subjectId:'k-ma',topicId:'k-ma-topic',source:'spaced_review',reviewWave:3,reviewVariant:'challenge',priority:64,title:'Seviye yoklama · Problemler',reason:'Güçlü performans sonrası seçici tekrar.',taskGoal:'Seviye yoklama: 12 soru çöz · Son bölümde 2 daha seçici veya karma soru çöz; amaç daha çok soru değil, bilgiyi farklı biçimde kullanabildiğini görmek.'}
 ];
@@ -116,6 +119,9 @@ const reviewCandidate=boostedCandidates.find(x=>x.routeKey==='mistake:m1');
 assert.ok(normalCandidate.priority>60&&normalCandidate.priority<=63,'high-confidence target + repair risk may only add a bounded priority boost');
 assert.match(normalCandidate.reason,/Intelligence V1/);
 assert.equal(reviewCandidate.priority,88,'critical review priorities must not be double-boosted');
+const changedRepairTask=boostedCandidates.find(x=>x.routeKey==='mini-repair-topic:k-ma-topic');
+assert.match(changedRepairTask.reason,/Öğrenen yöntem hafızası/,'harmful quant repair history must alter the future repair method');
+assert.match(changedRepairTask.taskGoal||'',/çözümlü örneği kapatıp kendin yeniden kur/i);
 
 recovery=true;
 bridge.invalidate();
@@ -169,10 +175,6 @@ const convertedReview=harmfulCandidates.find(x=>x.routeKey==='spaced:3:k-ma-topi
 assert.equal(convertedReview.reviewVariant,undefined,'harmful progress memory must cancel the next challenge variant');
 assert.match(convertedReview.title,/3 gün tekrarı/);
 assert.match(convertedReview.reason,/normal kalıcılık tekrarı/);
-const changedMethodTask=harmfulCandidates.find(x=>x.routeKey==='topic:k-ma-topic');
-assert.match(changedMethodTask.reason,/Öğrenen yöntem hafızası/,'harmful quant progress history must alter the future task method');
-assert.match(changedMethodTask.taskGoal||'',/çözümlü örneği kapatıp kendin yeniden kur/i);
-
 methodEvaluationStatus='helpful';
 outcomeEffects.progress={known:true,total:4,helpful:3,harmful:0,neutral:1,score:.75};
 bridge.invalidate();
@@ -182,8 +184,8 @@ assert.equal(helpfulProgress.intelligence.outcomeMemory.action,'repeat');
 assert.equal(helpfulProgress.intelligenceOutcomeGuard,'helpful_core_preserved');
 const helpfulCandidates=globalThis.routeBuildCandidates();
 assert.equal(helpfulCandidates.find(x=>x.routeKey==='spaced:3:k-ma-topic').reviewVariant,'challenge','helpful progress memory may keep an already justified challenge review');
-const preservedMethodTask=helpfulCandidates.find(x=>x.routeKey==='topic:k-ma-topic');
-assert.match(preservedMethodTask.reason,/çekirdeği geçmişte çoğunlukla işe yaradı/,'helpful method history must preserve the method core');
+const preservedRepairTask=helpfulCandidates.find(x=>x.routeKey==='mini-repair-topic:k-ma-topic');
+assert.match(preservedRepairTask.reason,/çekirdeği geçmişte çoğunlukla işe yaradı/,'helpful repair-method history must preserve the method core');
 
 methodEvaluationStatus='harmful';
 outcomeEffects.progress={known:false,total:0,helpful:0,harmful:0,neutral:0,score:0};

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const loader=fs.readFileSync(new URL('../public/landing-final.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../public/app-premium-next.css',import.meta.url),'utf8');
 const js=fs.readFileSync(new URL('../public/app-premium-next.js',import.meta.url),'utf8');
+const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 
 for(const marker of [
   'APP PREMIUM NEXT LOADER',
@@ -18,7 +19,7 @@ for(const marker of [
   '.pnx3-focus',
   '.pnx3-week-card',
   '.pnx3-goals-card',
-  '.pnx3-teacher-card',
+  '.pnx3-highlights-card',
   '.pnx3-results-card',
   '.pnx3-quote-card',
   '.pnx3-insight-archive',
@@ -44,7 +45,7 @@ for(const marker of [
   'pnx3-focus',
   'pnx3-week-card',
   'pnx3-goals-card',
-  'pnx3-teacher-card',
+  'pnx3-highlights-card',
   'pnx3-results-card',
   'pnx3-quote-card',
   'pnxStudentName',
@@ -91,7 +92,13 @@ assert.ok(
 );
 assert.ok(
   css.includes('APP PREMIUM NEXT V3.2 · REFERENCE VISUAL + REAL POMODORO'),
-  'V3 must use the approved mountain/teacher/quote visual direction'
+  'V3 must use the approved mountain/highlights/quote visual direction'
+);
+assert.ok(
+  js.includes('removeTeacherUi()') &&
+  js.includes('Bu Hafta Öne Çıkan Konular') &&
+  !js.includes('function ensureTeacherCard'),
+  'Approved KPSS dashboard must remove Rota Hoca and expose the real-plan highlights card'
 );
 assert.ok(
   js.includes('startPreviewTimer(root, hero)') &&
@@ -104,6 +111,11 @@ assert.ok(
   js.includes('currentWeekDays()') &&
   js.includes('latestExam(kpssWorkspace())'),
   'Week, goals and latest-exam cards must read persisted KPSS evidence instead of fabricated dashboard values'
+);
+assert.ok(
+  html.includes('window.RotaDashboardEvidence=Object.freeze') &&
+  js.includes('window.RotaDashboardEvidence?.kpssWorkspace?.()'),
+  'Dashboard evidence must come from the read-only core evidence bridge instead of browser storage or fabricated state'
 );
 assert.ok(
   js.includes('APP PREMIUM NEXT V4 · PROGRAM DAILY TIMELINE') &&

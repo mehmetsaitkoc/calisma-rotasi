@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 await import('../public/intelligence-v1.js');
 
 let recovery=false;
+let methodEvaluationStatus='harmful';
 let gapState={known:true,current:50,target:90,gap:40};
 let daysState=19;
 let outcomeEffects={
@@ -44,7 +45,13 @@ globalThis.w=()=>({
     {id:'ev1',date:'2026-09-18',action:'start'},
     {id:'ev2',date:'2026-09-19',action:'later'}
   ],
-  route:{modeHistory:[{date:'2026-09-18',mode:'repair'}]}
+  route:{
+    modeHistory:[{date:'2026-09-18',mode:'repair'}],
+    interventions:[
+      {id:'iv1',date:'2026-08-20',subjectId:'k-ma',topicId:'k-ma-topic',mode:'progress',source:'curriculum',method:'quant'},
+      {id:'iv2',date:'2026-08-28',subjectId:'k-ma',topicId:'k-ma-topic',mode:'progress',source:'curriculum',method:'quant'}
+    ]
+  }
 });
 globalThis.today=()=> '2026-09-21';
 globalThis.routeSubjectGap=()=>({...gapState});
@@ -56,6 +63,12 @@ globalThis.routeInterventionPolicyAdjustment=(subjectId,topicId,mode)=>{
   const action=!effect.known||effect.total<2?'hold':effect.score<=-.34?'change':effect.score>=.5?'repeat':'hold';
   return {action,label:action,effect};
 };
+globalThis.routeInterventionEvaluation=(iv)=>({
+  status:methodEvaluationStatus,
+  score:methodEvaluationStatus==='helpful'?1:methodEvaluationStatus==='harmful'?-1:0,
+  maturity:iv.id==='iv2'?30:14
+});
+globalThis.routeStudyMethod=()=>({key:'quant',label:'SORU + YANLIŞ ANALİZİ'});
 globalThis.routeTopicMasterySignal=()=>({ready:false,next:'3-day'});
 globalThis.routeStudentModel=()=>({...modelState});
 globalThis.routeAppliedDecision=()=>({
@@ -131,6 +144,8 @@ assert.ok(['collect','steady','ease'].includes(teacherContext.intelligence.load?
 assert.ok(Number.isFinite(teacherContext.intelligence.execution30));
 assert.ok(['collect','steady','ease'].includes(bridge.loadPrescription()?.mode||'collect'));
 assert.equal(teacherContext.intelligence.outcomeMemory?.action,'hold');
+assert.equal(teacherContext.intelligence.methodMemory?.current?.action,'change','Rota Hoca must receive the learned current-method weakness');
+assert.equal(teacherContext.intelligence.methodMemory?.currentMethod,'quant');
 
 modelState={
   confidence:90,
@@ -154,7 +169,11 @@ const convertedReview=harmfulCandidates.find(x=>x.routeKey==='spaced:3:k-ma-topi
 assert.equal(convertedReview.reviewVariant,undefined,'harmful progress memory must cancel the next challenge variant');
 assert.match(convertedReview.title,/3 gün tekrarı/);
 assert.match(convertedReview.reason,/normal kalıcılık tekrarı/);
+const changedMethodTask=harmfulCandidates.find(x=>x.routeKey==='topic:k-ma-topic');
+assert.match(changedMethodTask.reason,/Öğrenen yöntem hafızası/,'harmful quant progress history must alter the future task method');
+assert.match(changedMethodTask.taskGoal||'',/çözümlü örneği kapatıp kendin yeniden kur/i);
 
+methodEvaluationStatus='helpful';
 outcomeEffects.progress={known:true,total:4,helpful:3,harmful:0,neutral:1,score:.75};
 bridge.invalidate();
 const helpfulProgress=globalThis.routeAppliedDecision('k-ma','k-ma-topic');
@@ -163,7 +182,10 @@ assert.equal(helpfulProgress.intelligence.outcomeMemory.action,'repeat');
 assert.equal(helpfulProgress.intelligenceOutcomeGuard,'helpful_core_preserved');
 const helpfulCandidates=globalThis.routeBuildCandidates();
 assert.equal(helpfulCandidates.find(x=>x.routeKey==='spaced:3:k-ma-topic').reviewVariant,'challenge','helpful progress memory may keep an already justified challenge review');
+const preservedMethodTask=helpfulCandidates.find(x=>x.routeKey==='topic:k-ma-topic');
+assert.match(preservedMethodTask.reason,/çekirdeği geçmişte çoğunlukla işe yaradı/,'helpful method history must preserve the method core');
 
+methodEvaluationStatus='harmful';
 outcomeEffects.progress={known:false,total:0,helpful:0,harmful:0,neutral:0,score:0};
 gapState={known:true,current:50,target:90,gap:40};
 daysState=19;

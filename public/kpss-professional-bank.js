@@ -11,7 +11,7 @@ const T=(setNo,label,questions)=>({
   id:'kpss:k-tr:k-tr-1:t'+String(setNo).padStart(2,'0'),
   exam:'kpss',subjectId:TOPIC.subjectId,topicId:TOPIC.topicId,topicTitle:TOPIC.topicTitle,
   setNo,title:'KPSS Türkçe · Sözcükte Anlam · Test '+setNo,eyebrow:'PROFESYONEL KONU TESTİ · KPSS',
-  minutes:14,level:label,questions,version:2,qualityStatus:'editorial-pass-1',
+  minutes:14,level:label,questions,version:2,qualityStatus:'approved',
   sourceKind:'original',copyrightPolicy:'original-only',
   sourceBasis:['official-scope-2026','multi-year-trend','official-question-style-review']
 });

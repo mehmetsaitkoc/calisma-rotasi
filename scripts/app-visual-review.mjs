@@ -91,7 +91,7 @@ async function submitWizard(page){
 
   await page.locator('[data-action="summary-build"]').click();
   await page.locator('.route-building-card').waitFor({state:'visible'});
-  await page.waitForTimeout(5500);
+  await page.clock.fastForward(5500);
   await page.locator('[data-premium-surface="today"]').waitFor({state:'visible'});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
 }

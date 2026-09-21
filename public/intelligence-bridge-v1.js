@@ -182,10 +182,10 @@ function adaptTaskMethod(task,mode){
   if(!variation)return {task,memory};
   const next={...task};
   if(current.action==='change'){
-    next.taskGoal=(variation+' '+String(next.taskGoal||'')).slice(0,520);
+    next.taskGoal=(variation+' '+String(next.taskGoal||'')).slice(0,300);
     const note=' Öğrenen yöntem hafızası: bu çalışma biçimi olgun geri testlerde yeterli sonuç vermedi; aynı hedef farklı uygulamayla deneniyor.';
     const reason=String(next.reason||'');
-    next.reason=(reason.includes('Öğrenen yöntem hafızası:')?reason:reason+note).slice(0,700);
+    next.reason=(reason.includes('Öğrenen yöntem hafızası:')?reason:reason+note).slice(0,500);
   }else{
     const note=' Öğrenen yöntem hafızası: bu çalışma biçiminin çekirdeği geçmişte çoğunlukla işe yaradı.';
     const reason=String(next.reason||'');

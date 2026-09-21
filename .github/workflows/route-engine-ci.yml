@@ -206,7 +206,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      PRODUCTION_URL: https://calisma-rotasi.onrender.com
+      PRODUCTION_URL: https://calisma-rotasi-1.onrender.com
       EXPECTED_SHA: ${{ github.sha }}
     steps:
       - name: Checkout

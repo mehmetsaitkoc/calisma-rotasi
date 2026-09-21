@@ -44,8 +44,8 @@ const knowledge=all.filter(q=>q.historyForm==='knowledge');
 const directFact=all.filter(q=>/(hangi yıl|kimdir\?|hangisidir\?)/i.test(q.text));
 const contested=all.filter(q=>/Kürşad/i.test([q.text,q.answerText,...q.options].join(' ')));
 
-assert.ok(recall.length<=8,'History editorial audit: raw recall drifted too high: '+recall.length);
-assert.ok(knowledge.length<=8,'History editorial audit: raw knowledge-form drifted too high: '+knowledge.length);
+assert.ok(recall.length<=6,'History editorial audit: raw recall drifted too high: '+recall.length);
+assert.ok(knowledge.length<=6,'History editorial audit: raw knowledge-form drifted too high: '+knowledge.length);
 assert.ok(directFact.length<=90,'History editorial audit: direct-fact stem share drifted too high: '+directFact.length);
 assert.equal(contested.length,0,'History editorial audit: contested Kürşad-style single-hero item must not return');
 
@@ -54,7 +54,7 @@ const longAnswerClues=all.filter(q=>{
   const maxDistractor=Math.max(...distractors.map(x=>String(x).length));
   return String(q.answerText).length>=70&&String(q.answerText).length>maxDistractor+35;
 });
-assert.ok(longAnswerClues.length<=235,'History editorial audit: answer-length clue risk drifted too high: '+longAnswerClues.length);
+assert.ok(longAnswerClues.length<=165,'History editorial audit: answer-length clue risk drifted too high: '+longAnswerClues.length);
 
 console.log(JSON.stringify({
   schema:'calisma-rotasi-kpss-history-editorial-audit-v1',

@@ -489,7 +489,7 @@
       const active = days[index] === todayKey;
       const height = minutes > 0 ? Math.max(8, Math.round(minutes / max * 100)) : 0;
       const title = label + ': ' + formatMinutes(minutes);
-      return '<span class="' + (active ? 'active' : '') + '" title="' + title + '"><i style="height:' + height + '%"></i><b>' + label + '</b></span>';
+      return '<span class="' + (active ? 'active' : '') + '" title="' + title + '"><i style="height:' + height + '%;min-height:0"></i><b>' + label + '</b></span>';
     }).join('');
 
     card.innerHTML =

@@ -116,6 +116,11 @@ function repairFor(model){
     });
   }catch{return null;}
 }
+function loadPrescription(){
+  const I=intelligence(),p=profile();
+  if(!I?.executionPrescription||!p)return null;
+  try{return I.executionPrescription(p);}catch{return null;}
+}
 function redFlags(model){
   if(!model)return 0;
   let n=0;
@@ -127,11 +132,17 @@ function redFlags(model){
   if(model.personalNorm?.known&&model.personalNorm.confidence>=45&&model.personalNorm.direction==='down')n++;
   return n;
 }
-function applyGuard(decision,model,risk,repair){
+function applyGuard(decision,model,risk,repair,load=null){
   const out={...decision};
   const flags=redFlags(model);
   let guard='none';
   if(recoveryActive())return {...out,intelligenceGuard:'recovery_preserved'};
+  if(load?.mode==='ease'&&repair?.mode!=='repair'&&['progress','steady'].includes(out.mode)){
+    out.mode='ease';
+    out.label='SÜRDÜRÜLEBİLİR DOZ';
+    out.note=load.reason;
+    guard='longitudinal_ease';
+  }
   if(repair?.mode==='repair'&&(model?.confidence||0)>=65&&flags>=2){
     if(out.mode==='progress'){
       out.mode='steady';
@@ -171,14 +182,14 @@ function masteryFor(topicId){
   }catch{return null;}
 }
 function snapshot(subjectId,topicId='',task=null){
-  const I=intelligence(),model=rawModel(subjectId,topicId),p=profile(),risk=targetRiskFor(subjectId,model),repair=repairFor(model);
+  const I=intelligence(),model=rawModel(subjectId,topicId),p=profile(),risk=targetRiskFor(subjectId,model),repair=repairFor(model),load=loadPrescription();
   const baseDecision=rawDecision(subjectId,topicId);
-  const decision=baseDecision?applyGuard(baseDecision,model,risk,repair):null;
+  const decision=baseDecision?applyGuard(baseDecision,model,risk,repair,load):null;
   let explanation=null;
   if(I&&task){
     try{explanation=I.explainTask({task,model:model||{},decision:decision||{},risk,mastery:masteryFor(topicId)});}catch{}
   }
-  return {version:1,profile:p,model,risk,repair,decision,explanation};
+  return {version:1,profile:p,model,risk,repair,load,decision,explanation};
 }
 function installHooks(hooks){
   const rt=runtime();
@@ -219,9 +230,9 @@ function install(){
     const decision=originals.routeAppliedDecision(subjectId,topicId);
     const model=patchedStudentModel(subjectId,topicId);
     const risk=targetRiskFor(subjectId,model);
-    const repair=repairFor(model);
-    const guarded=applyGuard(decision,model,risk,repair);
-    return {...guarded,intelligence:{risk,repair,profileConfidence:profile()?.confidence||0}};
+    const repair=repairFor(model),load=loadPrescription();
+    const guarded=applyGuard(decision,model,risk,repair,load);
+    return {...guarded,intelligence:{risk,repair,load,profileConfidence:profile()?.confidence||0}};
   };
 
   const patchedTaskReason=typeof originals.routeTaskReason==='function'?function(task){
@@ -235,7 +246,7 @@ function install(){
 
   const patchedBuildCandidates=typeof originals.routeBuildCandidates==='function'?function(){
     const rows=originals.routeBuildCandidates();
-    if(!Array.isArray(rows)||recoveryActive())return rows;
+    if(!Array.isArray(rows)||recoveryActive()||loadPrescription()?.mode==='ease')return rows;
     const reviewSources=new Set(['mistake','mini_repair','retention_refresh','ai_teacher','spaced_review','checkpoint']);
     return rows.map(candidate=>{
       if(!candidate?.subjectId||reviewSources.has(candidate.source)||!candidate.topicId)return candidate;
@@ -273,6 +284,13 @@ function install(){
         mode:snap.repair.mode,
         priority:Number(snap.repair.priority)||0,
         reason:snap.repair.reason
+      }:null,
+      load:snap.load?{
+        mode:snap.load.mode,
+        state:snap.load.state||'',
+        completion7:Number.isFinite(snap.load.completion7)?snap.load.completion7:null,
+        completion30:Number.isFinite(snap.load.completion30)?snap.load.completion30:null,
+        reason:snap.load.reason
       }:null
     }};
   }:null;
@@ -291,6 +309,7 @@ function install(){
     profile,
     targetRiskFor,
     repairFor,
+    loadPrescription,
     snapshotForSubject:(subjectId,topicId='')=>snapshot(subjectId,topicId,null),
     snapshotForTask:(task)=>snapshot(task?.subjectId||'',task?.topicId||'',task),
     invalidate:()=>{profileCache={key:'',value:null};},

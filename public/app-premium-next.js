@@ -29,8 +29,11 @@
       card.innerHTML = '<small>GÜNLÜK İLERLEME</small><strong></strong><span>günlük ilerleme</span>';
     }
     const progress = normalizedProgress(root);
-    card.querySelector('strong').textContent = progress.label;
-    card.style.setProperty('--pnx-progress', progress.pct + '%');
+    const value = card.querySelector('strong');
+    if (value && text(value) !== progress.label) value.textContent = progress.label;
+    if (card.style.getPropertyValue('--pnx-progress') !== progress.pct + '%') {
+      card.style.setProperty('--pnx-progress', progress.pct + '%');
+    }
     return card;
   }
 
@@ -105,20 +108,26 @@
       [cards.load, 'load'],
       [cards.progress, 'progress'],
       [cards.mode, 'mode']
-    ];
+    ].filter(([card]) => !!card);
+
     kinds.forEach(([card, kind]) => {
-      if (!card) return;
-      card.dataset.pnxKind = kind;
-      if (!card.querySelector('.pnx-signal-icon')) {
-        const icon = document.createElement('span');
+      if (card.dataset.pnxKind !== kind) card.dataset.pnxKind = kind;
+      let icon = card.querySelector('.pnx-signal-icon');
+      if (!icon) {
+        icon = document.createElement('span');
         icon.className = 'pnx-signal-icon';
         icon.setAttribute('aria-hidden', 'true');
-        if (kind === 'progress') icon.dataset.progressLabel = text(card.querySelector('strong'));
         card.prepend(icon);
-      } else if (kind === 'progress') {
-        card.querySelector('.pnx-signal-icon').dataset.progressLabel = text(card.querySelector('strong'));
       }
-      rail.appendChild(card);
+      if (kind === 'progress') {
+        const progressLabel = text(card.querySelector('strong'));
+        if (icon.dataset.progressLabel !== progressLabel) icon.dataset.progressLabel = progressLabel;
+      }
+    });
+
+    const desired = kinds.map(([card]) => card);
+    desired.forEach((card, index) => {
+      if (rail.children[index] !== card) rail.insertBefore(card, rail.children[index] || null);
     });
   }
 
@@ -347,10 +356,7 @@
     const mode = signalByLabel(rail, 'ROTA MODU');
     const target = signalByLabel(rail, 'HEDEF SİNYALİ');
 
-    if (target) {
-      target.classList.add('pnx-hidden-target');
-      target.hidden = true;
-    }
+    if (target?.isConnected) target.remove();
     decorateSignals(rail, { today, load, progress, mode });
 
     if (header.dataset.pnxMounted !== '2') {

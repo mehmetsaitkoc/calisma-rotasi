@@ -86,6 +86,30 @@ jobs:
       - name: Syntax check KPSS Turkish paragraph bank
         run: node --check public/kpss-professional-turkish-03.js
 
+      - name: Syntax check KPSS prime history 01
+        run: node --check public/kpss-professional-history-01.js
+
+      - name: Syntax check KPSS prime history 02
+        run: node --check public/kpss-professional-history-02.js
+
+      - name: Syntax check KPSS prime history 03
+        run: node --check public/kpss-professional-history-03.js
+
+      - name: Syntax check KPSS prime history 04
+        run: node --check public/kpss-professional-history-04.js
+
+      - name: Syntax check KPSS prime history 05
+        run: node --check public/kpss-professional-history-05.js
+
+      - name: Syntax check KPSS prime history 06
+        run: node --check public/kpss-professional-history-06.js
+
+      - name: Syntax check KPSS prime history 07
+        run: node --check public/kpss-professional-history-07.js
+
+      - name: Syntax check KPSS prime history 08
+        run: node --check public/kpss-professional-history-08.js
+
       - name: Syntax check KPSS professional section exams
         run: node --check public/kpss-professional-sections.js
 

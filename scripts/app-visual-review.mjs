@@ -75,7 +75,10 @@ async function submitWizard(page){
   const days=form().locator('[name="days"]');
   for(let i=0;i<await days.count();i++){
     const box=days.nth(i);
-    if(!(await box.isChecked())) await box.check();
+    if(!(await box.isChecked())){
+      const label=box.locator('xpath=ancestor::label[1]');
+      await label.click();
+    }
   }
   await form().locator('button[type="submit"]').click();
 

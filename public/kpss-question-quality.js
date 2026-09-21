@@ -65,6 +65,43 @@ function validateTopicTest(test,profile){
   assert(nonRecall>=6,'Testin en az yarısı bağlam/yorum/akıl yürütme olmalı: '+test.id);
   return test;
 }
+function validateSectionExam(exam,{blueprint=null,profile=null}={}){
+  assert(exam&&typeof exam==='object','Bölüm denemesi tanımı geçersiz.');
+  assert(exam.exam==='kpss','Bölüm denemesi KPSS olmalı: '+exam?.id);
+  assert(typeof exam.subjectId==='string'&&exam.subjectId,'Bölüm denemesi ders kimliği eksik: '+exam?.id);
+  assert(Array.isArray(exam.questions)&&exam.questions.length===Number(exam.questionTarget),'Bölüm denemesi soru sayısı hedefle uyuşmalı: '+exam.id);
+  assert(QUALITY_STATUSES.has(exam.qualityStatus),'Bölüm denemesi kalite durumu geçersiz: '+exam.id);
+  assert(exam.sourceKind==='original'&&exam.copyrightPolicy==='original-only','Bölüm denemesi özgün olmalı: '+exam.id);
+  if(exam.subjectId==='k-gu'){
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(exam.contentAsOf||''),'Güncel Bilgiler bölüm denemesi contentAsOf taşımalı: '+exam.id);
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(exam.reviewAfter||''),'Güncel Bilgiler bölüm denemesi reviewAfter taşımalı: '+exam.id);
+    assert(exam.reviewAfter>exam.contentAsOf,'Güncel Bilgiler bölüm denemesi yenileme tarihi hatalı: '+exam.id);
+  }
+  const ids=new Set(),stems=new Set();
+  for(const q of exam.questions){
+    validateQuestion(q,{requireMetadata:true});
+    assert(!ids.has(q.id),'Bölüm denemesinde soru kimliği tekrar ediyor: '+q.id);ids.add(q.id);
+    const stem=norm(q.text);assert(!stems.has(stem),'Bölüm denemesinde soru kökü tekrar ediyor: '+q.id);stems.add(stem);
+  }
+  const answers=exam.questions.map(q=>q.answer),counts=[0,0,0,0,0];answers.forEach(a=>counts[a]++);
+  const target=exam.questions.length/5;
+  assert(counts.every(n=>Math.abs(n-target)<=2),'Bölüm denemesi cevap anahtarı dengesiz: '+exam.id+' ['+counts.join(',')+']');
+  assert(maxRun(answers)<=2,'Bölüm denemesinde aynı seçenek art arda 3+ kez doğru olamaz: '+exam.id);
+  if(profile){
+    const got=difficultyCounts(exam.questions),want=profile.difficulty;
+    for(const k of ['easy','medium','hard'])assert(got[k]===want[k],'Bölüm zorluk dağılımı hatalı '+exam.id+' '+k+': '+got[k]+' != '+want[k]);
+  }
+  if(blueprint){
+    const expected=new Map((blueprint.rows||[]).map(x=>[x.topicId,x.count])),got=new Map();
+    for(const q of exam.questions)got.set(q.topicId,(got.get(q.topicId)||0)+1);
+    assert([...got.values()].reduce((n,x)=>n+x,0)===blueprint.questionTarget,'Bölüm denemesi blueprint toplamı hatalı: '+exam.id);
+    for(const [topicId,count] of expected)assert((got.get(topicId)||0)===count,'Bölüm denemesi konu dağılımı hatalı: '+exam.id+' '+topicId);
+    for(const topicId of got.keys())assert(expected.has(topicId),'Bölüm denemesinde blueprint dışı konu var: '+exam.id+' '+topicId);
+  }
+  assert(exam.questions.filter(q=>q.cognitive!=='recall').length>=Math.ceil(exam.questions.length*.6),'Bölüm denemesinin en az %60’ı bağlam/yorum/akıl yürütme olmalı: '+exam.id);
+  return exam;
+}
+
 function auditBank(tests,{profiles=[],requireApproved=false}={}){
   const ids=new Set(),stems=new Set(),questionRows=[],byTopic=new Map(),errors=[];
   for(const test of tests||[]){
@@ -84,6 +121,6 @@ function auditBank(tests,{profiles=[],requireApproved=false}={}){
   return {schema:SCHEMA,tests:(tests||[]).length,questions:ids.size,topics:byTopic.size,errors,valid:errors.length===0};
 }
 
-root.RotaKpssQuestionQuality={SCHEMA,DIFFICULTIES,COGNITIVE,QUALITY_STATUSES,norm,tokenSet,jaccard,suspiciouslySimilar,maxRun,difficultyCounts,validateQuestion,validateTopicTest,auditBank};
+root.RotaKpssQuestionQuality={SCHEMA,DIFFICULTIES,COGNITIVE,QUALITY_STATUSES,norm,tokenSet,jaccard,suspiciouslySimilar,maxRun,difficultyCounts,validateQuestion,validateTopicTest,validateSectionExam,auditBank};
 if(typeof module==='object')module.exports=root.RotaKpssQuestionQuality;
 })(typeof window!=='undefined'?window:globalThis);

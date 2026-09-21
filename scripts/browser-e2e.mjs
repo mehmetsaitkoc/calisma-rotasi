@@ -876,6 +876,10 @@ try {
   assert.ok(teacherRequest.studentContext?.routeMode?.explanation, 'Rota Hoca must receive student-facing route-mode explanation');
   assert.ok(teacherRequest.studentContext?.todaySummary, 'Rota Hoca must receive todaySummary');
   assert.ok(teacherRequest.studentContext?.contextHealth?.hasStudentModel, 'Rota Hoca v2 context must expose context health');
+  assert.ok(teacherRequest.studentContext?.intelligence, 'Rota Hoca must receive Intelligence V1 context');
+  assert.equal(teacherRequest.studentContext?.intelligence?.version,1,'Rota Hoca intelligence context must be versioned');
+  assert.ok(['insufficient','low','watch','high'].includes(teacherRequest.studentContext?.intelligence?.targetRisk?.band||'insufficient'),'Rota Hoca target risk must use a bounded band');
+  assert.ok(['collect','steady','repair'].includes(teacherRequest.studentContext?.intelligence?.repair?.mode||'collect'),'Rota Hoca repair proposal must use a bounded mode');
   assert.ok((teacherRequest.studentContext?.todayPlan||[]).length <= 8, 'Rota Hoca todayPlan must stay bounded');
   const teacherContextText = JSON.stringify(teacherRequest.studentContext);
   assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(teacherContextText), 'Technical route jargon must not leak into teacher context');

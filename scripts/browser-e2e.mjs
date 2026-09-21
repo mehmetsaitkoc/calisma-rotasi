@@ -800,9 +800,10 @@ try {
   await rerenderedFocus.locator('[data-action="timer-reset"]').click();
   await page.getByText('Sayacı sıfırla?', { exact: true }).waitFor({ state: 'visible' });
   await page.locator('[data-action="confirm"]').click();
-  const resetClock = page.locator('#clock').first();
-  await resetClock.waitFor({ state: 'visible' });
-  assert.equal((await resetClock.innerText()).trim(), String(todayTask.minutes).padStart(2, '0') + ':00', 'Confirmed reset must restore the planned duration');
+  const resetPreview = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
+  await resetPreview.waitFor({ state: 'visible' });
+  assert.match((await resetPreview.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Confirmed reset must restore the planned duration and return to the task preview');
+  assert.equal(await page.locator('.pnx3-focus .route-focus-card').count(), 0, 'Reset must preserve the existing behavior of clearing the live focus session');
 
   snapshot = await appState(page);
   const spaceAfterFocus = snapshot.value.workspaces.kpss;

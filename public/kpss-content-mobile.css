@@ -1,0 +1,28 @@
+/* KPSS content surfaces: keep large professional banks safe on narrow screens. */
+@media (max-width: 760px){
+  .mini-exam-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%;
+    max-width:100%;
+  }
+  .mini-exam-card{
+    min-width:0;
+    max-width:100%;
+    overflow:hidden;
+  }
+  .mini-exam-card .row{
+    min-width:0;
+    flex-wrap:wrap;
+    align-items:flex-start;
+  }
+  .mini-exam-card h3,
+  .mini-exam-card p,
+  .mini-exam-card .mini-last,
+  .mini-exam-card .pill,
+  .mini-exam-card .tiny{
+    min-width:0;
+    max-width:100%;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+}

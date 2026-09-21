@@ -8,11 +8,16 @@ const QUESTIONS_PER_TEST=12;
 const TARGET_SECTION_EXAMS_PER_SUBJECT=5;
 const BASIS='Sorular Çalışma Rotası için özgün hazırlanır. ÖSYM soruları kopyalanmaz. Ders toplamları ve geçmiş sınavların ölçme eğilimleri blueprint olarak kullanılır; konu başına sabit soru sayısı garantisi verilmez.';
 const Q=(text,options,answer,explanation,skill='')=>({text,options,answer,explanation,skill});
+function distributeOptions(q,index,testNo){
+  const shift=(index*2+testNo)%5;
+  if(!shift)return q;
+  return {...q,options:q.options.slice(-shift).concat(q.options.slice(0,-shift)),answer:(q.answer+shift)%5};
+}
 const T=(id,subjectId,topicId,topicTitle,testNo,questions,level='Orta–ileri')=>({
   id,exam:'kpss',subjectId,topicId,topicTitle,
   title:'KPSS '+topicTitle+' · Konu Testi #'+String(testNo).padStart(2,'0'),
   eyebrow:'KONU TESTİ · KPSS',minutes:16,level,testNo,setNo:testNo,
-  questions:questions.map((q,i)=>({...q,id:id+'-q'+String(i+1).padStart(2,'0'),topicId})),
+  questions:questions.map((q,i)=>({...distributeOptions(q,i,testNo),id:id+'-q'+String(i+1).padStart(2,'0'),topicId})),
   version:VERSION,sourceKind:'original',original:true,bankStandard:true
 });
 

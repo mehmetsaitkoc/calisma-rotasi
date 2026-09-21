@@ -199,29 +199,15 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
 }
 
 async function showTaskInPlan(page, id, label) {
-  await navigate(page, 'plan');
-  const thisWeek = page.locator('[data-action="week-today"]:visible').first();
-  if (await thisWeek.count()) await thisWeek.click();
+  const snapshot = await appState(page);
+  const task = snapshot.value.workspaces.kpss.plan.find(p => p.id === id);
+  assert.ok(task, label + ': görev gerçek KPSS planında bulunmalı');
+  assert.ok(task.date, label + ': görevin gerçek bir plan tarihi olmalı');
 
+  await setDay(page, task.date);
   const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`).first();
-  const revealSelectedDay = async () => {
-    if (!(await taskButton.count())) return false;
-    const column = taskButton.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]');
-    if (await column.count()) {
-      const index = await column.evaluate(el => Array.from(el.parentElement?.children || []).indexOf(el));
-      const tab = page.locator(`.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`).first();
-      if (index >= 0 && await tab.count()) await tab.click();
-    }
-    return await taskButton.isVisible();
-  };
-
-  for (let hop = 0; hop < 4; hop++) {
-    if (await revealSelectedDay()) return;
-    const next = page.locator('[data-action="week-next"]:visible').first();
-    assert.ok(await next.count(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
-    await next.click();
-  }
-  assert.ok(await revealSelectedDay(), label + ': görev Programım içinde erişilebilir olmalı');
+  await taskButton.waitFor({ state: 'visible' });
+  assert.ok(await taskButton.isVisible(), label + ': görev kendi plan gününde Today içinde erişilebilir olmalı');
 }
 
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {

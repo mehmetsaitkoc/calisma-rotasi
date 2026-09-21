@@ -169,6 +169,11 @@ try{
   await page.setViewportSize({width:390,height:844});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
   await noOverflow(page,'Today 390');
+  const hiddenSidebar=await page.locator('.sidebar').evaluate(el=>{
+    const r=el.getBoundingClientRect();
+    return {right:r.right,left:r.left,width:r.width};
+  });
+  assert.ok(hiddenSidebar.right<=1,'Mobile sidebar must be fully off-canvas until opened');
   await page.screenshot({path:OUT+'/today-390.png',fullPage:false});
 
   await navigateMobile(page,'plan');
@@ -183,12 +188,13 @@ try{
   assert.equal(mobileFlow.direction,'column','Mobile Program must stack days vertically');
   assert.ok(mobileFlow.width<=mobileFlow.client+2,'Mobile Program must not retain desktop horizontal week overflow');
   await noOverflow(page,'Program 390');
+  await page.screenshot({path:OUT+'/program-390.png',fullPage:false});
 
   assert.deepEqual(errors,[],'Visual review page errors:\n'+errors.join('\n'));
   console.log(JSON.stringify({
     screenshots:[
       'today-1512.png','today-1440.png','program-1512.png',
-      'rota-hoca-1512.png','deneme-1512.png','ders-analizi-1512.png','today-390.png'
+      'rota-hoca-1512.png','deneme-1512.png','ders-analizi-1512.png','today-390.png','program-390.png'
     ],
     mobileProgram:mobileFlow
   },null,2));

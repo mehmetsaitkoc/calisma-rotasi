@@ -203,14 +203,25 @@ async function showTaskInPlan(page, id, label) {
   const thisWeek = page.locator('[data-action="week-today"]:visible').first();
   if (await thisWeek.count()) await thisWeek.click();
 
-  const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`);
+  const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`).first();
+  const revealSelectedDay = async () => {
+    if (!(await taskButton.count())) return false;
+    const column = taskButton.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]');
+    if (await column.count()) {
+      const index = await column.evaluate(el => Array.from(el.parentElement?.children || []).indexOf(el));
+      const tab = page.locator(`.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`).first();
+      if (index >= 0 && await tab.count()) await tab.click();
+    }
+    return await taskButton.isVisible();
+  };
+
   for (let hop = 0; hop < 4; hop++) {
-    if (await taskButton.count() && await taskButton.isVisible()) return;
+    if (await revealSelectedDay()) return;
     const next = page.locator('[data-action="week-next"]:visible').first();
     assert.ok(await next.count(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
     await next.click();
   }
-  assert.ok(await taskButton.count() && await taskButton.isVisible(), label + ': görev Programım içinde erişilebilir olmalı');
+  assert.ok(await revealSelectedDay(), label + ': görev Programım içinde erişilebilir olmalı');
 }
 
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {

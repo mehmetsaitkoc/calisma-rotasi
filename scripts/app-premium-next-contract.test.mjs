@@ -107,9 +107,10 @@ assert.ok(
 );
 assert.ok(
   js.includes('APP PREMIUM NEXT V4 · PROGRAM DAILY TIMELINE') &&
+  js.includes('/dashboard-evidence.css') &&
   js.includes('/program-daily-timeline-core.css') &&
   js.includes('/program-daily-timeline-rail.css'),
-  'Latest main Programım selected-day timeline must survive the dashboard branch sync'
+  'Latest main Programım timeline and evidence-only dashboard styling must survive the branch sync'
 );
 assert.ok(
   js.includes('Henüz tam deneme kaydı yok') &&

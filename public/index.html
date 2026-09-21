@@ -1653,6 +1653,7 @@ h1,h2,h3,h4{color:var(--v2-ink);letter-spacing:-.035em}
 <script src="/kpss-professional-history-12.js"></script>
 <script src="/kpss-professional-history-13.js"></script>
 <script src="/kpss-professional-history-editorial-fixes.js"></script>
+<script src="/kpss-professional-history-sections-01.js"></script>
 <script src="/kpss-professional-sections.js"></script>
 <!-- ARCHITECTURE BOUNDARY: workspace state schema -->
 <script src="/workspace-schema.js"></script>
@@ -4119,12 +4120,17 @@ function miniRecommendation(){
 }
 const KPSS_SEED_SECTION_EXAMS=[...(window.RotaKpssPractice?.sectionExams||[])];
 const KPSS_PROFESSIONAL_SECTION_EXAMS=(()=>{
- const defs=Array.isArray(window.RotaKpssProfessionalSections?.sectionExams)?window.RotaKpssProfessionalSections.sectionExams:[];
+ const defs=[
+  ...(Array.isArray(window.RotaKpssProfessionalSections?.sectionExams)?window.RotaKpssProfessionalSections.sectionExams:[]),
+  ...(Array.isArray(window.RotaKpssProfessionalHistory?.sectionExams)?window.RotaKpssProfessionalHistory.sectionExams:[])
+ ];
  const accepted=[];
  for(const def of defs){
   try{
    const blueprint=window.RotaKpssContentBlueprint?.sectionBlueprint?.(def.subjectId,Math.max(0,(def.sectionNo||1)-1));
-   const profile=window.RotaKpssContentBlueprint?.SECTION_PROFILES?.[(def.sectionNo||1)-1];
+   const profile=def.subjectId==='k-ta'
+    ?window.RotaKpssContentBlueprint?.HISTORY_SECTION_PROFILES?.[(def.sectionNo||1)-1]
+    :window.RotaKpssContentBlueprint?.SECTION_PROFILES?.[(def.sectionNo||1)-1];
    window.RotaKpssQuestionQuality?.validateSectionExam?.(def,{blueprint,profile});
    if(def.qualityStatus!=='approved')throw Error('Yayın için approved gerekli.');
    accepted.push(def);

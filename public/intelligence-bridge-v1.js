@@ -66,7 +66,7 @@ function targetRiskFor(subjectId,model=null){
       performance:finite(model?.performance)?model.performance:undefined,
       retention:finite(model?.retention)?model.retention:undefined,
       trend:model?.trend?.direction||p.trend,
-      openMistakes:Number(model?.openMistakes)||p.windows?.d60?.openMistakes||0,
+      openMistakes:finite(model?.openMistakes)?Number(model.openMistakes):(p.windows?.d60?.openMistakes||0),
       confidence
     });
   }catch{return null;}
@@ -85,6 +85,9 @@ function repairFor(model){
     });
   }catch{return null;}
 }
+function recoveryActive(){
+  try{return !!fn('routeRecoverySignal')?.()?.active;}catch{return false;}
+}
 function redFlags(model){
   if(!model)return 0;
   let n=0;
@@ -100,6 +103,7 @@ function applyGuard(decision,model,risk,repair){
   const out={...decision};
   const flags=redFlags(model);
   let guard='none';
+  if(recoveryActive())return {...out,intelligenceGuard:'recovery_preserved'};
   if(repair?.mode==='repair'&&(model?.confidence||0)>=65&&flags>=2){
     if(out.mode==='progress'){
       out.mode='steady';
@@ -192,7 +196,7 @@ function install(){
   if(originalBuildCandidates){
     root.routeBuildCandidates=function(){
       const rows=originalBuildCandidates.call(root);
-      if(!Array.isArray(rows))return rows;
+      if(!Array.isArray(rows)||recoveryActive())return rows;
       const reviewSources=new Set(['mistake','mini_repair','retention_refresh','ai_teacher','spaced_review','checkpoint']);
       return rows.map(candidate=>{
         if(!candidate?.subjectId||reviewSources.has(candidate.source)||!candidate.topicId)return candidate;

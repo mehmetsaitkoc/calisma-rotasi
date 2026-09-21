@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 
 await import('../public/intelligence-v1.js');
 
+let recovery=false;
+
 let modelState={
   confidence:82,
   performance:52,
@@ -40,6 +42,7 @@ globalThis.w=()=>({
 globalThis.today=()=> '2026-09-21';
 globalThis.routeSubjectGap=()=>({known:true,current:50,target:90,gap:40});
 globalThis.routeDaysToTarget=()=>19;
+globalThis.routeRecoverySignal=()=>({active:recovery});
 globalThis.routeTopicMasterySignal=()=>({ready:false,next:'3-day'});
 globalThis.routeStudentModel=()=>({...modelState});
 globalThis.routeAppliedDecision=()=>({
@@ -86,6 +89,16 @@ const reviewCandidate=boostedCandidates.find(x=>x.routeKey==='mistake:m1');
 assert.ok(normalCandidate.priority>60&&normalCandidate.priority<=63,'high-confidence target + repair risk may only add a bounded priority boost');
 assert.match(normalCandidate.reason,/Intelligence V1/);
 assert.equal(reviewCandidate.priority,88,'critical review priorities must not be double-boosted');
+
+recovery=true;
+bridge.invalidate();
+const recoveryDecision=globalThis.routeAppliedDecision('k-ma','k-ma-topic');
+assert.equal(recoveryDecision.mode,'progress','Intelligence overlay must preserve the underlying engine decision while recovery mode owns the policy');
+assert.equal(recoveryDecision.intelligenceGuard,'recovery_preserved');
+const recoveryCandidates=globalThis.routeBuildCandidates();
+assert.equal(recoveryCandidates.find(x=>x.routeKey==='topic:k-ma-topic').priority,60,'recovery mode must suppress Intelligence scheduler boosts');
+recovery=false;
+bridge.invalidate();
 
 const task={id:'t1',subjectId:'k-ma',topicId:'k-ma-topic',kind:'review',source:'mistake',reason:'Eski neden'};
 const why=globalThis.routeTaskReason(task);

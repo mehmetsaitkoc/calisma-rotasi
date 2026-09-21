@@ -47,6 +47,7 @@ for(const marker of [
   'pnx3-teacher-card',
   'pnx3-results-card',
   'pnx3-quote-card',
+  'pnxStudentName',
   'Neden bugün?',
   'ROTA KARARI',
   'Pomodoro ile başla',
@@ -79,6 +80,14 @@ assert.ok(
 assert.ok(
   css.includes('Keep existing sidebar exactly as the current product shell'),
   'V3 must explicitly preserve the existing sidebar'
+);
+assert.ok(
+  css.includes('APP PREMIUM NEXT V3.1 · PLAN HEADER + IDENTITY INTEGRITY'),
+  'V3 must keep the Bugünün Planı header aligned after the calendar affordance is injected'
+);
+assert.ok(
+  js.includes("header.dataset.pnxStudentName = name"),
+  'V3 must cache the real student name so MutationObserver re-renders cannot turn it into “Bugün”'
 );
 
 console.log('App Premium Next contract passed: KPSS target dashboard + real route data + unchanged sidebar + responsive/day-night guards');

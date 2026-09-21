@@ -211,93 +211,93 @@ async function showTaskInPlan(page, id, label) {
 
   const sameEvidence = (candidate, reference) => {
     if (!candidate || !reference || candidate.done) return false;
-    if (reference.routeKey && candidate.routeKey === reference.routeKey) return true;
-    if (reference.sourceMistakeId && candidate.sourceMistakeId === reference.sourceMistakeId) return true;
-    if (reference.sourceAssessmentId && candidate.sourceAssessmentId === reference.sourceAssessmentId) return true;
     if (
       reference.source === 'spaced_review' &&
       candidate.source === 'spaced_review' &&
       candidate.reviewWave === reference.reviewWave &&
       candidate.reviewBaseTaskId === reference.reviewBaseTaskId
     ) return true;
+    if (
+      reference.sourceMistakeId &&
+      candidate.sourceMistakeId === reference.sourceMistakeId &&
+      candidate.source === reference.source
+    ) return true;
+    if (
+      reference.sourceAssessmentId &&
+      candidate.sourceAssessmentId === reference.sourceAssessmentId &&
+      candidate.source === reference.source
+    ) return true;
+    if (reference.routeKey && candidate.routeKey === reference.routeKey) return true;
     return candidate.source === reference.source &&
       candidate.subjectId === reference.subjectId &&
       candidate.topicId === reference.topicId &&
       candidate.title === reference.title;
   };
 
+  let current = original;
+  const followEvidence = plan =>
+    plan.find(p => p.id === current.id && !p.done) ||
+    plan.find(p => sameEvidence(p, original)) ||
+    plan.find(p => sameEvidence(p, current)) ||
+    null;
+
+  // Keep Route on the current simulated day while locating the real task in Programım.
+  // If the clock advances before the task is rendered, routeAutoSync can correctly
+  // treat other open work as overdue and move this same evidence forward again.
   await navigate(page, 'plan');
   await page.getByRole('heading', { name: 'Programım' }).waitFor({ state: 'visible' });
   await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
 
-  const today = page.locator('.pnx-program-week-strip [data-action="week-today"]:visible').first();
-  if (await today.count()) {
-    await today.click();
+  let snapshot = await appState(page);
+  current = followEvidence(snapshot.value.workspaces.kpss.plan);
+  assert.ok(current, label + ': görev kanıt kimliği Programım açılırken korunmalı');
+
+  const thisWeek = page.locator('.pnx-program-week-strip [data-action="week-today"]:visible').first();
+  assert.ok(await thisWeek.count(), label + ': görünür Programım hafta kontrolü bulunmalı');
+  await thisWeek.click();
+  await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
+
+  for (let hop = 0; hop < 5; hop++) {
+    snapshot = await appState(page);
+    current = followEvidence(snapshot.value.workspaces.kpss.plan);
+    assert.ok(current?.date, label + ': görevin gerçek bir plan tarihi olmalı');
+
+    let taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+    if (await taskButton.count()) {
+      const column = taskButton.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]');
+      assert.ok(await column.count(), label + ': görev gerçek Programım gün sütununda bulunmalı');
+      const index = await column.evaluate(el => Array.from(el.parentElement?.children || []).indexOf(el));
+      const tab = page.locator(`.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`).first();
+      assert.ok(index >= 0 && await tab.count(), label + ': görevin görünür gün sekmesi bulunmalı');
+      await tab.click();
+
+      taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+      await taskButton.waitFor({ state: 'visible' });
+
+      // The task is now already rendered. Move only Date to its scheduled day and
+      // complete without another render. The log therefore records the real plan day,
+      // and the normal submit path may rebalance afterward exactly as production does.
+      await page.clock.setFixedTime(new Date(current.date + 'T09:00:00+03:00'));
+      const simulatedDay = await page.evaluate(() => {
+        const d = new Date();
+        return d.getFullYear() + '-' +
+          String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0');
+      });
+      assert.equal(simulatedDay, current.date, label + ': tamamlanma günü gerçek plan günüyle eşleşmeli');
+      assert.ok(await taskButton.isVisible(), label + ': görev plan günü ayarlandıktan sonra görünür kalmalı');
+      return current;
+    }
+
+    const next = page.locator('.pnx-program-week-strip [data-action="week-next"]:visible').first();
+    assert.ok(await next.count(), label + ': görünür Programım sonraki hafta kontrolü bulunmalı');
+    await next.click();
     await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
   }
 
-  let current = original;
-  for (let weekHop = 0; weekHop < 8; weekHop++) {
-    const snapshot = await appState(page);
-    const plan = snapshot.value.workspaces.kpss.plan;
-    current =
-      plan.find(p => p.id === current.id && !p.done) ||
-      plan.find(p => sameEvidence(p, original)) ||
-      plan.find(p => sameEvidence(p, current)) ||
-      null;
-    assert.ok(current?.date, label + ': görev kanıt kimliğiyle gerçek planda kalmalı');
-
-    const taskButton = page.locator(
-      `.week-grid [data-action="complete-session"][data-id="${current.id}"]`
-    ).first();
-
-    if (await taskButton.count()) {
-      const column = taskButton.locator(
-        'xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]'
-      );
-      assert.ok(await column.count(), label + ': görev Programım gün sütununda bulunmalı');
-      const index = await column.evaluate(el =>
-        Array.from(el.parentElement?.children || []).indexOf(el)
-      );
-      const tab = page.locator(
-        `.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`
-      ).first();
-      assert.ok(index >= 0 && await tab.count(), label + ': görevin gün sekmesi görünür olmalı');
-      await tab.click();
-
-      const visibleButton = page.locator(
-        `.day-column.pnx-program-active-day [data-action="complete-session"][data-id="${current.id}"]`
-      ).first();
-      try {
-        await visibleButton.waitFor({ state: 'visible', timeout: 1500 });
-        return current;
-      } catch {
-        // Programım presentation applies the selected day on the next animation frame.
-        // Only advance a week when the real task still did not become visible.
-      }
-    }
-
-    const next = page.locator(
-      '.pnx-program-week-strip [data-action="week-next"]:visible'
-    ).first();
-    assert.ok(await next.count(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
-    const before = await page.locator('.pnx-program-week-strip').innerText();
-    await next.click();
-    await page.waitForFunction(
-      previous => {
-        const strip = document.querySelector('.pnx-program-week-strip');
-        return !!strip && strip.innerText !== previous;
-      },
-      before,
-      { timeout: 3000 }
-    );
-  }
-
-  assert.fail(
-    label + ': görev kanıt kimliği korunarak görünür Programım haftası/gününde erişilebilir olmalı; son plan tarihi=' +
-    (current?.date || 'yok')
-  );
+  assert.fail(label + ': görev kanıt kimliği korunarak görünür Programım akışında erişilebilir olmalı');
 }
+
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {
   const button = page.locator(`[data-action="complete-session"][data-id="${id}"]`);
   await button.waitFor({ state: 'visible' });

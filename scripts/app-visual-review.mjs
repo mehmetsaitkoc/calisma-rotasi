@@ -161,7 +161,10 @@ try{
 
   await navigateDesktop(page,'plan');
   await page.getByRole('heading',{name:'Programım'}).waitFor({state:'visible'});
-  assert.ok(await page.locator('.week-grid .day-column').count()===7,'Desktop Program must expose seven days');
+  await page.locator('body.pnx-program-day-ready').waitFor({state:'attached'});
+  await page.locator('.pnx-program-workspace').waitFor({state:'visible'});
+  assert.equal(await page.locator('.pnx-program-day-tab').count(),7,'Desktop Program must keep all seven real day selectors');
+  assert.equal(await page.locator('.week-grid > .day-column.pnx-program-active-day').count(),1,'Program must focus one selected day without deleting the weekly route DOM');
   await noOverflow(page,'Program 1512');
   await page.screenshot({path:OUT+'/program-1512.png',fullPage:false});
 
@@ -201,15 +204,15 @@ try{
 
   await navigateMobile(page,'plan');
   await page.getByRole('heading',{name:'Programım'}).waitFor({state:'visible'});
-  const mobileFlow=await page.locator('.week-grid').evaluate(el=>({
+  await page.locator('body.pnx-program-day-ready').waitFor({state:'attached'});
+  const mobileFlow=await page.locator('.pnx-program-workspace').evaluate(el=>({
     display:getComputedStyle(el).display,
-    direction:getComputedStyle(el).flexDirection,
     width:el.scrollWidth,
     client:el.clientWidth
   }));
-  assert.equal(mobileFlow.display,'flex','Mobile Program must switch to vertical flow');
-  assert.equal(mobileFlow.direction,'column','Mobile Program must stack days vertically');
-  assert.ok(mobileFlow.width<=mobileFlow.client+2,'Mobile Program must not retain desktop horizontal week overflow');
+  assert.equal(await page.locator('.pnx-program-day-tab').count(),7,'Mobile Program must preserve seven day selectors');
+  assert.equal(await page.locator('.week-grid > .day-column.pnx-program-active-day').count(),1,'Mobile Program must keep one focused selected day');
+  assert.ok(mobileFlow.width<=mobileFlow.client+2,'Mobile Program workspace must fit its viewport');
   await noOverflow(page,'Program 390');
   await page.screenshot({path:OUT+'/program-390.png',fullPage:false});
 

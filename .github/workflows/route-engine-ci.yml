@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - gpt/route-engine-evidence-balance
+      - gpt/kpss-content-bank-v2
       - main
   pull_request:
     branches:

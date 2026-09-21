@@ -58,6 +58,19 @@ const insufficient=I.targetRisk({currentNet:48,targetNet:85,confidence:10});
 assert.equal(insufficient.band,'insufficient');
 assert.equal(insufficient.score,null,'low-confidence risk must not expose false precision');
 
+const missingMetrics=I.targetRisk({
+  currentNet:null,targetNet:null,daysLeft:null,completion:null,
+  performance:null,retention:null,confidence:70
+});
+assert.equal(missingMetrics.band,'insufficient','missing metrics must not be interpreted as zero');
+assert.equal(missingMetrics.score,null);
+assert.equal(missingMetrics.gap,null);
+
+const repairWithoutRetention=I.repairProposal({
+  confidence:80,performance:82,retention:null,openMistakes:0,repeatedError:false,trend:'flat'
+});
+assert.equal(repairWithoutRetention.mode,'steady','missing retention must not masquerade as zero retention');
+
 const repair=I.repairProposal({
   confidence:80,performance:51,retention:54,openMistakes:6,repeatedError:true,trend:'down'
 });

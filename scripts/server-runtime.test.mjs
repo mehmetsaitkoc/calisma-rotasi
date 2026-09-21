@@ -38,7 +38,7 @@ try{
   const premiumCss=await fetch(BASE+'/premium-v6.css');
   const premiumCssText=await premiumCss.text();
   assert.equal(premiumCss.status,200,'Premium V6 stylesheet must be served');
-  assert.match(premiumCssText,/PREMIUM UI V6 · MIDNIGHT JOURNEY/);
+  assert.match(premiumCssText,/PREMIUM V6 · PIXEL MATCH/);
   const premiumJs=await fetch(BASE+'/premium-v6.js');
   const premiumJsText=await premiumJs.text();
   assert.equal(premiumJs.status,200,'Premium V6 script must be served');

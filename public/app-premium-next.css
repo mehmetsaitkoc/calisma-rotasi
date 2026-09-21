@@ -1775,3 +1775,14 @@ body.app-premium-next-ready .pnx-route-panel .route-task-actions>[data-action="f
     pointer-events:auto!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V1.5 · DETERMINISTIC MOBILE DRAWER */
+@media(max-width:650px){
+  body.app-premium-next-ready:not(.menu-open) .app-shell>.sidebar{
+    display:none!important;
+  }
+  body.app-premium-next-ready.menu-open .app-shell>.sidebar{
+    display:flex!important;
+  }
+}

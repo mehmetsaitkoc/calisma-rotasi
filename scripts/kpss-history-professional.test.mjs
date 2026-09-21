@@ -61,9 +61,10 @@ assert.ok(html.includes('def.questions?.[index]?.skill'), 'History question skil
 assert.ok(html.includes('function topicStudyTests(topicId)'), 'Completed topics must resolve their own professional tests');
 assert.ok(html.includes('Dersi tamamlayınca açılır.'), 'Topic tests must stay locked until the lesson/topic is completed');
 assert.ok(html.includes('data-topic-tests='), 'Completed topic rows must render their own test controls');
-assert.ok(html.includes("!KPSS_TOPIC_STUDY_TEST_IDS.has(def.id)"), 'Professional topic tests must not be recommended from Deneme Merkezi');
-assert.ok(html.includes("!KPSS_TOPIC_STUDY_TEST_IDS.has(x.id)"), 'Professional topic tests must not be listed in Deneme Merkezi');
+assert.ok(html.includes("def.surface!=='topic'"), 'Professional topic tests must not be recommended from Deneme Merkezi');
+assert.ok(html.includes("x.surface!=='topic'"), 'Professional topic tests must not be listed in Deneme Merkezi');
 assert.ok(html.includes("topicSurface?'Konuya dön':'Deneme Merkezine dön'"), 'Topic-test results must return the learner to the topic flow');
+assert.ok(html.includes("surface:'topic'"), 'Professional History tests must be explicitly marked as topic-only surfaces');
 
 
 console.log('KPSS professional History integration passed: 10 topics × 3 tests × 12 questions = 360 live-catalog questions');

@@ -46,31 +46,31 @@ async function fillKpssStep(page) {
   await form.waitFor({ state: 'visible' });
 
   const score85 = form.locator('[name="targetScore"][value="85"]');
-  if (await score85.count()) await score85.check({ force: true });
+  if (await score85.count()) await score85.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const targetNet = form.locator('[name="targetNet"]');
   if (await targetNet.count()) await targetNet.fill('82');
 
   const minuteRadio = form.locator('[name="dailyMinutes"][value="240"]');
-  if (await minuteRadio.count()) await minuteRadio.check({ force: true });
+  if (await minuteRadio.count()) await minuteRadio.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const days = form.locator('[name="days"]');
   for (let i = 0; i < await days.count(); i++) {
     const box = days.nth(i);
-    if (!(await box.isChecked())) await box.check({ force: true });
+    if (!(await box.isChecked())) await box.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   }
 
   const currentNet = form.locator('[name="currentNetApprox"][value="50"]');
-  if (await currentNet.count()) await currentNet.check({ force: true });
+  if (await currentNet.count()) await currentNet.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const habit = form.locator('[name="studyHabit"][value="yes"]');
-  if (await habit.count()) await habit.check({ force: true });
+  if (await habit.count()) await habit.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const weakMath = form.locator('[name="weakSubjects"][value="k-ma"]');
-  if (await weakMath.count()) await weakMath.check({ force: true });
+  if (await weakMath.count()) await weakMath.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const strongTurkish = form.locator('[name="strongSubjects"][value="k-tr"]');
-  if (await strongTurkish.count()) await strongTurkish.check({ force: true });
+  if (await strongTurkish.count()) await strongTurkish.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   await form.locator('button[type="submit"]').click();
 }

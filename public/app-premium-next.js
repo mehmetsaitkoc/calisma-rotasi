@@ -812,6 +812,10 @@
   }
 
   document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-action="week-today"]')) {
+      selectedIndex = null;
+      return;
+    }
     const button = event.target.closest('[data-pnx-program-day]');
     if (!button) return;
     const nextIndex = Number(button.dataset.pnxProgramDay);

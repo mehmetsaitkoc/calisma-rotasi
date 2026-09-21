@@ -57,20 +57,20 @@ async function submitWizard(page){
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
 
   const form=()=>page.locator('#setup-wizard-form');
-  await form().locator('[name="name"]').fill('Sait');
+
+  // Stage 1 · welcome
   await form().locator('button[type="submit"]').click();
 
-  await form().locator('[name="studyHabit"][value="yes"]').check();
-  await form().locator('button[type="submit"]').click();
-
-  await form().locator('[name="currentNet"]').fill('48');
-  await form().locator('button[type="submit"]').click();
-
+  // Stage 2 · goals
+  await form().locator('[name="targetScore"][value="85"]').evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
   await form().locator('[name="targetNet"]').fill('82');
-  await form().locator('button[type="submit"]').click();
-
-  await form().locator('[name="dailyMinutes"][value="240"]').check();
-  await form().locator('button[type="submit"]').click();
+  await form().locator('[name="dailyMinutes"][value="240"]').evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
 
   const days=form().locator('[name="days"]');
   for(let i=0;i<await days.count();i++){
@@ -82,14 +82,25 @@ async function submitWizard(page){
   }
   await form().locator('button[type="submit"]').click();
 
-  await form().locator('[name="targetScore"]').fill('88');
-  await form().locator('[name="target"]').fill('Premium rota görsel QA');
-  await form().locator('button[type="submit"]').click();
-
-  const math=form().locator('select[name="level:k-ma"]');
-  if(await math.count()) await math.selectOption('0');
-  const turkish=form().locator('select[name="level:k-tr"]');
-  if(await turkish.count()) await turkish.selectOption('2');
+  // Stage 3 · situation analysis
+  await form().locator('[name="currentNetApprox"][value="50"]').evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  await form().locator('[name="studyHabit"][value="yes"]').evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  const weakMath=form().locator('[name="weakSubjects"][value="k-ma"]');
+  if(await weakMath.count()) await weakMath.evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  const strongTurkish=form().locator('[name="strongSubjects"][value="k-tr"]');
+  if(await strongTurkish.count()) await strongTurkish.evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
   await form().locator('button[type="submit"]').click();
 
   await page.locator('[data-action="summary-build"]').click();

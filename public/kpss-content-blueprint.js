@@ -102,9 +102,9 @@ function weightedBlueprint(subjectId,variant=0){
     const rows=Object.entries(def.topicWeights).map(([topicId,count])=>({topicId,count}));
     const deltaPattern=[
       [],
-      [['k-tr-3',-1],['k-tr-1',1],['k-ma-9',-1],['k-ma-1',1]],
-      [['k-tr-3',1],['k-tr-8',-1],['k-ma-12',-1],['k-ma-9',1]],
-      [['k-tr-4',-1],['k-tr-2',1],['k-ma-9',-1],['k-ma-7',1]],
+      [['k-tr-3',-1],['k-tr-1',1],['k-tr-8',-1],['k-tr-10',1],['k-ma-9',-1],['k-ma-1',1]],
+      [['k-tr-3',1],['k-tr-8',-2],['k-tr-10',1],['k-ma-12',-1],['k-ma-9',1]],
+      [['k-tr-4',-1],['k-tr-2',1],['k-tr-8',-1],['k-tr-10',1],['k-ma-9',-1],['k-ma-7',1]],
       [['k-tr-3',-1],['k-tr-11',1],['k-ma-12',-1],['k-ma-9',1]]
     ][variant%5];
     for(const [topicId,delta] of deltaPattern){const row=rows.find(x=>x.topicId===topicId);if(row)row.count=Math.max(0,row.count+delta);}

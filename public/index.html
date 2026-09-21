@@ -1908,6 +1908,7 @@ input:focus,select:focus,textarea:focus{border-color:#aaa6ff!important;box-shado
 <script src="/kpss-professional-turkish-02.js"></script>
 <script src="/kpss-professional-turkish-03.js"></script>
 <script src="/kpss-professional-turkish-04.js"></script>
+<script src="/kpss-professional-turkish-05.js"></script>
 <script src="/kpss-professional-turkish-06.js"></script>
 <script src="/kpss-professional-sections.js"></script>
 <!-- ARCHITECTURE BOUNDARY: workspace state schema -->
@@ -4274,6 +4275,7 @@ const KPSS_PROFESSIONAL_TESTS=(()=>{
   ...(Array.isArray(window.RotaKpssProfessionalTurkish02?.tests)?window.RotaKpssProfessionalTurkish02.tests:[]),
   ...(Array.isArray(window.RotaKpssProfessionalTurkish03?.tests)?window.RotaKpssProfessionalTurkish03.tests:[]),
   ...(Array.isArray(window.RotaKpssProfessionalTurkish04?.tests)?window.RotaKpssProfessionalTurkish04.tests:[]),
+  ...(Array.isArray(window.RotaKpssProfessionalTurkish05?.tests)?window.RotaKpssProfessionalTurkish05.tests:[]),
   ...(Array.isArray(window.RotaKpssProfessionalTurkish06?.tests)?window.RotaKpssProfessionalTurkish06.tests:[])
  ];
  const audit=window.RotaKpssQuestionQuality?.auditBank?window.RotaKpssQuestionQuality.auditBank(tests,{profiles:window.RotaKpssContentBlueprint?.TEST_PROFILES||[],requireApproved:true}):{valid:false,errors:[{message:'Kalite modülü yüklenemedi.'}]};

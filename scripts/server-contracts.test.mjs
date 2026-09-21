@@ -17,6 +17,7 @@ for(const marker of [
   'const TEACHER_CONTEXT_VERSION = 2',
   'function cleanTeacherContext',
   'function sanitizeContextValue',
+  "'contextHealth','intelligence'",
   'const context = cleanTeacherContext(body.studentContext)',
   'function validateAnswer',
   'function runtimeEntitlement',

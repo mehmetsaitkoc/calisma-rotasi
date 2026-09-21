@@ -35,6 +35,7 @@ try{
 
   const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,inner:window.innerWidth}));
   assert.ok(size.scroll<=size.inner+2,`Landing overflows 1512px viewport: ${size.scroll} > ${size.inner}`);
+  assert.equal(await page.locator('#preview-bar').isVisible(),false,'Preview/development bar must stay out of the final welcome composition');
 
   const title=page.locator('.v6-hero-copy h1');
   const journey=page.locator('.v6-journey');

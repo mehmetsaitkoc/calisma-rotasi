@@ -22,7 +22,7 @@ body:has(.welcome.premium-landing-final){
   color:var(--v6-white)!important;
   overflow-x:hidden;
 }
-.welcome.premium-landing-final{
+body:has(.welcome.premium-landing-final) .preview-bar{display:none!important}\n.welcome.premium-landing-final{
   min-height:100vh;
   position:relative;
   color:var(--v6-white)!important;

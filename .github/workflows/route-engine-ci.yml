@@ -174,6 +174,17 @@ jobs:
       - name: Run real browser learning-loop E2E
         run: node scripts/browser-e2e.mjs
 
+      - name: Capture 1512px landing visual review
+        run: node scripts/landing-visual-review.mjs
+
+      - name: Upload landing visual review
+        uses: actions/upload-artifact@v4
+        with:
+          name: landing-visual-review-${{ github.sha }}
+          path: artifacts/landing-1512.png
+          if-no-files-found: error
+          retention-days: 7
+
 
   production-smoke:
     needs: browser-e2e

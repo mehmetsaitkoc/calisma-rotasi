@@ -28,17 +28,21 @@ Bu yüzdeler **resmî yaklaşık kapsam ağırlıklarıdır**. Bunları “alt k
 
 ## 2. ÖSYM soru biçimi gözlemleri
 
-Kaynak: ÖSYM, **2025-KPSS A Grubu Genel Yetenek-Genel Kültür Temel Soru Kitapçığı (%10)**.
-- https://dokuman.osym.gov.tr/pdfdokuman/2025/KPSS/GY-GK/gygk_07092025lsy.pdf
+Birincil örnek kaynak: ÖSYM, **2026-KPSS Lisans Genel Yetenek-Genel Kültür Temel Soru Kitapçığı ve Cevap Anahtarı (%10)**.
+- https://dokuman.osym.gov.tr/web/2026/9/2026-kpss-lisansgenel-yetenek-genel-kultur-temel-soru-kitapcigi-ve-cevap-anahtari-10-9dh155-06125847.pdf
+- Karşılaştırmalı biçim kontrolünde 2023–2025 resmî ÖSYM GY–GK kitapçıkları da kullanılır.
 
 Yayımlanan örneklerde görülen ölçme biçimleri:
-- Türkçede sözcük/söz öbeğinin bağlam içindeki anlamını ayırt ettirme.
-- Cümle/paragraf bütünlüğü, çıkarım ve yorum.
-- Bir bilgi setine bağlı birden fazla bağımsız muhakeme sorusu.
-- Matematikte yalnız formül hatırlatma değil, çok adımlı sayısal/mantıksal muhakeme.
-- Tarihte salt tarih ezberi yerine olay, kişi veya dönem ipuçlarından tanıma/çıkarım.
+- Türkçede sözcük/söz öbeğinin **bağlam içindeki** anlamını ayırt ettirme.
+- Cümle ve paragrafta ana düşünce, akış, çıkarım, ölçüt ayırma ve yorum.
+- Aynı bilgi setine bağlı birden fazla fakat birbirinden bağımsız sözel muhakeme sorusu.
+- Matematikte yalnız formül hatırlatma değil; işlem bilgisi, sayı ilişkisi, işaret/eşitsizlik muhakemesi, problem çözme ve sayısal mantık.
+- Matematik çeldiricileri mümkün olduğunca gerçek işlem/akıl yürütme hatalarından türetilir; keyfî sayılarla zorlaştırma yapılmaz.
+- Tarihte salt tarih ezberi yerine olay, kişi, dönem ve neden-sonuç ilişkilerinden tanıma/çıkarım.
+- Coğrafyada harita/mekân bilgisi ile neden-sonuç ve yorumun birlikte kullanılması.
+- Vatandaşlıkta anayasal/hukukî kavramın doğru bağlama uygulanması.
 - Genel Kültürde doğrudan bilgi soruları yanında bağlamlı ve ayırt edici seçenekler.
-- ÖSYM sorularının telif hakkı ÖSYM'ye aittir; yayımlanan sorular uygulamaya kopyalanmaz.
+- ÖSYM sorularının telif hakkı ÖSYM'ye aittir; yayımlanan sorular uygulamaya kopyalanmaz veya küçük sözcük değişiklikleriyle yeniden yazılmaz.
 
 ## 3. İkincil kaynaklar ne için kullanılır?
 

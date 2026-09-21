@@ -15,7 +15,7 @@ Bu denetim soru sayısını artırmak için değil, 759 soruluk Tarih paketinde 
 
 ## İnsan editoryal örneklemi
 
-100 soru incelendi.
+İki bağımsız örneklem hâlinde toplam 200 soru incelendi.
 
 Örneklem 13 konunun tamamını, dört test karakterini, beş bölüm denemesini ve otomatik risk taramasında öne çıkan recall / kısa-kök / cevap-uzunluğu / doğrudan-bilgi sorularını kapsayacak şekilde seçildi.
 
@@ -31,7 +31,7 @@ Bu denetim soru sayısını artırmak için değil, 759 soruluk Tarih paketinde 
 
 ## Sonuç
 
-İlk 100 soruluk sert editoryal turda 37 soru yeniden yazıldı. İkinci risk turunda ayrıca doğru cevabın uzunluğundan ipucu verdiği en kötü 30 soruda çeldiriciler yeniden dengelendi.
+İlk 100 soruluk sert editoryal turda 37 soru yeniden yazıldı. İkinci risk turunda ayrıca doğru cevabın uzunluğundan ipucu verdiği en kötü 30 soruda çeldiriciler yeniden dengelendi. Ardından ilk örneklemden tamamen bağımsız ikinci 100 soru sert biçimde incelendi; 85 soruda doğru cevap ifadesi seçenek dengesini bozmayacak şekilde yeniden yazıldı, 2 ezber ağırlıklı soru baştan kuruldu ve 9 soruda ayrıca çeldirici seti yeniden yazıldı. Çift müdahaleler nedeniyle bu 96 editoryal işlem 87 farklı soruya dokundu.
 
 Başlıca müdahaleler:
 - “hangi yıl / kimdir / hangisidir?” düz bilgi köklerini bağlam ve çıkarım sorularına dönüştürme,

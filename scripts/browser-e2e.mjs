@@ -296,6 +296,62 @@ async function submitYksWizard(page) {
   await page.locator('.route-task').first().waitFor({ state: 'visible' });
 }
 
+async function runVideoRouteCompletion(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 360, height: 800 },
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
+  });
+  const page = await context.newPage();
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', e => pageErrors.push(String(e?.stack || e)));
+  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+
+  await page.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
+  await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await submitWizard(page);
+
+  let snapshot = await appState(page);
+  let space = snapshot.value.workspaces.kpss;
+  const task = space.plan.find(p => !p.done && p.date === FIXED_DAY && p.topicId);
+  assert.ok(task, 'Video route fixture needs an open topic-bound task today');
+
+  const opened = await page.evaluate(topicId => {
+    ui.videoTopic = topicId;
+    openVideoLog();
+    return !!document.querySelector('#video-log-form');
+  }, task.topicId);
+  assert.equal(opened, true, 'Video log form must open for the planned topic');
+
+  const form = page.locator('#video-log-form');
+  await form.waitFor({ state: 'visible' });
+  await form.locator('[name="minutes"]').fill('25');
+  await form.locator('[name="questions"]').fill(String(Math.max(8, Number(task.targetQuestions) || 10)));
+  const completePlan = form.locator('[name="completePlan"]');
+  assert.equal(await completePlan.count(), 1, 'Video log must expose the linked-plan completion control');
+  await completePlan.check();
+  await form.locator('button[type="submit"]').click();
+  await form.waitFor({ state: 'detached' });
+
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  const completed = space.plan.find(p => p.id === task.id);
+  const log = space.logs.find(l => l.sessionId === task.id);
+  const completeEvents = space.taskEvents.filter(e => e.taskId === task.id && e.action === 'complete');
+
+  assert.equal(completed?.done, true, 'Video/Pomodoro completion must mark the linked route task done');
+  assert.ok(log, 'Video/Pomodoro completion must persist a study log linked to the route task');
+  assert.equal(completeEvents.length, 1, 'Video/Pomodoro completion must emit exactly one route complete event');
+  assert.match(space.route?.lastReason || '', /Video \/ odak çalışması bağlı plan görevini tamamladı/i, 'Video/Pomodoro completion must trigger a route rebalance with explicit provenance');
+  assert.ok(Array.isArray(space.route?.decisions), 'Route rebalance must leave a current decisions snapshot');
+
+  await assertCleanRender(page, 'video route completion');
+  assert.deepEqual(pageErrors, [], 'Video route page errors:\n' + pageErrors.join('\n'));
+  assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'Video route console errors:\n' + consoleErrors.join('\n'));
+  await context.close();
+}
+
 async function runMiniRepairProvenance(browser) {
   const context = await browser.newContext({
     viewport: { width: 360, height: 800 },
@@ -754,9 +810,10 @@ try {
   assert.deepEqual(desktopConsoleErrors.filter(x => !/favicon/i.test(x)), [], 'YKS desktop console errors:\n' + desktopConsoleErrors.join('\n'));
   await desktopContext.close();
 
+  await runVideoRouteCompletion(browser);
   await runMiniRepairProvenance(browser);
 
-  console.log('Browser E2E passed: KPSS learning loop + behavior persistence + YKS desktop onboarding + mini repair provenance');
+  console.log('Browser E2E passed: KPSS learning loop + video route completion + behavior persistence + YKS desktop onboarding + mini repair provenance');
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');

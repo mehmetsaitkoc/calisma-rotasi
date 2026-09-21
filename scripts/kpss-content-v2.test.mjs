@@ -16,6 +16,11 @@ await import('../public/kpss-professional-history-05.js');
 await import('../public/kpss-professional-history-06.js');
 await import('../public/kpss-professional-history-07.js');
 await import('../public/kpss-professional-history-08.js');
+await import('../public/kpss-professional-history-09.js');
+await import('../public/kpss-professional-history-10.js');
+await import('../public/kpss-professional-history-11.js');
+await import('../public/kpss-professional-history-12.js');
+await import('../public/kpss-professional-history-13.js');
 
 const C=globalThis.RotaCatalog;
 const B=globalThis.RotaKpssContentBlueprint;
@@ -84,12 +89,12 @@ for(const topicId of ['k-tr-1','k-tr-2','k-tr-3']){
 assert.ok(professional.flatMap(t=>t.questions).every(q=>q.sourceKind==='original'&&q.copyrightPolicy==='original-only'));
 assert.ok(professional.flatMap(t=>t.questions).every(q=>['context','interpretation','reasoning','application','recall'].includes(q.cognitive)));
 
-const historyTopics=['k-ta-1','k-ta-2','k-ta-3','k-ta-4','k-ta-5','k-ta-6','k-ta-7','k-ta-8'];
+const historyTopics=['k-ta-1','k-ta-2','k-ta-3','k-ta-4','k-ta-5','k-ta-6','k-ta-7','k-ta-8','k-ta-9','k-ta-10','k-ta-11','k-ta-12','k-ta-13'];
 const historyPrime=H.tests.filter(t=>historyTopics.includes(t.topicId));
 const historyAudit=Q.auditBank(historyPrime,{profiles:B.TEST_PROFILES,requireApproved:true});
 assert.equal(historyAudit.valid,true,JSON.stringify(historyAudit.errors,null,2));
-assert.equal(historyPrime.length,32,'Eight prime history topics must expose 4 tests each');
-assert.equal(historyPrime.flatMap(t=>t.questions).length,384,'Eight prime history topics must contribute 384 questions');
+assert.equal(historyPrime.length,52,'Thirteen prime history topics must expose 4 tests each');
+assert.equal(historyPrime.flatMap(t=>t.questions).length,624,'Thirteen prime history topics must contribute 624 questions');
 for(const topicId of historyTopics){
   const sets=historyPrime.filter(t=>t.topicId===topicId);
   assert.deepEqual(sets.map(t=>t.setNo),[1,2,3,4],topicId+' must expose tests 1-4');
@@ -125,6 +130,7 @@ for(const marker of [
   '<script src="/kpss-professional-turkish-03.js"></script>',
   '<script src="/kpss-professional-history-01.js"></script>',
   '<script src="/kpss-professional-history-08.js"></script>',
+  '<script src="/kpss-professional-history-13.js"></script>',
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',

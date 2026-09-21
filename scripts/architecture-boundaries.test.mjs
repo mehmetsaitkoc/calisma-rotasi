@@ -6,8 +6,9 @@ const index=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf
 const contracts=fs.readFileSync(new URL('../public/route-contracts.js',import.meta.url),'utf8');
 const presenterSrc=fs.readFileSync(new URL('../public/route-presenter.js',import.meta.url),'utf8');
 const teacherSrc=fs.readFileSync(new URL('../public/teacher-context.js',import.meta.url),'utf8');
+const intelligenceSrc=fs.readFileSync(new URL('../public/intelligence-v1.js',import.meta.url),'utf8');
 
-for(const [name,src] of [['route-presenter',presenterSrc],['teacher-context',teacherSrc]]){
+for(const [name,src] of [['route-presenter',presenterSrc],['teacher-context',teacherSrc],['intelligence-v1',intelligenceSrc]]){
   new Function(src);
   for(const forbidden of ['document.','localStorage','sessionStorage','fetch(','XMLHttpRequest']){
     assert.ok(!src.includes(forbidden),name+' must stay a pure boundary and not access '+forbidden);
@@ -19,7 +20,9 @@ for(const marker of [
   'ARCHITECTURE BOUNDARY: student-facing route presentation',
   'ARCHITECTURE BOUNDARY: bounded Rota Hoca learning context',
   'window.RotaPresenter?.taskReason',
-  'window.RotaTeacherContext?.build'
+  'window.RotaTeacherContext?.build',
+  'INTELLIGENCE RUNTIME BOUNDARY',
+  'window.RotaRuntimeV1'
 ]) assert.ok(index.includes(marker),'Missing architecture boundary marker: '+marker);
 
 const sandbox={console};
@@ -27,6 +30,7 @@ sandbox.globalThis=sandbox;
 vm.runInNewContext(contracts,sandbox);
 vm.runInNewContext(presenterSrc,sandbox);
 vm.runInNewContext(teacherSrc,sandbox);
+vm.runInNewContext(intelligenceSrc,sandbox);
 
 const reason=sandbox.RotaPresenter.taskReason({source:'curriculum',reason:''});
 assert.ok(reason.length>12,'Every task must get a meaningful student-facing reason');
@@ -62,4 +66,13 @@ assert.equal(context.contextHealth.hasTodayPlan,true);
 assert.equal(context.contextHealth.hasStudentModel,true);
 assert.equal(context.selected.subject,'Matematik');
 
-console.log('Architecture boundaries passed: presenter + bounded Rota Hoca context');
+assert.ok(sandbox.RotaIntelligenceV1,'Pure Intelligence V1 boundary must load without browser APIs');
+const memory=sandbox.RotaIntelligenceV1.interventionMemory({mode:'repair',effect:{known:true,total:3,helpful:2,harmful:0,neutral:1,score:.67}});
+assert.equal(memory.action,'repeat','Intelligence boundary must expose normalized intervention memory');
+const methodMemory=sandbox.RotaIntelligenceV1.methodStrategyMemory({currentKey:'quant|repair',samples:[
+  {method:'quant',mode:'repair',status:'helpful',maturity:14},
+  {method:'quant',mode:'repair',status:'helpful',maturity:30}
+]});
+assert.equal(methodMemory.current.action,'repeat','Pure Intelligence boundary must learn a stable method preference without browser state');
+
+console.log('Architecture boundaries passed: presenter + bounded Rota Hoca context + pure Intelligence V1');

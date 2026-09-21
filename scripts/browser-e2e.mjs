@@ -107,6 +107,12 @@ async function assertTodayContract(page) {
 async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 'today' } = {}) {
   const premiumWelcome = page.locator('[data-premium-surface="welcome"]');
   await premiumWelcome.waitFor({ state: 'visible' });
+  const intelligenceRuntime = await page.evaluate(() => ({
+    core: !!window.RotaIntelligenceV1,
+    bridge: !!window.RotaIntelligenceBridgeV1,
+    installed: !!window.RotaIntelligenceBridgeV1?.installed?.()
+  }));
+  assert.deepEqual(intelligenceRuntime,{core:true,bridge:true,installed:true},'Intelligence V1 runtime bridge must be active before onboarding');
   assert.equal(await page.locator('.premium-proof-item').count(), 3, 'Premium landing must render the three product-value signals');
   await page.locator('.premium-trust-strip').waitFor({ state: 'visible' });
   await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
@@ -870,6 +876,28 @@ try {
   assert.ok(teacherRequest.studentContext?.routeMode?.explanation, 'Rota Hoca must receive student-facing route-mode explanation');
   assert.ok(teacherRequest.studentContext?.todaySummary, 'Rota Hoca must receive todaySummary');
   assert.ok(teacherRequest.studentContext?.contextHealth?.hasStudentModel, 'Rota Hoca v2 context must expose context health');
+  assert.ok(teacherRequest.studentContext?.intelligence, 'Rota Hoca must receive Intelligence V1 context');
+  assert.equal(teacherRequest.studentContext?.intelligence?.version,1,'Rota Hoca intelligence context must be versioned');
+  assert.ok(['insufficient','low','watch','high'].includes(teacherRequest.studentContext?.intelligence?.targetRisk?.band||'insufficient'),'Rota Hoca target risk must use a bounded band');
+  assert.ok(['collect','steady','repair'].includes(teacherRequest.studentContext?.intelligence?.repair?.mode||'collect'),'Rota Hoca repair proposal must use a bounded mode');
+  assert.ok(['collect','steady','ease'].includes(teacherRequest.studentContext?.intelligence?.load?.mode||'collect'),'Rota Hoca load prescription must use a bounded mode');
+  assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'outcomeMemory'),'Rota Hoca Intelligence context must expose intervention outcome memory');
+  assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'methodMemory'),'Rota Hoca Intelligence context must expose personalized method memory');
+  assert.ok(Object.hasOwn(teacherRequest.studentContext?.intelligence||{},'subjectMethodProfile'),'Rota Hoca Intelligence context must expose subject-level method profile');
+  const subjectMethodProfile=teacherRequest.studentContext?.intelligence?.subjectMethodProfile;
+  if(subjectMethodProfile){
+    assert.ok(['collect','emerging','learning','stable'].includes(subjectMethodProfile.state),'Subject method profile must expose a bounded learning state');
+    assert.ok(Number.isFinite(subjectMethodProfile.confidence)&&subjectMethodProfile.confidence>=0&&subjectMethodProfile.confidence<=100,'Subject method profile confidence must stay bounded');
+    assert.ok((subjectMethodProfile.topicCount||0)>=0,'Subject method profile topic count must be non-negative');
+  }
+  if(teacherRequest.studentContext?.intelligence?.methodMemory?.current){
+    assert.ok(['collect','hold','change','repeat'].includes(teacherRequest.studentContext.intelligence.methodMemory.current.action),'Method memory must expose a bounded action');
+    assert.ok((teacherRequest.studentContext.intelligence.methodMemory.current.total||0)>=0,'Method memory sample count must be non-negative');
+  }
+  if(teacherRequest.studentContext?.intelligence?.outcomeMemory){
+    assert.ok(['hold','change','repeat'].includes(teacherRequest.studentContext.intelligence.outcomeMemory.action),'Intervention memory must use a bounded action');
+    assert.ok((teacherRequest.studentContext.intelligence.outcomeMemory.total||0)>=0,'Intervention memory sample count must be non-negative');
+  }
   assert.ok((teacherRequest.studentContext?.todayPlan||[]).length <= 8, 'Rota Hoca todayPlan must stay bounded');
   const teacherContextText = JSON.stringify(teacherRequest.studentContext);
   assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(teacherContextText), 'Technical route jargon must not leak into teacher context');

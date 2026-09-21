@@ -132,7 +132,7 @@ function readJson(req) {
 }
 function cleanText(v, max=5000){ return typeof v === 'string' ? v.slice(0,max) : ''; }
 const TEACHER_CONTEXT_VERSION = 2;
-const TEACHER_CONTEXT_KEYS = new Set(['contextVersion','exam','track','selected','target','targetDate','dailyMinutes','topicStatus','routeSummary','completion','todaySummary','todayPlan','routeMode','routeDecision','studentModel','examRisk','mastery','recentExams','recentMistakes','recentLogs','teacherSignals','contextHealth']);
+const TEACHER_CONTEXT_KEYS = new Set(['contextVersion','exam','track','selected','target','targetDate','dailyMinutes','topicStatus','routeSummary','completion','todaySummary','todayPlan','routeMode','routeDecision','studentModel','examRisk','mastery','recentExams','recentMistakes','recentLogs','teacherSignals','contextHealth','intelligence']);
 function sanitizeContextValue(value,depth=0){
   if(depth>5)return null;
   if(typeof value==='string')return cleanText(value,700);
@@ -351,7 +351,7 @@ function serve(req,res){
       const source=data.toString('utf8');
       const enhanced=source
         .replace('</head>','<link rel="stylesheet" href="/landing-final.css"></head>')
-        .replace('</body>','<script src="/landing-final.js" defer></script></body>');
+        .replace('</body>','<script src="/intelligence-v1.js"></script><script src="/intelligence-bridge-v1.js"></script><script src="/landing-final.js" defer></script></body>');
       const body=Buffer.from(enhanced,'utf8');
       res.writeHead(200,{'content-type':'text/html; charset=utf-8','content-length':body.length,'cache-control':'no-store'});
       res.end(body);

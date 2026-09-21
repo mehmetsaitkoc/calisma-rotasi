@@ -100,6 +100,32 @@ const sparseLoad=I.executionPrescription({
 });
 assert.equal(sparseLoad.mode,'collect','sparse execution evidence must not force workload changes');
 
+const methodMemory=I.methodStrategyMemory({
+  currentKey:I.methodStrategyKey('quant','repair'),
+  samples:[
+    {method:'quant',mode:'repair',status:'harmful',maturity:14},
+    {method:'quant',mode:'repair',status:'harmful',maturity:30},
+    {method:'paragraph',mode:'repair',status:'helpful',maturity:14},
+    {method:'paragraph',mode:'repair',status:'helpful',maturity:30}
+  ]
+});
+assert.equal(methodMemory.known,true);
+assert.equal(methodMemory.current.action,'change');
+assert.equal(methodMemory.preferred.action,'repeat');
+assert.equal(methodMemory.preferred.method,'paragraph');
+
+const sparseMethod=I.methodStrategyMemory({
+  currentKey:I.methodStrategyKey('history','repair'),
+  samples:[{method:'history',mode:'repair',status:'harmful',maturity:30}]
+});
+assert.equal(sparseMethod.known,false,'one mature method outcome must not create a method preference');
+assert.equal(sparseMethod.current.action,'collect');
+
+const quantVariation=I.methodVariation('quant','repair','change');
+assert.match(quantVariation,/çözümlü örneği kapatıp kendin yeniden kur/i);
+assert.equal(I.methodVariation('quant','repair','hold'),'');
+assert.match(I.methodVariation('history','repair','repeat'),/çekirdeği/i);
+
 const sparseMemory=I.interventionMemory({
   mode:'repair',
   effect:{known:true,total:1,helpful:0,harmful:1,neutral:0,score:-1}

@@ -1,16 +1,17 @@
-import { getSupabase } from './supabase-client.js';
+import { getSupabase, getPublicConfig } from './supabase-client.js';
 
 const CLOUD_WRITE_KEY='calisma-rotasi:cloud:last-write:v1';
 const CLOUD_EVENT_KEY='calisma-rotasi:cloud:last-event:v1';
 const CLOUD_USER_KEY='calisma-rotasi:cloud:user:v1';
+const config=await getPublicConfig();
 const client=await getSupabase();
 
 if(client){
   const { data:{ session } } = await client.auth.getSession();
-  if(!session){
+  if(!session && config?.supabase?.requireAuth){
     const next=location.pathname+location.search+location.hash;
     location.replace('/login.html?next='+encodeURIComponent(next));
-  }else{
+  }else if(session){
     const user=session.user;
     const bridge=window.RotaAccountBridge;
     const now=()=>new Date().toISOString();

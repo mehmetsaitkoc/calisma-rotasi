@@ -1777,14 +1777,15 @@ for(const marker of [
 // 5) Route Coach insight must explain the existing route decision and link to the existing teacher view.
 for(const marker of [
   'Route Coach Insight v1 — explain the route without adding a second decision source.',
-  'ROTA HOCA · BUGÜNÜN KARARI',
-  'Bu plan neden böyle?',
-  'Rota Hoca’ya sor'
+  'ROTA HOCA · GÜNLÜK BRİF',
+  'coach-avatar-mini',
+  'Rota Hoca ile konuş'
 ]) assert.ok(html.includes(marker),`Missing route coach insight marker: ${marker}`);
 {
   const src=between('function routeTodayPage','function baseTodayPage');
   assert.ok(src.includes("const reason=w().route.lastReason||'Rota motoru çalışma kapasiteni ve mevcut kayıtlarını birlikte değerlendirir.'"),'Coach insight must reuse the existing route reason');
   assert.ok(src.includes("data-view=\"teacher\""),'Coach insight must navigate to the existing Rota Hoca view');
+  assert.ok(src.includes('route-progress-orb'),'Today hero must expose real task completion progress');
 }
 
 

@@ -110,6 +110,21 @@ jobs:
       - name: Syntax check KPSS prime history 08
         run: node --check public/kpss-professional-history-08.js
 
+      - name: Syntax check KPSS prime history 09
+        run: node --check public/kpss-professional-history-09.js
+
+      - name: Syntax check KPSS prime history 10
+        run: node --check public/kpss-professional-history-10.js
+
+      - name: Syntax check KPSS prime history 11
+        run: node --check public/kpss-professional-history-11.js
+
+      - name: Syntax check KPSS prime history 12
+        run: node --check public/kpss-professional-history-12.js
+
+      - name: Syntax check KPSS prime history 13
+        run: node --check public/kpss-professional-history-13.js
+
       - name: Syntax check KPSS professional section exams
         run: node --check public/kpss-professional-sections.js
 

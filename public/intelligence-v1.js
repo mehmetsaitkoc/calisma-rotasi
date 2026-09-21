@@ -218,6 +218,79 @@ function methodStrategyMemory(input={}){
     strategies:strategies.slice(0,8)
   };
 }
+function methodHumanLabel(method){
+  const raw=String(method||'').trim(),alt=raw.endsWith(':alt'),base=raw.replace(/:alt$/,'');
+  const labels={
+    quant:'Soru + yanlış analizi',
+    geometry:'Şekil + bağıntı',
+    science:'Kavram + uygulama',
+    biology:'Aktif hatırlama + test',
+    paragraph:'Süreli anlama seti',
+    logic:'Şema + sözel mantık',
+    grammar:'Kural + uygulama',
+    history:'Aktif hatırlama + kronoloji',
+    geography:'Harita + geri çağırma',
+    literature:'Yazar–eser–dönem eşleştirme',
+    current:'Kısa not + geri çağırma',
+    ydt_vocab:'Kelime + geri çağırma',
+    ydt_grammar:'Kural + uygulama',
+    ydt_reading:'Okuma + süre',
+    concept:'Kavram + aktif hatırlama'
+  };
+  const altLabels={
+    quant:'Yeniden çöz + hata satırı',
+    geometry:'Şekli yeniden kur + bağıntıyı adlandır',
+    science:'İlişkiyi anlat + kısa karma uygulama',
+    biology:'Kaynaksız geri çağır + düzeltme seti',
+    paragraph:'Doğruluk turu + kısa süreli set',
+    logic:'Şemayı sıfırdan kur + kırılma analizi',
+    grammar:'Kendi örneğini üret + düzeltme seti',
+    history:'Kaynaksız kronoloji + neden–sonuç',
+    geography:'Boş harita + kısa doğrulama',
+    literature:'Kaynaksız eşleştirme + kart düzeltme',
+    current:'Kaynaksız bilgi çağırma + kart kontrolü',
+    ydt_vocab:'Kaynaksız kelime çağırma + cümlede kullanım',
+    ydt_grammar:'Kuralı anlat + kendi cümleni üret',
+    ydt_reading:'Çıkarım analizi + kısa süreli okuma',
+    concept:'Kaynaksız anlatım + hedefli doğrulama'
+  };
+  return (alt?altLabels[base]:labels[base])||labels[base]||base||'Çalışma yöntemi';
+}
+function subjectMethodProfile(input={}){
+  const rows=safeArray(input.samples).filter(x=>x&&['helpful','neutral','harmful'].includes(x.status)&&String(x.method||'').trim()&&['repair','ease','progress'].includes(x.mode));
+  const base=methodStrategyMemory({samples:rows,currentKey:String(input.currentKey||'')});
+  const topics=new Set(rows.map(x=>String(x.topicId||'')).filter(Boolean));
+  const mature14=rows.filter(x=>(Number(x.maturity)||0)>=14).length,mature30=rows.filter(x=>(Number(x.maturity)||0)>=30).length;
+  const weight=rows.reduce((n,x)=>n+((Number(x.maturity)||0)>=30?1:(Number(x.maturity)||0)>=14?.75:(Number(x.maturity)||0)>=7?.5:.25),0);
+  let confidence=Math.round(clamp(Math.min(36,rows.length*7)+Math.min(28,weight*8)+Math.min(24,topics.size*8)+Math.min(12,mature30*4),0,100));
+  if(topics.size<2)confidence=Math.min(confidence,54);
+  const topicCounts=new Map();
+  for(const row of rows){
+    const key=methodStrategyKey(row.method,row.mode);if(!key)continue;
+    const set=topicCounts.get(key)||new Set();if(row.topicId)set.add(String(row.topicId));topicCounts.set(key,set);
+  }
+  const strategies=base.strategies.map(s=>{
+    const topicCount=topicCounts.get(s.key)?.size||0,subjectKnown=s.known&&topicCount>=2&&s.confidence>=60;
+    return {...s,label:methodHumanLabel(s.method),topicCount,subjectKnown};
+  });
+  const preferred=strategies.filter(x=>x.subjectKnown&&x.action==='repeat').sort((a,b)=>b.score-a.score||b.confidence-a.confidence||b.total-a.total)[0]||null;
+  const cautions=strategies.filter(x=>x.subjectKnown&&x.action==='change').sort((a,b)=>a.score-b.score||b.confidence-a.confidence||b.total-a.total);
+  const known=confidence>=60&&topics.size>=2&&strategies.some(x=>x.subjectKnown);
+  const state=!known?(confidence>=45?'emerging':'collect'):confidence>=78?'stable':'learning';
+  const summary=preferred
+    ?methodHumanLabel(preferred.method)+' bu derste en güçlü doğrulanmış yöntem sinyalini veriyor.'
+    :cautions.length
+      ?methodHumanLabel(cautions[0].method)+' bu derste aynı biçimde tekrarlanmamalı; alternatif uygulama doğrulanmalı.'
+      :'Bu ders için güvenilir yöntem tercihi oluşması adına farklı konularda daha fazla olgun sonuç gerekiyor.';
+  return {
+    known,state,confidence,total:rows.length,topicCount:topics.size,mature14,mature30,
+    preferred,
+    cautions:cautions.slice(0,3),
+    strategies:strategies.slice(0,10),
+    summary
+  };
+}
+
 function methodVariation(method,mode,action){
   method=String(method||'');
   if(action==='repeat')return 'Bu çalışma biçiminin çekirdeği önceki olgun sonuçlarda işe yaradı; yöntemi koru, yalnız küçük bir varyasyon ekle.';
@@ -284,6 +357,6 @@ function explainTask(input={}){
   return {headline:'Neden bugün?',reasons:reasons.slice(0,3),text:reasons.slice(0,2).join(' ')};
 }
 
-root.RotaIntelligenceV1={rollingWindow,longitudinalProfile,targetRisk,executionPrescription,repairProposal,methodStrategyKey,methodStrategyMemory,methodVariation,interventionMemory,explainTask};
+root.RotaIntelligenceV1={rollingWindow,longitudinalProfile,targetRisk,executionPrescription,repairProposal,methodStrategyKey,methodStrategyMemory,methodHumanLabel,subjectMethodProfile,methodVariation,interventionMemory,explainTask};
 if(typeof module==='object')module.exports=root.RotaIntelligenceV1;
 })(typeof window!=='undefined'?window:globalThis);

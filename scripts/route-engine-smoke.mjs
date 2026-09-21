@@ -1470,7 +1470,7 @@ for(const marker of [
 
 // 5) Recommendation scoring should favor unresolved repair needs and avoid same-day repetition.
 {
-  const src=between('function miniRecommendationScore','function miniExamDefinition');
+  const src=between('function miniRecommendationScore','function miniDaysSinceDate');
   const api=new Function('today',src+';return {miniRecommendationScore};')(()=> '2026-09-19');
   const repair=api.miniRecommendationScore(null,{mode:'repair',repairScore:4},999);
   const steady=api.miniRecommendationScore(null,{mode:'steady',repairScore:0},999);

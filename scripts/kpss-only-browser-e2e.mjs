@@ -157,7 +157,7 @@ try {
   });
 
   await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
-  await page.locator('.shell').waitFor({ state: 'visible' });
+  await page.locator('.app-shell').waitFor({ state: 'visible' });
   snapshot = await appState(page);
   assert.equal(snapshot.value.activeExam, 'kpss', 'Legacy active YKS state must redirect to KPSS');
   assert.equal(snapshot.value.workspaces.yks.settings.name, 'Legacy YKS Profile', 'Legacy YKS data must not be deleted');

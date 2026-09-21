@@ -70,6 +70,51 @@ const SECTION_PROFILES=Object.freeze([
   {sectionNo:5,label:'Seçici final',difficulty:{easy:3,medium:18,hard:9}}
 ]);
 
+const HISTORY_SECTION_PROFILES=Object.freeze([
+  {sectionNo:1,label:'Tarih · dengeli başlangıç',difficulty:{easy:5,medium:17,hard:5}},
+  {sectionNo:2,label:'Tarih · ayırt etme',difficulty:{easy:5,medium:16,hard:6}},
+  {sectionNo:3,label:'Tarih · KPSS dengesi',difficulty:{easy:4,medium:17,hard:6}},
+  {sectionNo:4,label:'Tarih · orta-zor',difficulty:{easy:4,medium:16,hard:7}},
+  {sectionNo:5,label:'Tarih · seçici final',difficulty:{easy:3,medium:16,hard:8}}
+]);
+
+// Five section-exam rotations. Across all five exams the broad official history
+// scope is exactly preserved as 15 pre-Ottoman / 45 Ottoman / 60
+// Atatürk-İnkılap / 15 contemporary questions. Topic-level counts rotate using
+// multi-year trends; they are editorial choices, not official fixed quotas.
+const HISTORY_SECTION_BLUEPRINTS=Object.freeze([
+  Object.freeze([
+    {topicId:'k-ta-1',count:1},{topicId:'k-ta-2',count:1},{topicId:'k-ta-3',count:1},
+    {topicId:'k-ta-4',count:1},{topicId:'k-ta-5',count:1},{topicId:'k-ta-6',count:3},{topicId:'k-ta-7',count:2},{topicId:'k-ta-8',count:2},
+    {topicId:'k-ta-9',count:3},{topicId:'k-ta-10',count:3},{topicId:'k-ta-11',count:4},{topicId:'k-ta-12',count:2},
+    {topicId:'k-ta-13',count:3}
+  ]),
+  Object.freeze([
+    {topicId:'k-ta-1',count:1},{topicId:'k-ta-2',count:1},{topicId:'k-ta-3',count:1},
+    {topicId:'k-ta-4',count:1},{topicId:'k-ta-5',count:1},{topicId:'k-ta-6',count:3},{topicId:'k-ta-7',count:3},{topicId:'k-ta-8',count:2},
+    {topicId:'k-ta-9',count:3},{topicId:'k-ta-10',count:2},{topicId:'k-ta-11',count:5},{topicId:'k-ta-12',count:1},
+    {topicId:'k-ta-13',count:3}
+  ]),
+  Object.freeze([
+    {topicId:'k-ta-1',count:1},{topicId:'k-ta-2',count:2},{topicId:'k-ta-3',count:1},
+    {topicId:'k-ta-5',count:1},{topicId:'k-ta-6',count:3},{topicId:'k-ta-7',count:2},{topicId:'k-ta-8',count:2},
+    {topicId:'k-ta-9',count:3},{topicId:'k-ta-10',count:3},{topicId:'k-ta-11',count:5},{topicId:'k-ta-12',count:1},
+    {topicId:'k-ta-13',count:3}
+  ]),
+  Object.freeze([
+    {topicId:'k-ta-1',count:1},{topicId:'k-ta-2',count:1},
+    {topicId:'k-ta-4',count:1},{topicId:'k-ta-6',count:3},{topicId:'k-ta-7',count:2},{topicId:'k-ta-8',count:3},
+    {topicId:'k-ta-9',count:4},{topicId:'k-ta-10',count:2},{topicId:'k-ta-11',count:5},{topicId:'k-ta-12',count:2},
+    {topicId:'k-ta-13',count:3}
+  ]),
+  Object.freeze([
+    {topicId:'k-ta-1',count:1},{topicId:'k-ta-2',count:1},{topicId:'k-ta-3',count:1},
+    {topicId:'k-ta-4',count:1},{topicId:'k-ta-5',count:1},{topicId:'k-ta-6',count:2},{topicId:'k-ta-7',count:3},{topicId:'k-ta-8',count:2},
+    {topicId:'k-ta-9',count:3},{topicId:'k-ta-10',count:3},{topicId:'k-ta-11',count:4},{topicId:'k-ta-12',count:2},
+    {topicId:'k-ta-13',count:3}
+  ])
+]);
+
 function text(v){return String(v??'').replace(/\s+/g,' ').trim();}
 function topicKey(subjectId,topicId){return subjectId+'|'+topicId;}
 function slug(v){return text(v).toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
@@ -98,6 +143,7 @@ function distributeGroup(group,variant=0){
 }
 function weightedBlueprint(subjectId,variant=0){
   const def=SUBJECTS[subjectId];if(!def)return [];
+  if(subjectId==='k-ta')return HISTORY_SECTION_BLUEPRINTS[variant%HISTORY_SECTION_BLUEPRINTS.length].map(x=>({...x}));
   if(def.topicWeights){
     const rows=Object.entries(def.topicWeights).map(([topicId,count])=>({topicId,count}));
     const deltaPattern=[
@@ -127,6 +173,6 @@ function totals(catalog){
   return {topics:topics.length,topicTests:topics.length*TOPIC_TESTS_PER_TOPIC,topicQuestions,sectionExams:Object.keys(SUBJECTS).length*SECTION_EXAMS_PER_SUBJECT,sectionQuestions,totalQuestions:topicQuestions+sectionQuestions};
 }
 
-root.RotaKpssContentBlueprint={SCHEMA,VERSION,COPYRIGHT_POLICY,OFFICIAL_SCOPE,SUBJECTS,TEST_PROFILES,SECTION_PROFILES,TOPIC_TESTS_PER_TOPIC,QUESTIONS_PER_TOPIC_TEST,SECTION_EXAMS_PER_SUBJECT,topicKey,slug,topicTestId,topicPlan,sectionBlueprint,sectionPlans,totals};
+root.RotaKpssContentBlueprint={SCHEMA,VERSION,COPYRIGHT_POLICY,OFFICIAL_SCOPE,SUBJECTS,TEST_PROFILES,SECTION_PROFILES,HISTORY_SECTION_PROFILES,HISTORY_SECTION_BLUEPRINTS,TOPIC_TESTS_PER_TOPIC,QUESTIONS_PER_TOPIC_TEST,SECTION_EXAMS_PER_SUBJECT,topicKey,slug,topicTestId,topicPlan,sectionBlueprint,sectionPlans,totals};
 if(typeof module==='object')module.exports=root.RotaKpssContentBlueprint;
 })(typeof window!=='undefined'?window:globalThis);

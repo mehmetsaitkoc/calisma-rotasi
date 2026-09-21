@@ -717,3 +717,328 @@
     attributeFilter: ['class']
   });
 })();
+
+
+/* Load the latest main Programım timeline styles without disturbing the Today dashboard layer. */
+(() => {
+  [
+    '/program-daily-timeline-core.css',
+    '/program-daily-timeline-rail.css'
+  ].forEach((href) => {
+    if (document.querySelector('link[href="' + href + '"]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.dataset.pnxProgramTimeline = '1';
+    document.head.appendChild(link);
+  });
+})();
+
+/* APP PREMIUM NEXT V4 · PROGRAM DAILY TIMELINE
+   Presentation-only enhancement for Programım. It keeps the real route cards and actions,
+   but turns the weekly wall into a focused selected-day workspace. */
+(() => {
+  const BODY_CLASS = 'pnx-program-day-ready';
+  let queued = false;
+  let selectedIndex = null;
+
+  const text = (node) => (node?.textContent || '').trim();
+  const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[char]));
+
+  function programRoot() {
+    const root = document.querySelector('.content');
+    if (!root) return null;
+    const title = root.querySelector('.page-head h1');
+    const grid = root.querySelector('.week-grid');
+    if (!grid || text(title) !== 'Programım') return null;
+    return root;
+  }
+
+  function dayColumns(root) {
+    return Array.from(root.querySelectorAll('.week-grid > .day-column'));
+  }
+
+  function dayMeta(column, index) {
+    const weekday = text(column.querySelector('.day-title span')) || 'Gün';
+    const day = text(column.querySelector('.day-title strong')) || String(index + 1);
+    const cards = Array.from(column.querySelectorAll('.route-plan-card'));
+    const done = cards.filter((card) => card.classList.contains('done')).length;
+    const loadText = text(column.querySelector('.route-day-load'));
+    const loadMatch = loadText.match(/Açık görev yükü:\s*(.*?)\s*\/\s*(.*)$/i);
+    const remaining = loadMatch?.[1] || '—';
+    const capacity = loadMatch?.[2] || '—';
+    const summary = text(column.querySelector('.route-day-summary strong')) || (cards.length ? cards.length + ' görev' : 'Boş gün');
+    return {
+      index,
+      weekday,
+      day,
+      cards,
+      done,
+      total: cards.length,
+      remaining,
+      capacity,
+      summary,
+      today: column.classList.contains('today')
+    };
+  }
+
+  function defaultIndex(columns) {
+    if (!columns.length) return 0;
+    const todayIndex = columns.findIndex((column) => column.classList.contains('today'));
+    if (todayIndex >= 0) return todayIndex;
+    const firstLoaded = columns.findIndex((column) => column.querySelector('.route-plan-card'));
+    return firstLoaded >= 0 ? firstLoaded : 0;
+  }
+
+  function ensureCardStart(card, step) {
+    card.dataset.pnxStep = String(step + 1);
+    if (card.classList.contains('done')) return;
+
+    const id =
+      card.querySelector('[data-action="route-why"]')?.dataset.id ||
+      card.querySelector('[data-action="route-skip"]')?.dataset.id ||
+      card.querySelector('[data-id]')?.dataset.id ||
+      '';
+    if (!id || card.querySelector('.pnx-program-start')) return;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn primary pnx-program-start';
+    button.dataset.action = 'focus-session';
+    button.dataset.id = id;
+    button.innerHTML = '<span aria-hidden="true">▶</span><span>Çalışmaya başla</span>';
+
+    const actionRow = card.querySelector('.row.between.mt');
+    const actionGroup = actionRow?.querySelector(':scope > .row');
+    if (actionGroup) {
+      actionGroup.prepend(button);
+    } else if (actionRow) {
+      actionRow.appendChild(button);
+    } else {
+      card.appendChild(button);
+    }
+  }
+
+  function ensureStrip(root, metas) {
+    let strip = root.querySelector('.pnx-program-week-strip');
+    if (!strip) {
+      strip = document.createElement('section');
+      strip.className = 'pnx-program-week-strip';
+      root.querySelector('.page-head')?.insertAdjacentElement('afterend', strip);
+    }
+
+    const weekToolbar = root.querySelector('.route-week-summary')?.nextElementSibling;
+    if (weekToolbar?.classList.contains('toolbar')) weekToolbar.classList.add('pnx-program-legacy-toolbar');
+
+    const signature = metas.map((meta) => [meta.weekday, meta.day, meta.total, meta.done, meta.today].join(':')).join('|');
+    if (strip.dataset.signature === signature) return strip;
+    strip.dataset.signature = signature;
+    strip.innerHTML =
+      '<button type="button" class="pnx-week-arrow" data-action="week-prev" aria-label="Önceki hafta">‹</button>' +
+      '<div class="pnx-program-days" role="tablist" aria-label="Haftanın günleri">' +
+      metas.map((meta) =>
+        '<button type="button" class="pnx-program-day-tab" data-pnx-program-day="' + meta.index + '" role="tab">' +
+          '<small>' + esc(meta.weekday.slice(0,3)) + '</small>' +
+          '<strong>' + esc(meta.day) + '</strong>' +
+          '<span>' + (meta.total ? meta.total + ' görev' : 'Boş gün') + '</span>' +
+        '</button>'
+      ).join('') +
+      '</div>' +
+      '<button type="button" class="pnx-week-arrow" data-action="week-next" aria-label="Sonraki hafta">›</button>' +
+      '<button type="button" class="pnx-week-today" data-action="week-today">Bugüne dön</button>';
+    return strip;
+  }
+
+  function ensureWorkspace(root) {
+    let workspace = root.querySelector('.pnx-program-workspace');
+    const weekWrap = root.querySelector('.week-wrap');
+    if (!weekWrap) return null;
+
+    if (!workspace) {
+      workspace = document.createElement('section');
+      workspace.className = 'pnx-program-workspace';
+
+      const main = document.createElement('main');
+      main.className = 'pnx-program-main';
+
+      const dayHead = document.createElement('header');
+      dayHead.className = 'pnx-program-day-head';
+      main.appendChild(dayHead);
+      main.appendChild(weekWrap);
+
+      const aside = document.createElement('aside');
+      aside.className = 'pnx-program-aside';
+
+      workspace.append(main, aside);
+      root.appendChild(workspace);
+    } else {
+      const main = workspace.querySelector('.pnx-program-main');
+      if (main && !main.contains(weekWrap)) main.appendChild(weekWrap);
+    }
+    return workspace;
+  }
+
+  function updateDayHead(workspace, meta) {
+    const head = workspace.querySelector('.pnx-program-day-head');
+    if (!head) return;
+    const signature = [meta.weekday, meta.day, meta.summary, meta.remaining].join('|');
+    if (head.dataset.signature === signature) return;
+    head.dataset.signature = signature;
+    head.innerHTML =
+      '<div>' +
+        '<div class="pnx-program-day-kicker">' + (meta.today ? 'BUGÜNÜN PLANI' : 'SEÇİLİ GÜN') + '</div>' +
+        '<h2>' + esc(meta.day + ' ' + meta.weekday) + '</h2>' +
+        '<p>' + (meta.total ? 'Rotandaki görevleri sırayla tamamla; tek odağın bir sonraki adım olsun.' : 'Bu gün için planlı görev bulunmuyor.') + '</p>' +
+      '</div>' +
+      '<div class="pnx-program-day-head-meta">' +
+        '<span><b>' + meta.total + '</b> görev</span>' +
+        '<span><b>' + esc(meta.remaining) + '</b> kalan</span>' +
+      '</div>';
+  }
+
+  function weeklyBars(metas) {
+    return metas.map((meta) => {
+      const pct = meta.total ? Math.round((meta.done / meta.total) * 100) : 0;
+      const height = meta.total ? Math.max(18, 22 + pct * 0.42) : 12;
+      return '<div class="pnx-week-progress-day">' +
+        '<i style="--pnx-bar-h:' + height + 'px;--pnx-bar-pct:' + pct + '%"></i>' +
+        '<small>' + esc(meta.weekday.slice(0,3)) + '</small>' +
+      '</div>';
+    }).join('');
+  }
+
+  function activityCells(metas) {
+    return metas.map((meta) => {
+      const pct = meta.total ? Math.round((meta.done / meta.total) * 100) : 0;
+      const level = pct >= 75 ? 4 : pct >= 50 ? 3 : pct >= 25 ? 2 : meta.total ? 1 : 0;
+      return '<div class="pnx-activity-cell level-' + level + '">' +
+        '<span>' + esc(meta.weekday.slice(0,3)) + '</span>' +
+        '<b>' + (meta.total ? meta.done + '/' + meta.total : '—') + '</b>' +
+      '</div>';
+    }).join('');
+  }
+
+  function updateAside(root, workspace, active, metas) {
+    const aside = workspace.querySelector('.pnx-program-aside');
+    if (!aside) return;
+
+    const weeklyTotal = metas.reduce((sum, meta) => sum + meta.total, 0);
+    const weeklyDone = metas.reduce((sum, meta) => sum + meta.done, 0);
+    const weeklyPct = weeklyTotal ? Math.round((weeklyDone / weeklyTotal) * 100) : 0;
+    const dayPct = active.total ? Math.round((active.done / active.total) * 100) : 0;
+    const repeatCount = metas.reduce((sum, meta) =>
+      sum + meta.cards.filter((card) => /tekrar/i.test(text(card))).length, 0
+    );
+    const insight = text(root.querySelector('.route-week-summary .notice')) || 'Rota, çalışma kapasiteni ve mevcut ilerlemeni birlikte değerlendirir.';
+
+    const signature = [active.index, active.total, active.done, active.remaining, weeklyTotal, weeklyDone, repeatCount, insight].join('|');
+    if (aside.dataset.signature === signature) return;
+    aside.dataset.signature = signature;
+
+    aside.innerHTML =
+      '<section class="pnx-program-side-card pnx-program-progress-card">' +
+        '<header><span class="pnx-side-icon">◎</span><strong>Günlük ilerleme</strong></header>' +
+        '<div class="pnx-day-progress-wrap">' +
+          '<div class="pnx-day-progress-ring" style="--pnx-day-progress:' + dayPct + '%"><b>%' + dayPct + '</b><small>Tamamlandı</small></div>' +
+          '<div><strong>' + active.done + ' / ' + active.total + ' görev</strong><span>' + esc(active.remaining) + ' açık yük</span></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<section class="pnx-program-side-card">' +
+        '<header><span class="pnx-side-icon">◷</span><strong>Kalan süre</strong></header>' +
+        '<div class="pnx-program-time"><b>' + esc(active.remaining) + '</b><span>Bugünkü açık görev yükü</span></div>' +
+        '<div class="pnx-thin-progress"><i style="width:' + Math.max(4, 100 - dayPct) + '%"></i></div>' +
+      '</section>' +
+
+      '<section class="pnx-program-side-card">' +
+        '<header><span class="pnx-side-icon">▥</span><strong>Haftalık ilerleme</strong><em>%' + weeklyPct + '</em></header>' +
+        '<div class="pnx-week-progress">' + weeklyBars(metas) + '</div>' +
+        '<p>' + weeklyDone + ' / ' + weeklyTotal + ' görev tamamlandı' + (repeatCount ? ' · ' + repeatCount + ' tekrar görevi' : '') + '</p>' +
+      '</section>' +
+
+      '<section class="pnx-program-side-card pnx-program-insight">' +
+        '<header><span class="pnx-side-icon">✦</span><strong>Rota içgörüsü</strong></header>' +
+        '<p>' + esc(insight) + '</p>' +
+      '</section>' +
+
+      '<section class="pnx-program-side-card">' +
+        '<header><span class="pnx-side-icon">▦</span><strong>Bu hafta aktivite</strong></header>' +
+        '<div class="pnx-activity-row">' + activityCells(metas) + '</div>' +
+      '</section>';
+  }
+
+  function activate(root, workspace, metas, index) {
+    const safeIndex = Math.max(0, Math.min(metas.length - 1, index));
+    selectedIndex = safeIndex;
+    const active = metas[safeIndex];
+    const columns = dayColumns(root);
+
+    columns.forEach((column, idx) => {
+      const isActive = idx === safeIndex;
+      column.classList.toggle('pnx-program-active-day', isActive);
+      column.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      if (isActive) {
+        Array.from(column.querySelectorAll('.route-plan-card')).forEach(ensureCardStart);
+      }
+    });
+
+    root.querySelectorAll('.pnx-program-day-tab').forEach((button, idx) => {
+      const isActive = idx === safeIndex;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    updateDayHead(workspace, active);
+    updateAside(root, workspace, active, metas);
+  }
+
+  function sync() {
+    queued = false;
+    const root = programRoot();
+    document.body.classList.toggle(BODY_CLASS, !!root);
+    if (!root) return;
+
+    const columns = dayColumns(root);
+    if (!columns.length) return;
+    const metas = columns.map(dayMeta);
+    if (selectedIndex === null || selectedIndex >= metas.length) selectedIndex = defaultIndex(columns);
+
+    ensureStrip(root, metas);
+    const workspace = ensureWorkspace(root);
+    if (!workspace) return;
+    activate(root, workspace, metas, selectedIndex);
+  }
+
+  function schedule() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(sync);
+  }
+
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-action="week-today"]')) {
+      selectedIndex = null;
+      return;
+    }
+    const button = event.target.closest('[data-pnx-program-day]');
+    if (!button) return;
+    const nextIndex = Number(button.dataset.pnxProgramDay);
+    if (!Number.isInteger(nextIndex)) return;
+    selectedIndex = nextIndex;
+    schedule();
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', schedule, { once:true });
+  } else {
+    schedule();
+  }
+
+  new MutationObserver(schedule).observe(document.documentElement, {
+    childList:true,
+    subtree:true
+  });
+})();
+

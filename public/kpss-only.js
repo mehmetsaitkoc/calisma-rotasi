@@ -101,6 +101,10 @@
     return value;
   }
 
+  function setText(node, value) {
+    if (node && node.textContent !== value) node.textContent = value;
+  }
+
   function scrubText(root = document.body) {
     if (!root) return;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -126,15 +130,13 @@
       const summary = document.querySelector('.academy-summary');
       const stats = summary?.querySelectorAll('.academy-mini-stats > div') || [];
       if (stats[0]) {
-        stats[0].querySelector('strong').textContent = String(kpssSubjects.length);
-        const label = stats[0].querySelector('span');
-        if (label) label.textContent = 'KPSS ders alanı';
+        setText(stats[0].querySelector('strong'), String(kpssSubjects.length));
+        setText(stats[0].querySelector('span'), 'KPSS ders alanı');
       }
       if (stats[1]) {
         const topicCount = kpssSubjects.reduce((sum, subject) => sum + (subject.topics?.length || 0), 0);
-        stats[1].querySelector('strong').textContent = String(topicCount);
-        const label = stats[1].querySelector('span');
-        if (label) label.textContent = 'KPSS konu alanı';
+        setText(stats[1].querySelector('strong'), String(topicCount));
+        setText(stats[1].querySelector('span'), 'KPSS konu alanı');
       }
       if (stats[2]) stats[2].remove();
     }

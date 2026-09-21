@@ -514,7 +514,10 @@ async function runKpssSectionExamContent(browser) {
 
   assert.ok(await page.getByText('KPSS Türkçe Bölüm Denemesi · Profesyonel #01', { exact: true }).count(), 'Professional KPSS Turkish section exam must be visible');
   assert.equal(await page.getByText('KPSS Türkçe Bölüm Denemesi #01', { exact: true }).count(),0,'Superseded Turkish section seed must not remain active');
-  assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi · Profesyonel #01', { exact: true }).count(), 'Professional KPSS History section exam must be visible');
+  for(let sectionNo=1;sectionNo<=5;sectionNo++){
+    const n=String(sectionNo).padStart(2,'0');
+    assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi · Profesyonel #'+n,{exact:true}).count(),'Professional KPSS History section '+n+' must be visible');
+  }
   assert.equal(await page.getByText('KPSS Tarih Bölüm Denemesi #01', { exact: true }).count(),0,'Superseded History section seed must not remain active');
 
   for(let setNo=1;setNo<=4;setNo++){
@@ -604,6 +607,15 @@ async function runKpssSectionExamContent(browser) {
   const historyScopeNotice=page.locator('.notice').filter({hasText:'Bu sonuç tam KPSS GY–GK neti değildir'}).first();
   await historyScopeNotice.waitFor({state:'visible'});
   assert.match(await historyScopeNotice.innerText(),/tam KPSS GY–GK neti değildir[\s\S]*Tarih bölüm denemesidir/i,'History section result must not present itself as the full KPSS');
+  await page.locator('[data-action="close-modal"]').first().click();
+
+  const historyFinalStart=page.locator('[data-action="start-section-exam"][data-id="kpss-professional-tarih-section-05"]').first();
+  await historyFinalStart.waitFor({state:'visible'});
+  await historyFinalStart.click();
+  const historyFinalForm=page.locator('#section-exam-form');
+  await historyFinalForm.waitFor({state:'visible'});
+  assert.equal(await historyFinalForm.locator('.mini-question').count(),27,'Prime History section exam 5 must render exactly 27 questions');
+  await page.locator('[data-action="close-modal"]').first().click();
 
   assert.deepEqual(pageErrors, [], 'KPSS section exam page errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'KPSS section exam console errors:\n' + consoleErrors.join('\n'));

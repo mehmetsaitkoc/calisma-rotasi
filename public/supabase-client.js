@@ -1,15 +1,21 @@
 let clientPromise = null;
+let configPromise = null;
 
-async function loadPublicConfig(){
-  const response = await fetch('/api/public-config', { cache: 'no-store' });
-  if(!response.ok) throw new Error('Çalışma Rotası bulut ayarları alınamadı.');
-  return response.json();
+export async function getPublicConfig(){
+  if(!configPromise){
+    configPromise=(async()=>{
+      const response = await fetch('/api/public-config', { cache: 'no-store' });
+      if(!response.ok) throw new Error('Çalışma Rotası bulut ayarları alınamadı.');
+      return response.json();
+    })();
+  }
+  return configPromise;
 }
 
 export async function getSupabase(){
   if(clientPromise) return clientPromise;
   clientPromise = (async()=>{
-    const config = await loadPublicConfig();
+    const config = await getPublicConfig();
     const cloud = config?.supabase || {};
     if(!cloud.enabled || !cloud.url || !cloud.publishableKey) return null;
     const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/+esm');

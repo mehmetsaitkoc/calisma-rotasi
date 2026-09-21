@@ -8,6 +8,7 @@
   const STATE_PREFIX = 'calisma-rotasi:all:v5';
   let queued = false;
   let redirecting = false;
+  let legacyMigrating = false;
 
   function appStateEntry() {
     try {
@@ -50,7 +51,18 @@
 
   function protectLegacyActiveExam() {
     const entry = appStateEntry();
-    if (entry?.value?.activeExam === LEGACY_EXAM) startKpss();
+    if (legacyMigrating || entry?.value?.activeExam !== LEGACY_EXAM) return;
+    legacyMigrating = true;
+    try {
+      // KPSS-only changes only the selected workspace. The legacy YKS workspace stays intact
+      // so older backups remain readable, but a stale YKS selection can never strand the UI.
+      entry.value.activeExam = PRIMARY_EXAM;
+      localStorage.setItem(entry.key, JSON.stringify(entry.value));
+      location.reload();
+    } catch {
+      legacyMigrating = false;
+      startKpss();
+    }
   }
 
   const copyReplacements = [

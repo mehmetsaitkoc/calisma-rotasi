@@ -8,6 +8,7 @@ const DAY=86400000;
 const clamp=(n,min=0,max=100)=>Math.max(min,Math.min(max,Number.isFinite(Number(n))?Number(n):min));
 const round=(n,d=0)=>{const p=10**d;return Math.round((Number(n)||0)*p)/p;};
 const safeArray=v=>Array.isArray(v)?v:[];
+const optionalNumber=v=>v===null||v===undefined||v===''?null:(Number.isFinite(Number(v))?Number(v):null);
 const validDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''));
 const dateMs=v=>validDate(v)?new Date(v+'T12:00:00Z').getTime():NaN;
 function daysBetween(a,b){

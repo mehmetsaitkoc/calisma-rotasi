@@ -133,6 +133,21 @@ assert.equal(professionalSections[2].questions.filter(q=>q.topicId==='k-tr-3').l
 assert.equal(professionalSections[3].questions.filter(q=>q.topicId==='k-tr-3').length,15,'Section #4 must preserve its paragraph weight');
 assert.equal(professionalSections[4].questions.filter(q=>q.topicId==='k-tr-3').length,14,'Section #5 must preserve final rotated paragraph weight');
 
+const sectionQuestionRows=[];
+const sectionQuestionIds=new Set();
+for(const section of professionalSections){
+  for(const question of section.questions){
+    assert.ok(!sectionQuestionIds.has(question.id),'Professional section question id must be globally unique: '+question.id);
+    for(const previous of sectionQuestionRows){
+      assert.ok(!Q.suspiciouslySimilar(previous.text,question.text),'Professional section exams must not contain near-duplicate stems: '+previous.id+' ↔ '+question.id);
+    }
+    sectionQuestionIds.add(question.id);
+    sectionQuestionRows.push({id:question.id,text:question.text});
+  }
+}
+assert.equal(sectionQuestionIds.size,150,'Five Turkish section exams must contribute 150 unique question ids');
+
+
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 for(const marker of [
   '<script src="/kpss-content-blueprint.js"></script>',

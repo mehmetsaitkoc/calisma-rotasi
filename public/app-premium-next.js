@@ -39,7 +39,7 @@
     const match = current.match(/^(.*?)(?:,\s*)?Bugünkü Rotan\.?$/i);
     if (match) {
       const name = (match[1] || '').trim().replace(/,\s*$/, '');
-      h1.textContent = (name ? name + ', ' : '') + 'bugünkü rotan hazır.';
+      h1.textContent = (name ? name + ', ' : '') + 'Bugünkü Rotan hazır.';
     }
     h1.dataset.pnxTitle = '1';
   }

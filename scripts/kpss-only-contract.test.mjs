@@ -16,7 +16,8 @@ assert.match(boundary, /\[data-exam="yks"\]/, 'Runtime must actively remove stal
 assert.match(boundary, /\[data-scope="TYT"\].*\[data-scope="AYT"\].*\[data-scope="YDT"\]/s, 'Runtime must hide legacy YKS academy filters');
 assert.match(boundary, /paid-start.*paid-free-start/s, 'Primary CTAs must bypass exam selection and enter KPSS');
 assert.match(boundary, /value\?\.workspaces\?\.kpss && value\?\.workspaces\?\.yks/, 'Legacy backups must remain readable without deleting their YKS workspace');
-assert.match(boundary, /entry\.value\.activeExam = PRIMARY_EXAM/, 'A stale YKS selection must migrate to KPSS before the workspace resumes');
+assert.match(boundary, /!entry\.value\.workspaces\?\.kpss\?\.configured/, 'An unconfigured KPSS legacy migration must reuse the real onboarding flow');
+assert.match(boundary, /entry\.value\.activeExam = PRIMARY_EXAM/, 'A configured stale YKS selection must migrate to KPSS before the workspace resumes');
 assert.match(boundary, /localStorage\.setItem\(entry\.key, JSON\.stringify\(entry\.value\)\)/, 'KPSS-only migration must persist only the selected workspace switch');
 assert.match(boundary, /location\.reload\(\)/, 'A legacy YKS resume must reload against the migrated KPSS selection');
 assert.doesNotMatch(boundary, /delete\s+[^;\n]*workspaces/i, 'Compatibility boundary must never delete a legacy workspace');

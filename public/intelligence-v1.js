@@ -265,7 +265,7 @@ function interventionMemory(input={}){
 }
 
 function explainTask(input={}){
-  const task=input.task||{},model=input.model||{},decision=input.decision||{},risk=input.risk||null,mastery=input.mastery||null,outcomeMemory=input.outcomeMemory||null;
+  const task=input.task||{},model=input.model||{},decision=input.decision||{},risk=input.risk||null,mastery=input.mastery||null,outcomeMemory=input.outcomeMemory||null,methodMemory=input.methodMemory||null;
   const reasons=[];
   if(task.kind==='review'||task.source==='mistake'||task.sourceMistakeId)reasons.push('Bu görev önceki yanlışını kapatmak için bugün öne alındı.');
   if(String(task.source||'').includes('exam'))reasons.push('Son deneme sonucu bu alanı yeniden önceliklendirdi.');
@@ -273,6 +273,8 @@ function explainTask(input={}){
   else if(decision.mode==='progress')reasons.push('Son kanıtların yeterli olduğu için ilerleme modu seçildi.');
   if(outcomeMemory?.known&&outcomeMemory.action==='change')reasons.push('Aynı müdahale geçmişte yeterli sonuç vermediği için bu kez yöntem değiştiriliyor.');
   else if(outcomeMemory?.known&&outcomeMemory.action==='repeat')reasons.push('Bu müdahalenin çekirdeği geçmişte işe yaradığı için korunuyor.');
+  if(methodMemory?.current?.known&&methodMemory.current.action==='change')reasons.push('Bu çalışma biçimi sende yeterli sonuç vermediği için uygulama şekli değiştirildi.');
+  else if(methodMemory?.current?.known&&methodMemory.current.action==='repeat')reasons.push('Bu çalışma biçimi sende daha önce işe yaradığı için çekirdeği korunuyor.');
   if(model.trend?.direction==='down'||model.trend==='down')reasons.push('Son performans eğilimi aşağı yönlü.');
   if(Number(model.openMistakes)>=3)reasons.push('Açık yanlışların bu konunun önceliğini artırıyor.');
   if(mastery&&mastery.ready===false&&mastery.next)reasons.push('3/7 kalıcılık döngüsünde sıradaki kontrol zamanı geldi.');

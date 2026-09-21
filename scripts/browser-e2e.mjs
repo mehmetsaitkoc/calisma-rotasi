@@ -130,7 +130,8 @@ async function assertTodayContract(page) {
   assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(), 'Today must expose the real focus timer');
   assert.ok(await page.locator('.pnx3-week-card').isVisible(), 'Today must expose the weekly progress card');
   assert.ok(await page.locator('.pnx3-goals-card').isVisible(), 'Today must expose KPSS goals');
-  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(), 'Today must expose Rota Hoca');
+  assert.ok(await page.locator('.pnx3-highlights-card').isVisible(), 'Today must expose weekly KPSS highlights');
+  assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Today must not expose the retired Rota Hoca navigation');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(), 'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(), 'Today must expose the daily quote card');
   assert.equal(await page.locator('.pnx3-insight-archive').count(), 1, 'Explainability must remain available below the dashboard');
@@ -996,33 +997,12 @@ try {
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 
-  await navigate(page, 'teacher');
-  await page.locator('[data-premium-surface="teacher"]').waitFor({ state: 'visible' });
-  assert.equal(await page.locator('.teacher-premium-flow span').count(), 4, 'Premium Rota Hoca surface must stay visible');
-  await page.locator('#teacher-question').fill('Bugünkü görevlerimi neden bu şekilde seçtin?');
-  await page.locator('#teacher-form button[type="submit"]').click();
-  await page.locator('#teacher-avatar-quote').filter({ hasText: 'E2E Rota Hoca cevabı' }).waitFor({ state: 'visible' });
-  assert.equal(await page.locator('[data-action="teacher-followup"]').count(),0,'Free Rota Hoca must not expose advanced continuation calls');
-  const plusContinuation=page.getByText('Gelişmiş devamlar Plus',{exact:true});
-  await plusContinuation.waitFor({state:'visible'});
-  await plusContinuation.click();
-  await page.getByText('Bir adım ötesi Rota Plus’ta.',{exact:true}).waitFor({state:'visible'});
-  assert.ok(await page.getByText(/yalnız doğrulanmış üyelikle açılır/i).count(),'Plus teacher gate must explain verified membership access in user language');
-  await page.locator('[data-action="close-modal"]').click();
-
-  assert.ok(teacherRequest, 'Rota Hoca request must reach the backend boundary');
-  assert.ok(teacherRequest.studentContext?.todayPlan, 'Rota Hoca must receive todayPlan');
-  assert.ok(teacherRequest.studentContext?.studentModel, 'Rota Hoca must receive Student Model');
-  assert.ok(teacherRequest.studentContext?.routeDecision, 'Rota Hoca must receive route decision');
-  assert.ok(teacherRequest.studentContext?.mastery, 'Rota Hoca must receive mastery context');
-  assert.equal(teacherRequest.studentContext?.contextVersion, 2, 'Rota Hoca context must carry the bounded v2 contract');
-  assert.ok(teacherRequest.studentContext?.routeMode?.explanation, 'Rota Hoca must receive student-facing route-mode explanation');
-  assert.ok(teacherRequest.studentContext?.todaySummary, 'Rota Hoca must receive todaySummary');
-  assert.ok(teacherRequest.studentContext?.contextHealth?.hasStudentModel, 'Rota Hoca v2 context must expose context health');
-  assert.ok((teacherRequest.studentContext?.todayPlan||[]).length <= 8, 'Rota Hoca todayPlan must stay bounded');
-  const teacherContextText = JSON.stringify(teacherRequest.studentContext);
-  assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(teacherContextText), 'Technical route jargon must not leak into teacher context');
-  await assertCleanRender(page, 'Rota Hoca');
+  // Rota Hoca is retired from the product surface. Legacy internal data/contracts may remain,
+  // but students must not be able to navigate to or render the teacher workspace.
+  assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Rota Hoca navigation must stay removed');
+  assert.equal(await page.locator('[data-premium-surface="teacher"]').count(), 0, 'Rota Hoca surface must stay unreachable');
+  assert.equal(teacherRequest, null, 'Retired Rota Hoca UI must not call the teacher backend during the learning loop');
+  await assertCleanRender(page, 'after retired Rota Hoca surface check');
 
   // Behavior hardening: Daha sonra must be reversible without duplicate evidence,
   // Atla must reschedule the task, and both signals must survive a real reload.

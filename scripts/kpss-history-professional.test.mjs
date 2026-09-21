@@ -58,9 +58,10 @@ assert.ok(html.includes('KPSS_PROFESSIONAL_HISTORY_TESTS'), 'Professional Histor
 assert.ok(html.includes('KPSS_PROFESSIONAL_HISTORY_TOPIC_KEYS'), 'Professional History topic replacement boundary must exist');
 assert.ok(html.includes('KPSS_SEED_TOPIC_TESTS.filter'), 'Seed History tests must be replaced, not duplicated');
 assert.ok(html.includes('def.questions?.[index]?.skill'), 'History question skill metadata must feed analysis');
-assert.ok(html.includes('function topicStudyTests(topicId)'), 'Completed topics must resolve their own professional tests');
-assert.ok(html.includes('Dersi tamamlayınca açılır.'), 'Topic tests must stay locked until the lesson/topic is completed');
-assert.ok(html.includes('data-topic-tests='), 'Completed topic rows must render their own test controls');
+assert.ok(html.includes('function topicStudyTests(topicId)'), 'History topics must resolve their own professional tests');
+assert.ok(!html.includes('Dersi tamamlayınca açılır.'), 'Topic tests must not be locked behind lesson completion');
+assert.ok(html.includes('Konuyu bitirmeden de çözebilirsin.'), 'Topic tests must explicitly stay available before completion');
+assert.ok(html.includes('data-topic-tests='), 'History topic rows must render their own test controls regardless of completion state');
 assert.ok(html.includes("def.surface!=='topic'"), 'Professional topic tests must not be recommended from Deneme Merkezi');
 assert.ok(html.includes("x.surface!=='topic'"), 'Professional topic tests must not be listed in Deneme Merkezi');
 assert.ok(html.includes("topicSurface?'Konuya dön':'Deneme Merkezine dön'"), 'Topic-test results must return the learner to the topic flow');

@@ -619,3 +619,136 @@ h1,h2,h3,.price-value,.stat-value,.route-total strong{font-family:var(--font-dis
   .teacher-premium-flow>span{min-width:150px;scroll-snap-align:start}
   .logo-type small{display:none}
 }
+
+
+/* PREMIUM EXPERIENCE V2 · ROUND 3
+   Sell the intelligence on first view; make live route status visible. */
+.welcome-main{max-width:1120px!important}
+.welcome-hero-shell{
+  display:grid;grid-template-columns:minmax(0,1.28fr) minmax(330px,.72fr);
+  gap:34px;align-items:center;margin:44px 0 28px
+}
+.welcome-hero-copy{min-width:0}
+.welcome-hero-copy h1{margin-top:16px!important;max-width:760px!important}
+.welcome-hero-copy .welcome-copy{max-width:650px!important;margin-top:18px!important;padding:0!important;font-size:13px!important;line-height:1.8!important}
+.welcome-hero-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:19px}
+.welcome-hero-chips span{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 9px;border-radius:999px;
+  background:rgba(255,255,255,.7);border:1px solid #e0e6f0;
+  color:#58657e;font-size:9px;font-weight:750;
+  box-shadow:0 6px 18px rgba(20,35,80,.03)
+}
+.welcome-hero-chips .icon{width:13px;height:13px;color:#516bc0}
+
+.welcome-live-console{
+  position:relative;overflow:hidden;
+  padding:19px;border-radius:22px;
+  background:
+    radial-gradient(circle at 84% 6%,rgba(124,92,255,.24),transparent 28%),
+    radial-gradient(circle at 8% 100%,rgba(45,212,191,.08),transparent 32%),
+    linear-gradient(145deg,#0b1020,#15244f 70%,#22377a);
+  border:1px solid rgba(128,151,237,.22);
+  box-shadow:0 26px 70px rgba(17,29,70,.24);
+  color:#fff
+}
+.welcome-live-console:after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.045),transparent 38%,rgba(255,255,255,.018))
+}
+.console-top,.console-route-line,.console-card,.console-signals,.welcome-live-console>p{position:relative;z-index:1}
+.console-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.console-live{display:inline-flex;align-items:center;gap:7px;font-size:8px;font-weight:850;letter-spacing:1.2px;color:#cfd8ff}
+.console-live i{width:7px;height:7px;border-radius:50%;background:#5ee7c7;box-shadow:0 0 0 5px rgba(94,231,199,.09)}
+.console-example{font-size:7px;font-weight:850;letter-spacing:1.1px;color:#8394c8}
+.console-route-line{display:grid;grid-template-columns:auto 1fr auto 1fr auto;align-items:center;gap:7px;margin:18px 0 16px}
+.console-route-line>i{height:1px;background:linear-gradient(90deg,#4d64a9,#6f82c5)}
+.console-node{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:26px;padding:0 8px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.12);background:#ffffff08;
+  color:#8797c4;font-size:7px;font-weight:850;letter-spacing:1px
+}
+.console-node.active{background:#617cf01f;border-color:#7f96e85e;color:#dce4ff}
+.console-card{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
+  padding:17px;border-radius:15px;
+  background:rgba(7,13,31,.42);border:1px solid rgba(255,255,255,.11)
+}
+.console-card small{display:block;font-size:7px;letter-spacing:1.2px;font-weight:850;color:#8799d0;margin-bottom:7px}
+.console-card strong{display:block;font-size:15px;line-height:1.38;letter-spacing:-.25px;color:#f4f7ff}
+.console-mode{
+  flex:0 0 auto;padding:6px 8px;border-radius:8px;
+  background:#755dff1f;border:1px solid #8878ff45;
+  color:#c8beff;font-size:7px;font-weight:850;letter-spacing:.7px
+}
+.console-signals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+.console-signals span{
+  min-width:0;padding:8px;border-radius:10px;
+  background:#ffffff08;border:1px solid #ffffff0d;
+  color:#aab5d6;font-size:7.5px;line-height:1.35
+}
+.console-signals b{display:block;color:#6f87dd;font-size:7px;margin-bottom:3px}
+.welcome-live-console>p{margin-top:11px;font-size:7.5px;line-height:1.6;color:#7f8fb9}
+
+.welcome-choice-head{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  margin:31px 0 12px;padding-top:25px;border-top:1px solid #e3e8f1
+}
+.welcome-choice-note{font-size:9px;color:#788297;text-align:right;max-width:390px}
+.welcome-choice-head+.exam-grid{margin-top:12px!important}
+
+/* Make the proof layer visually secondary to the product preview. */
+.premium-proof{margin-top:3px!important;box-shadow:none!important;background:rgba(255,255,255,.55)!important}
+.premium-proof-item{padding-block:15px!important}
+.premium-proof-item strong{font-size:11px!important}
+.premium-proof-item span{font-size:9px!important}
+
+/* Live route status under the Today headline. */
+.route-command-status{
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px
+}
+.route-command-status>span{
+  display:inline-flex;align-items:center;gap:5px;
+  min-height:25px;padding:0 8px;border-radius:8px;
+  background:#fff;border:1px solid #e1e7f1;
+  color:#778196;font-size:8px;font-weight:650
+}
+.route-command-status .route-live-state{
+  background:#edfdf8;border-color:#cceee5;color:#18735d;font-weight:850;letter-spacing:.6px
+}
+.route-live-state i{width:6px;height:6px;border-radius:50%;background:#2cc79f;box-shadow:0 0 0 4px rgba(44,199,159,.1)}
+.route-command-status .icon{width:11px;height:11px;color:#6279c8}
+
+/* Desktop breathing room: make the core product feel intentionally sparse. */
+@media(min-width:901px){
+  .route-v1-head{max-width:1180px}
+  .route-today-hero{min-height:190px}
+  .route-list{gap:13px!important}
+  .route-task{padding:18px 19px!important}
+  .teacher-page{padding-top:2px}
+}
+
+@media(max-width:900px){
+  .welcome-hero-shell{grid-template-columns:1fr;gap:22px;margin-top:28px}
+  .welcome-live-console{max-width:620px}
+  .welcome-choice-head{align-items:flex-start}
+}
+
+@media(max-width:650px){
+  .welcome-hero-shell{margin:20px 0 20px;gap:17px}
+  .welcome-hero-copy h1{font-size:40px!important;line-height:1.02!important}
+  .welcome-hero-copy .welcome-copy{font-size:11px!important;line-height:1.7!important;margin-top:14px!important}
+  .welcome-hero-chips{margin-top:14px;gap:5px}
+  .welcome-hero-chips span{padding:6px 7px;font-size:8px}
+  .welcome-live-console{padding:15px;border-radius:18px}
+  .console-route-line{margin:14px 0 12px}
+  .console-card{display:block;padding:14px}
+  .console-mode{display:inline-flex;margin-top:10px}
+  .console-signals{grid-template-columns:1fr 1fr 1fr}
+  .welcome-choice-head{display:block;margin-top:24px;padding-top:20px}
+  .welcome-choice-note{display:block;margin-top:7px;text-align:left}
+  .premium-proof{margin-top:0!important}
+  .route-command-status{margin-top:9px}
+  .route-command-status>span{font-size:7.5px;min-height:23px;padding:0 7px}
+}

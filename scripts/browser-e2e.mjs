@@ -205,39 +205,92 @@ async function showTaskInPlan(page, id, label) {
 
   const sameEvidence = (candidate, reference) => {
     if (!candidate || !reference || candidate.done) return false;
-    if (reference.routeKey && candidate.routeKey === reference.routeKey) return true;
-    if (reference.sourceMistakeId && candidate.sourceMistakeId === reference.sourceMistakeId) return true;
-    if (reference.sourceAssessmentId && candidate.sourceAssessmentId === reference.sourceAssessmentId) return true;
     if (
       reference.source === 'spaced_review' &&
       candidate.source === 'spaced_review' &&
       candidate.reviewWave === reference.reviewWave &&
       candidate.reviewBaseTaskId === reference.reviewBaseTaskId
     ) return true;
+    if (
+      reference.sourceMistakeId &&
+      candidate.sourceMistakeId === reference.sourceMistakeId &&
+      candidate.source === reference.source
+    ) return true;
+    if (
+      reference.sourceAssessmentId &&
+      candidate.sourceAssessmentId === reference.sourceAssessmentId &&
+      candidate.source === reference.source
+    ) return true;
+    if (reference.routeKey && candidate.routeKey === reference.routeKey) return true;
     return candidate.source === reference.source &&
       candidate.subjectId === reference.subjectId &&
       candidate.topicId === reference.topicId &&
       candidate.title === reference.title;
   };
 
+  const followEvidence = plan =>
+    plan.find(p => p.id === current.id && !p.done) ||
+    plan.find(p => sameEvidence(p, original)) ||
+    plan.find(p => sameEvidence(p, current)) ||
+    null;
+
+  // Render Programım while the browser is still on the current simulated day.
+  // Advancing the clock first would make routeAutoSync treat earlier open tasks as
+  // overdue and legitimately rebalance them, causing the E2E to chase the same
+  // evidence forward instead of completing it on the date already chosen by Route.
   let current = original;
-  for (let hop = 0; hop < 6; hop++) {
+  await navigate(page, 'plan');
+  await page.getByRole('heading', { name: 'Programım' }).waitFor({ state: 'visible' });
+  await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
+
+  let snapshot = await appState(page);
+  current = followEvidence(snapshot.value.workspaces.kpss.plan);
+  assert.ok(current, label + ': görev kanıt kimliği Programım açılırken korunmalı');
+
+  const thisWeek = page.locator('.pnx-program-week-strip [data-action="week-today"]:visible').first();
+  assert.ok(await thisWeek.count(), label + ': görünür Programım hafta kontrolü bulunmalı');
+  await thisWeek.click();
+  await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
+
+  for (let hop = 0; hop < 5; hop++) {
+    snapshot = await appState(page);
+    current = followEvidence(snapshot.value.workspaces.kpss.plan);
     assert.ok(current?.date, label + ': görevin gerçek bir plan tarihi olmalı');
-    await setDay(page, current.date);
 
-    const snapshot = await appState(page);
-    const plan = snapshot.value.workspaces.kpss.plan;
-    current =
-      plan.find(p => p.id === current.id && !p.done) ||
-      plan.find(p => sameEvidence(p, original)) ||
-      plan.find(p => sameEvidence(p, current)) ||
-      current;
+    let taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+    if (await taskButton.count()) {
+      const column = taskButton.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]');
+      assert.ok(await column.count(), label + ': görev gerçek Programım gün sütununda bulunmalı');
+      const index = await column.evaluate(el => Array.from(el.parentElement?.children || []).indexOf(el));
+      const tab = page.locator(`.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`).first();
+      assert.ok(index >= 0 && await tab.count(), label + ': görevin görünür gün sekmesi bulunmalı');
+      await tab.click();
 
-    const taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
-    if (await taskButton.count() && await taskButton.isVisible()) return current;
+      taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+      await taskButton.waitFor({ state: 'visible' });
+
+      // Change only Date after the real task is already visible. Do not render again
+      // before completion: the log form will now record the task's real scheduled day,
+      // while Route Engine keeps full ownership of its normal post-completion rebalance.
+      await page.clock.setFixedTime(new Date(current.date + 'T09:00:00+03:00'));
+      const simulatedDay = await page.evaluate(() => {
+        const d = new Date();
+        return d.getFullYear() + '-' +
+          String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0');
+      });
+      assert.equal(simulatedDay, current.date, label + ': tamamlanma günü gerçek plan günüyle eşleşmeli');
+      assert.ok(await taskButton.isVisible(), label + ': görev plan günü ayarlandıktan sonra görünür kalmalı');
+      return current;
+    }
+
+    const next = page.locator('.pnx-program-week-strip [data-action="week-next"]:visible').first();
+    assert.ok(await next.count(), label + ': görünür Programım sonraki hafta kontrolü bulunmalı');
+    await next.click();
+    await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
   }
 
-  assert.fail(label + ': görev kanıt kimliği korunarak kendi plan gününde erişilebilir olmalı');
+  assert.fail(label + ': görev kanıt kimliği korunarak görünür Programım akışında erişilebilir olmalı');
 }
 
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {

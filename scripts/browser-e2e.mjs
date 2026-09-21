@@ -1013,6 +1013,25 @@ try {
     await assertCleanRender(page,'Plus premium monthly report with long subject name');
   }
 
+  // Sparse-evidence UI regression: previous month has real logs while the selected month is empty.
+  // The report must blame the missing current-month evidence, never the previous month.
+  const missingCurrentMonthInput = page.locator('#report-month');
+  await missingCurrentMonthInput.fill('2026-10');
+  await missingCurrentMonthInput.dispatchEvent('change');
+  await page.getByRole('heading', { name: 'Aylık raporum' }).waitFor({ state: 'visible' });
+  assert.ok(
+    (await page.getByText('Seçili ayda veri yok', { exact: true }).count()) >= 3,
+    'Empty selected month with previous-month study evidence must label the current month as missing'
+  );
+  assert.equal(
+    await page.getByText('Önceki ayda veri yok', { exact: true }).count(),
+    0,
+    'Missing current-month evidence must never be mislabeled as missing previous-month evidence'
+  );
+  await page.locator('#report-month').fill('2026-09');
+  await page.locator('#report-month').dispatchEvent('change');
+  await page.getByRole('heading', { name: 'Aylık raporum' }).waitFor({ state: 'visible' });
+
   const trendTab = page.locator('[data-action="report-tab"][data-report-tab="trend"]');
   await trendTab.click();
   await page.getByRole('heading', { name: '6 aylık trendler' }).waitFor({ state: 'visible' });

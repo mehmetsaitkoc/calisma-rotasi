@@ -716,6 +716,7 @@
 /* Load the latest main Programım timeline styles without disturbing the Today dashboard layer. */
 (() => {
   [
+    '/dashboard-evidence.css',
     '/program-daily-timeline-core.css',
     '/program-daily-timeline-rail.css'
   ].forEach((href) => {

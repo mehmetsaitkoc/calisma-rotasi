@@ -27,6 +27,7 @@ await import('../public/kpss-professional-history-sections-02.js');
 await import('../public/kpss-professional-history-sections-03.js');
 await import('../public/kpss-professional-history-sections-04.js');
 await import('../public/kpss-professional-history-sections-05.js');
+await import('../public/kpss-professional-history-editorial-pass2.js');
 
 const C=globalThis.RotaCatalog;
 const B=globalThis.RotaKpssContentBlueprint;
@@ -36,6 +37,8 @@ const P2=globalThis.RotaKpssProfessionalTurkish02;
 const P3=globalThis.RotaKpssProfessionalTurkish03;
 const S=globalThis.RotaKpssProfessionalSections;
 const H=globalThis.RotaKpssProfessionalHistory;
+const E2=globalThis.RotaKpssHistoryEditorialPass2;
+assert.ok(E2&&E2.reviewedSample===100&&E2.rewrittenQuestions===36,'History editorial pass 2 must remain loaded with 100-question review / 36 rewrites');
 assert.ok(C&&B&&Q&&P&&P2&&P3&&S&&H,'KPSS v2 content modules must load');
 
 const totals=B.totals(C);
@@ -175,6 +178,7 @@ for(const marker of [
   '<script src="/kpss-professional-history-editorial-fixes.js"></script>',
   '<script src="/kpss-professional-history-sections-01.js"></script>',
   '<script src="/kpss-professional-history-sections-05.js"></script>',
+  '<script src="/kpss-professional-history-editorial-pass2.js"></script>',
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',

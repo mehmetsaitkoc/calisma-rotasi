@@ -35,7 +35,7 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}b
 <body>
 <header class="topbar">
   <div class="wrap nav">
-    <a class="brand" href="#"><span class="mark">✂</span><span><span id="brandName">Ali Barber</span><small id="brandSub">Erkek Kuaförü</small></span></a>
+    <a class="brand" href="#"><span class="mark">✂</span><span><span id="brandName">Mersin Barber Studio</span><small id="brandSub">Erkek Kuaförü</small></span></a>
     <nav class="navlinks"><a href="#hizmetler">Hizmetler</a><a href="#fiyatlar">Fiyatlar</a><a href="#ekip">Ekibimiz</a><a href="#galeri">Galeri</a><a href="#yorumlar">Yorumlar</a></nav>
     <div class="navActions"><button class="btn out" onclick="openDemo()">⚙ Demo Modu</button><button class="btn gold" onclick="openBooking()">Randevu Al</button></div>
   </div>
@@ -87,9 +87,9 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}b
 <section class="section" id="ekip">
   <div class="wrap"><div class="sectionHead"><div><div class="eyebrow">Ekibimiz</div><h2>Ustanı seç.</h2></div><p>Müşteri randevu sırasında istediği personeli seçebilir.</p></div>
     <div class="staff">
-      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=500&q=82')"></div><h3>Ali</h3><p class="muted">Fade & modern kesim</p><button class="btn out" onclick="bookStaff('Ali')">Ali'den randevu</button></div>
-      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=82')"></div><h3>Mehmet</h3><p class="muted">Sakal & klasik stil</p><button class="btn out" onclick="bookStaff('Mehmet')">Mehmet'ten randevu</button></div>
-      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=82')"></div><h3>Yusuf</h3><p class="muted">Saç tasarımı & bakım</p><button class="btn out" onclick="bookStaff('Yusuf')">Yusuf'tan randevu</button></div>
+      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=500&q=82')"></div><h3>Usta 1</h3><p class="muted">Fade & modern kesim</p><button class="btn out" onclick="bookStaff('Usta 1')">Uzmandan randevu</button></div>
+      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=82')"></div><h3>Usta 2</h3><p class="muted">Sakal & klasik stil</p><button class="btn out" onclick="bookStaff('Usta 2')">Uzmandan randevu</button></div>
+      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=82')"></div><h3>Usta 3</h3><p class="muted">Saç tasarımı & bakım</p><button class="btn out" onclick="bookStaff('Usta 3')">Uzmandan randevu</button></div>
     </div>
   </div>
 </section>
@@ -121,14 +121,14 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}b
       <div class="review"><div class="stars">★★★★★</div><p>“Saç + sakal hizmetinden memnun kaldım. Tekrar geleceğim.”</p><b>— Mert D.</b></div>
     </div>
     <div class="cta">
-      <div><div class="eyebrow">Dijital Vitrin</div><h3 id="ctaName">Ali Barber'a ulaşmak çok kolay.</h3><p class="muted" id="addressText">Yenişehir, Mersin • 09:00–22:00</p></div>
+      <div><div class="eyebrow">Dijital Vitrin</div><h3 id="ctaName">Mersin Barber Studio'a ulaşmak çok kolay.</h3><p class="muted" id="addressText">Yenişehir, Mersin • 09:00–22:00</p></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn whatsapp" onclick="openWhatsApp()">WhatsApp</button><button class="btn out" onclick="openMaps()">Yol Tarifi</button><button class="btn gold" onclick="openBooking()">Randevu Al</button></div>
     </div>
   </div>
 </section>
 </main>
 
-<footer class="footer"><div class="wrap" style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap"><span>© <span id="year"></span> <span id="footerName">Ali Barber</span></span><span>Demo: Berber Dijital Vitrin</span></div></footer>
+<footer class="footer"><div class="wrap" style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap"><span>© <span id="year"></span> <span id="footerName">Mersin Barber Studio</span></span><span>Demo: Berber Dijital Vitrin</span></div></footer>
 <button class="demoBtn" onclick="openDemo()">⚙ İşletmeyi Canlı Değiştir</button>
 <button class="fab" aria-label="WhatsApp" onclick="openWhatsApp()">☎</button>
 
@@ -136,7 +136,7 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}b
   <div class="modal"><div class="modalHead"><div><div class="eyebrow">Randevu Talebi</div><h3>Randevunu oluştur</h3></div><button class="close" onclick="closeOverlay('bookingOverlay')">×</button></div>
     <div class="formGrid">
       <div class="field"><label>Hizmet</label><select id="bookService"><option>Saç Kesimi</option><option>Sakal Tasarımı</option><option>Saç + Sakal</option><option>Cilt Bakımı</option></select></div>
-      <div class="field"><label>Berber</label><select id="bookStaff"><option>Fark etmez</option><option>Ali</option><option>Mehmet</option><option>Yusuf</option></select></div>
+      <div class="field"><label>Berber</label><select id="bookStaff"><option>Fark etmez</option><option>Usta 1</option><option>Usta 2</option><option>Usta 3</option></select></div>
       <div class="field"><label>Tarih</label><input id="bookDate" type="date"></div>
       <div class="field"><label>Saat</label><select id="bookTime"><option>10:00</option><option>11:30</option><option>13:00</option><option>15:00</option><option>17:30</option><option>19:00</option><option>20:30</option></select></div>
       <div class="field"><label>Ad Soyad</label><input id="bookName" placeholder="Örn. Ahmet Yılmaz"></div>
@@ -149,11 +149,11 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}b
 <div class="overlay" id="demoOverlay">
   <div class="modal"><div class="modalHead"><div><div class="eyebrow">Satış Demo Modu</div><h3>Bu siteyi 30 saniyede işletmeye çevir</h3></div><button class="close" onclick="closeOverlay('demoOverlay')">×</button></div>
     <div class="formGrid">
-      <div class="field"><label>İşletme Adı</label><input id="demoName" value="Ali Barber"></div>
+      <div class="field"><label>İşletme Adı</label><input id="demoName" value="Mersin Barber Studio"></div>
       <div class="field"><label>Alt Başlık</label><input id="demoSub" value="Erkek Kuaförü"></div>
       <div class="field full"><label>Slogan</label><input id="demoSlogan" value="Klasik dokunuşlar, modern stiller. Saç, sakal ve bakım hizmetlerinde özenli işçilik."></div>
       <div class="field"><label>Telefon / WhatsApp</label><input id="demoPhone" value="905555555555"></div>
-      <div class="field"><label>Instagram</label><input id="demoInstagram" value="@alibarber"></div>
+      <div class="field"><label>Instagram</label><input id="demoInstagram" value="@mersinbarberdemo"></div>
       <div class="field full"><label>Adres</label><input id="demoAddress" value="Yenişehir, Mersin"></div>
       <div class="field full"><label>Kampanya</label><input id="demoCampaign" value="Saç + Sakal 550 TL"></div>
       <div class="field full"><label>Tema</label><div class="themeRow"><button class="theme active" data-theme="gold" onclick="setTheme('gold',this)">Altın</button><button class="theme" data-theme="blue" onclick="setTheme('blue',this)">Mavi</button><button class="theme" data-theme="burgundy" onclick="setTheme('burgundy',this)">Bordo</button><button class="theme" data-theme="green" onclick="setTheme('green',this)">Yeşil</button></div></div>
@@ -163,7 +163,7 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}b
 </div>
 
 <script>
-var state={name:"Ali Barber",sub:"Erkek Kuaförü",phone:"905555555555",instagram:"@alibarber",address:"Yenişehir, Mersin",campaign:"Saç + Sakal 550 TL"};
+var state={name:"Mersin Barber Studio",sub:"Erkek Kuaförü",phone:"905555555555",instagram:"@mersinbarberdemo",address:"Yenişehir, Mersin",campaign:"Saç + Sakal 550 TL"};
 function q(id){return document.getElementById(id)}
 function openBooking(){q("bookingOverlay").classList.add("show")}
 function openDemo(){q("demoOverlay").classList.add("show")}

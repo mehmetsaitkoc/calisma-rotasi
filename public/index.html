@@ -4011,8 +4011,9 @@ const KPSS_PROFESSIONAL_TESTS=(()=>{
 })();
 const KPSS_PROFESSIONAL_TOPIC_KEYS=new Set(KPSS_PROFESSIONAL_TESTS.map(x=>x.subjectId+'|'+x.topicId));
 const KPSS_SEED_TOPIC_TESTS=[...(window.RotaKpssPractice?.topicSets||[])];
+const ACTIVE_LEGACY_MINI_EXAMS=ROTA_MINI_EXAMS.filter(x=>!KPSS_PROFESSIONAL_TOPIC_KEYS.has(x.subjectId+'|'+miniTopicIdSeed(x)));
 const ROTA_ACTIVE_MINI_EXAMS=Object.freeze([
- ...ROTA_MINI_EXAMS,
+ ...ACTIVE_LEGACY_MINI_EXAMS,
  ...KPSS_SEED_TOPIC_TESTS.filter(x=>!KPSS_PROFESSIONAL_TOPIC_KEYS.has(x.subjectId+'|'+(x.topicId||miniTopicIdSeed(x)))),
  ...KPSS_PROFESSIONAL_TESTS
 ]);

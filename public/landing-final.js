@@ -237,12 +237,31 @@
     return dash;
   }
 
+  function prepArt(kind){
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 240 130');
+    svg.setAttribute('aria-hidden','true');
+    svg.classList.add('v6-prep-art',kind);
+    const path=document.createElementNS(ns,'path');
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke','currentColor');
+    path.setAttribute('stroke-width','3');
+    path.setAttribute('stroke-linecap','round');
+    path.setAttribute('stroke-linejoin','round');
+    path.setAttribute('d',kind==='yks'
+      ? 'M15 112h210M28 112V67l92-45 92 45v45M48 68h144M64 112V77h31v35m10 0V77h30v35m10 0V77h31v35M22 112h196M120 22V9m0 0 22 10'
+      : 'M18 112h204M36 112V58h168v54M30 58h180L120 20 30 58Zm24 54V72m33 40V72m33 40V72m33 40V72m33 40V72M44 88h152M44 102h152');
+    svg.append(path);
+    return svg;
+  }
+
   function prepCard(exam,title,desc,kind){
     const b=button('', 'choose-exam', 'v6-prep-card '+kind, {exam});
     const iconWrap=el('span','v6-prep-icon'); iconWrap.append(icon(kind==='yks'?'cap':'book'));
     const copy=el('span','v6-prep-copy'); copy.append(el('strong','',title),el('small','',desc));
     const arrow=el('span','v6-prep-arrow'); arrow.append(icon('arrow'));
-    b.append(iconWrap,copy,arrow);
+    b.append(prepArt(kind),iconWrap,copy,arrow);
     return b;
   }
 

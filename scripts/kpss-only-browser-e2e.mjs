@@ -45,52 +45,32 @@ async function fillKpssStep(page) {
   const form = page.locator('#setup-wizard-form');
   await form.waitFor({ state: 'visible' });
 
-  const name = form.locator('[name="name"]');
-  if (await name.count()) await name.fill('KPSS E2E Öğrenci');
-
-  const habit = form.locator('[name="studyHabit"][value="yes"]');
-  if (await habit.count()) await habit.check();
-
-  const currentNet = form.locator('[name="currentNet"]');
-  if (await currentNet.count()) await currentNet.fill('48');
+  const score85 = form.locator('[name="targetScore"][value="85"]');
+  if (await score85.count()) await score85.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const targetNet = form.locator('[name="targetNet"]');
   if (await targetNet.count()) await targetNet.fill('82');
 
-  const targetScore = form.locator('[name="targetScore"]');
-  if (await targetScore.count()) await targetScore.fill('88');
-
-  const target = form.locator('[name="target"]');
-  if (await target.count()) await target.fill('KPSS Lisans hedef rotası');
-
-  const minuteSelect = form.locator('select[name="dailyMinutes"]');
-  if (await minuteSelect.count()) {
-    await minuteSelect.selectOption('240');
-  } else {
-    const minuteRadio = form.locator('[name="dailyMinutes"][value="240"]');
-    if (await minuteRadio.count()) await minuteRadio.check();
-  }
+  const minuteRadio = form.locator('[name="dailyMinutes"][value="240"]');
+  if (await minuteRadio.count()) await minuteRadio.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const days = form.locator('[name="days"]');
   for (let i = 0; i < await days.count(); i++) {
     const box = days.nth(i);
-    if (!(await box.isChecked())) await box.check({ force: true });
+    if (!(await box.isChecked())) await box.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   }
 
-  const levels = form.locator('select[name^="level:"]');
-  for (let i = 0; i < await levels.count(); i++) {
-    const select = levels.nth(i);
-    const values = await select.locator('option').evaluateAll(options => options.map(o => o.value).filter(Boolean));
-    if (values.length) await select.selectOption(values[Math.min(i === 0 ? 0 : 2, values.length - 1)]);
-  }
+  const currentNet = form.locator('[name="currentNetApprox"][value="50"]');
+  if (await currentNet.count()) await currentNet.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
-  const numbers = form.locator('input[type="number"][name]');
-  for (let i = 0; i < await numbers.count(); i++) {
-    const input = numbers.nth(i);
-    if (await input.inputValue()) continue;
-    const field = (await input.getAttribute('name')) || '';
-    await input.fill(/target/i.test(field) ? '80' : '40');
-  }
+  const habit = form.locator('[name="studyHabit"][value="yes"]');
+  if (await habit.count()) await habit.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+
+  const weakMath = form.locator('[name="weakSubjects"][value="k-ma"]');
+  if (await weakMath.count()) await weakMath.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+
+  const strongTurkish = form.locator('[name="strongSubjects"][value="k-tr"]');
+  if (await strongTurkish.count()) await strongTurkish.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   await form.locator('button[type="submit"]').click();
 }

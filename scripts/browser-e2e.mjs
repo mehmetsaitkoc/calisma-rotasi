@@ -145,23 +145,16 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
 
-  await page.locator('#setup-wizard-form [name="name"]').fill('E2E Öğrenci');
+  // Stage 1 · welcome
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
-  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').check();
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
-
-  await page.locator('#setup-wizard-form [name="currentNet"]').fill('48');
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
-
+  // Stage 2 · goals
+  await page.locator('#setup-wizard-form [name="targetScore"][value="85"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#setup-wizard-form [name="targetNet"]').fill('82');
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
-
-  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').check();
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
+  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const dayBoxes = page.locator('#setup-wizard-form [name="days"]');
-  assert.equal(await dayBoxes.count(), 7, 'Working-day onboarding must expose all seven days');
+  assert.equal(await dayBoxes.count(), 7, 'Premium goals stage must expose all seven working days');
   for (let i = 0; i < await dayBoxes.count(); i++) {
     const box = dayBoxes.nth(i);
     const day = Number(await box.getAttribute('value'));
@@ -172,17 +165,16 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
       await label.click();
     }
   }
-  assert.equal(await page.locator('#setup-wizard-form [name="days"]:checked').count(), workingDays.length, 'Wizard must preserve the requested working-day selection');
+  assert.equal(await page.locator('#setup-wizard-form [name="days"]:checked').count(), workingDays.length, 'Premium goals stage must preserve requested working days');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
-  await page.locator('#setup-wizard-form [name="targetScore"]').fill('88');
-  await page.locator('#setup-wizard-form [name="target"]').fill('E2E kişisel rota');
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
-
-  const mathLevel = page.locator('#setup-wizard-form select[name="level:k-ma"]');
-  if (await mathLevel.count()) await mathLevel.selectOption('0');
-  const turkishLevel = page.locator('#setup-wizard-form select[name="level:k-tr"]');
-  if (await turkishLevel.count()) await turkishLevel.selectOption('2');
+  // Stage 3 · situation analysis
+  await page.locator('#setup-wizard-form [name="currentNetApprox"][value="50"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  const weakMath = page.locator('#setup-wizard-form [name="weakSubjects"][value="k-ma"]');
+  if (await weakMath.count()) await weakMath.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  const strongTurkish = page.locator('#setup-wizard-form [name="strongSubjects"][value="k-tr"]');
+  if (await strongTurkish.count()) await strongTurkish.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   await page.locator('[data-action="summary-build"]').click();

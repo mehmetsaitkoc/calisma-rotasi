@@ -278,6 +278,8 @@
   function mount(){
     const welcome=document.querySelector('.welcome');
     if(!welcome){mounted=null;return;}
+    const isPublicWelcome=welcome.dataset.pixelMatch==='1'||!!welcome.querySelector('.welcome-main[data-premium-surface="welcome"]');
+    if(!isPublicWelcome){mounted=welcome;return;}
     build(welcome);
   }
 
@@ -287,6 +289,7 @@
 
   new MutationObserver(()=>{
     const w=document.querySelector('.welcome');
-    if(w!==mounted || (w && w.dataset.pixelMatch!=='1')) schedule();
+    const eligible=!!w&&(w.dataset.pixelMatch==='1'||!!w.querySelector('.welcome-main[data-premium-surface="welcome"]'));
+    if(w!==mounted || (eligible && w.dataset.pixelMatch!=='1')) schedule();
   }).observe(document.documentElement,{subtree:true,childList:true});
 })();

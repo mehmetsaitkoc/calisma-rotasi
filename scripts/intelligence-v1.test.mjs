@@ -71,6 +71,35 @@ const repairWithoutRetention=I.repairProposal({
 });
 assert.equal(repairWithoutRetention.mode,'steady','missing retention must not masquerade as zero retention');
 
+const chronicLoad=I.executionPrescription({
+  confidence:78,
+  windows:{
+    d7:{execution:{due:4,completion:50}},
+    d30:{execution:{due:12,completion:42}}
+  }
+});
+assert.equal(chronicLoad.mode,'ease','persistent 7/30-day execution strain must reduce workload');
+assert.equal(chronicLoad.state,'persistent_strain');
+
+const reboundLoad=I.executionPrescription({
+  confidence:78,
+  windows:{
+    d7:{execution:{due:4,completion:80}},
+    d30:{execution:{due:12,completion:48}}
+  }
+});
+assert.equal(reboundLoad.mode,'steady','recent rebound must not be punished by older low completion');
+assert.equal(reboundLoad.state,'rebound');
+
+const sparseLoad=I.executionPrescription({
+  confidence:80,
+  windows:{
+    d7:{execution:{due:1,completion:0}},
+    d30:{execution:{due:3,completion:33}}
+  }
+});
+assert.equal(sparseLoad.mode,'collect','sparse execution evidence must not force workload changes');
+
 const repair=I.repairProposal({
   confidence:80,performance:51,retention:54,openMistakes:6,repeatedError:true,trend:'down'
 });

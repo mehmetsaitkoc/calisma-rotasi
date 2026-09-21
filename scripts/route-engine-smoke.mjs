@@ -1423,8 +1423,10 @@ for(const marker of [
 
 // 5) Deneme Merkezi pilots must be original, internally valid and isolated from full-exam net records.
 {
-  const src=between('const ROTA_MINI_EXAMS','function miniExamDefinition');
-  const data=new Function(src+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES,MINI_SKILL_MAP};')();
+  const miniSrc=between('const ROTA_MINI_EXAMS','const OFFICIAL_EXAM_RESOURCES');
+  const resourceSrc=between('const OFFICIAL_EXAM_RESOURCES','function miniRecommendationScore');
+  const skillSrc=between('const MINI_SKILL_MAP','function miniQuestionSkill');
+  const data=new Function(miniSrc+resourceSrc+skillSrc+';return {ROTA_MINI_EXAMS,OFFICIAL_EXAM_RESOURCES,MINI_SKILL_MAP};')();
   const legacyIds=["kpss-problemler-01","yks-paragraf-01","kpss-tarih-01","kpss-cografya-01","tyt-biyoloji-hucre-01","ayt-edebiyat-tanzimat-01","ydt-grammar-01","ydt-vocab-01","ydt-reading-01","kpss-vatandaslik-01","tyt-matematik-temel-01","tyt-fizik-hareket-01","ayt-matematik-fonksiyon-01","tyt-kimya-atom-01","ayt-fizik-vektor-01","ayt-biyoloji-sinir-01","ayt-tarih1-ilkcag-01","ayt-kimya-modern-atom-01","ayt-cografya1-dogal-01","ayt-felsefe-tarih-01","kpss-turkce-paragraf-01","tyt-tarih-zaman-01","tyt-cografya-harita-01","ayt-geometri-ucgen-01"];
   assert.equal(data.ROTA_MINI_EXAMS.length,24,'Legacy inline mini seed catalog must stay at 24 definitions');
   assert.deepEqual(data.ROTA_MINI_EXAMS.map(x=>x.id),legacyIds,'Legacy mini seeds must remain intact and in place');

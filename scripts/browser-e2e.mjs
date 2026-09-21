@@ -798,9 +798,11 @@ try {
 
   assert.ok(await rerenderedFocus.locator('[data-action="timer-log"]').count(), 'Task-bound real timer must preserve its log action');
   await rerenderedFocus.locator('[data-action="timer-reset"]').click();
+  await page.getByText('Sayacı sıfırla?', { exact: true }).waitFor({ state: 'visible' });
+  await page.locator('[data-action="confirm"]').click();
   const resetClock = page.locator('#clock').first();
   await resetClock.waitFor({ state: 'visible' });
-  assert.equal((await resetClock.innerText()).trim(), String(todayTask.minutes).padStart(2, '0') + ':00', 'Reset must restore the planned duration');
+  assert.equal((await resetClock.innerText()).trim(), String(todayTask.minutes).padStart(2, '0') + ':00', 'Confirmed reset must restore the planned duration');
 
   snapshot = await appState(page);
   const spaceAfterFocus = snapshot.value.workspaces.kpss;

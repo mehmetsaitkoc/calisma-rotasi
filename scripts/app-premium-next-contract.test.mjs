@@ -35,7 +35,10 @@ for(const marker of [
   'route-list-head',
   'route-list',
   'Neden bugün?',
-  'ROTA KARARI · AÇIKLANABİLİR',
+  'NEDEN BUGÜN?',
+  'pnx-focus-layout',
+  'pnx-today-teacher',
+  'rota-hoca-avatar.jpg',
   'MutationObserver',
   "document.querySelector('.app-shell')"
 ]) assert.ok(js.includes(marker),'Missing app premium JS contract marker: '+marker);

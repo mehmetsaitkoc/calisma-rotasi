@@ -37,9 +37,23 @@
   }
 
   function firstName(header) {
-    const current = text(header.querySelector('h1'));
+    const cached = String(header?.dataset?.pnxStudentName || '').trim();
+    if (cached) return cached;
+
+    const current = text(header?.querySelector('h1'));
     const match = current.match(/^([^,]+),/);
-    return (match?.[1] || '').trim() || 'Öğrenci';
+    let name = (match?.[1] || '').trim();
+
+    // The V3 title starts with “Bugün,” after the first composition pass.
+    // Never let subsequent MutationObserver passes overwrite the real student name.
+    if (!name || name.toLocaleLowerCase('tr-TR') === 'bugün') {
+      const existing = text(document.querySelector('.pnx-profile-copy strong'));
+      if (existing && existing.toLocaleLowerCase('tr-TR') !== 'bugün') name = existing;
+    }
+    if (!name || name.toLocaleLowerCase('tr-TR') === 'bugün') name = 'Öğrenci';
+
+    if (header) header.dataset.pnxStudentName = name;
+    return name;
   }
 
   function polishHeading(header) {

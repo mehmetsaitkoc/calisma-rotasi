@@ -25,6 +25,18 @@ async function waitServer() {
   throw new Error('KPSS-only E2E server did not start.\n' + serverLog);
 }
 
+async function gotoRedirectSafe(page, url) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      return;
+    } catch (error) {
+      if (!String(error).includes('ERR_ABORTED') || attempt === 2) throw error;
+      await sleep(120);
+    }
+  }
+}
+
 async function appState(page) {
   return page.evaluate(() => {
     const preferred = new URLSearchParams(location.search).get('fresh') === '1'
@@ -105,7 +117,7 @@ try {
   page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   await page.clock.install({ time: new Date(FIXED_DAY + 'T09:00:00+03:00') });
 
-  await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
+  await gotoRedirectSafe(page, BASE + '/?fresh=1');
   await page.locator('.welcome.premium-landing-final').waitFor({ state: 'visible' });
   assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'YKS must not be selectable on the public surface');
   assert.equal(await page.locator('[data-exam="kpss"]').count(), 1, 'Exactly one KPSS product entry must remain');
@@ -136,7 +148,7 @@ try {
     return { workspaceId };
   });
 
-  await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  await gotoRedirectSafe(page, BASE + '/?fresh=1&resume=1');
   await page.locator('.app-shell').waitFor({ state: 'visible' });
   snapshot = await appState(page);
   assert.equal(snapshot.value.activeExam, 'kpss', 'Legacy active YKS state must redirect to KPSS');

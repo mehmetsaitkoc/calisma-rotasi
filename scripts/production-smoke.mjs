@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-const BASE = (process.env.PRODUCTION_URL || 'https://calisma-rotasi.onrender.com').replace(/\/$/,'');
+const BASE = (process.env.PRODUCTION_URL || 'https://calisma-rotasi-1.onrender.com').replace(/\/$/,'');
 const EXPECTED_SHA = (process.env.EXPECTED_SHA || process.env.GITHUB_SHA || '').trim();
 const DEPLOY_WAIT_MS = Number(process.env.PRODUCTION_DEPLOY_WAIT_MS || 8 * 60 * 1000);
 const POLL_MS = Number(process.env.PRODUCTION_POLL_MS || 10_000);

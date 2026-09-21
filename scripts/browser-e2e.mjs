@@ -776,7 +776,7 @@ try {
 
   const pauseToggle = focusCard.locator('#timer-toggle');
   await pauseToggle.click();
-  await focusCard.getByText('Başlat', { exact: false }).waitFor({ state: 'visible' });
+  await focusCard.getByRole('button', { name: 'Başlat', exact: false }).waitFor({ state: 'visible' });
   const pausedClock = (await focusCard.locator('#clock').innerText()).trim();
   await page.clock.fastForward(1600);
   assert.equal((await focusCard.locator('#clock').innerText()).trim(), pausedClock, 'Paused Pomodoro must keep its remaining time');

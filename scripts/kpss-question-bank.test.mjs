@@ -32,7 +32,7 @@ for(const topic of turkish.topics){
   assert.equal(test.bankStandard,true);
   assert.equal(test.original,true);
   assert.equal(test.sourceKind,'original');
-  assert.equal(test.setNo,1);
+  assert.equal(test.setNo,topic.id==='k-tr-3'?3:2,'Standard bank set number must follow existing legacy/practice sets');
 }
 
 const ids=new Set(),texts=new Set();

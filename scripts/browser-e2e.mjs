@@ -520,6 +520,8 @@ async function runKpssSectionExamContent(browser) {
     assert.ok(await page.getByText('KPSS Türkçe · Sözcükte Anlam · Test '+setNo,{exact:true}).count(),'Professional Word Meaning Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Cümlede Anlam · Test '+setNo,{exact:true}).count(),'Professional Sentence Meaning Test '+setNo+' must be visible');
     assert.ok(await page.getByText('KPSS Türkçe · Paragrafta Anlam · Test '+setNo,{exact:true}).count(),'Professional Paragraph Meaning Test '+setNo+' must be visible');
+    assert.ok(await page.getByText('KPSS Tarih · İslamiyet öncesi Türk tarihi · Test '+setNo,{exact:true}).count(),'Prime History Topic 1 Test '+setNo+' must be visible');
+    assert.ok(await page.getByText('KPSS Tarih · Çağdaş Türk ve dünya tarihi · Test '+setNo,{exact:true}).count(),'Prime History Topic 13 Test '+setNo+' must be visible');
   }
   assert.equal(await page.getByText('KPSS Sözcükte Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Meaning seed must not remain in the active catalog');
   assert.equal(await page.getByText('KPSS Cümlede Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Sentence Meaning seed must not remain in the active catalog');
@@ -537,6 +539,13 @@ async function runKpssSectionExamContent(browser) {
   const paragraphForm=page.locator('#mini-exam-form');
   await paragraphForm.waitFor({state:'visible'});
   assert.equal(await paragraphForm.locator('.mini-question').count(),12,'Professional Paragraph Test 4 must render exactly 12 questions');
+  await page.locator('[data-action="close-modal"]').first().click();
+  const historyStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-ta:k-ta-13:t04"]').first();
+  await historyStart.waitFor({state:'visible'});
+  await historyStart.click();
+  const historyForm=page.locator('#mini-exam-form');
+  await historyForm.waitFor({state:'visible'});
+  assert.equal(await historyForm.locator('.mini-question').count(),12,'Prime History Topic 13 Test 4 must render exactly 12 questions');
   await page.locator('[data-action="close-modal"]').first().click();
   assert.ok(await page.getByText(/konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık/i).count(), 'Section-exam distribution must be described as approximate, not official-fixed');
 

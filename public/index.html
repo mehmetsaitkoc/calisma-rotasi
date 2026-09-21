@@ -1638,6 +1638,7 @@ h1,h2,h3,h4{color:var(--v2-ink);letter-spacing:-.035em}
 <!-- KPSS CONTENT V2: reviewed professional topic-test bank -->
 <script src="/kpss-professional-bank.js"></script>
 <script src="/kpss-professional-turkish-02.js"></script>
+<script src="/kpss-professional-sections.js"></script>
 <!-- ARCHITECTURE BOUNDARY: workspace state schema -->
 <script src="/workspace-schema.js"></script>
 <!-- ARCHITECTURE BOUNDARY: catalog data -->
@@ -4098,20 +4099,46 @@ function miniRecommendation(){
  const eligible=ranked.filter(function(x){return !x.last||x.daysSince>=3;}),started=eligible.filter(function(x){return x.context.topicStarted;});
  return (started.length?started[0]:eligible[0])||null;
 }
-function sectionExamDefinition(id){return window.RotaKpssPractice?.sectionExams?.find(function(x){return x.id===id;})||null;}
+const KPSS_SEED_SECTION_EXAMS=[...(window.RotaKpssPractice?.sectionExams||[])];
+const KPSS_PROFESSIONAL_SECTION_EXAMS=(()=>{
+ const defs=Array.isArray(window.RotaKpssProfessionalSections?.sectionExams)?window.RotaKpssProfessionalSections.sectionExams:[];
+ const accepted=[];
+ for(const def of defs){
+  try{
+   const blueprint=window.RotaKpssContentBlueprint?.sectionBlueprint?.(def.subjectId,Math.max(0,(def.sectionNo||1)-1));
+   const profile=window.RotaKpssContentBlueprint?.SECTION_PROFILES?.[(def.sectionNo||1)-1];
+   window.RotaKpssQuestionQuality?.validateSectionExam?.(def,{blueprint,profile});
+   if(def.qualityStatus!=='approved')throw Error('Yayın için approved gerekli.');
+   accepted.push(def);
+  }catch(error){console.error('KPSS profesyonel bölüm denemesi kalite kapısını geçemedi.',def?.id,error);}
+ }
+ return accepted;
+})();
+const KPSS_PROFESSIONAL_SECTION_SUBJECTS=new Set(KPSS_PROFESSIONAL_SECTION_EXAMS.map(x=>x.subjectId));
+const ROTA_ACTIVE_SECTION_EXAMS=Object.freeze([
+ ...KPSS_SEED_SECTION_EXAMS.filter(x=>!KPSS_PROFESSIONAL_SECTION_SUBJECTS.has(x.subjectId)),
+ ...KPSS_PROFESSIONAL_SECTION_EXAMS
+]);
+const ROTA_ALL_SECTION_EXAMS=Object.freeze([...KPSS_SEED_SECTION_EXAMS,...KPSS_PROFESSIONAL_SECTION_EXAMS]);
+function sectionExamDefinition(id){return ROTA_ALL_SECTION_EXAMS.find(function(x){return x.id===id;})||null;}
 function sectionExamLast(id){return [...(w().assessments||[])].filter(function(a){return a.sectionId===id;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.created||0)-(a.created||0));})[0]||null;}
 function scoreSectionExam(def,answers){
- let correct=0,wrong=0,blank=0;const details=[],map=new Map(),titleById=new Map((def.blueprint||[]).map(x=>[x[0],x[1]]));
+ let correct=0,wrong=0,blank=0;const details=[],map=new Map(),skillMap=new Map(),titleById=new Map((def.blueprint||[]).map(x=>[x[0],x[1]]));
  def.questions.forEach(function(q,i){
   const picked=Number.isInteger(answers[i])?answers[i]:-1,status=picked<0?'blank':picked===q.answer?'correct':'wrong';
   if(status==='correct')correct++;else if(status==='wrong')wrong++;else blank++;
   const row=map.get(q.topicId)||{topicId:q.topicId,title:titleById.get(q.topicId)||q.topicId,total:0,correct:0,wrong:0,blank:0};
-  row.total++;row[status]++;map.set(q.topicId,row);details.push({question:q,index:i,picked,status});
+  row.total++;row[status]++;map.set(q.topicId,row);
+  const skill=String(q.skill||titleById.get(q.topicId)||q.topicId),skillKey=q.topicId+'|'+skill,skillRow=skillMap.get(skillKey)||{topicId:q.topicId,skill,total:0,correct:0,wrong:0,blank:0};
+  skillRow.total++;skillRow[status]++;skillMap.set(skillKey,skillRow);
+  details.push({question:q,index:i,picked,status});
  });
  const topicBreakdown=[...map.values()].map(function(x){return {...x,accuracy:x.total?x.correct/x.total:0};});
- return {total:def.questions.length,correct,wrong,blank,net:correct-(wrong/(def.penalty||4)),accuracy:def.questions.length?correct/def.questions.length:0,details,topicBreakdown};
+ const skillBreakdown=[...skillMap.values()].map(function(x){return {...x,accuracy:x.total?x.correct/x.total:0};});
+ return {total:def.questions.length,correct,wrong,blank,net:correct-(wrong/(def.penalty||4)),accuracy:def.questions.length?correct/def.questions.length:0,details,topicBreakdown,skillBreakdown};
 }
 function sectionWeakTopics(score){return [...score.topicBreakdown].filter(x=>x.wrong+x.blank>0).sort(function(a,b){return a.accuracy-b.accuracy||(b.wrong+b.blank)-(a.wrong+a.blank);}).slice(0,4);}
+function sectionWeakSkills(score){return [...(score.skillBreakdown||[])].filter(x=>x.wrong+x.blank>0).sort(function(a,b){return a.accuracy-b.accuracy||(b.wrong+b.blank)-(a.wrong+a.blank)||a.skill.localeCompare(b.skill,'tr');}).slice(0,6);}
 function openSectionExam(id){
  const def=sectionExamDefinition(id);if(!def||def.exam!==state.activeExam)return;
  ui.formContext={kind:'section-exam',sectionId:id,startedAt:Date.now()};
@@ -4123,7 +4150,7 @@ function openSectionResult(def,result,score){
 }
 
 function denemeCenterSection(){
- const activeSubjects=new Set(subjects().map(function(s){return s.id;})),minis=ROTA_ACTIVE_MINI_EXAMS.filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId);}),sectionExams=(window.RotaKpssPractice?.sectionExams||[]).filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId);}),resources=OFFICIAL_EXAM_RESOURCES[state.activeExam]||[],results=[...(w().assessments||[])].filter(function(a){return !a.sectionId;}).sort(function(a,b){return b.date.localeCompare(a.date)||b.created-a.created;}).slice(0,8),rec=miniRecommendation(),weakness=miniWeaknessOverview(minis),progress=miniProgressSection(minis),coverage=miniCatalogCoverage(minis);
+ const activeSubjects=new Set(subjects().map(function(s){return s.id;})),minis=ROTA_ACTIVE_MINI_EXAMS.filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId);}),sectionExams=ROTA_ACTIVE_SECTION_EXAMS.filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId);}),resources=OFFICIAL_EXAM_RESOURCES[state.activeExam]||[],results=[...(w().assessments||[])].filter(function(a){return !a.sectionId;}).sort(function(a,b){return b.date.localeCompare(a.date)||b.created-a.created;}).slice(0,8),rec=miniRecommendation(),weakness=miniWeaknessOverview(minis),progress=miniProgressSection(minis),coverage=miniCatalogCoverage(minis);
  const recHtml=rec?'<article class="mini-recommend"><div><div class="eyebrow">ROTA’NIN ÖNERİSİ</div><h3>'+esc(rec.def.title)+'</h3><p>'+esc(rec.reason)+'</p><div class="row wrap"><span class="route-adaptive-pill mode-'+esc(rec.adaptive.mode)+'">'+esc(rec.adaptive.label)+'</span>'+(rec.context?.openTopic?'<span class="pill plain">AKTİF KONU</span>':'')+'<span class="tiny muted">'+rec.def.questions.length+' soru · '+rec.def.minutes+' dk'+(rec.last?' · son: '+rec.last.correct+'/'+rec.last.total:' · ilk ölçüm')+'</span></div></div>'+btn('Önerilen denemeyi çöz '+icon('arrow'),'start-mini-exam','primary','data-id="'+rec.def.id+'"')+'</article>':'<div class="notice">Son mini ölçümlerin çok yakın tarihte. Rota aynı denemeyi sık sık önermek yerine en az 3 gün yeni çalışma kanıtı birikmesini bekliyor; istersen aşağıdaki mini setlerden birini manuel çözebilirsin.</div>';
  const sectionHtml=sectionExams.length?'<div class="mini-section-head"><div><span class="eyebrow">BÖLÜM DENEMELERİ</span><h3>Dersin gerçek soru sayısıyla çöz.</h3></div><span class="tiny muted">Özgün · konu dağılımı etiketli</span></div><div class="mini-exam-grid">'+sectionExams.map(function(def){const last=sectionExamLast(def.id);return '<article class="card mini-exam-card"><div class="row between"><span class="pill plain">'+esc(def.eyebrow)+'</span><span class="tiny muted">'+def.questions.length+' soru · '+def.minutes+' dk</span></div><h3>'+esc(def.title)+'</h3><p>'+esc(subName(def.subjectId,false))+' · '+def.blueprint.length+' konu · 4 yanlış 1 doğru</p><div class="mini-last">'+(last?dateLabel(last.date)+' · '+last.correct+'/'+last.total+' doğru · '+format(last.net,2)+' net':'Henüz çözülmedi')+'</div>'+btn(last?'Yeniden çöz':'Başla','start-section-exam','primary sm','data-id="'+def.id+'"')+'</article>';}).join('')+'</div><div class="notice"><strong>Dağılım notu:</strong> '+esc(window.RotaKpssPractice?.BASIS||'Konu dağılımı yaklaşık çalışma planıdır.')+'</div>':'';
  return '<section class="exam-center" data-premium-surface="exams"><div class="exam-center-head"><div><div class="eyebrow">DENEME MERKEZİ · ROTA İLE BAĞLI</div><h2>Çöz. Ölç. Rota ne öğrendiğini göstersin.</h2><p>Mini denemeler tam sınav netinin yerine geçmez; konu performansını ölçer ve gerektiğinde bir sonraki onarım görevini şekillendirir.</p></div><span class="pill plain">ÖZGÜN + RESMÎ KAYNAK</span></div>'+recHtml+sectionHtml+'<div class="mini-section-head"><div><span class="eyebrow">KISA ÖLÇÜMLER</span><h3>Rota Mini denemeleri</h3></div><span class="tiny muted">'+minis.length+' uygun mini set</span></div>'+(coverage?'<div class="notice mini-catalog-coverage"><strong>İçerik derinliği iskeleti:</strong> '+coverage.topics+' konuda '+coverage.sets+' özgün set var. Hedef konu başına '+coverage.targetSetsPerTopic+' set; '+coverage.missingSetSlots+' yeni set yuvası hazır. Resmî kaynaklar bu özgün set sayısına dahil edilmez.</div>':'')+'<div class="mini-exam-grid">'+minis.map(function(def){const last=latestMiniResult(def.id),catalog=miniCatalogInfo(def);return '<article class="card mini-exam-card"><div class="row between"><span class="pill plain">'+esc(def.eyebrow)+'</span><span class="tiny muted">Set '+catalog.setNo+' / '+catalog.targetSets+' · '+def.minutes+' dk</span></div><h3>'+esc(def.title)+'</h3><p>'+esc(subName(def.subjectId,true))+' · '+esc(def.topicTitle)+' · '+def.questions.length+' soru</p><div class="mini-last">'+esc(miniResultSummary(last))+'</div>'+btn(last?'Tekrar çöz':'Başla','start-mini-exam','primary sm','data-id="'+def.id+'"')+'</article>';}).join('')+'</div>'+weakness+progress+'<section class="official-source-block"><div class="card-head"><div><h3>Ücretsiz resmî kaynaklar</h3><p class="muted tiny">Telifli soruları Çalışma Rotası içine kopyalamıyoruz; kaynağın kendi sayfasını açıyoruz.</p></div></div><div class="official-source-grid">'+resources.map(function(r){return '<article class="official-source"><span>'+esc(r.source)+'</span><div><strong>'+esc(r.title)+'</strong><p>'+esc(r.meta)+'</p><small>'+esc(r.note)+'</small></div><a class="btn sm ghost" href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer">Resmî kaynağı aç ↗</a></article>';}).join('')+'</div></section>'+(results.length?'<section class="mini-history"><div class="card-head"><h3>Son Rota Mini sonuçların</h3><span class="tiny muted">Tam sınav netine eklenmez</span></div>'+results.map(function(r){return '<div class="route-mini-row"><div><strong>'+esc(r.title)+'</strong><p>'+dateLabel(r.date)+' · '+esc(subName(r.subjectId,true))+(r.weakSkills?.[0]?' · açık: '+esc(r.weakSkills[0]):'')+'</p></div><span class="row">'+(r.routeDecision?'<span class="route-adaptive-pill mode-'+esc(r.routeDecision.mode)+'">'+esc(r.routeDecision.label)+'</span>':'')+'<span class="pill plain">'+r.correct+'/'+r.total+' doğru</span>'+btn('İncele','mini-result-detail','sm ghost','data-id="'+r.id+'"')+'</span></div>';}).join('')+'</section>':'')+'</section>';
@@ -4500,7 +4527,7 @@ if(form.id==='section-exam-form'){
   const def=sectionExamDefinition(ctx?.sectionId||'');if(!def||def.exam!==state.activeExam)throw Error('Bölüm denemesi bulunamadı.');
   const answers=def.questions.map(function(_q,i){const raw=String(f.get('section-q-'+i)??'');return raw===''?-1:Number(raw);});
   if(answers.some(function(v){return v<-1||v>4||!Number.isInteger(v);}))throw Error('Cevapları kontrol et.');
-  const score=scoreSectionExam(def,answers),elapsed=Math.max(1,Math.min(240,Math.round((Date.now()-(ctx?.startedAt||Date.now()))/60000))),skillBreakdown=score.topicBreakdown.map(function(x){return {skill:x.title,total:x.total,correct:x.correct,wrong:x.wrong,blank:x.blank};}),weakSkills=sectionWeakTopics(score).map(x=>x.title),result={id:R.uid(),miniId:'section:'+def.id,sectionId:def.id,version:def.version||1,date:today(),subjectId:def.subjectId,topicId:'',title:def.title,total:score.total,correct:score.correct,wrong:score.wrong,blank:score.blank,net:score.net,minutes:elapsed,answers,topicBreakdown:score.topicBreakdown,skillBreakdown,weakSkills,created:Date.now()};
+  const score=scoreSectionExam(def,answers),elapsed=Math.max(1,Math.min(240,Math.round((Date.now()-(ctx?.startedAt||Date.now()))/60000))),skillBreakdown=score.skillBreakdown,weakSkills=sectionWeakSkills(score).map(x=>x.skill),result={id:R.uid(),miniId:'section:'+def.id,sectionId:def.id,version:def.version||1,date:today(),subjectId:def.subjectId,topicId:'',title:def.title,total:score.total,correct:score.correct,wrong:score.wrong,blank:score.blank,net:score.net,minutes:elapsed,answers,topicBreakdown:score.topicBreakdown,skillBreakdown,weakSkills,created:Date.now()};
   routeEnsure();w().assessments.push(result);w().assessments=w().assessments.slice(-240);routeRebalance('KPSS bölüm denemesi sonucu ders ve konu performans kanıtına eklendi; rota ilgili konu kırılımlarıyla yeniden kontrol edildi.',true);result.routeDecision=miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,''));closeModal();save();render();openSectionResult(def,result,score);toast('Bölüm denemesi sonucu ve konu kırılımları rotana işlendi.');return;
  }
 if(form.id==='mini-exam-form'){

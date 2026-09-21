@@ -421,6 +421,6 @@ rewrite('kta9-t1-q04',{
   cognitive:"reasoning",skill:"Havza'nın toplumsal mobilizasyon stratejisi",historyForm:"policy-purpose",distractorPolicy:"same-document-family"
 });
 
-root.RotaKpssHistoryEditorialPass2={version:2,reviewedSample:100,rewrittenQuestions:36};
+root.RotaKpssHistoryEditorialPass2={version:2,reviewedSample:100,rewrittenQuestions:37};
 if(typeof module==='object')module.exports=root.RotaKpssHistoryEditorialPass2;
 })(typeof window!=='undefined'?window:globalThis);

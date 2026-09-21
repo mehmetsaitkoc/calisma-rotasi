@@ -137,6 +137,26 @@ function targetRisk(input={}){
   return {score:reliable?score:null,band,label,action,reasons:reasons.slice(0,5),confidence,reliable,gap};
 }
 
+function executionPrescription(profileInput={}){
+  const confidence=clamp(profileInput?.confidence||0);
+  const d7=profileInput?.windows?.d7?.execution||{};
+  const d30=profileInput?.windows?.d30?.execution||{};
+  const due7=Math.max(0,Number(d7.due)||0),due30=Math.max(0,Number(d30.due)||0);
+  const completion7=optionalNumber(d7.completion),completion30=optionalNumber(d30.completion);
+  if(confidence<55||due30<6||completion30===null){
+    return {mode:'collect',confidence,due7,due30,completion7,completion30,reason:'Uzun dönem görev dozu için henüz yeterli gerçekleşme kanıtı yok.'};
+  }
+  const recentKnown=due7>=2&&completion7!==null;
+  const rebound=recentKnown&&completion30<55&&completion7>=70&&completion7>=completion30+15;
+  if(rebound){
+    return {mode:'steady',state:'rebound',confidence,due7,due30,completion7,completion30,reason:'30 günlük gerçekleşme düşük olsa da son 7 günde belirgin toparlanma var; yükü yeniden kısmadan mevcut dozu doğrula.'};
+  }
+  if(completion30<50&&recentKnown&&completion7<60){
+    return {mode:'ease',state:'persistent_strain',confidence,due7,due30,completion7,completion30,reason:'7 ve 30 günlük gerçekleşme birlikte düşük; daha fazla görev eklemek yerine günlük dozu küçültüp tamamlanabilirliği geri kazan.'};
+  }
+  return {mode:'steady',state:'sustainable',confidence,due7,due30,completion7,completion30,reason:'Uzun dönem gerçekleşme, ek bir yük azaltma müdahalesi gerektirmiyor.'};
+}
+
 function repairProposal(input={}){
   const confidence=clamp(input.confidence||0);
   const performance=optionalNumber(input.performance),retention=optionalNumber(input.retention);
@@ -178,6 +198,6 @@ function explainTask(input={}){
   return {headline:'Neden bugün?',reasons:reasons.slice(0,3),text:reasons.slice(0,2).join(' ')};
 }
 
-root.RotaIntelligenceV1={rollingWindow,longitudinalProfile,targetRisk,repairProposal,explainTask};
+root.RotaIntelligenceV1={rollingWindow,longitudinalProfile,targetRisk,executionPrescription,repairProposal,explainTask};
 if(typeof module==='object')module.exports=root.RotaIntelligenceV1;
 })(typeof window!=='undefined'?window:globalThis);

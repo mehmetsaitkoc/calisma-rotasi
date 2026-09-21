@@ -5,6 +5,17 @@ const SCHEMA='calisma-rotasi-kpss-question-quality-v1';
 const DIFFICULTIES=new Set(['easy','medium','hard']);
 const COGNITIVE=new Set(['recall','context','interpretation','reasoning','application']);
 const QUALITY_STATUSES=new Set(['draft','reviewed','approved']);
+const HISTORY_FORMS=new Set(['knowledge','chronology','cause-effect','purpose-result','concept-event','inference','institution-function','policy-purpose','document-decision','evidence-inference']);
+const HISTORY_DISTRACTOR_POLICIES=new Set(['same-era','same-institution-family','near-chronology','same-concept-family','same-document-family','same-policy-family','same-treaty-family']);
+function validateHistoryQuestion(q){
+  assert(q.subjectId==='k-ta','Tarih sorusu k-ta dersine bağlı olmalı: '+q.id);
+  assert(typeof q.answerText==='string'&&q.answerText.trim(),'Tarih sorusunda answerText eksik: '+q.id);
+  assert(String(q.options[q.answer]).trim()===q.answerText.trim(),'Tarih cevabı anlam etiketiyle uyuşmuyor: '+q.id);
+  assert(HISTORY_FORMS.has(q.historyForm),'Tarih soru biçimi eksik/geçersiz: '+q.id);
+  assert(HISTORY_DISTRACTOR_POLICIES.has(q.distractorPolicy),'Tarih çeldirici politikası eksik/geçersiz: '+q.id);
+  assert(q.factStatus==='stable-historical','Tarih sorusu sabit tarihsel olgu olarak işaretlenmeli: '+q.id);
+  assert(q.editorialStatus==='reviewed','Tarih sorusu editoryal kontrolden geçmiş olmalı: '+q.id);
+}
 const FORBIDDEN_OPTION_PATTERNS=[/^hepsi$/i,/^hiçbiri$/i,/^a ve b$/i,/^b ve c$/i,/^c ve d$/i];
 
 function norm(v){return String(v??'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9çğıöşü]+/gi,' ').replace(/\s+/g,' ').trim();}
@@ -51,6 +62,7 @@ function validateTopicTest(test,profile){
   const ids=new Set(),stems=new Set();
   test.questions.forEach(q=>{
     validateQuestion(q,{topicId:test.topicId,requireMetadata:true});
+    if(test.subjectId==='k-ta')validateHistoryQuestion(q);
     assert(!ids.has(q.id),'Test içinde soru kimliği tekrar ediyor: '+q.id);ids.add(q.id);
     const key=norm(q.text);assert(!stems.has(key),'Test içinde soru kökü tekrar ediyor: '+q.id);stems.add(key);
   });
@@ -63,6 +75,11 @@ function validateTopicTest(test,profile){
   }
   const nonRecall=test.questions.filter(q=>q.cognitive!=='recall').length;
   assert(nonRecall>=6,'Testin en az yarısı bağlam/yorum/akıl yürütme olmalı: '+test.id);
+  if(test.subjectId==='k-ta'){
+    assert(nonRecall>=7,'Prime tarih testinde en az 7 soru salt hatırlamadan fazlasını ölçmeli: '+test.id);
+    assert(test.questions.filter(q=>q.historyForm==='knowledge').length<=4,'Prime tarih testinde çıplak bilgi sorusu en fazla 4 olmalı: '+test.id);
+    assert(new Set(test.questions.map(q=>q.historyForm)).size>=4,'Prime tarih testi en az 4 farklı tarih soru biçimi kullanmalı: '+test.id);
+  }
   return test;
 }
 function validateSectionExam(exam,{blueprint=null,profile=null}={}){
@@ -80,6 +97,7 @@ function validateSectionExam(exam,{blueprint=null,profile=null}={}){
   const ids=new Set(),stems=new Set();
   for(const q of exam.questions){
     validateQuestion(q,{requireMetadata:true});
+    if(exam.subjectId==='k-ta')validateHistoryQuestion(q);
     assert(!ids.has(q.id),'Bölüm denemesinde soru kimliği tekrar ediyor: '+q.id);ids.add(q.id);
     const stem=norm(q.text);assert(!stems.has(stem),'Bölüm denemesinde soru kökü tekrar ediyor: '+q.id);stems.add(stem);
   }
@@ -98,7 +116,14 @@ function validateSectionExam(exam,{blueprint=null,profile=null}={}){
     for(const [topicId,count] of expected)assert((got.get(topicId)||0)===count,'Bölüm denemesi konu dağılımı hatalı: '+exam.id+' '+topicId);
     for(const topicId of got.keys())assert(expected.has(topicId),'Bölüm denemesinde blueprint dışı konu var: '+exam.id+' '+topicId);
   }
-  assert(exam.questions.filter(q=>q.cognitive!=='recall').length>=Math.ceil(exam.questions.length*.6),'Bölüm denemesinin en az %60’ı bağlam/yorum/akıl yürütme olmalı: '+exam.id);
+  const sectionNonRecall=exam.questions.filter(q=>q.cognitive!=='recall').length;
+  assert(sectionNonRecall>=Math.ceil(exam.questions.length*.6),'Bölüm denemesinin en az %60’ı bağlam/yorum/akıl yürütme olmalı: '+exam.id);
+  if(exam.subjectId==='k-ta'){
+    assert(sectionNonRecall>=18,'Prime tarih bölüm denemesinde en az 18 soru salt hatırlamadan fazlasını ölçmeli: '+exam.id);
+    assert(exam.questions.filter(q=>q.historyForm==='knowledge').length<=9,'Prime tarih bölüm denemesinde çıplak bilgi sorusu en fazla 9 olmalı: '+exam.id);
+    assert(new Set(exam.questions.map(q=>q.historyForm)).size>=6,'Prime tarih bölüm denemesi en az 6 farklı tarih soru biçimi kullanmalı: '+exam.id);
+    assert(exam.questions.filter(q=>q.historyForm==='chronology').length>=2,'Prime tarih bölüm denemesinde en az 2 kronoloji sorusu olmalı: '+exam.id);
+  }
   return exam;
 }
 
@@ -121,6 +146,6 @@ function auditBank(tests,{profiles=[],requireApproved=false}={}){
   return {schema:SCHEMA,tests:(tests||[]).length,questions:ids.size,topics:byTopic.size,errors,valid:errors.length===0};
 }
 
-root.RotaKpssQuestionQuality={SCHEMA,DIFFICULTIES,COGNITIVE,QUALITY_STATUSES,norm,tokenSet,jaccard,suspiciouslySimilar,maxRun,difficultyCounts,validateQuestion,validateTopicTest,validateSectionExam,auditBank};
+root.RotaKpssQuestionQuality={SCHEMA,DIFFICULTIES,COGNITIVE,QUALITY_STATUSES,HISTORY_FORMS,HISTORY_DISTRACTOR_POLICIES,norm,tokenSet,jaccard,suspiciouslySimilar,maxRun,difficultyCounts,validateQuestion,validateHistoryQuestion,validateTopicTest,validateSectionExam,auditBank};
 if(typeof module==='object')module.exports=root.RotaKpssQuestionQuality;
 })(typeof window!=='undefined'?window:globalThis);

@@ -253,6 +253,7 @@
   function build(welcome){
     if(welcome.dataset.pixelMatch==='1') return;
     welcome.dataset.pixelMatch='1';
+    welcome.setAttribute('data-premium-surface','welcome');
     welcome.classList.add('premium-v6','premium-v6-pixel');
     welcome.textContent='';
 

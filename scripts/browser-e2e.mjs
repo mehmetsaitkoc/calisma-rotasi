@@ -143,9 +143,9 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   // Stage 2 · goals
-  await page.locator('#setup-wizard-form [name="targetScore"][value="85"]').check({ force: true });
+  await page.locator('#setup-wizard-form [name="targetScore"][value="85"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#setup-wizard-form [name="targetNet"]').fill('82');
-  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').check({ force: true });
+  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const dayBoxes = page.locator('#setup-wizard-form [name="days"]');
   assert.equal(await dayBoxes.count(), 7, 'Premium goals stage must expose all seven working days');
@@ -163,12 +163,12 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   // Stage 3 · situation analysis
-  await page.locator('#setup-wizard-form [name="currentNetApprox"][value="50"]').check({ force: true });
-  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').check({ force: true });
+  await page.locator('#setup-wizard-form [name="currentNetApprox"][value="50"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   const weakMath = page.locator('#setup-wizard-form [name="weakSubjects"][value="k-ma"]');
-  if (await weakMath.count()) await weakMath.check({ force: true });
+  if (await weakMath.count()) await weakMath.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   const strongTurkish = page.locator('#setup-wizard-form [name="strongSubjects"][value="k-tr"]');
-  if (await strongTurkish.count()) await strongTurkish.check({ force: true });
+  if (await strongTurkish.count()) await strongTurkish.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   await page.locator('[data-action="summary-build"]').click();

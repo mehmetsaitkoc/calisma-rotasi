@@ -2,6 +2,7 @@ import { getSupabase } from './supabase-client.js';
 
 const CLOUD_WRITE_KEY='calisma-rotasi:cloud:last-write:v1';
 const CLOUD_EVENT_KEY='calisma-rotasi:cloud:last-event:v1';
+const CLOUD_USER_KEY='calisma-rotasi:cloud:user:v1';
 const client=await getSupabase();
 
 if(client){
@@ -78,11 +79,26 @@ if(client){
       const { data:remote,error }=await client.from('workspace_state').select('state,updated_at').eq('user_id',user.id).maybeSingle();
       if(error) throw error;
       const local=activeState();
-      if(remote?.state && !hasLocalStudy(local) && bridge?.storageKey){
+      const priorUser=localStorage.getItem(CLOUD_USER_KEY);
+      const sameUser=!priorUser || priorUser===user.id;
+
+      if(!sameUser && bridge?.storageKey){
+        if(remote?.state){
+          localStorage.setItem(bridge.storageKey,JSON.stringify(remote.state));
+          localStorage.setItem(CLOUD_WRITE_KEY,remote.updated_at||now());
+        }else{
+          localStorage.removeItem(bridge.storageKey);
+          localStorage.removeItem(CLOUD_WRITE_KEY);
+        }
+        localStorage.setItem(CLOUD_USER_KEY,user.id);
+        location.reload();
+      }else if(remote?.state && !hasLocalStudy(local) && bridge?.storageKey){
         localStorage.setItem(bridge.storageKey,JSON.stringify(remote.state));
         localStorage.setItem(CLOUD_WRITE_KEY,remote.updated_at||now());
+        localStorage.setItem(CLOUD_USER_KEY,user.id);
         location.reload();
       }else{
+        localStorage.setItem(CLOUD_USER_KEY,user.id);
         await syncState(local);
       }
       void writeActivity('app_open',{path:location.pathname});
@@ -96,7 +112,7 @@ if(client){
     window.RotaCloud={
       user,
       sync:()=>syncState(activeState()),
-      signOut:async()=>{await client.auth.signOut();location.replace('/login.html');}
+      signOut:async()=>{await syncState(activeState());if(bridge?.storageKey)localStorage.removeItem(bridge.storageKey);localStorage.removeItem(CLOUD_WRITE_KEY);localStorage.removeItem(CLOUD_USER_KEY);await client.auth.signOut();location.replace('/login.html');}
     };
   }
 }

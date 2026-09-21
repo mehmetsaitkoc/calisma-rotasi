@@ -95,16 +95,16 @@ T('k-tr-5-bank-01','k-tr','k-tr-5','Ses bilgisi',1,[
 ]),
 T('k-tr-6-bank-01','k-tr','k-tr-6','Yazım kuralları',1,[
  Q('Aşağıdaki cümlelerin hangisinde “de”nin yazımı doğrudur?',['Ben de bu görüşe katılıyorum.','Sende bizimle gel.','Ev de kimse yoktu.','Toplantıda ki karar değişti.','Oda yarın gelecek.'],0,'Bağlaç olan “de” ayrı yazılır: Ben de.','de/da'),
- Q('Aşağıdakilerden hangisinin yazımı doğrudur?',['bir kaç','hiç bir','birçok','her hangi','pekçok'],2,'“Birçok” bitişik yazılır.','birleşik sözcük'),
+ Q('Aşağıdaki sözcüklerden hangisinin yazımı doğrudur?',['bir kaç','hiç bir','birçok','her hangi','pekçok'],2,'“Birçok” bitişik yazılır.','birleşik sözcük'),
  Q('Aşağıdaki cümlelerin hangisinde “ki” doğru yazılmıştır?',['Belli ki bugün gelmeyecek.','Duydumki karar değişmiş.','Masada ki dosyayı getir.','Öyleki kimse konuşamadı.','Sendeki mi ayrı yazılır?'],0,'Bağlaç olan “ki” ayrı yazılır: belli ki.','ki'),
  Q('Aşağıdaki cümlelerin hangisinde soru eki doğru yazılmıştır?',['Gelecekmisin?','Bunu sen mi yaptın?','Okudunmu?','Hazırmı?','Bizimmi?'],1,'Soru eki “mi” ayrı yazılır; kendinden sonraki kişi eki ona bitişir.','soru eki'),
  Q('Aşağıdaki cümlelerin hangisinde kurum adının yazımı doğrudur?',['ankara Üniversitesi bu yıl kontenjanını artırdı.','Türk Dil Kurumu yeni bir sözlük yayımladı.','Millî eğitim Bakanlığı yeni takvimi açıkladı.','Çukurova üniversitesi öğrenci aldı.','Türk Dil Kurum’u yeni bir sözlük yayımladı.'],1,'Kurum ve kuruluş adlarındaki sözcükler büyük harfle başlar; “Türk Dil Kurumu” bu kurala uygun yazılmıştır.','büyük harf'),
- Q('Aşağıdakilerden hangisinin yazımı doğrudur?',['ön söz','öngörü','art arda','yanısıra','haftasonu'],1,'“Öngörü” bitişik yazılır.','birleşik sözcük'),
+ Q('Aşağıdaki birleşik sözcüklerden hangisinin yazımı doğrudur?',['ön söz','öngörü','art arda','yanısıra','haftasonu'],1,'“Öngörü” bitişik yazılır.','birleşik sözcük'),
  Q('Aşağıdaki cümlelerin hangisinde sayıların yazımı doğrudur?',['Toplantı saat 14.30’da başlayacak.','Yarışmada 3.’üncü oldu.','XX. inci yüzyıl','Saat iki buçuk’da','15 ocak 2026’da'],0,'Saat gösteriminde 14.30 yazımı ve ekin kesmeyle ayrılması uygundur.','sayı yazımı'),
  Q('Aşağıdaki cümlelerin hangisinde özel ada gelen ek doğru yazılmıştır?',['Ankara’ya yarın gideceğiz.','Türkiyenin nüfusu','Ahmet ler geldi.','Türkçe’nin kuralları','Mehmet bey’in odası'],0,'Özel ada gelen çekim eki kesmeyle ayrılır: Ankara’ya. Dil adlarına gelen ekler kesmeyle ayrılmaz.','kesme işareti/yazım'),
  Q('Aşağıdakilerden hangisi doğru yazılmıştır?',['olağan üstü','bilinç altı','suçüstü','ayak üstü','akşam üstü'],2,'“Suçüstü” bitişik yazılır.','birleşik sözcük'),
- Q('Aşağıdaki cümlelerin hangisinde kurum adı doğru yazılmıştır?',['Türk tarih kurumu bir açıklama yaptı.','Türk Tarih Kurumu bir açıklama yaptı.','Türk Tarih kurumu bir açıklama yaptı.','Türk tarih Kurumu bir açıklama yaptı.','türk Tarih Kurumu bir açıklama yaptı.'],1,'Kurum adındaki sözcükler büyük harfle başlar.','büyük harf'),
- Q('Aşağıdakilerden hangisinin yazımı doğrudur?',['bugünki','yarınki','dünkü ki','evvel ki','şuan'],1,'Zaman bildiren bazı sözcüklerde -ki bitişik yazılır: yarınki.','-ki'),
+ Q('Aşağıdaki cümlelerin hangisinde kurum adı doğru yazılmıştır?',['ankara Üniversitesi yeni kayıt tarihlerini duyurdu.','Türk Tarih Kurumu bir açıklama yaptı.','Millî Eğitim bakanlığı yeni bir duyuru yayımladı.','Çukurova üniversitesi yeni bir program açtı.','Türk Tarih Kurum’u bir açıklama yaptı.'],1,'Kurum ve kuruluş adlarındaki sözcükler büyük harfle başlar; “Türk Tarih Kurumu” bu kurala uygun yazılmıştır.','büyük harf'),
+ Q('Aşağıdaki “-ki” yapılarından hangisinin yazımı doğrudur?',['bugünki','yarınki','dünkü ki','evvel ki','şuan'],1,'Zaman bildiren bazı sözcüklerde -ki bitişik yazılır: yarınki.','-ki'),
  Q('Aşağıdaki cümlelerin hangisinde yazım yanlışı yoktur?',['Her şey planlandığı gibi ilerledi.','Birşey söylemeden çıktı.','Hiçkimse onu görmedi.','Şu anki durumu herkez biliyor.','Bir çok kişi katıldı.'],0,'“Her şey” ayrı yazılır; diğer seçeneklerde birleşik/yanlış yazımlar vardır.','genel yazım')
 ]),
 T('k-tr-7-bank-01','k-tr','k-tr-7','Noktalama işaretleri',1,[

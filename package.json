@@ -14,7 +14,7 @@
     "pilot:operations:test": "node scripts/route-engine-pilot-operations.test.mjs",
     "pilot:operations:ui:test": "node scripts/route-engine-pilot-operations-ui.test.mjs",
     "production:smoke": "node scripts/production-smoke.mjs",
-    "contracts:test": "node scripts/catalog-boundary.test.mjs && node scripts/workspace-schema.test.mjs && node scripts/route-contracts.test.mjs && node scripts/report-analytics.test.mjs && node scripts/architecture-boundaries.test.mjs && node scripts/pilot-metrics.test.mjs && node scripts/mini-catalog.test.mjs && node scripts/kpss-practice-catalog.test.mjs && node scripts/server-contracts.test.mjs && node scripts/server-runtime.test.mjs && node scripts/premium-ui-contract.test.mjs && node scripts/app-premium-next-contract.test.mjs && node scripts/kpss-only-contract.test.mjs && node scripts/kpss-history-professional.test.mjs && node scripts/color-mode-contract.test.mjs"
+    "contracts:test": "node scripts/catalog-boundary.test.mjs && node scripts/workspace-schema.test.mjs && node scripts/route-contracts.test.mjs && node scripts/report-analytics.test.mjs && node scripts/architecture-boundaries.test.mjs && node scripts/pilot-metrics.test.mjs && node scripts/mini-catalog.test.mjs && node scripts/kpss-practice-catalog.test.mjs && node scripts/server-contracts.test.mjs && node scripts/server-runtime.test.mjs && node scripts/premium-ui-contract.test.mjs && node scripts/premium-onboarding-contract.test.mjs && node scripts/app-premium-next-contract.test.mjs && node scripts/kpss-only-contract.test.mjs && node scripts/kpss-history-professional.test.mjs && node scripts/color-mode-contract.test.mjs"
   },
   "engines": {
     "node": ">=24.21.0 <25"

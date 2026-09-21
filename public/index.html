@@ -2439,8 +2439,8 @@ function endSample(){if(!sampleSaved)return;leaveVideo();closeModal();studyClock
 function handlePaidAction(b){const a=b.dataset.action;switch(a){
  case 'paid-pricing':closeModal();navigate('pricing');break;
  case 'paid-membership':closeModal();navigate(state.activeExam&&w().configured?'membership':'pricing');break;
- case 'paid-start':closeModal();navigate(state.activeExam&&w().configured?'today':state.activeExam?'setup':'select');break;
- case 'paid-free-start':navigate(state.activeExam&&w().configured?'today':state.activeExam?'setup':'select');break;
+ case 'paid-start':closeModal();if(!state.activeExam){chooseExam('kpss');break;}navigate(w().configured?'today':'setup');break;
+ case 'paid-free-start':if(!state.activeExam){chooseExam('kpss');break;}navigate(w().configured?'today':'setup');break;
  case 'paid-period':if(['monthly','quarterly'].includes(b.dataset.period)){billingPeriod=b.dataset.period;render();}break;
  case 'paid-upgrade':openUpgrade(b.dataset.feature);break;
  case 'paid-offer':openOffer(b.dataset.offer);break;

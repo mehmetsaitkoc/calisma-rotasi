@@ -81,6 +81,11 @@ async function assertTodayContract(page) {
   await page.locator('.pnx3-dashboard').waitFor({ state: 'visible' });
   await page.getByRole('heading', { name: 'Bugün, hedefindeki sen için güçlü bir gün!' }).waitFor({ state: 'visible' });
 
+  const greeting = ((await page.locator('.pnx3-greeting').textContent()) || '').trim();
+  const profileName = ((await page.locator('.pnx-profile-copy strong').textContent()) || '').trim();
+  assert.ok(greeting && !/GÜNAYDIN\s+BUGÜN/i.test(greeting), 'Dashboard greeting must keep the real student identity');
+  assert.ok(profileName && profileName.toLocaleLowerCase('tr-TR') !== 'bugün', 'Topbar profile must keep the real student identity');
+
   assert.match(
     (await page.locator('.pnx-global-search').innerText()).trim(),
     /KPSS/i,
@@ -744,15 +749,26 @@ try {
 
   const beforeMode = latestTaskMode(space0, todayTask);
 
-  const startButton = page.locator('.pnx3-focus .pnx-pomodoro-play[data-action="focus-session"][data-id="' + todayTask.id + '"]').first();
+  const startButton = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await startButton.waitFor({ state: 'visible' });
+  assert.match((await startButton.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Preview timer must show the real planned task duration');
   await startButton.click();
-  const focusCard = page.locator('.route-focus-card');
+
+  const focusCard = page.locator('.pnx3-focus .route-focus-card');
   await focusCard.waitFor({ state: 'visible' });
-  assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Başla must bind the real task title to the focus card');
-  assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Başla must expose the focus-session state');
+  assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Pomodoro start must bind the real task title to the focus card');
+  assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Pomodoro start must expose the focus-session state');
   assert.ok(await focusCard.getByText('Bitir ve kaydet', { exact: false }).count(), 'Focused task must expose the finish-and-record action');
   assert.match(await focusCard.innerText(), /çalışma kaydına otomatik bağlanacak/i, 'Focus card must explain the task/log linkage');
+
+  const clock = focusCard.locator('#clock');
+  await clock.waitFor({ state: 'visible' });
+  const initialClock = (await clock.innerText()).trim();
+  assert.equal(initialClock, String(todayTask.minutes).padStart(2, '0') + ':00', 'Real timer must honor the planned task minutes');
+  await page.clock.fastForward(2000);
+  const runningClock = (await clock.innerText()).trim();
+  assert.notEqual(runningClock, initialClock, 'Real Pomodoro clock must count down after the dashboard play control is pressed');
+  assert.ok(await focusCard.getByText('Duraklat', { exact: false }).count(), 'Running Pomodoro must expose pause control');
 
   snapshot = await appState(page);
   const spaceAfterFocus = snapshot.value.workspaces.kpss;

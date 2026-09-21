@@ -324,6 +324,13 @@
 
 /* APP PREMIUM NEXT LOADER · keeps the large workspace HTML untouched */
 (() => {
+  if (!document.querySelector('script[data-color-mode]')) {
+    const mode = document.createElement('script');
+    mode.src = '/color-mode.js?v=1';
+    mode.async = false;
+    mode.dataset.colorMode = '1';
+    document.head.appendChild(mode);
+  }
   if (!document.querySelector('link[data-app-premium-next]')) {
     const css = document.createElement('link');
     css.rel = 'stylesheet';

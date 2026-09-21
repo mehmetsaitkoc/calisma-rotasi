@@ -114,9 +114,10 @@
 
   function sync() {
     queued = false;
+    const shell = document.querySelector('.app-shell');
     const header = document.querySelector('.route-v1-head[data-premium-surface="today"]');
+    document.body.classList.toggle(BODY_CLASS, !!shell);
     if (header) composeToday(header);
-    else document.body.classList.remove(BODY_CLASS);
   }
 
   function schedule() {

@@ -182,6 +182,67 @@ function repairProposal(input={}){
   };
 }
 
+function methodStrategyKey(method,mode){
+  const m=String(method||'').trim().slice(0,60);
+  const md=['repair','ease','progress'].includes(mode)?mode:'';
+  return m&&md?m+'|'+md:'';
+}
+function methodStrategyMemory(input={}){
+  const rows=safeArray(input.samples).filter(x=>x&&['helpful','neutral','harmful'].includes(x.status)&&String(x.method||'').trim()&&['repair','ease','progress'].includes(x.mode));
+  const groups=new Map();
+  const weightFor=maturity=>maturity>=30?1:maturity>=14?.75:maturity>=7?.5:.35;
+  for(const row of rows){
+    const key=methodStrategyKey(row.method,row.mode);if(!key)continue;
+    const g=groups.get(key)||{key,method:String(row.method),mode:row.mode,total:0,helpful:0,neutral:0,harmful:0,weighted:0,weight:0,maxMaturity:0};
+    const weight=weightFor(Number(row.maturity)||0),score=row.status==='helpful'?1:row.status==='harmful'?-1:0;
+    g.total++;g[row.status]++;g.weighted+=score*weight;g.weight+=weight;g.maxMaturity=Math.max(g.maxMaturity,Number(row.maturity)||0);
+    groups.set(key,g);
+  }
+  const strategies=[...groups.values()].map(g=>{
+    const score=g.weight?g.weighted/g.weight:0;
+    const known=g.total>=2&&g.weight>=1;
+    const action=!known?'collect':score>=.45&&g.helpful>=2?'repeat':score<=-.34&&g.harmful>=2?'change':'hold';
+    const confidence=Math.round(clamp(g.total*18+g.weight*14+(g.maxMaturity>=30?12:g.maxMaturity>=14?7:3),0,100));
+    const label=action==='repeat'?'Bu yöntem sende çoğunlukla işe yarıyor':action==='change'?'Bu yöntemi aynı biçimde tekrarlama':action==='hold'?'Yöntem sonucu karışık':'Yöntem hafızası için daha fazla sonuç gerekiyor';
+    return {...g,score:round(score,2),known,action,confidence,label};
+  }).sort((a,b)=>(b.known-a.known)||b.score-a.score||b.confidence-a.confidence||b.total-a.total);
+  const currentKey=String(input.currentKey||''),current=strategies.find(x=>x.key===currentKey)||null;
+  const preferred=strategies.find(x=>x.known&&x.action==='repeat')||null;
+  const avoided=strategies.find(x=>x.known&&x.action==='change')||null;
+  return {
+    known:strategies.some(x=>x.known),
+    total:rows.length,
+    current,
+    preferred,
+    avoided,
+    strategies:strategies.slice(0,8)
+  };
+}
+function methodVariation(method,mode,action){
+  method=String(method||'');
+  if(action==='repeat')return 'Bu çalışma biçiminin çekirdeği önceki olgun sonuçlarda işe yaradı; yöntemi koru, yalnız küçük bir varyasyon ekle.';
+  if(action!=='change')return '';
+  const map={
+    quant:'Önce 1 çözümlü örneği kapatıp kendin yeniden kur; sonra kısa hedefli set çöz ve her yanlışta işlemin koptuğu satırı işaretle.',
+    geometry:'Önce şekli kendin çizip verilen–istenen ilişkisini yaz; ardından az sayıda hedefli soru çöz ve kullanılan bağıntıyı her soruda adlandır.',
+    science:'Formülü ezberden yazmak yerine ana ilişkiyi kendi cümlenle açıkla; sonra kavram–uygulama karışık kısa setle doğrula.',
+    biology:'Konuyu yeniden okumak yerine kaynağı kapatıp ana kavramları geri çağır; yanlış bilgiyi doğru cümleyle değiştirip mini set çöz.',
+    paragraph:'Önce süreyi kaldırıp soru kökü–çıkarım–odak ayrımını birkaç soruda doğrula; doğruluk toparlanınca kısa süreli sete dön.',
+    logic:'Çözümü zihinden yürütme; tablo/şemayı sıfırdan kur, kırılma noktasını işaretle ve benzer soruda aynı şemayı yeniden kullan.',
+    grammar:'Kuralı tekrar okumak yerine kendi örneklerini üret; ardından kısa uygulama setinde yanlış kuralı tek cümleyle düzelt.',
+    history:'Tekrar okumak yerine kaynağı kapatıp olay–neden–sonuç ve kronoloji zinciri çıkar; ardından kısa testle doğrula.',
+    geography:'Metni yeniden okumak yerine boş harita/şema üzerinde bilgiyi yerleştir; ardından kısa soru setiyle doğrula.',
+    literature:'Yazar–eser–dönem bilgisini kaynaksız eşleştir; karışan eşleşmeleri küçük karta dönüştürüp kısa testle doğrula.',
+    current:'Notu yeniden okumak yerine bilgiyi kaynaksız geri çağır; yanlış hatırlananları düzeltip kısa kart kontrolü yap.',
+    ydt_vocab:'Kelime listesini yeniden okumak yerine anlamı kapatıp geri çağır; kelimeyi örnek cümlede kullanarak doğrula.',
+    ydt_grammar:'Kuralı kendi cümlenle anlat ve örnek cümle üret; ardından kısa uygulama setiyle doğrula.',
+    ydt_reading:'Önce süre baskısını azaltıp yanlışın kelime mi çıkarım mı olduğunu ayır; sonra kısa süreli okuma setine dön.',
+    concept:'Konuyu tekrar okumak yerine kaynağı kapatıp ana kavramı kendi cümlenle anlat; ardından kısa uygulama ile doğrula.'
+  };
+  const base=map[method]||'Aynı çalışmayı tekrar etmek yerine yöntemi değiştir: önce bilgiyi kaynaksız üret, sonra kısa hedefli uygulamayla doğrula.';
+  return (mode==='repair'?'Onarım yöntemi değişikliği: ':mode==='ease'?'Sürdürülebilir yöntem değişikliği: ':'İlerleme yöntemi değişikliği: ')+base;
+}
+
 function interventionMemory(input={}){
   const effect=input.effect&&typeof input.effect==='object'?input.effect:{};
   const mode=['repair','ease','progress'].includes(input.mode)?input.mode:'';
@@ -221,6 +282,6 @@ function explainTask(input={}){
   return {headline:'Neden bugün?',reasons:reasons.slice(0,3),text:reasons.slice(0,2).join(' ')};
 }
 
-root.RotaIntelligenceV1={rollingWindow,longitudinalProfile,targetRisk,executionPrescription,repairProposal,interventionMemory,explainTask};
+root.RotaIntelligenceV1={rollingWindow,longitudinalProfile,targetRisk,executionPrescription,repairProposal,methodStrategyKey,methodStrategyMemory,methodVariation,interventionMemory,explainTask};
 if(typeof module==='object')module.exports=root.RotaIntelligenceV1;
 })(typeof window!=='undefined'?window:globalThis);

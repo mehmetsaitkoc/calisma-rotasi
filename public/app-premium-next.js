@@ -343,7 +343,7 @@
 
     if (header.dataset.pnxMounted !== '2') {
       const stage = document.createElement('section');
-      stage.className = 'pnx-stage';
+      stage.className = 'pnx-stage pnx-focus-layout';
       stage.setAttribute('aria-label', 'Bugünün ana çalışma alanı');
 
       const primary = document.createElement('div');

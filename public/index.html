@@ -2333,6 +2333,18 @@ try{const raw=localStorage.getItem(KEY);if(raw){const parsed=JSON.parse(raw);sta
 const ui={view:state.activeExam&&state.workspaces[state.activeExam].configured?(state.workspaces[state.activeExam].profile?.completed&&state.workspaces[state.activeExam].profile?.summaryConfirmed===false?'summary':'today'):'select',setupStep:0,stage:'all',query:'',mockFilter:'',mistakeFilter:'open',month:today().slice(0,7),reportTab:'month',weekStart:today(),formContext:null,confirmFn:null,analysisId:''};
 let timers={};try{const raw=JSON.parse(localStorage.getItem(TIMER_KEY)||'{}');for(const e of ['kpss','yks']){const t=raw[e];if(t&&Number.isFinite(t.seconds)&&t.seconds>=0&&t.seconds<=5400&&[25,50,90].includes(t.duration)&&Number.isFinite(t.endAt)&&t.endAt>=0)timers[e]={duration:t.duration,seconds:t.seconds,endAt:t.endAt,subjectId:typeof t.subjectId==='string'?t.subjectId:'',sessionId:typeof t.sessionId==='string'?t.sessionId:''};}}catch{}
 function w(){return state.workspaces[state.activeExam];}
+// Read-only presentation bridge: dashboard evidence without exposing mutable app state.
+window.RotaDashboardEvidence=Object.freeze({
+ kpssWorkspace(){
+  const space=state.workspaces?.kpss;
+  if(!space)return null;
+  return {
+   exam:'kpss',
+   exams:JSON.parse(JSON.stringify(space.exams||[])),
+   logs:JSON.parse(JSON.stringify(space.logs||[]))
+  };
+ }
+});
 function subject(id){return C.subjects.find(s=>s.id===id);}
 function subjects(){return R.courses(state.activeExam,w().settings.track);}
 function subName(id,withStage=false){const s=subject(id);return s?(withStage?`${s.stage} · `:'')+s.name:'Ders';}

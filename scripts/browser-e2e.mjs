@@ -514,6 +514,18 @@ async function runKpssSectionExamContent(browser) {
 
   assert.ok(await page.getByText('KPSS Türkçe Bölüm Denemesi #01', { exact: true }).count(), 'KPSS Turkish section exam must be visible');
   assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi #01', { exact: true }).count(), 'KPSS history section exam must be visible');
+
+  for(let setNo=1;setNo<=4;setNo++){
+    assert.ok(await page.getByText('KPSS Türkçe · Sözcükte Anlam · Test '+setNo,{exact:true}).count(),'Professional Word Meaning Test '+setNo+' must be visible');
+  }
+  assert.equal(await page.getByText('KPSS Sözcükte Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Meaning seed must not remain in the active catalog');
+  const professionalStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-tr:k-tr-1:t01"]').first();
+  await professionalStart.waitFor({state:'visible'});
+  await professionalStart.click();
+  const professionalForm=page.locator('#mini-exam-form');
+  await professionalForm.waitFor({state:'visible'});
+  assert.equal(await professionalForm.locator('.mini-question').count(),12,'Professional Word Meaning test must render exactly 12 questions');
+  await page.locator('[data-action="close-modal"]').first().click();
   assert.ok(await page.getByText(/konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık/i).count(), 'Section-exam distribution must be described as approximate, not official-fixed');
 
   const start = page.locator('[data-action="start-section-exam"][data-id="kpss-turkce-section-01"]').first();

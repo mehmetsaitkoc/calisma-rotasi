@@ -5218,13 +5218,15 @@ window.RotaRuntimeV1={
   routeInterventionPolicyAdjustment:typeof routeInterventionPolicyAdjustment==='function'?routeInterventionPolicyAdjustment:null,
   routeInterventionEffectSignal:typeof routeInterventionEffectSignal==='function'?routeInterventionEffectSignal:null,
   routeInterventionEvaluation:typeof routeInterventionEvaluation==='function'?routeInterventionEvaluation:null,
-  routeStudyMethod:typeof routeStudyMethod==='function'?routeStudyMethod:null
+  routeStudyMethod:typeof routeStudyMethod==='function'?routeStudyMethod:null,
+  routeRecordInterventions:typeof routeRecordInterventions==='function'?routeRecordInterventions:null
  }),
  installIntelligenceHooks:(hooks={})=>{
   if(typeof hooks.routeStudentModel==='function')routeStudentModel=hooks.routeStudentModel;
   if(typeof hooks.routeAppliedDecision==='function')routeAppliedDecision=hooks.routeAppliedDecision;
   if(typeof hooks.routeTaskReason==='function')routeTaskReason=hooks.routeTaskReason;
   if(typeof hooks.routeBuildCandidates==='function')routeBuildCandidates=hooks.routeBuildCandidates;
+  if(typeof hooks.routeRecordInterventions==='function')routeRecordInterventions=hooks.routeRecordInterventions;
   if(typeof hooks.teacherStudentContext==='function')teacherStudentContext=hooks.teacherStudentContext;
   routeRenderDecisionCache.clear();
   routeRenderPlanIndex=null;

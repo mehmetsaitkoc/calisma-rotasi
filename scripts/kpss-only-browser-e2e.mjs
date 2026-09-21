@@ -46,13 +46,13 @@ async function fillKpssStep(page) {
   await form.waitFor({ state: 'visible' });
 
   const score85 = form.locator('[name="targetScore"][value="85"]');
-  if (await score85.count()) await score85.check();
+  if (await score85.count()) await score85.check({ force: true });
 
   const targetNet = form.locator('[name="targetNet"]');
   if (await targetNet.count()) await targetNet.fill('82');
 
   const minuteRadio = form.locator('[name="dailyMinutes"][value="240"]');
-  if (await minuteRadio.count()) await minuteRadio.check();
+  if (await minuteRadio.count()) await minuteRadio.check({ force: true });
 
   const days = form.locator('[name="days"]');
   for (let i = 0; i < await days.count(); i++) {
@@ -61,16 +61,16 @@ async function fillKpssStep(page) {
   }
 
   const currentNet = form.locator('[name="currentNetApprox"][value="50"]');
-  if (await currentNet.count()) await currentNet.check();
+  if (await currentNet.count()) await currentNet.check({ force: true });
 
   const habit = form.locator('[name="studyHabit"][value="yes"]');
-  if (await habit.count()) await habit.check();
+  if (await habit.count()) await habit.check({ force: true });
 
   const weakMath = form.locator('[name="weakSubjects"][value="k-ma"]');
-  if (await weakMath.count()) await weakMath.check();
+  if (await weakMath.count()) await weakMath.check({ force: true });
 
   const strongTurkish = form.locator('[name="strongSubjects"][value="k-tr"]');
-  if (await strongTurkish.count()) await strongTurkish.check();
+  if (await strongTurkish.count()) await strongTurkish.check({ force: true });
 
   await form.locator('button[type="submit"]').click();
 }

@@ -33,7 +33,8 @@ function currentBindings(){
     routeInterventionPolicyAdjustment:legacyFn('routeInterventionPolicyAdjustment'),
     routeInterventionEffectSignal:legacyFn('routeInterventionEffectSignal'),
     routeInterventionEvaluation:legacyFn('routeInterventionEvaluation'),
-    routeStudyMethod:legacyFn('routeStudyMethod')
+    routeStudyMethod:legacyFn('routeStudyMethod'),
+    routeRecordInterventions:legacyFn('routeRecordInterventions')
   };
 }
 function helper(name){
@@ -182,6 +183,8 @@ function adaptTaskMethod(task,mode){
   if(!variation)return {task,memory};
   const next={...task};
   if(current.action==='change'){
+    next.intelligenceMethodVariant='alt';
+    next.intelligenceBaseMethod=memory.currentMethod||'';
     next.taskGoal=(variation+' '+String(next.taskGoal||'')).slice(0,300);
     const note=' Öğrenen yöntem hafızası: bu çalışma biçimi olgun geri testlerde yeterli sonuç vermedi; aynı hedef farklı uygulamayla deneniyor.';
     const reason=String(next.reason||'');
@@ -311,6 +314,7 @@ function install(){
     routeAppliedDecision:b.routeAppliedDecision,
     routeTaskReason:b.routeTaskReason,
     routeBuildCandidates:b.routeBuildCandidates,
+    routeRecordInterventions:b.routeRecordInterventions,
     teacherStudentContext:b.teacherStudentContext
   };
 
@@ -379,6 +383,24 @@ function install(){
       const note=' Intelligence V1: hedef riski ve konuya özgü onarım sinyali birlikte doğrulandığı için öncelik kontrollü artırıldı.';
       return {...candidate,priority:Math.min(96,(Number(candidate.priority)||0)+boost),reason:reason.includes('Intelligence V1:')?reason:reason+note};
     }).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0)||String(a?.routeKey||'').localeCompare(String(b?.routeKey||'')));
+  }:null;
+
+  const patchedRecordInterventions=typeof originals.routeRecordInterventions==='function'?function(tasks){
+    const space=workspace(),before=new Set(safeInterventions(space).map(x=>x.id)),list=Array.isArray(tasks)?tasks:[];
+    const result=originals.routeRecordInterventions(tasks);
+    if(!space)return result;
+    const taskById=new Map(list.map(x=>[x.id,x]));
+    for(const iv of safeInterventions(space)){
+      if(before.has(iv.id))continue;
+      const task=taskById.get(iv.taskId);
+      if(!task||task.intelligenceMethodVariant!=='alt')continue;
+      const base=String(task.intelligenceBaseMethod||iv.method||'').replace(/:alt$/,'').slice(0,52);
+      if(base)iv.method=(base+':alt').slice(0,60);
+      const marker=' Intelligence V1 yöntem varyasyonu uygulandı.';
+      if(!String(iv.reason||'').includes('Intelligence V1 yöntem varyasyonu'))iv.reason=(String(iv.reason||'')+marker).slice(0,500);
+    }
+    methodCache={key:'',values:new Map()};
+    return result;
   }:null;
 
   const patchedTeacherStudentContext=typeof originals.teacherStudentContext==='function'?function(record){
@@ -451,6 +473,7 @@ function install(){
     routeAppliedDecision:patchedAppliedDecision,
     ...(patchedTaskReason?{routeTaskReason:patchedTaskReason}:{}),
     ...(patchedBuildCandidates?{routeBuildCandidates:patchedBuildCandidates}:{}),
+    ...(patchedRecordInterventions?{routeRecordInterventions:patchedRecordInterventions}:{}),
     ...(patchedTeacherStudentContext?{teacherStudentContext:patchedTeacherStudentContext}:{})
   };
   installHooks(hooks);

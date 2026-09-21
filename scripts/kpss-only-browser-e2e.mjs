@@ -164,19 +164,25 @@ try {
   assert.equal(snapshot.value.workspaces.yks.sync?.workspaceId || '', legacy.workspaceId, 'Legacy YKS workspace identity must be preserved');
   assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'Redirected workspace must not reveal a YKS selector');
 
-  await page.locator('[data-action="paid-pricing"]').first().click();
+  const academyNav = page.locator('[data-action="nav"][data-view="academy"]').first();
+  assert.equal(await academyNav.count(), 1, 'Configured KPSS shell must expose the academy navigation');
+  await academyNav.evaluate(node => node.click());
+  await page.locator('.academy-grid').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => !document.querySelector('[data-scope="TYT"],[data-scope="AYT"],[data-scope="YDT"]'));
+  assert.equal(await page.locator('[data-scope="TYT"],[data-scope="AYT"],[data-scope="YDT"]').count(), 0, 'Academy must hide YKS session filters');
+  const stages = await page.locator('.academy-course .course-stage').allTextContents();
+  assert.ok(stages.length > 0 && stages.every(stage => stage.trim().startsWith('KPSS')), 'Academy must expose KPSS courses only');
+
+  const pricingButton = page.locator('[data-action="paid-pricing"]').first();
+  assert.ok(await pricingButton.count(), 'Configured KPSS shell must expose pricing navigation');
+  await pricingButton.evaluate(node => node.click());
   await page.locator('.pricing-page').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => {
+    const copy = (document.querySelector('.pricing-page')?.innerText || '').toLocaleUpperCase('tr-TR');
+    return !/\\bYKS\\b|\\bTYT\\b|\\bAYT\\b|\\bYDT\\b/.test(copy);
+  });
   const pricingCopy = (await page.locator('.pricing-page').innerText()).toLocaleUpperCase('tr-TR');
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(pricingCopy), 'Pricing must be KPSS-only');
-
-  const academyNav = page.locator('[data-action="nav"][data-view="academy"]').first();
-  if (await academyNav.count()) {
-    await academyNav.click();
-    await page.locator('.academy-grid').waitFor({ state: 'visible' });
-    assert.equal(await page.locator('[data-scope="TYT"],[data-scope="AYT"],[data-scope="YDT"]').count(), 0, 'Academy must hide YKS session filters');
-    const stages = await page.locator('.academy-course .course-stage').allTextContents();
-    assert.ok(stages.length > 0 && stages.every(stage => stage.trim().startsWith('KPSS')), 'Academy must expose KPSS courses only');
-  }
 
   const visibleCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(visibleCopy), 'Visible product UI must remain KPSS-only');

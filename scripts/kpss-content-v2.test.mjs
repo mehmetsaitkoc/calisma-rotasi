@@ -38,7 +38,7 @@ const P3=globalThis.RotaKpssProfessionalTurkish03;
 const S=globalThis.RotaKpssProfessionalSections;
 const H=globalThis.RotaKpssProfessionalHistory;
 const E2=globalThis.RotaKpssHistoryEditorialPass2;
-assert.ok(E2&&E2.reviewedSample===100&&E2.rewrittenQuestions===36,'History editorial pass 2 must remain loaded with 100-question review / 36 rewrites');
+assert.ok(E2&&E2.reviewedSample===100&&E2.rewrittenQuestions===37,'History editorial pass 2 must remain loaded with 100-question review / 37 rewrites');
 assert.ok(C&&B&&Q&&P&&P2&&P3&&S&&H,'KPSS v2 content modules must load');
 
 const totals=B.totals(C);

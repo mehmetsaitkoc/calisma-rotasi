@@ -46,8 +46,11 @@ try{
 
   await Promise.all([title.waitFor(),journey.waitFor(),dashboard.waitFor()]);
   assert.equal(await chips.count(),4,'Journey must render four separate milestone chips');
-  assert.equal(await examCards.count(),2,'Landing must render YKS and KPSS exam choices');
-  assert.equal(await examArt.count(),2,'YKS and KPSS cards must each render architectural artwork');
+  assert.equal(await examCards.count(),1,'Landing must render one KPSS product entry point');
+  assert.equal(await examCards.first().getAttribute('data-exam'),'kpss','The only landing product entry must be KPSS');
+  assert.equal(await examArt.count(),1,'KPSS card must render its architectural artwork');
+  assert.equal(await page.locator('[data-exam="yks"]').count(),0,'YKS must not remain selectable on the landing');
+  assert.equal(await page.getByText(/\\bYKS\\b/).count(),0,'Landing must not display YKS copy');
 
   const [titleBox,journeyBox,dashboardBox]=await Promise.all([title.boundingBox(),journey.boundingBox(),dashboard.boundingBox()]);
   assert.ok(titleBox&&titleBox.width>380,'Hero title must keep strong desktop scale');

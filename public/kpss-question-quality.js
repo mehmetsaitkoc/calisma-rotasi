@@ -25,6 +25,8 @@ function validateQuestion(q,{topicId='',requireMetadata=true}={}){
   assert(new Set(opts).size===5,'Seçenekler yüzey biçiminde benzersiz olmalı: '+q.id);
   if(q.optionMode==='orthography'){
     assert(q.topicId==='k-tr-6'||(q.skill&&/yaz|harf|ek|kısaltma|sayı|özel ad|kurum|eser|birleşik|bağlaç|ki|de\/da|soru eki/i.test(q.skill)),'Orthography istisnası yalnız yazım kazanımlarında kullanılabilir: '+q.id);
+  }else if(q.optionMode==='punctuation'){
+    assert(q.topicId==='k-tr-7'||(q.skill&&/nokta|virgül|noktalı|iki nokta|üç nokta|soru|ünlem|tırnak|ayraç|kesme|çizgi/i.test(q.skill)),'Punctuation istisnası yalnız noktalama kazanımlarında kullanılabilir: '+q.id);
   }else{
     assert(new Set(opts.map(norm)).size===5,'Seçenekler anlamsal olarak benzersiz olmalı: '+q.id);
   }

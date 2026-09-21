@@ -1,31 +1,63 @@
 /* Çalışma Rotası Intelligence Bridge V1
-   Binds Intelligence V1 to the existing Route Engine without rewriting it.
-   Bounded guards: low-confidence evidence never forces a mode change. */
+   Binds Intelligence V1 to the existing Route Engine through a narrow runtime boundary.
+   Low-confidence evidence never forces a mode or scheduler change. */
 (function(root){
 'use strict';
 
 let installed=false;
-let originalStudentModel=null;
-let originalAppliedDecision=null;
-let originalTaskReason=null;
-let originalTeacherStudentContext=null;
-let originalBuildCandidates=null;
+let originals={};
 let profileCache={key:'',value:null};
 
-function fn(name){return typeof root[name]==='function'?root[name]:null;}
-function workspace(){try{return fn('w')?.()||null;}catch{return null;}}
-function todayValue(){try{return fn('today')?.()||new Date().toISOString().slice(0,10);}catch{return new Date().toISOString().slice(0,10);}}
+function runtime(){
+  const rt=root.RotaRuntimeV1;
+  return rt&&rt.version===1?rt:null;
+}
+function legacyFn(name){return typeof root[name]==='function'?root[name]:null;}
+function currentBindings(){
+  const rt=runtime();
+  if(rt?.getBindings){
+    try{return rt.getBindings()||{};}catch{}
+  }
+  return {
+    routeStudentModel:legacyFn('routeStudentModel'),
+    routeAppliedDecision:legacyFn('routeAppliedDecision'),
+    routeTaskReason:legacyFn('routeTaskReason'),
+    routeBuildCandidates:legacyFn('routeBuildCandidates'),
+    teacherStudentContext:legacyFn('teacherStudentContext'),
+    routeSubjectGap:legacyFn('routeSubjectGap'),
+    routeDaysToTarget:legacyFn('routeDaysToTarget'),
+    routeTopicMasterySignal:legacyFn('routeTopicMasterySignal'),
+    routeTopicMasteryScore:legacyFn('routeTopicMasteryScore'),
+    routeRecoverySignal:legacyFn('routeRecoverySignal')
+  };
+}
+function helper(name){
+  const b=currentBindings();
+  return typeof b[name]==='function'?b[name]:legacyFn(name);
+}
+function workspace(){
+  try{return runtime()?.getWorkspace?.()||legacyFn('w')?.()||null;}catch{return null;}
+}
+function todayValue(){
+  try{return runtime()?.getToday?.()||legacyFn('today')?.()||new Date().toISOString().slice(0,10);}
+  catch{return new Date().toISOString().slice(0,10);}
+}
 function intelligence(){return root.RotaIntelligenceV1||null;}
 function finite(v){return v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));}
 function cacheKey(space,today){
-  if(!space)return today+'|0';
+  if(!space)return today+'|none';
   return [
     today,
+    space.exam||'',
+    space.sync?.workspaceId||'',
+    space.sync?.revision||0,
     space.logs?.length||0,
     space.assessments?.length||0,
     space.exams?.length||0,
     space.mistakes?.length||0,
+    space.mistakes?.filter?.(x=>!x.resolved)?.length||0,
     space.plan?.length||0,
+    space.plan?.filter?.(x=>x.done)?.length||0,
     space.taskEvents?.length||0,
     space.route?.modeHistory?.length||0
   ].join('|');
@@ -42,14 +74,13 @@ function profile(){
   }catch{return null;}
 }
 function subjectGap(subjectId){
-  try{
-    if(subjectId&&fn('routeSubjectGap'))return root.routeSubjectGap(subjectId);
-    if(fn('routeNetGap'))return root.routeNetGap();
-  }catch{}
-  return null;
+  try{return helper('routeSubjectGap')?.(subjectId)||helper('routeNetGap')?.()||null;}catch{return null;}
 }
 function daysLeft(){
-  try{return fn('routeDaysToTarget')?.()??null;}catch{return null;}
+  try{return helper('routeDaysToTarget')?.()??null;}catch{return null;}
+}
+function recoveryActive(){
+  try{return !!helper('routeRecoverySignal')?.()?.active;}catch{return false;}
 }
 function targetRiskFor(subjectId,model=null){
   const I=intelligence(),p=profile();
@@ -84,9 +115,6 @@ function repairFor(model){
       trend:model.trend?.direction||'unknown'
     });
   }catch{return null;}
-}
-function recoveryActive(){
-  try{return !!fn('routeRecoverySignal')?.()?.active;}catch{return false;}
 }
 function redFlags(model){
   if(!model)return 0;
@@ -126,20 +154,21 @@ function applyGuard(decision,model,risk,repair){
   return {...out,intelligenceGuard:guard};
 }
 function rawModel(subjectId,topicId=''){
-  if(!originalStudentModel)return null;
-  try{return originalStudentModel.call(root,subjectId,topicId);}catch{return null;}
+  if(!originals.routeStudentModel)return null;
+  try{return originals.routeStudentModel(subjectId,topicId);}catch{return null;}
 }
 function rawDecision(subjectId,topicId=''){
-  if(!originalAppliedDecision)return null;
-  try{return originalAppliedDecision.call(root,subjectId,topicId);}catch{return null;}
+  if(!originals.routeAppliedDecision)return null;
+  try{return originals.routeAppliedDecision(subjectId,topicId);}catch{return null;}
 }
 function masteryFor(topicId){
   if(!topicId)return null;
   try{
-    if(fn('routeTopicMasterySignal'))return root.routeTopicMasterySignal(topicId);
-    if(fn('routeTopicMasteryScore'))return root.routeTopicMasteryScore(topicId);
-  }catch{}
-  return null;
+    const signal=helper('routeTopicMasterySignal');
+    if(signal)return signal(topicId);
+    const score=helper('routeTopicMasteryScore');
+    return score?score(topicId):null;
+  }catch{return null;}
 }
 function snapshot(subjectId,topicId='',task=null){
   const I=intelligence(),model=rawModel(subjectId,topicId),p=profile(),risk=targetRiskFor(subjectId,model),repair=repairFor(model);
@@ -151,16 +180,30 @@ function snapshot(subjectId,topicId='',task=null){
   }
   return {version:1,profile:p,model,risk,repair,decision,explanation};
 }
+function installHooks(hooks){
+  const rt=runtime();
+  if(rt?.installIntelligenceHooks){
+    rt.installIntelligenceHooks(hooks);
+    return true;
+  }
+  for(const [name,value] of Object.entries(hooks))if(typeof value==='function')root[name]=value;
+  return true;
+}
 
 function install(){
   if(installed||!intelligence())return installed;
-  if(!fn('routeStudentModel')||!fn('routeAppliedDecision'))return false;
-  originalStudentModel=root.routeStudentModel;
-  originalAppliedDecision=root.routeAppliedDecision;
-  originalTaskReason=fn('routeTaskReason');
+  const b=currentBindings();
+  if(typeof b.routeStudentModel!=='function'||typeof b.routeAppliedDecision!=='function')return false;
+  originals={
+    routeStudentModel:b.routeStudentModel,
+    routeAppliedDecision:b.routeAppliedDecision,
+    routeTaskReason:b.routeTaskReason,
+    routeBuildCandidates:b.routeBuildCandidates,
+    teacherStudentContext:b.teacherStudentContext
+  };
 
-  root.routeStudentModel=function(subjectId,topicId=''){
-    const model=originalStudentModel.call(root,subjectId,topicId);
+  const patchedStudentModel=function(subjectId,topicId=''){
+    const model=originals.routeStudentModel(subjectId,topicId);
     const p=profile();
     return {...model,longitudinal:p?{
       confidence:p.confidence,
@@ -172,75 +215,76 @@ function install(){
     }:null};
   };
 
-  root.routeAppliedDecision=function(subjectId,topicId=''){
-    const decision=originalAppliedDecision.call(root,subjectId,topicId);
-    const model=root.routeStudentModel(subjectId,topicId);
+  const patchedAppliedDecision=function(subjectId,topicId=''){
+    const decision=originals.routeAppliedDecision(subjectId,topicId);
+    const model=patchedStudentModel(subjectId,topicId);
     const risk=targetRiskFor(subjectId,model);
     const repair=repairFor(model);
     const guarded=applyGuard(decision,model,risk,repair);
     return {...guarded,intelligence:{risk,repair,profileConfidence:profile()?.confidence||0}};
   };
 
-  if(originalTaskReason){
-    root.routeTaskReason=function(task){
-      const base=originalTaskReason.call(root,task);
-      const subjectId=task?.subjectId||'',topicId=task?.topicId||'';
-      if(!subjectId)return base;
-      const snap=snapshot(subjectId,topicId,task);
-      const text=snap.explanation?.text;
-      return text&&text.length>=12?text:base;
-    };
-  }
+  const patchedTaskReason=typeof originals.routeTaskReason==='function'?function(task){
+    const base=originals.routeTaskReason(task);
+    const subjectId=task?.subjectId||'',topicId=task?.topicId||'';
+    if(!subjectId)return base;
+    const snap=snapshot(subjectId,topicId,task);
+    const text=snap.explanation?.text;
+    return text&&text.length>=12?text:base;
+  }:null;
 
-  originalBuildCandidates=fn('routeBuildCandidates');
-  if(originalBuildCandidates){
-    root.routeBuildCandidates=function(){
-      const rows=originalBuildCandidates.call(root);
-      if(!Array.isArray(rows)||recoveryActive())return rows;
-      const reviewSources=new Set(['mistake','mini_repair','retention_refresh','ai_teacher','spaced_review','checkpoint']);
-      return rows.map(candidate=>{
-        if(!candidate?.subjectId||reviewSources.has(candidate.source)||!candidate.topicId)return candidate;
-        const snap=snapshot(candidate.subjectId,candidate.topicId,null);
-        const risk=snap.risk,repair=snap.repair,model=snap.model;
-        if(!risk?.reliable||risk.band!=='high'||repair?.mode!=='repair'||(model?.confidence||0)<55)return candidate;
-        const boost=Math.min(3,Math.max(1,Math.round((Number(repair.priority)||70)/35)-1));
-        const reason=String(candidate.reason||'');
-        const note=' Intelligence V1: hedef riski ve konuya özgü onarım sinyali birlikte doğrulandığı için öncelik kontrollü artırıldı.';
-        return {...candidate,priority:Math.min(96,(Number(candidate.priority)||0)+boost),reason:reason.includes('Intelligence V1:')?reason:reason+note};
-      }).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0)||String(a?.routeKey||'').localeCompare(String(b?.routeKey||'')));
-    };
-  }
+  const patchedBuildCandidates=typeof originals.routeBuildCandidates==='function'?function(){
+    const rows=originals.routeBuildCandidates();
+    if(!Array.isArray(rows)||recoveryActive())return rows;
+    const reviewSources=new Set(['mistake','mini_repair','retention_refresh','ai_teacher','spaced_review','checkpoint']);
+    return rows.map(candidate=>{
+      if(!candidate?.subjectId||reviewSources.has(candidate.source)||!candidate.topicId)return candidate;
+      const snap=snapshot(candidate.subjectId,candidate.topicId,null);
+      const risk=snap.risk,repair=snap.repair,model=snap.model;
+      if(!risk?.reliable||risk.band!=='high'||repair?.mode!=='repair'||(model?.confidence||0)<55)return candidate;
+      const boost=Math.min(3,Math.max(1,Math.round((Number(repair.priority)||70)/35)-1));
+      const reason=String(candidate.reason||'');
+      const note=' Intelligence V1: hedef riski ve konuya özgü onarım sinyali birlikte doğrulandığı için öncelik kontrollü artırıldı.';
+      return {...candidate,priority:Math.min(96,(Number(candidate.priority)||0)+boost),reason:reason.includes('Intelligence V1:')?reason:reason+note};
+    }).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0)||String(a?.routeKey||'').localeCompare(String(b?.routeKey||'')));
+  }:null;
 
-  originalTeacherStudentContext=fn('teacherStudentContext');
-  if(originalTeacherStudentContext){
-    root.teacherStudentContext=function(record){
-      const base=originalTeacherStudentContext.call(root,record)||{};
-      const subjectId=record?.subjectId||'',topicId=record?.topicId||'';
-      const snap=subjectId?snapshot(subjectId,topicId,null):{profile:profile(),risk:null,repair:null,model:null};
-      const p=snap.profile;
-      return {...base,intelligence:{
-        version:1,
-        profileConfidence:Number(p?.confidence)||0,
-        trend:p?.trend||'unknown',
-        trendDelta:Number.isFinite(p?.trendDelta)?p.trendDelta:null,
-        execution7:Number.isFinite(p?.windows?.d7?.execution?.completion)?p.windows.d7.execution.completion:null,
-        execution30:Number.isFinite(p?.windows?.d30?.execution?.completion)?p.windows.d30.execution.completion:null,
-        activeDays30:Number(p?.windows?.d30?.activeDays)||0,
-        targetRisk:snap.risk?{
-          score:Number.isFinite(snap.risk.score)?snap.risk.score:null,
-          band:snap.risk.band,
-          label:snap.risk.label,
-          action:snap.risk.action,
-          reasons:(snap.risk.reasons||[]).slice(0,4)
-        }:null,
-        repair:snap.repair?{
-          mode:snap.repair.mode,
-          priority:Number(snap.repair.priority)||0,
-          reason:snap.repair.reason
-        }:null
-      }};
-    };
-  }
+  const patchedTeacherStudentContext=typeof originals.teacherStudentContext==='function'?function(record){
+    const base=originals.teacherStudentContext(record)||{};
+    const subjectId=record?.subjectId||'',topicId=record?.topicId||'';
+    const snap=subjectId?snapshot(subjectId,topicId,null):{profile:profile(),risk:null,repair:null,model:null};
+    const p=snap.profile;
+    return {...base,intelligence:{
+      version:1,
+      profileConfidence:Number(p?.confidence)||0,
+      trend:p?.trend||'unknown',
+      trendDelta:Number.isFinite(p?.trendDelta)?p.trendDelta:null,
+      execution7:Number.isFinite(p?.windows?.d7?.execution?.completion)?p.windows.d7.execution.completion:null,
+      execution30:Number.isFinite(p?.windows?.d30?.execution?.completion)?p.windows.d30.execution.completion:null,
+      activeDays30:Number(p?.windows?.d30?.activeDays)||0,
+      targetRisk:snap.risk?{
+        score:Number.isFinite(snap.risk.score)?snap.risk.score:null,
+        band:snap.risk.band,
+        label:snap.risk.label,
+        action:snap.risk.action,
+        reasons:(snap.risk.reasons||[]).slice(0,4)
+      }:null,
+      repair:snap.repair?{
+        mode:snap.repair.mode,
+        priority:Number(snap.repair.priority)||0,
+        reason:snap.repair.reason
+      }:null
+    }};
+  }:null;
+
+  const hooks={
+    routeStudentModel:patchedStudentModel,
+    routeAppliedDecision:patchedAppliedDecision,
+    ...(patchedTaskReason?{routeTaskReason:patchedTaskReason}:{}),
+    ...(patchedBuildCandidates?{routeBuildCandidates:patchedBuildCandidates}:{}),
+    ...(patchedTeacherStudentContext?{teacherStudentContext:patchedTeacherStudentContext}:{})
+  };
+  installHooks(hooks);
 
   root.RotaIntelligenceBridgeV1={
     version:1,
@@ -253,6 +297,8 @@ function install(){
     installed:()=>installed
   };
   installed=true;
+  const rt=runtime();
+  if(rt?.refresh&&typeof setTimeout==='function')setTimeout(()=>{try{rt.refresh();}catch{}},0);
   return true;
 }
 

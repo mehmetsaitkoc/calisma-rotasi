@@ -512,7 +512,7 @@ async function runKpssSectionExamContent(browser) {
   await submitWizard(page);
   await navigate(page, 'exams');
 
-  for(let sectionNo=1;sectionNo<=3;sectionNo++){
+  for(let sectionNo=1;sectionNo<=5;sectionNo++){
     assert.ok(await page.getByText('KPSS Türkçe Bölüm Denemesi · Profesyonel #0'+sectionNo,{exact:true}).count(),'Professional KPSS Turkish section exam #'+sectionNo+' must be visible');
   }
   assert.equal(await page.getByText('KPSS Türkçe Bölüm Denemesi #01', { exact: true }).count(),0,'Superseded Turkish section seed must not remain active');

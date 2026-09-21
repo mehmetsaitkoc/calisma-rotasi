@@ -182,8 +182,29 @@ function repairProposal(input={}){
   };
 }
 
+function interventionMemory(input={}){
+  const effect=input.effect&&typeof input.effect==='object'?input.effect:{};
+  const mode=['repair','ease','progress'].includes(input.mode)?input.mode:'';
+  const total=Math.max(0,Number(effect.total)||0);
+  const helpful=Math.max(0,Number(effect.helpful)||0);
+  const harmful=Math.max(0,Number(effect.harmful)||0);
+  const neutral=Math.max(0,Number(effect.neutral)||0);
+  const score=Number.isFinite(Number(effect.score))?Math.max(-1,Math.min(1,Number(effect.score))):0;
+  if(!mode||!effect.known||total<2){
+    return {known:false,mode,total,helpful,harmful,neutral,score:0,action:'hold',label:'Karar hafızası için daha fazla sonuç gerekiyor.',reason:'Aynı müdahalenin en az iki olgun geri testi olmadan yöntem değiştirilmiyor.'};
+  }
+  const action=score<=-.34?'change':score>=.5?'repeat':'hold';
+  const label=action==='change'?'Aynı yaklaşımı değiştirmek gerekiyor':action==='repeat'?'İşe yarayan çekirdeği koru':'Sonuçlar karışık; yöntemi sabit tut';
+  const reason=action==='change'
+    ?'Bu müdahale öğrencide birden fazla olgun takipte yeterli sonuç vermedi.'
+    :action==='repeat'
+      ?'Bu müdahale öğrencide birden fazla olgun takipte çoğunlukla olumlu sonuç verdi.'
+      :'Geri testler aynı yönde birleşmediği için aşırı uyarlama yapılmıyor.';
+  return {known:true,mode,total,helpful,harmful,neutral,score:round(score,2),action,label,reason};
+}
+
 function explainTask(input={}){
-  const task=input.task||{},model=input.model||{},decision=input.decision||{},risk=input.risk||null,mastery=input.mastery||null;
+  const task=input.task||{},model=input.model||{},decision=input.decision||{},risk=input.risk||null,mastery=input.mastery||null,outcomeMemory=input.outcomeMemory||null;
   const reasons=[];
   if(task.kind==='review'||task.source==='mistake'||task.sourceMistakeId)reasons.push('Bu görev önceki yanlışını kapatmak için bugün öne alındı.');
   if(String(task.source||'').includes('exam'))reasons.push('Son deneme sonucu bu alanı yeniden önceliklendirdi.');
@@ -193,11 +214,13 @@ function explainTask(input={}){
   if(Number(model.openMistakes)>=3)reasons.push('Açık yanlışların bu konunun önceliğini artırıyor.');
   if(mastery&&mastery.ready===false&&mastery.next)reasons.push('3/7 kalıcılık döngüsünde sıradaki kontrol zamanı geldi.');
   if(risk?.band==='high')reasons.push('Hedef riski yükseldiği için yüksek getirili çalışmalara ağırlık veriliyor.');
+  if(outcomeMemory?.known&&outcomeMemory.action==='change')reasons.push('Aynı müdahale geçmişte yeterli sonuç vermediği için bu kez yöntem değiştiriliyor.');
+  else if(outcomeMemory?.known&&outcomeMemory.action==='repeat')reasons.push('Bu müdahalenin çekirdeği geçmişte işe yaradığı için korunuyor.');
   if(!reasons.length&&task.reason)reasons.push(String(task.reason));
   if(!reasons.length)reasons.push('Bu görev haftalık yük, hedef ve mevcut konu sırasına göre seçildi.');
   return {headline:'Neden bugün?',reasons:reasons.slice(0,3),text:reasons.slice(0,2).join(' ')};
 }
 
-root.RotaIntelligenceV1={rollingWindow,longitudinalProfile,targetRisk,executionPrescription,repairProposal,explainTask};
+root.RotaIntelligenceV1={rollingWindow,longitudinalProfile,targetRisk,executionPrescription,repairProposal,interventionMemory,explainTask};
 if(typeof module==='object')module.exports=root.RotaIntelligenceV1;
 })(typeof window!=='undefined'?window:globalThis);

@@ -1755,18 +1755,21 @@ for(const marker of [
 }
 
 
-// 5) App shell must prioritize study flow and expose current context without changing navigation targets.
+// 5) App shell must prioritize the four core actions while keeping every existing navigation target reachable.
 for(const marker of [
   'Product Shell v1 — clearer hierarchy around the study flow.',
   'ANA ÇALIŞMA',
-  'KAYNAKLAR VE TAKİP',
+  'ÇALIŞMA ARAÇLARI',
+  'nav-primary-group',
+  'nav-secondary-group',
   'topbar-context',
   'topbar-exam-pill'
 ]) assert.ok(html.includes(marker),`Missing premium app shell marker: ${marker}`);
 {
-  const src=between('function shell(content)','function activeLogs');
+  const src=between('const nav=','function activeLogs');
+  assert.ok(src.includes("PRIMARY_NAV_IDS=new Set(['today','plan','teacher','exams'])"),'Primary navigation must stay focused on Today, Plan, Rota Hoca and Exams');
+  assert.ok(src.includes("secondary=nav.filter(x=>!PRIMARY_NAV_IDS.has(x[0]))"),'Secondary navigation must retain every non-primary destination');
   assert.ok(src.includes("currentLabel=({lesson:'Video ders',membership:'Paketim',settings:'Ayarlar'})[ui.view]||nav.find"),'Topbar context must derive from the existing view/navigation state');
-  assert.ok(src.includes("id==='academy'?'<div class=\"nav-label nav-label-secondary\">KAYNAKLAR VE TAKİP</div>':''"),'Secondary navigation group must start at existing academy item');
   assert.ok(src.includes('data-view="${id}"'),'Navigation targets must remain data-driven from the existing nav array');
 }
 

@@ -17,7 +17,7 @@ function distributeOptions(q,index,testNo){
 const T=(id,subjectId,topicId,topicTitle,testNo,questions,level='Orta–ileri')=>({
   id,exam:'kpss',subjectId,topicId,topicTitle,
   title:'KPSS '+topicTitle+' · Konu Testi #'+String(testNo).padStart(2,'0'),
-  eyebrow:'KONU TESTİ · KPSS',minutes:16,level,testNo,setNo:testNo,
+  eyebrow:'KONU TESTİ · KPSS',minutes:16,level,testNo,setNo:topicId==='k-tr-3'?3:testNo+1,
   questions:questions.map((q,i)=>({...distributeOptions(q,i,testNo),id:id+'-q'+String(i+1).padStart(2,'0'),topicId})),
   version:VERSION,sourceKind:'original',original:true,bankStandard:true
 });

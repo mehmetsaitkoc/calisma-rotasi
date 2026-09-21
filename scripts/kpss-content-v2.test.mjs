@@ -29,6 +29,7 @@ await import('../public/kpss-professional-history-sections-04.js');
 await import('../public/kpss-professional-history-sections-05.js');
 await import('../public/kpss-professional-history-editorial-pass2.js');
 await import('../public/kpss-professional-history-editorial-pass3.js');
+await import('../public/kpss-professional-history-editorial-pass4.js');
 
 const C=globalThis.RotaCatalog;
 const B=globalThis.RotaKpssContentBlueprint;
@@ -40,6 +41,8 @@ const S=globalThis.RotaKpssProfessionalSections;
 const H=globalThis.RotaKpssProfessionalHistory;
 const E2=globalThis.RotaKpssHistoryEditorialPass2;
 const E3=globalThis.RotaKpssHistoryEditorialPass3;
+const E4=globalThis.RotaKpssHistoryEditorialPass4;
+assert.ok(E4&&E4.reviewedSecondSample===100&&E4.rewrittenQuestions===2&&E4.rebalancedDistractors===9,'History editorial pass 4 must keep the second independent 100-question review');
 assert.ok(E3&&E3.rebalancedOptions===30,'History editorial pass 3 must remain loaded with 30 distractor rebalances');
 assert.ok(E2&&E2.reviewedSample===100&&E2.rewrittenQuestions===37,'History editorial pass 2 must remain loaded with 100-question review / 37 rewrites');
 assert.ok(C&&B&&Q&&P&&P2&&P3&&S&&H,'KPSS v2 content modules must load');
@@ -183,6 +186,7 @@ for(const marker of [
   '<script src="/kpss-professional-history-sections-05.js"></script>',
   '<script src="/kpss-professional-history-editorial-pass2.js"></script>',
   '<script src="/kpss-professional-history-editorial-pass3.js"></script>',
+  '<script src="/kpss-professional-history-editorial-pass4.js"></script>',
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',

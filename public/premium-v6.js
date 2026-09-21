@@ -114,12 +114,12 @@
 
     const features = el('div','v6-feature-strip');
     [
-      ['user','Kişiye Özel Plan'],
-      ['chart','Akıllı Analiz'],
-      ['refresh','Sürekli Takip'],
-      ['star','Gerçek Sonuç']
-    ].forEach(([ic,t])=>{
-      const item=el('span','v6-feature-item'); item.append(icon(ic),el('b','',t)); features.append(item);
+      ['user','Kişiye Özel Plan',true],
+      ['chart','Akıllı Analiz',true],
+      ['refresh','Sürekli Takip',true],
+      ['star','Gerçek Sonuç',false]
+    ].forEach(([ic,t,proof])=>{
+      const item=el('span','v6-feature-item'+(proof?' premium-proof-item':'')); item.append(icon(ic),el('b','',t)); features.append(item);
     });
 
     copy.append(badge,h1,slogan,p,actions,features);
@@ -236,7 +236,7 @@
   }
 
   function trust(){
-    const box=el('aside','v6-trust');
+    const box=el('aside','v6-trust premium-trust-strip');
     box.append(el('div','v6-trust-quote','“Doğru plan,\nbüyük fark yaratır.”'));
     const line=el('div','v6-trust-line');
     [

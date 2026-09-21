@@ -5,14 +5,20 @@ await import('../public/kpss-professional-history-editorial-fixes.js');
 for(let n=1;n<=5;n++) await import('../public/kpss-professional-history-sections-'+String(n).padStart(2,'0')+'.js');
 await import('../public/kpss-professional-history-editorial-pass2.js');
 await import('../public/kpss-professional-history-editorial-pass3.js');
+await import('../public/kpss-professional-history-editorial-pass4.js');
 
 const H=globalThis.RotaKpssProfessionalHistory;
 const E=globalThis.RotaKpssHistoryEditorialPass2;
 const E3=globalThis.RotaKpssHistoryEditorialPass3;
-assert.ok(H&&E&&E3,'Prime History modules and editorial passes must load');
+const E4=globalThis.RotaKpssHistoryEditorialPass4;
+assert.ok(H&&E&&E3&&E4,'Prime History modules and editorial passes must load');
 assert.equal(E.reviewedSample,100,'Human editorial sample must remain 100 questions');
 assert.equal(E.rewrittenQuestions,37,'Editorial pass 2 must keep the 37 reviewed rewrites');
 assert.equal(E3.rebalancedOptions,30,'Editorial pass 3 must keep 30 distractor rebalances');
+assert.equal(E4.reviewedSecondSample,100,'Editorial pass 4 must keep the second independent 100-question review');
+assert.equal(E4.shortenedAnswers,85,'Editorial pass 4 must keep 85 answer-balance edits');
+assert.equal(E4.rewrittenQuestions,2,'Editorial pass 4 must keep two full rewrites');
+assert.equal(E4.rebalancedDistractors,9,'Editorial pass 4 must keep nine hard distractor rebalances');
 
 const topicQuestions=(H.tests||[]).flatMap(t=>t.questions||[]);
 const sectionQuestions=(H.sectionExams||[]).flatMap(s=>s.questions||[]);
@@ -55,12 +61,17 @@ console.log(JSON.stringify({
   questions:all.length,
   topicQuestions:topicQuestions.length,
   sectionQuestions:sectionQuestions.length,
-  reviewedSample:E.reviewedSample,
+  reviewedSample:E.reviewedSample+E4.reviewedSecondSample,
+  firstReviewedSample:E.reviewedSample,
+  secondReviewedSample:E4.reviewedSecondSample,
   rewritten:E.rewrittenQuestions,
   rebalancedOptions:E3.rebalancedOptions,
+  pass4AnswerBalanceEdits:E4.shortenedAnswers,
+  pass4Rewrites:E4.rewrittenQuestions,
+  pass4DistractorRebalances:E4.rebalancedDistractors,
   recall:recall.length,
   knowledge:knowledge.length,
   directFact:directFact.length,
   longAnswerClueWatch:longAnswerClues.length
 },null,2));
-console.log('KPSS History editorial audit passed: 100-question human review + 37 rewrites + 30 distractor rebalances + anti-regression gates');
+console.log('KPSS History editorial audit passed: 200-question human review + pass2/pass3/pass4 anti-regression gates');

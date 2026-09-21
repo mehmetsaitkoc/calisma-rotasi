@@ -4,7 +4,7 @@
 const SCHEMA='calisma-rotasi-kpss-question-quality-v1';
 const DIFFICULTIES=new Set(['easy','medium','hard']);
 const COGNITIVE=new Set(['recall','context','interpretation','reasoning','application']);
-const QUALITY_STATUSES=new Set(['draft','editorial-pass-1','reviewed']);
+const QUALITY_STATUSES=new Set(['draft','reviewed','approved']);
 const FORBIDDEN_OPTION_PATTERNS=[/^hepsi$/i,/^hiçbiri$/i,/^a ve b$/i,/^b ve c$/i,/^c ve d$/i];
 
 function norm(v){return String(v??'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9çğıöşü]+/gi,' ').replace(/\s+/g,' ').trim();}
@@ -57,12 +57,13 @@ function validateTopicTest(test,profile){
   assert(nonRecall>=6,'Testin en az yarısı bağlam/yorum/akıl yürütme olmalı: '+test.id);
   return test;
 }
-function auditBank(tests,{profiles=[]}={}){
+function auditBank(tests,{profiles=[],requireApproved=false}={}){
   const ids=new Set(),stems=new Set(),byTopic=new Map(),errors=[];
   for(const test of tests||[]){
     try{
       const profile=profiles.find(p=>p.setNo===test.setNo);
       validateTopicTest(test,profile);
+      if(requireApproved)assert(test.qualityStatus==='approved','Yayın için test approved olmalı: '+test.id);
       const key=test.subjectId+'|'+test.topicId,x=byTopic.get(key)||[];x.push(test);byTopic.set(key,x);
       for(const q of test.questions){
         if(ids.has(q.id))throw new Error('Banka genelinde soru kimliği tekrar ediyor: '+q.id);ids.add(q.id);

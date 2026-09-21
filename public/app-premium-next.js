@@ -113,7 +113,10 @@
         const icon = document.createElement('span');
         icon.className = 'pnx-signal-icon';
         icon.setAttribute('aria-hidden', 'true');
+        if (kind === 'progress') icon.dataset.progressLabel = text(card.querySelector('strong'));
         card.prepend(icon);
+      } else if (kind === 'progress') {
+        card.querySelector('.pnx-signal-icon').dataset.progressLabel = text(card.querySelector('strong'));
       }
       rail.appendChild(card);
     });
@@ -246,6 +249,17 @@
         legacy.className = 'sr-only pnx-legacy-reason-label';
         legacy.textContent = 'Bu plan neden böyle?';
         heading.insertAdjacentElement('afterend', legacy);
+      }
+    }
+
+    const reasonButton = reason.querySelector('.btn');
+    const whyButton = root.querySelector('.route-task [data-action="route-why"]');
+    if (reasonButton) {
+      reasonButton.textContent = 'Bu görev neden öne çıktı?';
+      if (whyButton?.dataset?.id) {
+        reasonButton.dataset.action = 'route-why';
+        reasonButton.dataset.id = whyButton.dataset.id;
+        delete reasonButton.dataset.view;
       }
     }
 

@@ -94,8 +94,21 @@ assert.ok(
   'V3 must use the approved mountain/teacher/quote visual direction'
 );
 assert.ok(
-  js.includes('startPreviewTimer(root, hero)') && js.includes("document.querySelector('#timer-toggle')"),
-  'Dashboard Pomodoro must hand off to the real application timer'
+  js.includes('startPreviewTimer(root, hero)') &&
+  js.includes("document.querySelector('#timer-toggle')") &&
+  js.includes('startRealTimerWhenReady'),
+  'Dashboard Pomodoro must hand off to the real application timer and survive Today rerenders'
+);
+assert.ok(
+  js.includes('kpssWorkspace()') &&
+  js.includes('currentWeekDays()') &&
+  js.includes('latestExam(kpssWorkspace())'),
+  'Week, goals and latest-exam cards must read persisted KPSS evidence instead of fabricated dashboard values'
+);
+assert.ok(
+  js.includes('Henüz tam deneme kaydı yok') &&
+  !js.includes("const hasSignal = !!gap"),
+  'Latest exam card must expose a truthful empty state instead of reusing target-gap signals as exam results'
 );
 assert.ok(
   css.includes('pnx3-live-timer-card') && css.includes('kpss-hero-mountain.svg') && css.includes('daily-quote-sunrise.svg'),

@@ -33,15 +33,15 @@ try{
   const landingResponse=await fetch(BASE+'/');
   const landingHtml=await landingResponse.text();
   assert.equal(landingResponse.status,200,'Landing page must remain servable');
-  assert.match(landingHtml,/premium-v6\.css/,'Landing page must load the Premium V6 CSS layer');
-  assert.match(landingHtml,/premium-v6\.js/,'Landing page must load the Premium V6 welcome enhancer');
-  const premiumCss=await fetch(BASE+'/premium-v6.css');
+  assert.match(landingHtml,/landing-final\.css/,'Landing page must load the final landing CSS layer');
+  assert.match(landingHtml,/landing-final\.js/,'Landing page must load the final landing DOM layer');
+  const premiumCss=await fetch(BASE+'/landing-final.css');
   const premiumCssText=await premiumCss.text();
-  assert.equal(premiumCss.status,200,'Premium V6 stylesheet must be served');
-  assert.match(premiumCssText,/PREMIUM V6 · PIXEL MATCH/);
-  const premiumJs=await fetch(BASE+'/premium-v6.js');
+  assert.equal(premiumCss.status,200,'Final landing stylesheet must be served');
+  assert.match(premiumCssText,/FINAL PREMIUM LANDING · REFERENCE MATCH/);
+  const premiumJs=await fetch(BASE+'/landing-final.js');
   const premiumJsText=await premiumJs.text();
-  assert.equal(premiumJs.status,200,'Premium V6 script must be served');
+  assert.equal(premiumJs.status,200,'Final landing script must be served');
   assert.match(premiumJsText,/Kişisel Çalışma/);
 
   const healthResponse=await fetch(BASE+'/api/health');

@@ -342,7 +342,7 @@ async function modelAvailable(key,model){
   let message='Model erişimi yok.';try{const j=await check.json();message=j?.error?.message||message;}catch{}
   return {ok:false,message};
 }
-function mime(file){ const ext=path.extname(file).toLowerCase(); return ({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon'}[ext]||'application/octet-stream'); }
+function mime(file){ const ext=path.extname(file).toLowerCase(); return ({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.ico':'image/x-icon'}[ext]||'application/octet-stream'); }
 function serve(req,res){
   let p; try { p=decodeURIComponent(new URL(req.url,'http://localhost').pathname); } catch { p='/'; }
   if(p==='/' || p==='/index.html'){
@@ -350,8 +350,8 @@ function serve(req,res){
       if(err) return json(res,500,{error:'Arayüz dosyası bulunamadı.'});
       const source=data.toString('utf8');
       const enhanced=source
-        .replace('</head>','<link rel="stylesheet" href="/premium-v6.css"></head>')
-        .replace('</body>','<script src="/premium-v6.js" defer></script></body>');
+        .replace('</head>','<link rel="stylesheet" href="/landing-final.css"></head>')
+        .replace('</body>','<script src="/landing-final.js" defer></script></body>');
       const body=Buffer.from(enhanced,'utf8');
       res.writeHead(200,{'content-type':'text/html; charset=utf-8','content-length':body.length,'cache-control':'no-store'});
       res.end(body);

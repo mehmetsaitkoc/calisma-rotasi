@@ -1,6 +1,6 @@
-/* PREMIUM V6 · PIXEL MATCH
-   Rebuilds only the public welcome surface to match the approved visual.
-   Existing data-action contracts drive all real product navigation. */
+/* FINAL PREMIUM LANDING · REFERENCE MATCH
+   Rebuilds only the public welcome surface as real DOM.
+   Existing data-action contracts keep onboarding and product navigation intact. */
 (() => {
   let mounted = null;
 
@@ -46,7 +46,7 @@
     const wrap = el('div','v6-brand');
     const mark = el('span','v6-brand-mark','R');
     const type = el('span','v6-brand-type');
-    type.append(el('strong','', 'Rota'), el('small','', 'Daha iyi bir sen, mümkün.'));
+    type.append(el('strong','', 'Çalışma Rotası'), el('small','', 'Daha iyi bir sen, mümkün.'));
     wrap.append(mark,type);
     return wrap;
   }
@@ -76,7 +76,7 @@
     links.append(home,how,features,plans,comments,faq);
 
     const actions = el('div','v6-nav-actions');
-    const workspace = button('Çalışma Alanım','paid-start','v6-outline-btn');
+    const workspace = button('Giriş Yap','paid-start','v6-outline-btn');
     const start = button('Ücretsiz Başla →','paid-start','v6-gradient-btn');
     actions.append(workspace,start);
 
@@ -101,7 +101,7 @@
       el('span','v6-slogan-gradient','aynı olmak zorunda değil.')
     );
 
-    const p = el('p','v6-hero-copytext','Rota, hedeflerine, seviyene ve zamanına göre sana özel çalışma planı oluşturur. Daha verimli, daha bilinçli, daha senin gibi.');
+    const p = el('p','v6-hero-copytext','Çalışma Rotası, hedeflerine, seviyene ve zamanına göre sana özel çalışma planı oluşturur. Daha verimli, daha bilinçli, daha senin gibi.');
 
     const actions = el('div','v6-hero-actions');
     const start = button('Ücretsiz Başla →','paid-start','v6-gradient-btn v6-main-cta');
@@ -131,7 +131,16 @@
     art.setAttribute('aria-label','Hedefe uzanan çalışma rotası');
     const handwriting = el('div','v6-handwriting','Daha iyi\nbir sen\nmümkün.');
     const pillars = el('div','v6-pillars');
-    ['PLAN','DİSİPLİN','İSTİKRAR','BAŞARI'].forEach(t=>pillars.append(el('span','',t)));
+    [
+      ['chart','PLAN'],
+      ['shield','DİSİPLİN'],
+      ['refresh','İSTİKRAR'],
+      ['star','BAŞARI']
+    ].forEach(([ic,t])=>{
+      const chip=el('span','v6-pillar-chip');
+      chip.append(icon(ic),el('b','',t));
+      pillars.append(chip);
+    });
     art.append(handwriting,pillars);
     return art;
   }
@@ -161,10 +170,12 @@
 
   function dashboard(){
     const dash=el('section','v6-dashboard');
-    dash.setAttribute('aria-label','Rota örnek öğrenci paneli');
+    dash.setAttribute('aria-label','Çalışma Rotası örnek öğrenci paneli');
+    const demo=el('span','v6-demo-badge','Örnek görünüm');
+    dash.append(demo);
 
     const sidebar=el('aside','v6-dash-sidebar');
-    const dashBrand=el('div','v6-dash-brand'); dashBrand.append(el('span','v6-dash-mark','R'),el('strong','', 'Rota'));
+    const dashBrand=el('div','v6-dash-brand'); dashBrand.append(el('span','v6-dash-mark','R'),el('strong','', 'Çalışma Rotası'));
     sidebar.append(dashBrand);
     [
       ['⌂','Ana Sayfa','active'],['□','Planım',''],['⌁','Ders Analizi',''],['✓','Denemeler',''],
@@ -217,7 +228,7 @@
 
     const foot=el('div','v6-dash-foot');
     const motivational=el('div','v6-dash-mot'); motivational.append(icon('bolt'),el('div'));
-    motivational.lastElementChild.append(el('strong','', 'Küçük adımlar, büyük sonuçlar.'),el('span','', 'Her gün biraz daha ileri git.'));
+    motivational.lastElementChild.append(el('strong','', 'Küçük adımlar, büyük sonuçlar.'),el('span','', 'Bugün de hedeflerine bir adım daha yaklaş.'));
     const task=el('button','v6-dash-task','Bugünün görevlerine başla →');task.type='button';task.dataset.action='paid-start';
     foot.append(motivational,task);
 
@@ -240,9 +251,9 @@
     box.append(el('div','v6-trust-quote','“Doğru plan,\nbüyük fark yaratır.”'));
     const line=el('div','v6-trust-line');
     [
-      ['user','10.000+','Öğrenci'],
-      ['star','4.9','Kullanıcı Puanı'],
-      ['shield','%95','Memnuniyet']
+      ['book','KPSS + YKS','Tek uygulama'],
+      ['chart','Akıllı rota','Kişiye özel'],
+      ['refresh','3 + 7 gün','Tekrar döngüsü']
     ].forEach(([ic,n,label])=>{
       const item=el('div','v6-trust-item');item.append(icon(ic),el('strong','',n),el('span','',label));line.append(item);
     });
@@ -254,7 +265,7 @@
     if(welcome.dataset.pixelMatch==='1') return;
     welcome.dataset.pixelMatch='1';
     welcome.setAttribute('data-premium-surface','welcome');
-    welcome.classList.add('premium-v6','premium-v6-pixel');
+    welcome.classList.add('premium-landing-final');
     welcome.textContent='';
 
     const nav=topNav(welcome);

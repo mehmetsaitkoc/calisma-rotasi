@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 520" role="img" aria-label="Rota Hoca illüstrasyonu">
+  <defs>
+    <linearGradient id="hoodie" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14233c"/>
+      <stop offset="1" stop-color="#243a67"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2=".8" y2="1">
+      <stop offset="0" stop-color="#f6bd8c"/>
+      <stop offset="1" stop-color="#d98d62"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="210" cy="492" rx="135" ry="18" fill="#18284b" opacity=".12"/>
+  <path d="M82 510 C88 382 120 326 210 326 C300 326 334 382 340 510 Z" fill="url(#hoodie)"/>
+  <path d="M130 510 C135 407 157 367 210 367 C263 367 287 407 292 510 Z" fill="#1b2e51"/>
+  <path d="M146 362 Q210 404 274 362" fill="none" stroke="#405884" stroke-width="10" stroke-linecap="round"/>
+  <path d="M210 324 L210 384" stroke="#e7e9f2" stroke-width="5" stroke-linecap="round"/>
+  <path d="M195 385 L210 399 L225 385" fill="none" stroke="#8fa7d2" stroke-width="4"/>
+  <rect x="256" y="412" width="38" height="38" rx="12" fill="#eef3ff"/>
+  <path d="M266 432 q9-15 18 0 q-9 15-18 0" fill="#263b65"/>
+  <ellipse cx="210" cy="227" rx="90" ry="110" fill="url(#skin)"/>
+  <path d="M126 220 Q120 120 187 92 Q263 55 306 139 Q321 168 302 222 Q290 154 250 137 Q204 120 164 143 Q137 159 126 220 Z" fill="#141c2a"/>
+  <path d="M130 135 Q164 65 225 78 Q292 87 305 150 Q276 119 240 120 Q188 122 130 135 Z" fill="#0d1420"/>
+  <ellipse cx="178" cy="222" rx="8" ry="10" fill="#1d2734"/>
+  <ellipse cx="242" cy="222" rx="8" ry="10" fill="#1d2734"/>
+  <path d="M163 202 Q177 191 191 202" stroke="#2a2526" stroke-width="8" stroke-linecap="round"/>
+  <path d="M229 202 Q243 191 257 202" stroke="#2a2526" stroke-width="8" stroke-linecap="round"/>
+  <path d="M205 222 Q199 251 214 253" fill="none" stroke="#b86c4f" stroke-width="5" stroke-linecap="round"/>
+  <path d="M153 260 Q210 315 267 260 Q262 337 210 347 Q158 337 153 260 Z" fill="#171b23"/>
+  <path d="M177 273 Q210 292 243 273 Q231 309 210 310 Q189 308 177 273 Z" fill="#fff"/>
+  <path d="M135 252 Q147 298 171 323" fill="none" stroke="#171b23" stroke-width="18" stroke-linecap="round"/>
+  <path d="M285 252 Q273 298 249 323" fill="none" stroke="#171b23" stroke-width="18" stroke-linecap="round"/>
+  <path d="M335 410 Q368 360 378 300" fill="none" stroke="#e3a178" stroke-width="24" stroke-linecap="round"/>
+  <path d="M377 304 Q382 268 397 251" fill="none" stroke="#e3a178" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="399" cy="246" r="12" fill="#e9a77c"/>
+</svg>

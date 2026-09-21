@@ -144,7 +144,15 @@
     const meta = text(grow.querySelector('p'));
     const subject = (meta.split('·')[0] || '').trim();
     const now = grow.querySelector('.route-now-label');
-    if (now && subject) now.textContent = subject;
+    if (now && subject) {
+      now.textContent = subject;
+      if (!grow.querySelector('.pnx-legacy-now-label')) {
+        const legacyNow = document.createElement('span');
+        legacyNow.className = 'sr-only pnx-legacy-now-label';
+        legacyNow.textContent = 'ŞİMDİ';
+        now.insertAdjacentElement('afterend', legacyNow);
+      }
+    }
 
     if (!grow.querySelector('.pnx-task-why')) {
       const why = document.createElement('div');

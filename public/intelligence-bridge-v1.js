@@ -7,6 +7,7 @@
 let installed=false;
 let originals={};
 let profileCache={key:'',value:null};
+let methodCache={key:'',values:new Map()};
 
 function runtime(){
   const rt=root.RotaRuntimeV1;
@@ -30,7 +31,9 @@ function currentBindings(){
     routeTopicMasteryScore:legacyFn('routeTopicMasteryScore'),
     routeRecoverySignal:legacyFn('routeRecoverySignal'),
     routeInterventionPolicyAdjustment:legacyFn('routeInterventionPolicyAdjustment'),
-    routeInterventionEffectSignal:legacyFn('routeInterventionEffectSignal')
+    routeInterventionEffectSignal:legacyFn('routeInterventionEffectSignal'),
+    routeInterventionEvaluation:legacyFn('routeInterventionEvaluation'),
+    routeStudyMethod:legacyFn('routeStudyMethod')
   };
 }
 function helper(name){
@@ -134,6 +137,63 @@ function outcomeMemoryFor(subjectId,topicId,mode){
     return I.interventionMemory({mode,effect:effect||{}});
   }catch{return null;}
 }
+function methodStrategyMemoryFor(subjectId,topicId='',mode=''){
+  const I=intelligence(),space=workspace(),evaluate=helper('routeInterventionEvaluation');
+  if(!I?.methodStrategyMemory||!I?.methodStrategyKey||!space||typeof evaluate!=='function'||!subjectId||!['repair','ease','progress'].includes(mode))return null;
+  const baseKey=cacheKey(space,todayValue());
+  if(methodCache.key!==baseKey)methodCache={key:baseKey,values:new Map()};
+  const study=helper('routeStudyMethod');
+  let currentMethod='';
+  try{currentMethod=study?.(subjectId,topicId,'')?.key||'';}catch{}
+  const currentKey=I.methodStrategyKey(currentMethod,mode);
+  const cacheId=[subjectId,topicId,mode,currentKey].join('|');
+  if(methodCache.values.has(cacheId))return methodCache.values.get(cacheId);
+  const all=safeInterventions(space).filter(x=>x.subjectId===subjectId);
+  const toSamples=rows=>rows.slice(-24).map(iv=>{
+    let evaluation=null;try{evaluation=evaluate(iv);}catch{}
+    if(!evaluation||!['helpful','neutral','harmful'].includes(evaluation.status))return null;
+    return {method:iv.method||'',mode:iv.mode||'',source:iv.source||'',status:evaluation.status,maturity:Number(evaluation.maturity)||0,score:Number(evaluation.score)||0};
+  }).filter(Boolean);
+  const exact=topicId?toSamples(all.filter(x=>x.topicId===topicId)):[];
+  const subject=toSamples(all);
+  const useExact=exact.length>=2;
+  const samples=useExact?exact:subject;
+  const memory=I.methodStrategyMemory({samples,currentKey});
+  const value={...memory,scope:useExact?'topic':'subject',subjectId,topicId,currentMethod,currentKey};
+  methodCache.values.set(cacheId,value);
+  return value;
+}
+function safeInterventions(space){
+  return Array.isArray(space?.route?.interventions)?space.route.interventions:[];
+}
+function methodMemoryForTask(task,mode){
+  if(!task?.subjectId||!['repair','ease','progress'].includes(mode))return null;
+  const I=intelligence(),study=helper('routeStudyMethod');
+  let method='';try{method=study?.(task.subjectId,task.topicId||'',task.title||'')?.key||'';}catch{}
+  const memory=methodStrategyMemoryFor(task.subjectId,task.topicId||'',mode);
+  if(!memory||!I?.methodStrategyKey)return memory;
+  const currentKey=I.methodStrategyKey(method,mode),current=memory.strategies?.find(x=>x.key===currentKey)||memory.current||null;
+  return {...memory,currentMethod:method,currentKey,current};
+}
+function adaptTaskMethod(task,mode){
+  const I=intelligence(),memory=methodMemoryForTask(task,mode),current=memory?.current;
+  if(!I?.methodVariation||!current?.known||!['change','repeat'].includes(current.action))return {task,memory};
+  const variation=I.methodVariation(memory.currentMethod,mode,current.action);
+  if(!variation)return {task,memory};
+  const next={...task};
+  if(current.action==='change'){
+    next.taskGoal=(variation+' '+String(next.taskGoal||'')).slice(0,520);
+    const note=' Öğrenen yöntem hafızası: bu çalışma biçimi olgun geri testlerde yeterli sonuç vermedi; aynı hedef farklı uygulamayla deneniyor.';
+    const reason=String(next.reason||'');
+    next.reason=(reason.includes('Öğrenen yöntem hafızası:')?reason:reason+note).slice(0,700);
+  }else{
+    const note=' Öğrenen yöntem hafızası: bu çalışma biçiminin çekirdeği geçmişte çoğunlukla işe yaradı.';
+    const reason=String(next.reason||'');
+    next.reason=(reason.includes('Öğrenen yöntem hafızası:')?reason:reason+note).slice(0,700);
+  }
+  return {task:next,memory};
+}
+
 function applyOutcomeMemory(decision,memory){
   const out={...decision};
   let guard='none',strategy='hold';
@@ -225,11 +285,12 @@ function snapshot(subjectId,topicId='',task=null){
   const memoryMode=['repair','ease','progress'].includes(guarded?.mode)?guarded.mode:(['repair','ease','progress'].includes(baseDecision?.mode)?baseDecision.mode:'');
   const outcomeMemory=memoryMode?outcomeMemoryFor(subjectId,topicId,memoryMode):null;
   const decision=guarded?applyOutcomeMemory(guarded,outcomeMemory):null;
+  const methodMemory=memoryMode?methodMemoryForTask(task||{subjectId,topicId,title:''},memoryMode):null;
   let explanation=null;
   if(I&&task){
-    try{explanation=I.explainTask({task,model:model||{},decision:decision||{},risk,mastery:masteryFor(topicId),outcomeMemory});}catch{}
+    try{explanation=I.explainTask({task,model:model||{},decision:decision||{},risk,mastery:masteryFor(topicId),outcomeMemory,methodMemory});}catch{}
   }
-  return {version:1,profile:p,model,risk,repair,load,outcomeMemory,decision,explanation};
+  return {version:1,profile:p,model,risk,repair,load,outcomeMemory,methodMemory,decision,explanation};
 }
 function installHooks(hooks){
   const rt=runtime();
@@ -305,6 +366,10 @@ function install(){
           return next;
         }
       }
+      const decisionForMethod=patchedAppliedDecision(candidate.subjectId,candidate.topicId||'');
+      const candidateMode=candidate.source==='mini_repair'||candidate.source==='mistake'||candidate.source==='ai_teacher'?'repair':(['repair','ease','progress'].includes(decisionForMethod?.mode)?decisionForMethod.mode:'');
+      const adapted=candidateMode?adaptTaskMethod(candidate,candidateMode):{task:candidate,memory:null};
+      candidate=adapted.task;
       if(reviewSources.has(candidate.source))return candidate;
       const snap=snapshot(candidate.subjectId,candidate.topicId,null);
       const risk=snap.risk,repair=snap.repair,model=snap.model;
@@ -359,6 +424,24 @@ function install(){
         neutral:Number(snap.outcomeMemory.neutral)||0,
         score:Number.isFinite(snap.outcomeMemory.score)?snap.outcomeMemory.score:null,
         reason:snap.outcomeMemory.reason||''
+      }:null,
+      methodMemory:snap.methodMemory?{
+        known:!!snap.methodMemory.known,
+        scope:snap.methodMemory.scope||'',
+        currentMethod:snap.methodMemory.currentMethod||'',
+        current:snap.methodMemory.current?{
+          action:snap.methodMemory.current.action,
+          score:Number.isFinite(snap.methodMemory.current.score)?snap.methodMemory.current.score:null,
+          confidence:Number(snap.methodMemory.current.confidence)||0,
+          total:Number(snap.methodMemory.current.total)||0,
+          label:snap.methodMemory.current.label||''
+        }:null,
+        preferred:snap.methodMemory.preferred?{
+          method:snap.methodMemory.preferred.method||'',
+          mode:snap.methodMemory.preferred.mode||'',
+          score:Number.isFinite(snap.methodMemory.preferred.score)?snap.methodMemory.preferred.score:null,
+          total:Number(snap.methodMemory.preferred.total)||0
+        }:null
       }:null
     }};
   }:null;
@@ -379,9 +462,11 @@ function install(){
     repairFor,
     loadPrescription,
     outcomeMemoryFor,
+    methodStrategyMemoryFor,
+    methodMemoryForTask,
     snapshotForSubject:(subjectId,topicId='')=>snapshot(subjectId,topicId,null),
     snapshotForTask:(task)=>snapshot(task?.subjectId||'',task?.topicId||'',task),
-    invalidate:()=>{profileCache={key:'',value:null};},
+    invalidate:()=>{profileCache={key:'',value:null};methodCache={key:'',values:new Map()};},
     installed:()=>installed
   };
   installed=true;

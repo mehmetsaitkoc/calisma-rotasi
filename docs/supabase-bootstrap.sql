@@ -121,5 +121,32 @@ grant select, insert, update on public.workspace_state to authenticated;
 grant select, insert on public.activity_events to authenticated;
 grant usage, select on sequence public.activity_events_id_seq to authenticated;
 
+create or replace function private.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  insert into public.profiles (id,email,display_name,exam,is_admin)
+  values (
+    new.id,
+    coalesce(new.email,''),
+    left(coalesce(nullif(new.raw_user_meta_data ->> 'display_name',''), split_part(coalesce(new.email,''),'@',1), 'Öğrenci'),80),
+    'kpss',
+    false
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$;
+
+revoke all on function private.handle_new_user() from public, anon, authenticated;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function private.handle_new_user();
+
 -- Yönetici hesabı oluşturulduktan sonra veritabanı tarafından:
 -- update public.profiles set is_admin = true where email = 'admin@example.com';

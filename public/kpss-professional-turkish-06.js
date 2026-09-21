@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 const TOPIC={subjectId:'k-tr',topicId:'k-tr-6',topicTitle:'Yazım kuralları'};
-const Q=(id,text,options,answer,explanation,difficulty,cognitive,skill,optionMode='semantic')=>({id,topicId:TOPIC.topicId,text,options,answer,explanation,difficulty,cognitive,skill,optionMode,sourceKind:'original',copyrightPolicy:'original-only'});
+const Q=(id,text,options,answer,explanation,difficulty,cognitive,skill,optionMode='orthography')=>({id,topicId:TOPIC.topicId,text,options,answer,explanation,difficulty,cognitive,skill,optionMode,sourceKind:'original',copyrightPolicy:'original-only'});
 const T=(setNo,label,questions)=>({id:'kpss:k-tr:k-tr-6:t'+String(setNo).padStart(2,'0'),exam:'kpss',subjectId:TOPIC.subjectId,topicId:TOPIC.topicId,topicTitle:TOPIC.topicTitle,setNo,title:'KPSS Türkçe · Yazım Kuralları · Test '+setNo,eyebrow:'PROFESYONEL KONU TESTİ · KPSS',minutes:16,level:label,questions,version:2,qualityStatus:'approved',sourceKind:'original',copyrightPolicy:'original-only',sourceBasis:['tdk-yazim-kilavuzu-current','official-scope-2026','official-question-style-review']});
 const tests=[
 T(1,'Temel kazanım + bağlam',[

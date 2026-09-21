@@ -377,8 +377,17 @@
 
   function kpssWorkspace() {
     try {
-      const space = typeof window.w === 'function' ? window.w() : null;
-      return space?.exam === 'kpss' ? space : null;
+      const direct = typeof window.w === 'function' ? window.w() : null;
+      if (direct?.exam === 'kpss') return direct;
+
+      for (let index = 0; index < localStorage.length; index++) {
+        const key = localStorage.key(index);
+        if (!key || !key.startsWith('calisma-rotasi:all:v5')) continue;
+        const value = JSON.parse(localStorage.getItem(key) || 'null');
+        if (value?.activeExam !== 'kpss') continue;
+        const space = value?.workspaces?.kpss;
+        if (space?.exam === 'kpss') return space;
+      }
     } catch {}
     return null;
   }

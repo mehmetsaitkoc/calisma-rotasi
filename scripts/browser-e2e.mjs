@@ -769,7 +769,7 @@ try {
   await focusCard.waitFor({ state: 'visible' });
   assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Pomodoro start must bind the real task title to the focus card');
   assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Pomodoro start must expose the focus-session state');
-  assert.ok(await focusCard.getByText('Bitir ve kaydet', { exact: false }).count(), 'Focused task must expose the finish-and-record action');
+  assert.ok(await focusCard.locator('[data-action="timer-log"]').count(), 'Focused task must expose the real finish-and-record action');
   assert.match(await focusCard.innerText(), /çalışma kaydına otomatik bağlanacak/i, 'Focus card must explain the task/log linkage');
 
   const clock = focusCard.locator('#clock');

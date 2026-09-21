@@ -517,8 +517,10 @@ async function runKpssSectionExamContent(browser) {
 
   for(let setNo=1;setNo<=4;setNo++){
     assert.ok(await page.getByText('KPSS Türkçe · Sözcükte Anlam · Test '+setNo,{exact:true}).count(),'Professional Word Meaning Test '+setNo+' must be visible');
+    assert.ok(await page.getByText('KPSS Türkçe · Cümlede Anlam · Test '+setNo,{exact:true}).count(),'Professional Sentence Meaning Test '+setNo+' must be visible');
   }
   assert.equal(await page.getByText('KPSS Sözcükte Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Word Meaning seed must not remain in the active catalog');
+  assert.equal(await page.getByText('KPSS Cümlede Anlam · Hızlı Pratik',{exact:true}).count(),0,'Superseded four-question Sentence Meaning seed must not remain in the active catalog');
   const professionalStart=page.locator('[data-action="start-mini-exam"][data-id="kpss:k-tr:k-tr-1:t01"]').first();
   await professionalStart.waitFor({state:'visible'});
   await professionalStart.click();

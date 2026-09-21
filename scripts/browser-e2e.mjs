@@ -81,6 +81,11 @@ async function assertTodayContract(page) {
   await page.locator('.pnx3-dashboard').waitFor({ state: 'visible' });
   await page.getByRole('heading', { name: 'Bugün, hedefindeki sen için güçlü bir gün!' }).waitFor({ state: 'visible' });
 
+  const greeting = ((await page.locator('.pnx3-greeting').textContent()) || '').trim();
+  const profileName = ((await page.locator('.pnx-profile-copy strong').textContent()) || '').trim();
+  assert.ok(greeting && !/GÜNAYDIN\s+BUGÜN/i.test(greeting), 'Dashboard greeting must keep the real student identity');
+  assert.ok(profileName && profileName.toLocaleLowerCase('tr-TR') !== 'bugün', 'Topbar profile must keep the real student identity');
+
   assert.match(
     (await page.locator('.pnx-global-search').innerText()).trim(),
     /KPSS/i,
@@ -195,17 +200,28 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
 
 async function showTaskInPlan(page, id, label) {
   await navigate(page, 'plan');
-  const thisWeek = page.locator('[data-action="week-today"]').first();
-  if (await thisWeek.count() && await thisWeek.isVisible()) await thisWeek.click();
+  const thisWeek = page.locator('[data-action="week-today"]:visible').first();
+  if (await thisWeek.count()) await thisWeek.click();
 
-  const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`);
+  const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`).first();
+  const revealSelectedDay = async () => {
+    if (!(await taskButton.count())) return false;
+    const column = taskButton.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]');
+    if (await column.count()) {
+      const index = await column.evaluate(el => Array.from(el.parentElement?.children || []).indexOf(el));
+      const tab = page.locator(`.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`).first();
+      if (index >= 0 && await tab.count()) await tab.click();
+    }
+    return await taskButton.isVisible();
+  };
+
   for (let hop = 0; hop < 4; hop++) {
-    if (await taskButton.count() && await taskButton.isVisible()) return;
-    const next = page.locator('[data-action="week-next"]').first();
-    assert.ok(await next.count() && await next.isVisible(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
+    if (await revealSelectedDay()) return;
+    const next = page.locator('[data-action="week-next"]:visible').first();
+    assert.ok(await next.count(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
     await next.click();
   }
-  assert.ok(await taskButton.count() && await taskButton.isVisible(), label + ': görev Programım içinde erişilebilir olmalı');
+  assert.ok(await revealSelectedDay(), label + ': görev Programım içinde erişilebilir olmalı');
 }
 
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {
@@ -744,15 +760,67 @@ try {
 
   const beforeMode = latestTaskMode(space0, todayTask);
 
-  const startButton = page.locator('.pnx3-focus .pnx-pomodoro-play[data-action="focus-session"][data-id="' + todayTask.id + '"]').first();
+  const startButton = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await startButton.waitFor({ state: 'visible' });
+  assert.match((await startButton.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Preview timer must show the real planned task duration');
   await startButton.click();
-  const focusCard = page.locator('.route-focus-card');
+
+  const focusCard = page.locator('.pnx3-focus .route-focus-card');
   await focusCard.waitFor({ state: 'visible' });
-  assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Başla must bind the real task title to the focus card');
-  assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Başla must expose the focus-session state');
-  assert.ok(await focusCard.getByText('Bitir ve kaydet', { exact: false }).count(), 'Focused task must expose the finish-and-record action');
+  assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Pomodoro start must bind the real task title to the focus card');
+  assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Pomodoro start must expose the focus-session state');
+  assert.ok(await page.locator('[data-action="timer-log"]').count(), 'Focused task must expose the real finish-and-record action');
   assert.match(await focusCard.innerText(), /çalışma kaydına otomatik bağlanacak/i, 'Focus card must explain the task/log linkage');
+
+  const clock = page.locator('#clock').first();
+  await clock.waitFor({ state: 'visible' });
+  const runningToggle = page.locator('#timer-toggle').first();
+  await runningToggle.waitFor({ state: 'visible' });
+  assert.match((await runningToggle.innerText()).trim(), /Duraklat/i, 'Running real timer must expose pause control');
+  const initialClock = (await clock.innerText()).trim();
+  assert.equal(initialClock, String(todayTask.minutes).padStart(2, '0') + ':00', 'Real timer must honor the planned task minutes');
+
+  await page.clock.fastForward(2000);
+  const runningClock = (await clock.innerText()).trim();
+  assert.notEqual(runningClock, initialClock, 'Real Pomodoro clock must count down after the dashboard play control is pressed');
+  if (todayTask.minutes === 40) {
+    assert.match(runningClock, /^39:\d{2}$/, 'A 40-minute real task must enter the 39:xx range after it starts');
+  }
+
+  const pauseToggle = page.locator('#timer-toggle').first();
+  await pauseToggle.click();
+  const pausedToggle = page.locator('#timer-toggle').first();
+  await pausedToggle.waitFor({ state: 'visible' });
+  assert.match((await pausedToggle.innerText()).trim(), /Başlat/i, 'Paused real timer must expose resume control');
+  const pausedClock = (await page.locator('#clock').first().innerText()).trim();
+  await page.clock.fastForward(1600);
+  assert.equal((await page.locator('#clock').first().innerText()).trim(), pausedClock, 'Paused Pomodoro must keep its remaining time');
+
+  await page.locator('#timer-toggle').first().click();
+  const resumedToggle = page.locator('#timer-toggle').first();
+  await resumedToggle.waitFor({ state: 'visible' });
+  assert.match((await resumedToggle.innerText()).trim(), /Duraklat/i, 'Resumed real timer must expose pause control again');
+  await page.clock.fastForward(1600);
+  const resumedClock = (await page.locator('#clock').first().innerText()).trim();
+  assert.notEqual(resumedClock, pausedClock, 'Resumed Pomodoro must continue the existing real countdown');
+
+  await navigate(page, 'today');
+  const rerenderedFocus = page.locator('.pnx3-focus .route-focus-card');
+  await rerenderedFocus.waitFor({ state: 'visible' });
+  assert.ok((await rerenderedFocus.innerText()).includes(todayTask.title), 'Today rerender must preserve the task-bound focus session');
+  const beforeRerenderAdvance = (await page.locator('#clock').first().innerText()).trim();
+  await page.clock.fastForward(1200);
+  const afterRerenderAdvance = (await page.locator('#clock').first().innerText()).trim();
+  assert.notEqual(afterRerenderAdvance, beforeRerenderAdvance, 'Today rerender must not stop or replace the real running timer');
+
+  assert.ok(await page.locator('[data-action="timer-log"]').count(), 'Task-bound real timer must preserve its log action');
+  await page.locator('[data-action="timer-reset"]').first().click();
+  await page.getByText('Sayacı sıfırla?', { exact: true }).waitFor({ state: 'visible' });
+  await page.locator('[data-action="confirm"]').click();
+  const resetPreview = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
+  await resetPreview.waitFor({ state: 'visible' });
+  assert.match((await resetPreview.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Confirmed reset must restore the planned duration and return to the task preview');
+  assert.equal(await page.locator('.pnx3-focus .route-focus-card').count(), 0, 'Reset must preserve the existing behavior of clearing the live focus session');
 
   snapshot = await appState(page);
   const spaceAfterFocus = snapshot.value.workspaces.kpss;

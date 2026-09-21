@@ -1,0 +1,43 @@
+/* Evidence-only dashboard polish: every gauge follows a persisted real value. */
+body.pnx3-dashboard-ready .pnx3-result-ring{
+  background:
+    radial-gradient(circle at center,#fff 57%,transparent 58%),
+    conic-gradient(#4367ff 0 var(--pnx-ring-pct,0%),#e8ecf4 var(--pnx-ring-pct,0%) 100%)!important;
+}
+body.pnx3-dashboard-ready .pnx3-result-ring.coral{
+  background:
+    radial-gradient(circle at center,#fff 57%,transparent 58%),
+    conic-gradient(#ff6757 0 var(--pnx-ring-pct,0%),#e8ecf4 var(--pnx-ring-pct,0%) 100%)!important;
+}
+body.pnx3-dashboard-ready .pnx3-results-empty{
+  min-height:112px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:16px 12px;
+  text-align:center;
+}
+body.pnx3-dashboard-ready .pnx3-results-empty strong{
+  color:#27324f;
+  font-size:11px;
+}
+body.pnx3-dashboard-ready .pnx3-results-empty span{
+  max-width:240px;
+  color:#7b89a4;
+  font-size:8px;
+  line-height:1.45;
+}
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-result-ring{
+  background:
+    radial-gradient(circle at center,#101a2b 57%,transparent 58%),
+    conic-gradient(#536fff 0 var(--pnx-ring-pct,0%),#28354a var(--pnx-ring-pct,0%) 100%)!important;
+}
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-result-ring.coral{
+  background:
+    radial-gradient(circle at center,#101a2b 57%,transparent 58%),
+    conic-gradient(#ff6f62 0 var(--pnx-ring-pct,0%),#28354a var(--pnx-ring-pct,0%) 100%)!important;
+}
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-results-empty strong{color:#eef3ff}
+html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-results-empty span{color:#9cabc4}

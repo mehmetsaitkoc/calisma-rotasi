@@ -161,7 +161,10 @@ try{
 
   await navigateDesktop(page,'plan');
   await page.getByRole('heading',{name:'Programım'}).waitFor({state:'visible'});
-  assert.ok(await page.locator('.week-grid .day-column').count()===7,'Desktop Program must expose seven days');
+  await page.locator('body.pnx-program-day-ready').waitFor({state:'attached'});
+  await page.locator('.pnx-program-workspace').waitFor({state:'visible'});
+  assert.equal(await page.locator('.pnx-program-day-tab').count(),7,'Desktop Program must keep all seven real day selectors');
+  assert.equal(await page.locator('.week-grid > .day-column.pnx-program-active-day').count(),1,'Program must focus one selected day without deleting the weekly route DOM');
   await noOverflow(page,'Program 1512');
   await page.screenshot({path:OUT+'/program-1512.png',fullPage:false});
 
@@ -179,6 +182,11 @@ try{
   await page.locator('.analysis-panel').screenshot({path:OUT+'/ders-analizi-1512.png'});
 
   await navigateDesktop(page,'today');
+  await page.locator('.pnx3-results-card:not(.is-empty)').waitFor({state:'visible'});
+  assert.match(await page.locator('.pnx3-results-card').innerText(),/Genel net/i,'Today must show the real saved full-exam result after evidence exists');
+  assert.match(await page.locator('.pnx3-goals-card').innerText(),/KPSS Genel Net/i,'Goals must stay bound to KPSS exam evidence');
+
+  
   await page.setViewportSize({width:390,height:844});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
   await noOverflow(page,'Today 390');
@@ -189,25 +197,34 @@ try{
   assert.ok(hiddenSidebar.right<=1,'Mobile sidebar must be fully off-canvas until opened');
   await page.screenshot({path:OUT+'/today-390.png',fullPage:false});
 
+  await page.setViewportSize({width:360,height:800});
+  await noOverflow(page,'Today 360');
+  await page.screenshot({path:OUT+'/today-360.png',fullPage:false});
+  await page.setViewportSize({width:390,height:844});
+
   await navigateMobile(page,'plan');
   await page.getByRole('heading',{name:'Programım'}).waitFor({state:'visible'});
-  const mobileFlow=await page.locator('.week-grid').evaluate(el=>({
+  await page.locator('body.pnx-program-day-ready').waitFor({state:'attached'});
+  const mobileFlow=await page.locator('.pnx-program-workspace').evaluate(el=>({
     display:getComputedStyle(el).display,
-    direction:getComputedStyle(el).flexDirection,
     width:el.scrollWidth,
     client:el.clientWidth
   }));
-  assert.equal(mobileFlow.display,'flex','Mobile Program must switch to vertical flow');
-  assert.equal(mobileFlow.direction,'column','Mobile Program must stack days vertically');
-  assert.ok(mobileFlow.width<=mobileFlow.client+2,'Mobile Program must not retain desktop horizontal week overflow');
+  assert.equal(await page.locator('.pnx-program-day-tab').count(),7,'Mobile Program must preserve seven day selectors');
+  assert.equal(await page.locator('.week-grid > .day-column.pnx-program-active-day').count(),1,'Mobile Program must keep one focused selected day');
+  assert.ok(mobileFlow.width<=mobileFlow.client+2,'Mobile Program workspace must fit its viewport');
   await noOverflow(page,'Program 390');
   await page.screenshot({path:OUT+'/program-390.png',fullPage:false});
+
+  await page.setViewportSize({width:360,height:800});
+  await noOverflow(page,'Program 360');
+  await page.screenshot({path:OUT+'/program-360.png',fullPage:false});
 
   assert.deepEqual(errors,[],'Visual review page errors:\n'+errors.join('\n'));
   console.log(JSON.stringify({
     screenshots:[
       'today-1512.png','today-1440.png','program-1512.png',
-      'rota-hoca-1512.png','deneme-1512.png','ders-analizi-1512.png','today-390.png','program-390.png'
+      'rota-hoca-1512.png','deneme-1512.png','ders-analizi-1512.png','today-390.png','today-360.png','program-390.png','program-360.png'
     ],
     mobileProgram:mobileFlow
   },null,2));

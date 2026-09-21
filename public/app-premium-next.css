@@ -4703,668 +4703,345 @@ html[data-cr-color-mode="dark"] body.app-premium-next-ready .route-day-summary-c
 }
 
 
-/* APP PREMIUM NEXT V4 · PROGRAM DAILY TIMELINE */
-body.pnx-program-day-ready .content{
-  max-width:1540px!important;
-  padding:28px 34px 60px!important;
-}
-body.pnx-program-day-ready .page-head{
-  min-height:0!important;
-  margin:0 0 18px!important;
-  padding:0 2px!important;
-  align-items:flex-end!important;
-}
-body.pnx-program-day-ready .page-head .eyebrow{
-  display:none!important;
-}
-body.pnx-program-day-ready .page-head h1{
-  color:#101935!important;
-  font-size:42px!important;
-  line-height:1!important;
-  letter-spacing:-1.9px!important;
-}
-body.pnx-program-day-ready .page-head p{
-  max-width:680px!important;
-  margin-top:8px!important;
-  color:#73809a!important;
-  font-size:13px!important;
-  line-height:1.55!important;
-}
-body.pnx-program-day-ready .page-head>.btn{
-  min-height:44px!important;
-  padding:0 18px!important;
-  border:1px solid #2f66f3!important;
-  border-radius:12px!important;
-  background:linear-gradient(135deg,#326cff,#2458e8)!important;
-  color:#fff!important;
-  box-shadow:0 10px 24px rgba(42,92,226,.18)!important;
-}
-body.pnx-program-day-ready .route-week-summary,
-body.pnx-program-day-ready .pnx-program-legacy-toolbar{
-  display:none!important;
-}
 
-/* Week selector */
-body.pnx-program-day-ready .pnx-program-week-strip{
-  display:grid;
-  grid-template-columns:44px minmax(0,1fr) 44px 118px;
-  gap:10px;
-  align-items:stretch;
-  margin-bottom:18px;
+/* APP PREMIUM NEXT V3.1 · PLAN HEADER + IDENTITY INTEGRITY */
+body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head{
+  display:grid!important;
+  grid-template-columns:30px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
 }
-body.pnx-program-day-ready .pnx-program-days{
-  min-width:0;
-  display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
-  gap:7px;
-  padding:6px;
-  border:1px solid #e5eaf2;
-  border-radius:16px;
-  background:rgba(255,255,255,.84);
-  box-shadow:0 10px 28px rgba(31,45,78,.04);
-}
-body.pnx-program-day-ready .pnx-program-day-tab{
-  min-width:0;
-  min-height:68px;
-  display:grid;
-  place-items:center;
-  align-content:center;
-  gap:2px;
-  padding:7px 6px;
-  border:1px solid transparent;
-  border-radius:12px;
-  color:#67748d;
-  background:transparent;
-  transition:transform .16s ease,background .16s ease,color .16s ease,box-shadow .16s ease;
-}
-body.pnx-program-day-ready .pnx-program-day-tab:hover{
-  transform:translateY(-1px);
-  background:#f7f9fd;
-}
-body.pnx-program-day-ready .pnx-program-day-tab small{
-  font-size:9px;
-  font-weight:760;
-  letter-spacing:.25px;
-}
-body.pnx-program-day-ready .pnx-program-day-tab strong{
-  color:#17213d;
-  font-size:20px;
-  line-height:1;
-}
-body.pnx-program-day-ready .pnx-program-day-tab span{
-  color:#98a3b6;
-  font-size:8px;
-}
-body.pnx-program-day-ready .pnx-program-day-tab.active{
-  border-color:#2f67f1;
-  background:linear-gradient(155deg,#386fff,#2558e9);
-  color:#fff;
-  box-shadow:0 11px 22px rgba(42,90,229,.24);
-}
-body.pnx-program-day-ready .pnx-program-day-tab.active strong,
-body.pnx-program-day-ready .pnx-program-day-tab.active span{
-  color:#fff!important;
-}
-body.pnx-program-day-ready .pnx-program-day-tab.active span{
-  opacity:.82;
-}
-body.pnx-program-day-ready .pnx-week-arrow,
-body.pnx-program-day-ready .pnx-week-today{
-  border:1px solid #e2e7f0;
-  border-radius:13px;
-  background:#fff;
-  color:#273552;
-  box-shadow:0 8px 24px rgba(31,45,78,.04);
-}
-body.pnx-program-day-ready .pnx-week-arrow{
-  font-size:27px;
-  font-weight:300;
-}
-body.pnx-program-day-ready .pnx-week-today{
-  padding:0 13px;
-  color:#2f62dd;
-  font-size:11px;
-  font-weight:760;
-}
-
-/* Main daily workspace */
-body.pnx-program-day-ready .pnx-program-workspace{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 330px;
-  gap:18px;
-  align-items:start;
-}
-body.pnx-program-day-ready .pnx-program-main{
-  min-width:0;
-}
-body.pnx-program-day-ready .pnx-program-day-head{
-  min-height:82px;
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:18px;
-  margin-bottom:10px;
-  padding:4px 6px 13px;
-  border-bottom:1px solid #e9edf4;
-}
-body.pnx-program-day-ready .pnx-program-day-kicker{
-  margin-bottom:5px;
-  color:#2f68ee;
-  font-size:9px;
-  font-weight:820;
-  letter-spacing:1.25px;
-}
-body.pnx-program-day-ready .pnx-program-day-head h2{
-  margin:0!important;
-  color:#111a34!important;
-  font-size:28px!important;
-  line-height:1.05!important;
-  letter-spacing:-1px!important;
-}
-body.pnx-program-day-ready .pnx-program-day-head p{
-  margin:6px 0 0!important;
-  color:#7a879e!important;
-  font-size:11px!important;
-  line-height:1.5!important;
-}
-body.pnx-program-day-ready .pnx-program-day-head-meta{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-body.pnx-program-day-ready .pnx-program-day-head-meta span{
-  min-height:35px;
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-  padding:0 11px;
-  border:1px solid #e2e8f1;
-  border-radius:10px;
-  background:#fff;
-  color:#77849a;
-  font-size:9px;
-}
-body.pnx-program-day-ready .pnx-program-day-head-meta b{
-  color:#1e2a48;
-  font-size:11px;
-}
-body.pnx-program-day-ready .week-wrap{
-  overflow:visible!important;
-  padding:0!important;
-}
-body.pnx-program-day-ready .week-grid{
-  display:block!important;
+body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head>div{
+  grid-column:2!important;
+  grid-row:1!important;
   min-width:0!important;
 }
-body.pnx-program-day-ready .week-grid>.day-column{
-  display:none!important;
-}
-body.pnx-program-day-ready .week-grid>.day-column.pnx-program-active-day{
-  display:block!important;
-}
-body.pnx-program-day-ready .day-column.pnx-program-active-day{
-  min-height:0!important;
-  padding:0 0 0 46px!important;
-  overflow:visible!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-body.pnx-program-day-ready .day-column.pnx-program-active-day:before{
-  content:""!important;
-  position:absolute!important;
-  left:16px!important;
-  top:22px!important;
-  bottom:24px!important;
-  width:1px!important;
-  height:auto!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:#d7deeb!important;
-  box-shadow:none!important;
-}
-body.pnx-program-day-ready .day-column.pnx-program-active-day:after{
-  display:none!important;
-}
-body.pnx-program-day-ready .day-column.pnx-program-active-day>.day-title,
-body.pnx-program-day-ready .day-column.pnx-program-active-day>.route-day-summary,
-body.pnx-program-day-ready .day-column.pnx-program-active-day>.route-day-load,
-body.pnx-program-day-ready .day-column.pnx-program-active-day>.route-empty-day{
-  display:none!important;
-}
-
-/* Focused task timeline */
-body.pnx-program-day-ready .route-plan-card{
-  position:relative!important;
-  margin:0 0 12px!important;
-  padding:16px 16px 14px 18px!important;
-  overflow:visible!important;
-  border:1px solid #e2e7f0!important;
-  border-left:1px solid #e2e7f0!important;
-  border-radius:15px!important;
-  background:#fff!important;
-  box-shadow:0 8px 24px rgba(24,39,74,.045)!important;
-  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
-}
-body.pnx-program-day-ready .route-plan-card:hover{
-  transform:translateY(-1px)!important;
-  border-color:#d2dbea!important;
-  box-shadow:0 12px 28px rgba(24,39,74,.07)!important;
-}
-body.pnx-program-day-ready .route-plan-card:before{
-  content:attr(data-pnx-step)!important;
-  position:absolute!important;
-  left:-43px!important;
-  top:20px!important;
-  width:28px!important;
-  height:28px!important;
+body.pnx3-dashboard-ready .pnx3-plan-card .pnx-route-calendar{
+  grid-column:1!important;
+  grid-row:1!important;
+  position:static!important;
   display:grid!important;
   place-items:center!important;
-  border:4px solid #f6f8fc!important;
+  margin:0!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .pnx-route-see-all{
+  grid-column:3!important;
+  grid-row:1!important;
+  position:static!important;
+  justify-self:end!important;
+  white-space:nowrap!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head h2{
+  overflow:visible!important;
+  white-space:nowrap!important;
+  text-overflow:clip!important;
+}
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head{
+    grid-template-columns:28px minmax(0,1fr) auto!important;
+    gap:8px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head h2{
+    font-size:17px!important;
+  }
+}
+
+
+/* APP PREMIUM NEXT V3.2 · REFERENCE VISUAL + REAL POMODORO */
+body.pnx3-dashboard-ready .route-v1-head:before{
+  background:
+    linear-gradient(90deg,rgba(248,251,255,.99) 0%,rgba(247,251,255,.94) 30%,rgba(239,247,255,.32) 54%,rgba(239,247,255,.03) 78%,rgba(248,251,255,.40) 100%),
+    url("/kpss-hero-mountain.svg") 64% 50%/cover no-repeat!important;
+  filter:none!important;
+  opacity:1!important;
+}
+body.pnx3-dashboard-ready .route-v1-head:after{
+  background:linear-gradient(90deg,rgba(249,252,255,.96),rgba(249,252,255,.22) 46%,transparent 72%)!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art .pnx3-hand-note{
+  color:#173c83!important;
+  font-size:16px!important;
+  line-height:1.16!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.85)!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art blockquote{
+  color:#405b90!important;
+  font-weight:750!important;
+}
+
+body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
+  background:
+    linear-gradient(180deg,rgba(4,15,34,.18),rgba(4,16,38,.92)),
+    url("/kpss-hero-mountain.svg") 67% 54%/cover no-repeat!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus-tabs{
+  z-index:7!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus-tabs button{
+  min-height:30px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#8fa4ca;
+  font-size:9px;
+  font-weight:750;
+  cursor:pointer;
+}
+body.pnx3-dashboard-ready .pnx3-focus-tabs button:hover{color:#fff}
+body.pnx3-dashboard-ready .pnx3-focus-tabs button.active{
+  background:#1675ff;
+  color:#fff;
+  box-shadow:0 6px 16px rgba(22,117,255,.28);
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring{
+  position:relative!important;
+  width:185px!important;
+  height:185px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
   border-radius:50%!important;
-  background:#2e68f0!important;
+  cursor:pointer!important;
+  background:conic-gradient(#2ba8ff 0 36%,#294f82 36% 100%)!important;
+  box-shadow:0 0 0 8px rgba(19,54,94,.38),0 16px 36px rgba(0,0,0,.22)!important;
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring:before{
+  content:"";
+  position:absolute;
+  inset:16px;
+  border-radius:50%;
+  background:rgba(8,22,46,.95);
+  box-shadow:inset 0 0 36px rgba(19,91,186,.18);
+}
+body.pnx3-dashboard-ready .pnx3-preview-timer{
+  position:relative;
+  z-index:2;
+  display:grid;
+  justify-items:center;
+  gap:12px;
+}
+body.pnx3-dashboard-ready .pnx3-preview-timer strong{
   color:#fff!important;
-  font-size:9px!important;
-  font-weight:800!important;
-  box-shadow:0 0 0 1px #d8dfec!important;
+  font-size:29px!important;
+  line-height:1!important;
+  letter-spacing:-1.1px!important;
 }
-body.pnx-program-day-ready .route-plan-card.done:before{
-  content:"✓"!important;
-  background:#32b77a!important;
+body.pnx3-dashboard-ready .pnx3-preview-timer .pnx-pomodoro-play{
+  width:54px!important;
+  height:54px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:linear-gradient(145deg,#3c86ff,#1759ef)!important;
+  color:#fff!important;
+  font-style:normal!important;
+  font-size:18px!important;
+  box-shadow:0 0 0 7px rgba(52,119,255,.14),0 9px 24px rgba(31,99,244,.34)!important;
 }
-body.pnx-program-day-ready .route-plan-tags{
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 0 8px rgba(19,54,94,.40),0 20px 40px rgba(0,0,0,.28)!important;
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring:focus-visible{
+  outline:3px solid rgba(64,154,255,.45);
+  outline-offset:5px;
+}
+
+/* Once a task is prepared, show the application's real timer in the same center card. */
+body.pnx3-dashboard-ready .pnx3-focus.pnx3-has-live-timer .pnx-reference-hero{
+  display:none!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus.pnx3-has-live-timer{
+  border-radius:19px!important;
+  overflow:hidden!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card{
+  width:100%!important;
+  height:348px!important;
+  min-height:348px!important;
+  margin:0!important;
+  padding:14px 16px 15px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  border:1px solid rgba(92,120,178,.22)!important;
+  border-radius:19px!important;
+  color:#fff!important;
+  background:
+    linear-gradient(180deg,rgba(5,15,33,.28),rgba(5,16,37,.94)),
+    url("/kpss-hero-mountain.svg") 68% 55%/cover no-repeat!important;
+  box-shadow:0 16px 34px rgba(8,21,47,.18)!important;
+  overflow:hidden!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .card-head{
+  width:100%;
+  position:absolute!important;
+  top:14px;
+  left:16px;
+  right:16px;
+  padding:0!important;
+  border:0!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .card-head h3{
+  max-width:210px;
+  overflow:hidden;
+  color:#f5f8ff!important;
+  font-size:11px!important;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .card-head>.icon{display:none!important}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .eyebrow{
+  color:#73b5ff!important;
+  font-size:8px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-meta{
+  display:block;
+  margin-top:2px;
+  color:#9fb1ce!important;
+  font-size:8px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-presets{
+  position:absolute!important;
+  top:14px;
+  right:14px;
   display:flex!important;
   gap:5px!important;
-  margin:0 0 7px!important;
+  padding:3px!important;
+  border-radius:10px!important;
+  background:rgba(4,13,30,.62)!important;
 }
-body.pnx-program-day-ready .route-plan-tags .route-method-pill,
-body.pnx-program-day-ready .route-plan-tags .route-adaptive-pill{
-  display:none!important;
-}
-body.pnx-program-day-ready .route-plan-tags .route-source{
-  min-height:22px!important;
-  display:inline-flex!important;
-  align-items:center!important;
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-presets button{
+  min-width:42px!important;
+  min-height:27px!important;
   padding:0 8px!important;
   border:0!important;
-  border-radius:999px!important;
-  background:#eef3ff!important;
-  color:#3167ef!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  color:#8fa4ca!important;
   font-size:8px!important;
-  font-weight:820!important;
-  letter-spacing:.4px!important;
 }
-body.pnx-program-day-ready .route-plan-card h4{
-  margin:0 0 5px!important;
-  color:#141d36!important;
-  font-size:16px!important;
-  line-height:1.25!important;
-  letter-spacing:-.25px!important;
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-presets button.active{
+  background:#1675ff!important;
+  color:#fff!important;
 }
-body.pnx-program-day-ready .route-plan-card>span.tiny.muted{
-  display:block!important;
-  margin-bottom:2px!important;
-  color:#78849b!important;
-  font-size:10px!important;
-  line-height:1.45!important;
+body.pnx3-dashboard-ready .pnx3-live-timer-card .clock{
+  position:relative!important;
+  width:185px!important;
+  height:185px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:22px 0 0!important;
+  border:16px solid #284f83!important;
+  border-top-color:#2ba8ff!important;
+  border-right-color:#2ba8ff!important;
+  border-radius:50%!important;
+  background:rgba(8,22,46,.95)!important;
+  color:#fff!important;
+  font-size:29px!important;
+  font-weight:850!important;
+  letter-spacing:-1.1px!important;
+  box-shadow:0 0 0 8px rgba(19,54,94,.38),inset 0 0 36px rgba(19,91,186,.18),0 16px 36px rgba(0,0,0,.22)!important;
 }
-body.pnx-program-day-ready .route-plan-card .route-plan-goal,
-body.pnx-program-day-ready .route-plan-card .route-task-reason{
-  display:none!important;
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-status{
+  max-width:250px;
+  color:#b7c4da!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+  text-align:center!important;
 }
-body.pnx-program-day-ready .route-plan-card .row.between.mt{
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject{
   display:flex!important;
   align-items:center!important;
-  justify-content:flex-end!important;
-  gap:8px!important;
-  margin:11px 0 0!important;
-  padding:11px 0 0!important;
-  border-top:1px solid #edf0f5!important;
-}
-body.pnx-program-day-ready .route-plan-card .row.between.mt>.btn{
-  margin-right:auto!important;
-}
-body.pnx-program-day-ready .route-plan-card .row.between.mt>.row{
-  display:flex!important;
   gap:7px!important;
+  max-width:250px!important;
+  margin:0!important;
+  padding:6px 9px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:10px!important;
+  background:rgba(7,18,39,.46)!important;
+  color:#dce7f8!important;
 }
-body.pnx-program-day-ready .route-plan-card .btn{
-  min-height:34px!important;
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject>.icon{
+  width:15px!important;
+  height:15px!important;
+  flex:0 0 auto!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject strong{
+  color:#eef5ff!important;
+  font-size:8px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .route-focus-subject span{
+  display:block!important;
+  margin-top:1px!important;
+  color:#9fb0c9!important;
+  font-size:7px!important;
+  line-height:1.25!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls{
+  justify-content:center!important;
+  gap:6px!important;
+  margin:1px 0 0!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls .btn{
+  min-height:30px!important;
   padding:0 11px!important;
   border-radius:9px!important;
-  font-size:9px!important;
+  border-color:rgba(255,255,255,.12)!important;
+  background:rgba(7,18,39,.62)!important;
+  color:#e8f1ff!important;
+  font-size:8px!important;
 }
-body.pnx-program-day-ready .route-plan-card .pnx-program-start{
-  min-width:126px!important;
-  min-height:36px!important;
-  border-color:#2861ec!important;
-  background:linear-gradient(135deg,#3671ff,#2457df)!important;
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls .btn.primary{
+  background:#1675ff!important;
+  border-color:#1675ff!important;
   color:#fff!important;
-  box-shadow:0 8px 18px rgba(43,92,226,.18)!important;
 }
-body.pnx-program-day-ready .route-plan-card .check-btn{
-  width:34px!important;
-  height:34px!important;
-  border:1px solid #dbe2ed!important;
-  border-radius:9px!important;
-  background:#f8fafc!important;
-}
-body.pnx-program-day-ready .route-plan-card.done{
-  opacity:.72!important;
-  background:#f8fafc!important;
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-note{display:none!important}
+
+/* Rota Hoca should use the friendly illustrated teacher from the approved direction. */
+body.pnx3-dashboard-ready .pnx3-teacher-card .pnx-teacher-avatar{
+  width:150px!important;
+  height:190px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  filter:drop-shadow(0 12px 18px rgba(24,40,76,.16))!important;
 }
 
-/* Right rail */
-body.pnx-program-day-ready .pnx-program-aside{
-  display:grid;
-  gap:11px;
-}
-body.pnx-program-day-ready .pnx-program-side-card{
-  padding:15px;
-  border:1px solid #e2e7f0;
-  border-radius:16px;
-  background:#fff;
-  box-shadow:0 8px 24px rgba(24,39,74,.045);
-}
-body.pnx-program-day-ready .pnx-program-side-card>header{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:12px;
-}
-body.pnx-program-day-ready .pnx-program-side-card>header strong{
-  color:#19233f;
-  font-size:12px;
-}
-body.pnx-program-day-ready .pnx-program-side-card>header em{
-  margin-left:auto;
-  color:#3268ed;
-  font-size:10px;
-  font-style:normal;
-  font-weight:800;
-}
-body.pnx-program-day-ready .pnx-side-icon{
-  width:27px;
-  height:27px;
-  display:grid;
-  place-items:center;
-  border-radius:9px;
-  background:#eef3ff;
-  color:#2d65ee;
-  font-size:14px;
-  font-weight:800;
-}
-body.pnx-program-day-ready .pnx-day-progress-wrap{
-  display:grid;
-  grid-template-columns:96px 1fr;
-  gap:14px;
-  align-items:center;
-}
-body.pnx-program-day-ready .pnx-day-progress-ring{
-  width:88px;
-  height:88px;
-  display:grid;
-  place-items:center;
-  align-content:center;
-  border-radius:50%;
+/* Match the warm sunrise daily-quote card instead of the old dark adventure image. */
+body.pnx3-dashboard-ready .pnx3-quote-card{
   background:
-    radial-gradient(circle at center,#fff 0 57%,transparent 58%),
-    conic-gradient(#2f68ef var(--pnx-day-progress),#e9edf5 0);
+    linear-gradient(90deg,rgba(20,30,48,.72),rgba(20,30,48,.18)),
+    url("/daily-quote-sunrise.svg") 50% 52%/cover no-repeat!important;
+  color:#fff!important;
 }
-body.pnx-program-day-ready .pnx-day-progress-ring b{
-  color:#17213b;
-  font-size:22px;
+body.pnx3-dashboard-ready .pnx3-quote-card:before{
+  background:linear-gradient(90deg,rgba(17,28,47,.55),rgba(17,28,47,.05))!important;
 }
-body.pnx-program-day-ready .pnx-day-progress-ring small{
-  margin-top:1px;
-  color:#8a96aa;
-  font-size:7px;
+body.pnx3-dashboard-ready .pnx3-quote-card span,
+body.pnx3-dashboard-ready .pnx3-quote-card strong{
+  position:relative!important;
+  z-index:2!important;
+  color:#fff!important;
 }
-body.pnx-program-day-ready .pnx-day-progress-wrap>div:last-child{
-  display:grid;
-  gap:5px;
-}
-body.pnx-program-day-ready .pnx-day-progress-wrap>div:last-child strong{
-  color:#202a47;
-  font-size:12px;
-}
-body.pnx-program-day-ready .pnx-day-progress-wrap>div:last-child span{
-  color:#8390a5;
-  font-size:9px;
-}
-body.pnx-program-day-ready .pnx-program-time{
-  display:grid;
-  gap:4px;
-}
-body.pnx-program-day-ready .pnx-program-time b{
-  color:#15203b;
-  font-size:25px;
-  line-height:1;
-}
-body.pnx-program-day-ready .pnx-program-time span,
-body.pnx-program-day-ready .pnx-program-side-card>p{
-  color:#7c899f;
-  font-size:9px;
-  line-height:1.55;
-}
-body.pnx-program-day-ready .pnx-thin-progress{
-  height:7px;
-  margin-top:12px;
-  overflow:hidden;
-  border-radius:999px;
-  background:#edf1f6;
-}
-body.pnx-program-day-ready .pnx-thin-progress i{
-  height:100%;
-  display:block;
-  border-radius:999px;
-  background:linear-gradient(90deg,#3bc98b,#24a96e);
-}
-body.pnx-program-day-ready .pnx-week-progress{
-  height:72px;
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:6px;
-  align-items:end;
-}
-body.pnx-program-day-ready .pnx-week-progress-day{
-  height:100%;
-  display:grid;
-  grid-template-rows:1fr auto;
-  align-items:end;
-  justify-items:center;
-}
-body.pnx-program-day-ready .pnx-week-progress-day i{
-  width:15px;
-  height:var(--pnx-bar-h);
-  min-height:10px;
-  display:block;
-  border-radius:5px 5px 3px 3px;
-  background:
-    linear-gradient(180deg,#33bb7a var(--pnx-bar-pct),#e9edf3 var(--pnx-bar-pct));
-}
-body.pnx-program-day-ready .pnx-week-progress-day small{
-  margin-top:5px;
-  color:#8a95a8;
-  font-size:7px;
-}
-body.pnx-program-day-ready .pnx-program-insight{
-  background:
-    radial-gradient(circle at 92% 0,rgba(110,83,255,.12),transparent 34%),
-    linear-gradient(135deg,#fbf9ff,#fff)!important;
-}
-body.pnx-program-day-ready .pnx-program-insight p{
-  margin:0!important;
-  color:#5e5f8b!important;
-  font-size:9px!important;
-  line-height:1.55!important;
-  display:-webkit-box;
-  overflow:hidden;
-  -webkit-line-clamp:4;
-  -webkit-box-orient:vertical;
-}
-body.pnx-program-day-ready .pnx-activity-row{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:5px;
-}
-body.pnx-program-day-ready .pnx-activity-cell{
-  min-width:0;
-  min-height:48px;
-  display:grid;
-  place-items:center;
-  align-content:center;
-  gap:4px;
-  border:1px solid #edf0f4;
-  border-radius:8px;
-  background:#f7f9fb;
-}
-body.pnx-program-day-ready .pnx-activity-cell span{
-  color:#8d99aa;
-  font-size:7px;
-}
-body.pnx-program-day-ready .pnx-activity-cell b{
-  color:#9aa4b4;
-  font-size:8px;
-}
-body.pnx-program-day-ready .pnx-activity-cell.level-1{background:#eef8f2}
-body.pnx-program-day-ready .pnx-activity-cell.level-2{background:#d9f1e2}
-body.pnx-program-day-ready .pnx-activity-cell.level-3{background:#abe1c0}
-body.pnx-program-day-ready .pnx-activity-cell.level-4{background:#55bf7f}
-body.pnx-program-day-ready .pnx-activity-cell.level-4 span,
-body.pnx-program-day-ready .pnx-activity-cell.level-4 b{color:#fff}
 
-/* Night mode */
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .page-head h1,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-day-head h2,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .route-plan-card h4,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-side-card>header strong,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-time b,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-day-progress-wrap>div:last-child strong{
-  color:#f1f5fd!important;
-}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-week-strip .pnx-program-days,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-week-arrow,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-week-today,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-day-head-meta span,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .route-plan-card,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-side-card{
-  background:#101a2b!important;
-  border-color:#27344b!important;
-  color:#dfe7f5!important;
-}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-day-tab:not(.active) strong{
-  color:#e4eaf5!important;
-}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .route-plan-card .row.between.mt,
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-day-head{
-  border-color:#253149!important;
-}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-day-progress-ring{
-  background:
-    radial-gradient(circle at center,#101a2b 0 57%,transparent 58%),
-    conic-gradient(#4779ff var(--pnx-day-progress),#27344b 0);
-}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-day-progress-ring b{
-  color:#eef3fc!important;
-}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-program-insight{
-  background:
-    radial-gradient(circle at 92% 0,rgba(110,83,255,.13),transparent 34%),
-    #101a2b!important;
-}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-activity-cell{
-  border-color:#28354c;
-  background:#172133;
-}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-activity-cell.level-1{background:#183127}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-activity-cell.level-2{background:#1d5138}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-activity-cell.level-3{background:#24754b}
-html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-activity-cell.level-4{background:#2aa765}
-
-/* Responsive */
-@media(max-width:1180px){
-  body.pnx-program-day-ready .pnx-program-workspace{
-    grid-template-columns:minmax(0,1fr) 290px;
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .pnx3-live-timer-card{
+    height:330px!important;
+    min-height:330px!important;
   }
-  body.pnx-program-day-ready .pnx-program-week-strip{
-    grid-template-columns:40px minmax(0,1fr) 40px 100px;
+  body.pnx3-dashboard-ready .pnx3-live-timer-card .clock{
+    width:160px!important;
+    height:160px!important;
+    border-width:14px!important;
+    font-size:25px!important;
   }
-}
-@media(max-width:980px){
-  body.pnx-program-day-ready .pnx-program-workspace{
-    grid-template-columns:1fr!important;
-  }
-  body.pnx-program-day-ready .pnx-program-aside{
-    grid-template-columns:1fr 1fr;
-  }
-  body.pnx-program-day-ready .pnx-program-progress-card,
-  body.pnx-program-day-ready .pnx-program-insight{
-    grid-column:auto;
-  }
-}
-@media(max-width:760px){
-  body.pnx-program-day-ready .content{
-    padding:14px 12px 104px!important;
-  }
-  body.pnx-program-day-ready .page-head{
-    align-items:flex-start!important;
-  }
-  body.pnx-program-day-ready .page-head h1{
-    font-size:34px!important;
-  }
-  body.pnx-program-day-ready .page-head>.btn{
-    width:100%!important;
-  }
-  body.pnx-program-day-ready .pnx-program-week-strip{
-    grid-template-columns:38px minmax(0,1fr) 38px;
-    gap:6px;
-  }
-  body.pnx-program-day-ready .pnx-week-today{
-    grid-column:1/-1;
-    min-height:38px;
-  }
-  body.pnx-program-day-ready .pnx-program-days{
-    overflow:auto;
-    grid-template-columns:repeat(7,minmax(70px,1fr));
-    scrollbar-width:none;
-  }
-  body.pnx-program-day-ready .pnx-program-days::-webkit-scrollbar{display:none}
-  body.pnx-program-day-ready .pnx-program-day-head{
-    align-items:flex-start;
-    flex-direction:column;
-  }
-  body.pnx-program-day-ready .pnx-program-day-head-meta{
-    justify-content:flex-start;
-  }
-  body.pnx-program-day-ready .day-column.pnx-program-active-day{
-    padding-left:38px!important;
-  }
-  body.pnx-program-day-ready .day-column.pnx-program-active-day:before{
-    left:13px!important;
-  }
-  body.pnx-program-day-ready .route-plan-card:before{
-    left:-36px!important;
-    width:26px!important;
-    height:26px!important;
-  }
-  body.pnx-program-day-ready .route-plan-card .row.between.mt{
-    align-items:stretch!important;
-    flex-direction:column!important;
-  }
-  body.pnx-program-day-ready .route-plan-card .row.between.mt>.btn{
-    margin-right:0!important;
-  }
-  body.pnx-program-day-ready .route-plan-card .row.between.mt>.row{
-    flex-wrap:wrap!important;
-  }
-  body.pnx-program-day-ready .route-plan-card .pnx-program-start{
-    flex:1 1 100%!important;
-  }
-  body.pnx-program-day-ready .pnx-program-aside{
-    grid-template-columns:1fr!important;
+  body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-presets{
+    position:static!important;
+    order:-1;
+    margin-bottom:1px!important;
   }
 }

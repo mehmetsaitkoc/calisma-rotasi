@@ -37,9 +37,23 @@
   }
 
   function firstName(header) {
-    const current = text(header.querySelector('h1'));
+    const cached = String(header?.dataset?.pnxStudentName || '').trim();
+    if (cached) return cached;
+
+    const current = text(header?.querySelector('h1'));
     const match = current.match(/^([^,]+),/);
-    return (match?.[1] || '').trim() || 'Öğrenci';
+    let name = (match?.[1] || '').trim();
+
+    // The V3 title starts with “Bugün,” after the first composition pass.
+    // Never let subsequent MutationObserver passes overwrite the real student name.
+    if (!name || name.toLocaleLowerCase('tr-TR') === 'bugün') {
+      const existing = text(document.querySelector('.pnx-profile-copy strong'));
+      if (existing && existing.toLocaleLowerCase('tr-TR') !== 'bugün') name = existing;
+    }
+    if (!name || name.toLocaleLowerCase('tr-TR') === 'bugün') name = 'Öğrenci';
+
+    if (header) header.dataset.pnxStudentName = name;
+    return name;
   }
 
   function polishHeading(header) {
@@ -171,6 +185,31 @@
     return text(root.querySelector('.route-task .route-task-reason')) || text(fallback?.querySelector('p')) || '';
   }
 
+  function startPreviewTimer(root, hero) {
+    const start = hero.querySelector(':scope > .route-start-big[data-action="focus-session"]');
+    if (!start) return;
+    start.click();
+
+    // focus-session prepares the existing real timer and re-renders Today.
+    // The dashboard MutationObserver can replace the timer DOM more than once,
+    // so resolve the real toggle from document and retry across animation frames.
+    // This is only a handoff: duration, endAt, pause/resume, reset and logging
+    // remain owned by the application's timer() infrastructure.
+    let attempt = 0;
+    const startRealTimerWhenReady = () => {
+      const toggle = document.querySelector('#timer-toggle');
+      if (toggle) {
+        const label = text(toggle).toLocaleLowerCase('tr-TR');
+        if (label.includes('duraklat')) return;
+        toggle.click();
+        if (text(document.querySelector('#timer-toggle')).toLocaleLowerCase('tr-TR').includes('duraklat')) return;
+      }
+      attempt += 1;
+      if (attempt < 24) requestAnimationFrame(startRealTimerWhenReady);
+    };
+    requestAnimationFrame(startRealTimerWhenReady);
+  }
+
   function ensureFocusHero(root, hero, reason) {
     hero.classList.add('pnx-reference-hero','pnx3-focus-card');
 
@@ -182,22 +221,41 @@
     if (!hero.querySelector('.pnx3-focus-tabs')) {
       const tabs = document.createElement('div');
       tabs.className = 'pnx3-focus-tabs';
-      tabs.innerHTML = '<span class="active">Pomodoro</span><span>Geri Sayım</span><span>Serbest</span>';
+      tabs.innerHTML =
+        '<button type="button" class="active" data-pnx-timer-mode="pomodoro">Pomodoro</button>' +
+        '<button type="button" data-pnx-timer-mode="countdown">Geri Sayım</button>' +
+        '<button type="button" data-pnx-timer-mode="free">Serbest</button>';
+
+      const pomodoro = tabs.querySelector('[data-pnx-timer-mode="pomodoro"]');
+      const countdown = tabs.querySelector('[data-pnx-timer-mode="countdown"]');
+      const free = tabs.querySelector('[data-pnx-timer-mode="free"]');
+
+      pomodoro?.addEventListener('click', () => {
+        tabs.querySelectorAll('button').forEach((button) => button.classList.toggle('active', button === pomodoro));
+      });
+      countdown?.addEventListener('click', () => {
+        tabs.querySelectorAll('button').forEach((button) => button.classList.toggle('active', button === countdown));
+        startPreviewTimer(root, hero);
+      });
+      free?.addEventListener('click', () => {
+        const addLog = root.querySelector('[data-action="add-log"]');
+        if (addLog) addLog.click();
+      });
       hero.prepend(tabs);
     }
 
     if (!hero.querySelector('.pnx-pomodoro')) {
       const meta = text(grow.querySelector('p'));
-      const minutes = Number(meta.match(/(\d+)\s*dk/i)?.[1] || 40);
+      const minutes = Math.max(1, Number(meta.match(/(\d+)\s*dk/i)?.[1] || 40));
       const timer = document.createElement('div');
-      timer.className = 'pnx-pomodoro';
+      timer.className = 'pnx-pomodoro pnx3-pomodoro-preview';
       timer.innerHTML =
-        '<div class="pnx-pomodoro-ring"><div><strong>' + minutes + ':00</strong>' +
-        '<button type="button" class="pnx-pomodoro-play" aria-label="Pomodoro ile başla">▶</button></div></div>' +
+        '<button type="button" class="pnx-pomodoro-ring" aria-label="' + minutes + ' dakikalık Pomodoro sayacını başlat">' +
+          '<span class="pnx3-preview-timer"><strong>' + minutes + ':00</strong>' +
+          '<i class="pnx-pomodoro-play" aria-hidden="true">▶</i></span>' +
+        '</button>' +
         '<span>Pomodoro ile başla</span>';
-      const play = timer.querySelector('.pnx-pomodoro-play');
-      if (start.dataset.action) play.dataset.action = start.dataset.action;
-      if (start.dataset.id) play.dataset.id = start.dataset.id;
+      timer.querySelector('.pnx-pomodoro-ring')?.addEventListener('click', () => startPreviewTimer(root, hero));
       hero.insertBefore(timer, start);
     }
 
@@ -211,6 +269,16 @@
 
     const why = taskReason(root, reason);
     hero.dataset.reason = why || '';
+  }
+
+  function mountLiveTimer(root, focus, hero) {
+    const live = root.querySelector('.route-focus-card');
+    focus.classList.toggle('pnx3-has-live-timer', !!live);
+    if (!live) return;
+
+    live.classList.add('pnx3-live-timer-card');
+    if (!focus.contains(live)) focus.appendChild(live);
+    hero.setAttribute('aria-hidden', 'true');
   }
 
   function ensureRoutePanel(routePanel, listHead, list) {
@@ -307,6 +375,91 @@
     return card;
   }
 
+  function kpssWorkspace() {
+    try {
+      const space = typeof window.w === 'function' ? window.w() : null;
+      return space?.exam === 'kpss' ? space : null;
+    } catch {}
+    return null;
+  }
+
+  function localDay(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+  }
+
+  function currentWeekDays() {
+    const now = new Date();
+    const offset = (now.getDay() + 6) % 7;
+    const monday = new Date(now);
+    monday.setHours(12, 0, 0, 0);
+    monday.setDate(now.getDate() - offset);
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return localDay(date);
+    });
+  }
+
+  function formatMinutes(minutes) {
+    const value = Math.max(0, Math.round(Number(minutes) || 0));
+    if (value < 60) return value + ' dk';
+    const hours = Math.floor(value / 60);
+    const rest = value % 60;
+    return rest ? hours + ' sa ' + rest + ' dk' : hours + ' sa';
+  }
+
+  function latestExam(space) {
+    return [...(space?.exams || [])]
+      .filter((exam) => exam && Array.isArray(exam.parts))
+      .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')) || Number(a.created || 0) - Number(b.created || 0))
+      .at(-1) || null;
+  }
+
+  function examStats(exam) {
+    if (!exam) return null;
+    const analytics = window.RotaReportAnalytics;
+    if (analytics?.calcNet) {
+      const result = analytics.calcNet(exam);
+      if (result && Number.isFinite(Number(result.net))) return result;
+    }
+    const penalty = Number(exam.penalty) || 0;
+    let correct = 0;
+    let wrong = 0;
+    let total = 0;
+    (exam.parts || []).forEach((part) => {
+      correct += Number(part?.correct) || 0;
+      wrong += Number(part?.wrong) || 0;
+      total += Number(part?.total) || 0;
+    });
+    return { correct, wrong, total, net: correct - (penalty > 0 ? wrong / penalty : 0) };
+  }
+
+  function partNet(exam, pattern) {
+    const part = (exam?.parts || []).find((item) => pattern.test(String(item?.label || '')));
+    if (!part) return null;
+    const correct = Number(part.correct) || 0;
+    const wrong = Number(part.wrong) || 0;
+    const penalty = Number(exam.penalty) || 0;
+    return correct - (penalty > 0 ? wrong / penalty : 0);
+  }
+
+  function formatNet(value) {
+    if (!Number.isFinite(Number(value))) return '—';
+    const number = Number(value);
+    return (Math.round(number * 10) / 10).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' net';
+  }
+
+  function examDateLabel(exam) {
+    if (!exam?.date) return 'Son deneme';
+    const date = new Date(exam.date + 'T12:00:00');
+    return Number.isNaN(date.getTime())
+      ? 'Son deneme'
+      : date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+  }
+
   function ensureWeekCard(host, root) {
     let card = host.querySelector('.pnx3-week-card');
     if (!card) {
@@ -314,36 +467,51 @@
       card.className = 'pnx3-side-card pnx3-week-card';
       host.appendChild(card);
     }
-    const progress = normalizedProgress(root).pct;
+
+    const space = kpssWorkspace();
+    const days = currentWeekDays();
+    const logs = Array.isArray(space?.logs) ? space.logs : [];
+    const totals = days.map((date) => logs
+      .filter((log) => log?.date === date)
+      .reduce((sum, log) => sum + Math.max(0, Number(log?.minutes) || 0), 0));
+    const total = totals.reduce((sum, minutes) => sum + minutes, 0);
+    const max = Math.max(1, ...totals);
+    const todayKey = localDay(new Date());
     const labels = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
-    const day = new Date().getDay();
-    const mondayIndex = day === 0 ? 6 : day - 1;
-    const bars = labels.map((label,index) => {
-      const active = index === mondayIndex;
-      const height = active ? Math.max(18, Math.round(progress * .62)) : 16;
-      return '<span class="' + (active ? 'active' : '') + '"><i style="height:' + height + '%"></i><b>' + label + '</b></span>';
+    const bars = labels.map((label, index) => {
+      const minutes = totals[index];
+      const active = days[index] === todayKey;
+      const height = minutes > 0 ? Math.max(8, Math.round(minutes / max * 100)) : 0;
+      const title = label + ': ' + formatMinutes(minutes);
+      return '<span class="' + (active ? 'active' : '') + '" title="' + title + '"><i style="height:' + height + '%;min-height:0"></i><b>' + label + '</b></span>';
     }).join('');
+
     card.innerHTML =
-      '<header><strong>Bu Hafta</strong><span>Detay →</span></header>' +
+      '<header><strong>Bu Hafta</strong><span>' + (total ? formatMinutes(total) : 'Kayıt yok') + '</span></header>' +
       '<div class="pnx3-week-bars">' + bars + '</div>' +
-      '<footer><span>Bugünkü ilerleme</span><strong>%' + progress + '</strong></footer>' +
-      '<div class="pnx3-week-progress"><i style="width:' + progress + '%"></i></div>';
+      '<footer><span>Kaydedilmiş çalışma</span><strong>' + formatMinutes(total) + '</strong></footer>' +
+      '<div class="pnx3-week-progress"><i style="width:' + (total ? Math.round(totals.filter(Boolean).length / 7 * 100) : 0) + '%"></i></div>';
   }
 
-  function ensureGoalsCard(host, targetSignal) {
+  function ensureGoalsCard(host) {
     let card = host.querySelector('.pnx3-goals-card');
     if (!card) {
       card = document.createElement('section');
       card.className = 'pnx3-side-card pnx3-goals-card';
       host.appendChild(card);
     }
-    const gap = text(targetSignal?.querySelector('strong')) || 'Veri bekleniyor';
-    const detail = text(targetSignal?.querySelector('span')) || 'İlk denemeyle netleşecek';
+
+    const exam = latestExam(kpssWorkspace());
+    const stats = examStats(exam);
+    const history = partNet(exam, /tarih/i);
+    const civics = partNet(exam, /vatandaşlık|temel hukuk/i);
+    const source = exam ? examDateLabel(exam) + ' denemesi' : 'Deneme verisi birikiyor';
+
     card.innerHTML =
-      '<header><strong>Hedeflerim</strong><span>Düzenle →</span></header>' +
-      '<div class="pnx3-goal-row"><span class="g green"></span><div><b>KPSS Genel Net</b><small>' + gap + '</small></div><em>' + detail + '</em></div>' +
-      '<div class="pnx3-goal-row"><span class="g blue"></span><div><b>Tarih Netim</b><small>Performans verisi birikiyor</small></div><em>—</em></div>' +
-      '<div class="pnx3-goal-row"><span class="g orange"></span><div><b>Vatandaşlık Netim</b><small>Performans verisi birikiyor</small></div><em>—</em></div>';
+      '<header><strong>Hedeflerim</strong><span>Gerçek deneme verisi</span></header>' +
+      '<div class="pnx3-goal-row"><span class="g green"></span><div><b>KPSS Genel Net</b><small>' + source + '</small></div><em>' + formatNet(stats?.net) + '</em></div>' +
+      '<div class="pnx3-goal-row"><span class="g blue"></span><div><b>Tarih Netim</b><small>' + (history === null ? 'Veri birikiyor' : source) + '</small></div><em>' + formatNet(history) + '</em></div>' +
+      '<div class="pnx3-goal-row"><span class="g orange"></span><div><b>Vatandaşlık Netim</b><small>' + (civics === null ? 'Veri birikiyor' : source) + '</small></div><em>' + formatNet(civics) + '</em></div>';
   }
 
   function ensureQuoteCard(host) {
@@ -377,25 +545,40 @@
         '</div>' +
       '</div>' +
       '<div class="pnx3-teacher-bubble">Sen sor,<br>birlikte çözelim!</div>' +
-      '<img src="/rota-hoca-avatar.jpg" alt="" class="pnx-teacher-avatar" />';
+      '<img src="/rota-hoca-avatar-v2.svg" alt="" class="pnx-teacher-avatar" />';
   }
 
-  function ensureResultsCard(host, targetSignal) {
+  function ensureResultsCard(host) {
     let card = host.querySelector('.pnx3-results-card');
     if (!card) {
       card = document.createElement('section');
       card.className = 'pnx3-results-card';
       host.appendChild(card);
     }
-    const gap = text(targetSignal?.querySelector('strong'));
-    const hasSignal = !!gap && !/veri/i.test(gap);
+
+    const exam = latestExam(kpssWorkspace());
+    const stats = examStats(exam);
+    card.classList.toggle('is-empty', !exam || !stats);
+
+    if (!exam || !stats) {
+      card.innerHTML =
+        '<header><strong>Son Deneme Sonuçlarım</strong><button type="button" data-action="nav" data-view="exams">Deneme Merkezi →</button></header>' +
+        '<div class="pnx3-results-empty"><strong>Henüz tam deneme kaydı yok</strong><span>İlk denemeni eklediğinde gerçek sonuçların burada görünecek.</span></div>';
+      return;
+    }
+
+    const netPct = stats.total > 0 ? Math.max(0, Math.min(100, stats.net / stats.total * 100)) : 0;
+    const correctPct = stats.total > 0 ? Math.max(0, Math.min(100, stats.correct / stats.total * 100)) : 0;
+    const type = String(exam.type || 'KPSS');
+    const label = examDateLabel(exam);
+
     card.innerHTML =
       '<header><strong>Son Deneme Sonuçlarım</strong><button type="button" data-action="nav" data-view="exams">Detaylı Analiz →</button></header>' +
       '<div class="pnx3-result-rings">' +
-        '<div class="pnx3-result-ring"><span>' + (hasSignal ? gap.replace(/\s*fark/i,'') : '—') + '</span><small>Hedef farkı</small></div>' +
-        '<div class="pnx3-result-ring coral"><span>' + (hasSignal ? 'Aktif' : '—') + '</span><small>Başarı sinyali</small></div>' +
+        '<div class="pnx3-result-ring" style="--pnx-ring-pct:' + netPct + '%"><span>' + formatNet(stats.net).replace(' net','') + '</span><small>Genel net</small></div>' +
+        '<div class="pnx3-result-ring coral" style="--pnx-ring-pct:' + correctPct + '%"><span>' + Math.round(stats.correct) + '</span><small>Doğru</small></div>' +
       '</div>' +
-      '<p>' + (hasSignal ? 'Son deneme verin hedef mesafesini güncelledi.' : 'İlk denemeni eklediğinde sonuçların burada görünecek.') + '</p>';
+      '<p>' + type + ' · ' + label + ' · ' + Math.round(stats.total) + ' soru üzerinden gerçek deneme kaydı.</p>';
   }
 
   function ensureInsightArchive(root, reason) {
@@ -482,10 +665,11 @@
 
     ensureRoutePanel(plan, listHead, list);
     ensureFocusHero(root, hero, reason);
+    mountLiveTimer(root, focus, hero);
     ensureWeekCard(side, root);
-    ensureGoalsCard(side, target);
+    ensureGoalsCard(side);
     ensureTeacherCard(lower);
-    ensureResultsCard(lower, target);
+    ensureResultsCard(lower);
     ensureQuoteCard(lower);
 
     const archive = ensureInsightArchive(root, reason);
@@ -525,6 +709,23 @@
     subtree: true,
     attributes: true,
     attributeFilter: ['class']
+  });
+})();
+
+
+/* Load the latest main Programım timeline styles without disturbing the Today dashboard layer. */
+(() => {
+  [
+    '/dashboard-evidence.css',
+    '/program-daily-timeline-core.css',
+    '/program-daily-timeline-rail.css'
+  ].forEach((href) => {
+    if (document.querySelector('link[href="' + href + '"]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.dataset.pnxProgramTimeline = '1';
+    document.head.appendChild(link);
   });
 })();
 
@@ -835,3 +1036,4 @@
     subtree:true
   });
 })();
+

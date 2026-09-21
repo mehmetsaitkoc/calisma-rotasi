@@ -15,3 +15,7 @@ services:
         value: best
       - key: HOST
         value: 0.0.0.0
+      - key: SUPABASE_URL
+        value: https://neokmmnibcyduhjrxlbj.supabase.co
+      - key: SUPABASE_PUBLISHABLE_KEY
+        value: sb_publishable_lIiYfMGLt01P2mSdJzEyCg_yJORWVr5

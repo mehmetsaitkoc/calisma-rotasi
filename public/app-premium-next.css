@@ -1758,3 +1758,20 @@ body.app-premium-next-ready .pnx-route-panel .route-task-actions>[data-action="f
     grid-column:2!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V1.4 · HARD MOBILE OFF-CANVAS */
+@media(max-width:650px){
+  body.app-premium-next-ready:not(.menu-open) .app-shell>.sidebar{
+    left:0!important;
+    transform:translate3d(-120%,0,0)!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  body.app-premium-next-ready.menu-open .app-shell>.sidebar{
+    left:0!important;
+    transform:translate3d(0,0,0)!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+  }
+}

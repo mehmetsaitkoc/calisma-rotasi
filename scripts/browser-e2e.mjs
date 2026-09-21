@@ -266,9 +266,15 @@ async function showTaskInPlan(page, id, label) {
       await tab.click();
 
       const visibleButton = page.locator(
-        `.day-column.pnx-program-active-day [data-action="complete-session"][data-id="${current.id}"]:visible`
+        `.day-column.pnx-program-active-day [data-action="complete-session"][data-id="${current.id}"]`
       ).first();
-      if (await visibleButton.count() && await visibleButton.isVisible()) return current;
+      try {
+        await visibleButton.waitFor({ state: 'visible', timeout: 1500 });
+        return current;
+      } catch {
+        // Programım presentation applies the selected day on the next animation frame.
+        // Only advance a week when the real task still did not become visible.
+      }
     }
 
     const next = page.locator(

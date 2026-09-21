@@ -21,6 +21,7 @@ await import('../public/kpss-professional-history-10.js');
 await import('../public/kpss-professional-history-11.js');
 await import('../public/kpss-professional-history-12.js');
 await import('../public/kpss-professional-history-13.js');
+await import('../public/kpss-professional-history-editorial-fixes.js');
 
 const C=globalThis.RotaCatalog;
 const B=globalThis.RotaKpssContentBlueprint;
@@ -131,6 +132,7 @@ for(const marker of [
   '<script src="/kpss-professional-history-01.js"></script>',
   '<script src="/kpss-professional-history-08.js"></script>',
   '<script src="/kpss-professional-history-13.js"></script>',
+  '<script src="/kpss-professional-history-editorial-fixes.js"></script>',
   '<script src="/kpss-professional-sections.js"></script>',
   'KPSS_PROFESSIONAL_TESTS',
   'KPSS_PROFESSIONAL_TOPIC_KEYS',

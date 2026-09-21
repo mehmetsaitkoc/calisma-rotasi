@@ -377,7 +377,7 @@
 
   function kpssWorkspace() {
     try {
-      const space = typeof window.w === 'function' ? window.w() : null;
+      const space = window.RotaDashboardEvidence?.kpssWorkspace?.();
       return space?.exam === 'kpss' ? space : null;
     } catch {}
     return null;

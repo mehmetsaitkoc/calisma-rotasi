@@ -51,6 +51,10 @@ globalThis.routeAppliedDecision=()=>({
   easeRecoveryHeld:false
 });
 globalThis.routeTaskReason=()=> 'Eski genel neden.';
+globalThis.routeBuildCandidates=()=>[
+  {routeKey:'topic:k-ma-topic',subjectId:'k-ma',topicId:'k-ma-topic',source:'curriculum',priority:60,reason:'Temel rota.'},
+  {routeKey:'mistake:m1',subjectId:'k-ma',topicId:'k-ma-topic',source:'mistake',priority:88,reason:'Kritik yanlış.'}
+];
 globalThis.teacherStudentContext=(record)=>({
   contextVersion:2,
   selected:{subject:record?.subjectId||'',topic:record?.topicId||''},
@@ -75,6 +79,13 @@ assert.equal(decision.mode,'steady','strong repair evidence must suppress premat
 assert.equal(decision.intelligenceGuard,'progress_suppressed');
 assert.equal(decision.intelligence.risk.band,'high');
 assert.equal(decision.intelligence.repair.mode,'repair');
+
+const boostedCandidates=globalThis.routeBuildCandidates();
+const normalCandidate=boostedCandidates.find(x=>x.routeKey==='topic:k-ma-topic');
+const reviewCandidate=boostedCandidates.find(x=>x.routeKey==='mistake:m1');
+assert.ok(normalCandidate.priority>60&&normalCandidate.priority<=63,'high-confidence target + repair risk may only add a bounded priority boost');
+assert.match(normalCandidate.reason,/Intelligence V1/);
+assert.equal(reviewCandidate.priority,88,'critical review priorities must not be double-boosted');
 
 const task={id:'t1',subjectId:'k-ma',topicId:'k-ma-topic',kind:'review',source:'mistake',reason:'Eski neden'};
 const why=globalThis.routeTaskReason(task);
@@ -104,5 +115,7 @@ bridge.invalidate();
 const low=globalThis.routeAppliedDecision('k-ma','k-ma-topic');
 assert.equal(low.mode,'progress','low-confidence evidence must not force a route mode change');
 assert.equal(low.intelligence.repair.mode,'collect');
+const lowCandidates=globalThis.routeBuildCandidates();
+assert.equal(lowCandidates.find(x=>x.routeKey==='topic:k-ma-topic').priority,60,'low-confidence evidence must not alter scheduler priority');
 
-console.log('Intelligence Bridge V1 passed: runtime enrichment + bounded mode guard + explainable task reason');
+console.log('Intelligence Bridge V1 passed: runtime enrichment + bounded mode/scheduler guards + explainable task reason + Rota Hoca context');

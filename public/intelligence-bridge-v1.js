@@ -9,6 +9,7 @@ let originalStudentModel=null;
 let originalAppliedDecision=null;
 let originalTaskReason=null;
 let originalTeacherStudentContext=null;
+let originalBuildCandidates=null;
 let profileCache={key:'',value:null};
 
 function fn(name){return typeof root[name]==='function'?root[name]:null;}
@@ -184,6 +185,25 @@ function install(){
       const snap=snapshot(subjectId,topicId,task);
       const text=snap.explanation?.text;
       return text&&text.length>=12?text:base;
+    };
+  }
+
+  originalBuildCandidates=fn('routeBuildCandidates');
+  if(originalBuildCandidates){
+    root.routeBuildCandidates=function(){
+      const rows=originalBuildCandidates.call(root);
+      if(!Array.isArray(rows))return rows;
+      const reviewSources=new Set(['mistake','mini_repair','retention_refresh','ai_teacher','spaced_review','checkpoint']);
+      return rows.map(candidate=>{
+        if(!candidate?.subjectId||reviewSources.has(candidate.source)||!candidate.topicId)return candidate;
+        const snap=snapshot(candidate.subjectId,candidate.topicId,null);
+        const risk=snap.risk,repair=snap.repair,model=snap.model;
+        if(!risk?.reliable||risk.band!=='high'||repair?.mode!=='repair'||(model?.confidence||0)<55)return candidate;
+        const boost=Math.min(3,Math.max(1,Math.round((Number(repair.priority)||70)/35)-1));
+        const reason=String(candidate.reason||'');
+        const note=' Intelligence V1: hedef riski ve konuya özgü onarım sinyali birlikte doğrulandığı için öncelik kontrollü artırıldı.';
+        return {...candidate,priority:Math.min(96,(Number(candidate.priority)||0)+boost),reason:reason.includes('Intelligence V1:')?reason:reason+note};
+      }).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0)||String(a?.routeKey||'').localeCompare(String(b?.routeKey||'')));
     };
   }
 

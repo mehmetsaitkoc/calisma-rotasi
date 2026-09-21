@@ -377,14 +377,8 @@
 
   function kpssWorkspace() {
     try {
-      for (let i = 0; i < localStorage.length; i += 1) {
-        const raw = localStorage.getItem(localStorage.key(i));
-        if (!raw) continue;
-        try {
-          const value = JSON.parse(raw);
-          if (value?.workspaces?.kpss) return value.workspaces.kpss;
-        } catch {}
-      }
+      const space = typeof window.w === 'function' ? window.w() : null;
+      return space?.exam === 'kpss' ? space : null;
     } catch {}
     return null;
   }

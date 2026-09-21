@@ -2330,6 +2330,7 @@ function dateLabel(d,full=false){return new Date(d+'T12:00:00').toLocaleDateStri
 const today=()=>R.iso();
 let state=R.fresh(),storageBlocked=false,storageProblem='';
 try{const raw=localStorage.getItem(KEY);if(raw){const parsed=JSON.parse(raw);state=R.validateBackup(parsed);const wsVersion=window.RotaWorkspaceSchema?.VERSION||3,needsWorkspaceMigration=['kpss','yks'].some(function(exam){const old=parsed?.workspaces?.[exam];return !old||old.schemaVersion!==wsVersion||!old.sync?.workspaceId;});if(needsWorkspaceMigration)localStorage.setItem(KEY,JSON.stringify(state));}}catch(e){storageBlocked=true;storageProblem='Önceki yerel kayıt okunamadı veya tarayıcı kayıt izni vermiyor. Mevcut verinin üzerine yazılmadı. Yedeğini Ayarlar’dan içe aktarabilirsin.';}
+window.RotaAccountBridge=Object.freeze({version:1,storageKey:KEY,getState:()=>state,getActiveExam:()=>state.activeExam||''});
 const ui={view:state.activeExam&&state.workspaces[state.activeExam].configured?(state.workspaces[state.activeExam].profile?.completed&&state.workspaces[state.activeExam].profile?.summaryConfirmed===false?'summary':'today'):'select',setupStep:0,stage:'all',query:'',mockFilter:'',mistakeFilter:'open',month:today().slice(0,7),reportTab:'month',weekStart:today(),formContext:null,confirmFn:null,analysisId:''};
 let timers={};try{const raw=JSON.parse(localStorage.getItem(TIMER_KEY)||'{}');for(const e of ['kpss','yks']){const t=raw[e];if(t&&Number.isFinite(t.seconds)&&t.seconds>=0&&t.seconds<=5400&&[25,50,90].includes(t.duration)&&Number.isFinite(t.endAt)&&t.endAt>=0)timers[e]={duration:t.duration,seconds:t.seconds,endAt:t.endAt,subjectId:typeof t.subjectId==='string'?t.subjectId:'',sessionId:typeof t.sessionId==='string'?t.sessionId:''};}}catch{}
 function w(){return state.workspaces[state.activeExam];}
@@ -2340,7 +2341,7 @@ function subIcon(id){const s=subject(id);const idx=Math.max(0,C.subjects.findInd
 function subOptions(selected=''){const list=subjects();if(selected&&!list.some(s=>s.id===selected)){const hidden=C.subjects.find(s=>s.id===selected&&s.exam===state.activeExam);if(hidden)list.push(hidden);}return list.map(s=>`<option value="${s.id}" ${selected===s.id?'selected':''}>${esc((state.activeExam==='yks'?s.stage+' · ':'')+s.name)}</option>`).join('');}
 function examLabel(){return state.activeExam==='kpss'?'KPSS':'YKS';}
 function trackLabel(){return state.activeExam==='kpss'?'Lisans · GY–GK':C.TRACKS[w().settings.track];}
-function save(){if(sampleSaved)return true;if(storageBlocked){showStorageWarning();return false;}try{if(state.activeExam&&state.workspaces[state.activeExam])window.RotaWorkspaceSchema?.touch?.(state.workspaces[state.activeExam]);localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{storageProblem='Tarayıcı kaydı yapılamadı. Bu oturumdaki verilerini kaybetmemek için yedek indir; tarayıcı verilerini silme.';showStorageWarning();return false;}}
+function save(){if(sampleSaved)return true;if(storageBlocked){showStorageWarning();return false;}try{if(state.activeExam&&state.workspaces[state.activeExam])window.RotaWorkspaceSchema?.touch?.(state.workspaces[state.activeExam]);localStorage.setItem(KEY,JSON.stringify(state));window.dispatchEvent(new CustomEvent('rota:state-saved',{detail:{state,storageKey:KEY,activeExam:state.activeExam||''}}));return true;}catch{storageProblem='Tarayıcı kaydı yapılamadı. Bu oturumdaki verilerini kaybetmemek için yedek indir; tarayıcı verilerini silme.';showStorageWarning();return false;}}
 function showStorageWarning(){const el=$('#storage-warning');if(storageProblem){el.textContent=storageProblem;el.hidden=false;}}
 function saveTimers(){if(sampleSaved)return;try{localStorage.setItem(TIMER_KEY,JSON.stringify(timers));}catch{}}
 function toast(message,error=false){const el=document.createElement('div');el.className='toast'+(error?' error':'');el.textContent=message;while($('#toasts').children.length>=2)$('#toasts').firstElementChild.remove();$('#toasts').append(el);setTimeout(()=>el.remove(),4500);}
@@ -5239,5 +5240,6 @@ void loadEntitlement();
 })();
 
 </script>
+<script type="module" src="/account-sync.js"></script>
 </body>
 </html>

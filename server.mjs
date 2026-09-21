@@ -342,7 +342,7 @@ async function modelAvailable(key,model){
   let message='Model erişimi yok.';try{const j=await check.json();message=j?.error?.message||message;}catch{}
   return {ok:false,message};
 }
-function mime(file){ const ext=path.extname(file).toLowerCase(); return ({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon'}[ext]||'application/octet-stream'); }
+function mime(file){ const ext=path.extname(file).toLowerCase(); return ({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.ico':'image/x-icon'}[ext]||'application/octet-stream'); }
 function serve(req,res){
   let p; try { p=decodeURIComponent(new URL(req.url,'http://localhost').pathname); } catch { p='/'; }
   if(p==='/' || p==='/index.html'){

@@ -56,6 +56,18 @@ try{
   for(let i=1;i<chipBoxes.length;i++){
     assert.ok(chipBoxes[i-1]&&chipBoxes[i]&&boxesDoNotOverlapVertically(chipBoxes[i-1],chipBoxes[i],4),'Milestone chips must not overlap');
   }
+  for(const box of chipBoxes){
+    assert.ok(box&&dashboardBox&&box.x+box.width<=dashboardBox.x+2,'Milestone chips must stay clear of the dashboard');
+  }
+
+  const heroAsset=await page.evaluate(async()=>{
+    const response=await fetch('/hero-journey-final.webp');
+    const bytes=(await response.arrayBuffer()).byteLength;
+    return {ok:response.ok,type:response.headers.get('content-type')||'',bytes};
+  });
+  assert.ok(heroAsset.ok,'Final high-resolution journey asset must load');
+  assert.match(heroAsset.type,/image\/webp/i,'Final journey asset must be served as WebP');
+  assert.ok(heroAsset.bytes>20000,'Final journey asset must not regress to a tiny placeholder');
 
   assert.ok(await page.getByText('Örnek görünüm',{exact:true}).isVisible(),'Dashboard demo disclosure must be visible');
   assert.equal(await page.getByText('10.000+',{exact:true}).count(),0,'Unverified student count must not appear');

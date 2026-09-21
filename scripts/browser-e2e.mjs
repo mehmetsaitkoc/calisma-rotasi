@@ -200,14 +200,14 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
 
 async function showTaskInPlan(page, id, label) {
   await navigate(page, 'plan');
-  const thisWeek = page.locator('[data-action="week-today"]').first();
-  if (await thisWeek.count() && await thisWeek.isVisible()) await thisWeek.click();
+  const thisWeek = page.locator('[data-action="week-today"]:visible').first();
+  if (await thisWeek.count()) await thisWeek.click();
 
   const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`);
   for (let hop = 0; hop < 4; hop++) {
     if (await taskButton.count() && await taskButton.isVisible()) return;
-    const next = page.locator('[data-action="week-next"]').first();
-    assert.ok(await next.count() && await next.isVisible(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
+    const next = page.locator('[data-action="week-next"]:visible').first();
+    assert.ok(await next.count(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
     await next.click();
   }
   assert.ok(await taskButton.count() && await taskButton.isVisible(), label + ': görev Programım içinde erişilebilir olmalı');

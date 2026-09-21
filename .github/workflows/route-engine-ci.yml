@@ -86,6 +86,9 @@ jobs:
       - name: Syntax check KPSS Turkish paragraph bank
         run: node --check public/kpss-professional-turkish-03.js
 
+      - name: Syntax check KPSS Turkish verbal logic bank
+        run: node --check public/kpss-professional-turkish-04.js
+
       - name: Syntax check KPSS professional section exams
         run: node --check public/kpss-professional-sections.js
 

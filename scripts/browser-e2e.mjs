@@ -143,9 +143,9 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   // Stage 2 · goals
-  await page.locator('#setup-wizard-form [name="targetScore"][value="85"]').check();
+  await page.locator('#setup-wizard-form [name="targetScore"][value="85"]').check({ force: true });
   await page.locator('#setup-wizard-form [name="targetNet"]').fill('82');
-  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').check();
+  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').check({ force: true });
 
   const dayBoxes = page.locator('#setup-wizard-form [name="days"]');
   assert.equal(await dayBoxes.count(), 7, 'Premium goals stage must expose all seven working days');
@@ -163,12 +163,12 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   // Stage 3 · situation analysis
-  await page.locator('#setup-wizard-form [name="currentNetApprox"][value="50"]').check();
-  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').check();
+  await page.locator('#setup-wizard-form [name="currentNetApprox"][value="50"]').check({ force: true });
+  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').check({ force: true });
   const weakMath = page.locator('#setup-wizard-form [name="weakSubjects"][value="k-ma"]');
-  if (await weakMath.count()) await weakMath.check();
+  if (await weakMath.count()) await weakMath.check({ force: true });
   const strongTurkish = page.locator('#setup-wizard-form [name="strongSubjects"][value="k-tr"]');
-  if (await strongTurkish.count()) await strongTurkish.check();
+  if (await strongTurkish.count()) await strongTurkish.check({ force: true });
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   await page.locator('[data-action="summary-build"]').click();

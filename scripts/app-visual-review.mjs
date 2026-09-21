@@ -179,6 +179,11 @@ try{
   await page.locator('.analysis-panel').screenshot({path:OUT+'/ders-analizi-1512.png'});
 
   await navigateDesktop(page,'today');
+  await page.locator('.pnx3-results-card:not(.is-empty)').waitFor({state:'visible'});
+  assert.match(await page.locator('.pnx3-results-card').innerText(),/Genel net/i,'Today must show the real saved full-exam result after evidence exists');
+  assert.match(await page.locator('.pnx3-goals-card').innerText(),/KPSS Genel Net/i,'Goals must stay bound to KPSS exam evidence');
+
+  
   await page.setViewportSize({width:390,height:844});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
   await noOverflow(page,'Today 390');
@@ -188,6 +193,11 @@ try{
   });
   assert.ok(hiddenSidebar.right<=1,'Mobile sidebar must be fully off-canvas until opened');
   await page.screenshot({path:OUT+'/today-390.png',fullPage:false});
+
+  await page.setViewportSize({width:360,height:800});
+  await noOverflow(page,'Today 360');
+  await page.screenshot({path:OUT+'/today-360.png',fullPage:false});
+  await page.setViewportSize({width:390,height:844});
 
   await navigateMobile(page,'plan');
   await page.getByRole('heading',{name:'Programım'}).waitFor({state:'visible'});
@@ -203,11 +213,15 @@ try{
   await noOverflow(page,'Program 390');
   await page.screenshot({path:OUT+'/program-390.png',fullPage:false});
 
+  await page.setViewportSize({width:360,height:800});
+  await noOverflow(page,'Program 360');
+  await page.screenshot({path:OUT+'/program-360.png',fullPage:false});
+
   assert.deepEqual(errors,[],'Visual review page errors:\n'+errors.join('\n'));
   console.log(JSON.stringify({
     screenshots:[
       'today-1512.png','today-1440.png','program-1512.png',
-      'rota-hoca-1512.png','deneme-1512.png','ders-analizi-1512.png','today-390.png','program-390.png'
+      'rota-hoca-1512.png','deneme-1512.png','ders-analizi-1512.png','today-390.png','today-360.png','program-390.png','program-360.png'
     ],
     mobileProgram:mobileFlow
   },null,2));

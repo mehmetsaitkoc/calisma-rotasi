@@ -62,6 +62,14 @@ const TEST_PROFILES=Object.freeze([
   {setNo:4,label:'Sınav provası',difficulty:{easy:1,medium:7,hard:4},intent:'exam-simulation'}
 ]);
 
+const SECTION_PROFILES=Object.freeze([
+  {sectionNo:1,label:'Orta seviye',difficulty:{easy:6,medium:18,hard:6}},
+  {sectionNo:2,label:'Orta seviye · farklı dağılım',difficulty:{easy:5,medium:19,hard:6}},
+  {sectionNo:3,label:'Gerçek KPSS dengesi',difficulty:{easy:5,medium:18,hard:7}},
+  {sectionNo:4,label:'Orta-zor',difficulty:{easy:4,medium:18,hard:8}},
+  {sectionNo:5,label:'Seçici final',difficulty:{easy:3,medium:18,hard:9}}
+]);
+
 function text(v){return String(v??'').replace(/\s+/g,' ').trim();}
 function topicKey(subjectId,topicId){return subjectId+'|'+topicId;}
 function slug(v){return text(v).toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
@@ -119,6 +127,6 @@ function totals(catalog){
   return {topics:topics.length,topicTests:topics.length*TOPIC_TESTS_PER_TOPIC,topicQuestions,sectionExams:Object.keys(SUBJECTS).length*SECTION_EXAMS_PER_SUBJECT,sectionQuestions,totalQuestions:topicQuestions+sectionQuestions};
 }
 
-root.RotaKpssContentBlueprint={SCHEMA,VERSION,COPYRIGHT_POLICY,OFFICIAL_SCOPE,SUBJECTS,TEST_PROFILES,TOPIC_TESTS_PER_TOPIC,QUESTIONS_PER_TOPIC_TEST,SECTION_EXAMS_PER_SUBJECT,topicKey,slug,topicTestId,topicPlan,sectionBlueprint,sectionPlans,totals};
+root.RotaKpssContentBlueprint={SCHEMA,VERSION,COPYRIGHT_POLICY,OFFICIAL_SCOPE,SUBJECTS,TEST_PROFILES,SECTION_PROFILES,TOPIC_TESTS_PER_TOPIC,QUESTIONS_PER_TOPIC_TEST,SECTION_EXAMS_PER_SUBJECT,topicKey,slug,topicTestId,topicPlan,sectionBlueprint,sectionPlans,totals};
 if(typeof module==='object')module.exports=root.RotaKpssContentBlueprint;
 })(typeof window!=='undefined'?window:globalThis);

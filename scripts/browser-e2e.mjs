@@ -13,6 +13,12 @@ const addDays = (date, days) => {
   return d.toISOString().slice(0, 10);
 };
 
+const addMonths = (month, months) => {
+  const [year, value] = String(month).split('-').map(Number);
+  const d = new Date(Date.UTC(year, value - 1 + months, 1, 12));
+  return d.toISOString().slice(0, 7);
+};
+
 async function waitServer() {
   for (let i = 0; i < 80; i++) {
     try {
@@ -191,29 +197,97 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
 }
 
 async function showTaskInPlan(page, id, label) {
-  await navigate(page, 'plan');
-  const thisWeek = page.locator('[data-action="week-today"]:visible').first();
-  if (await thisWeek.count()) await thisWeek.click();
+  const initial = await appState(page);
+  const original = initial.value.workspaces.kpss.plan.find(p => p.id === id);
+  assert.ok(original, label + ': görev gerçek KPSS planında bulunmalı');
 
-  const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`).first();
-  const revealSelectedDay = async () => {
-    if (!(await taskButton.count())) return false;
-    const column = taskButton.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]');
-    if (await column.count()) {
-      const index = await column.evaluate(el => Array.from(el.parentElement?.children || []).indexOf(el));
-      const tab = page.locator(`.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`).first();
-      if (index >= 0 && await tab.count()) await tab.click();
-    }
-    return await taskButton.isVisible();
+  const sameEvidence = (candidate, reference) => {
+    if (!candidate || !reference || candidate.done) return false;
+    if (
+      reference.source === 'spaced_review' &&
+      candidate.source === 'spaced_review' &&
+      candidate.reviewWave === reference.reviewWave &&
+      candidate.reviewBaseTaskId === reference.reviewBaseTaskId
+    ) return true;
+    if (
+      reference.sourceMistakeId &&
+      candidate.sourceMistakeId === reference.sourceMistakeId &&
+      candidate.source === reference.source
+    ) return true;
+    if (
+      reference.sourceAssessmentId &&
+      candidate.sourceAssessmentId === reference.sourceAssessmentId &&
+      candidate.source === reference.source
+    ) return true;
+    if (reference.routeKey && candidate.routeKey === reference.routeKey) return true;
+    return candidate.source === reference.source &&
+      candidate.subjectId === reference.subjectId &&
+      candidate.topicId === reference.topicId &&
+      candidate.title === reference.title;
   };
 
-  for (let hop = 0; hop < 4; hop++) {
-    if (await revealSelectedDay()) return;
-    const next = page.locator('[data-action="week-next"]:visible').first();
-    assert.ok(await next.count(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
+  let current = original;
+  const followEvidence = plan =>
+    plan.find(p => p.id === current.id && !p.done) ||
+    plan.find(p => sameEvidence(p, original)) ||
+    plan.find(p => sameEvidence(p, current)) ||
+    null;
+
+  // Keep Route on the current simulated day while locating the real task in Programım.
+  // If the clock advances before the task is rendered, routeAutoSync can correctly
+  // treat other open work as overdue and move this same evidence forward again.
+  await navigate(page, 'plan');
+  await page.getByRole('heading', { name: 'Programım' }).waitFor({ state: 'visible' });
+  await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
+
+  let snapshot = await appState(page);
+  current = followEvidence(snapshot.value.workspaces.kpss.plan);
+  assert.ok(current, label + ': görev kanıt kimliği Programım açılırken korunmalı');
+
+  const thisWeek = page.locator('.pnx-program-week-strip [data-action="week-today"]:visible').first();
+  assert.ok(await thisWeek.count(), label + ': görünür Programım hafta kontrolü bulunmalı');
+  await thisWeek.click();
+  await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
+
+  for (let hop = 0; hop < 5; hop++) {
+    snapshot = await appState(page);
+    current = followEvidence(snapshot.value.workspaces.kpss.plan);
+    assert.ok(current?.date, label + ': görevin gerçek bir plan tarihi olmalı');
+
+    let taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+    if (await taskButton.count()) {
+      const column = taskButton.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]');
+      assert.ok(await column.count(), label + ': görev gerçek Programım gün sütununda bulunmalı');
+      const index = await column.evaluate(el => Array.from(el.parentElement?.children || []).indexOf(el));
+      const tab = page.locator(`.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`).first();
+      assert.ok(index >= 0 && await tab.count(), label + ': görevin görünür gün sekmesi bulunmalı');
+      await tab.click();
+
+      taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+      await taskButton.waitFor({ state: 'visible' });
+
+      // The task is now already rendered. Move only Date to its scheduled day and
+      // complete without another render. The log therefore records the real plan day,
+      // and the normal submit path may rebalance afterward exactly as production does.
+      await page.clock.setFixedTime(new Date(current.date + 'T09:00:00+03:00'));
+      const simulatedDay = await page.evaluate(() => {
+        const d = new Date();
+        return d.getFullYear() + '-' +
+          String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0');
+      });
+      assert.equal(simulatedDay, current.date, label + ': tamamlanma günü gerçek plan günüyle eşleşmeli');
+      assert.ok(await taskButton.isVisible(), label + ': görev plan günü ayarlandıktan sonra görünür kalmalı');
+      return current;
+    }
+
+    const next = page.locator('.pnx-program-week-strip [data-action="week-next"]:visible').first();
+    assert.ok(await next.count(), label + ': görünür Programım sonraki hafta kontrolü bulunmalı');
     await next.click();
+    await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
   }
-  assert.ok(await revealSelectedDay(), label + ': görev Programım içinde erişilebilir olmalı');
+
+  assert.fail(label + ': görev kanıt kimliği korunarak görünür Programım akışında erişilebilir olmalı');
 }
 
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {
@@ -884,7 +958,7 @@ try {
 
   let repair = space.plan.find(p => !p.done && p.sourceMistakeId === mistake.id);
   assert.ok(repair, 'Exam-linked wrong must create a repair task');
-  await showTaskInPlan(page, repair.id, 'exam-linked repair task');
+  repair = await showTaskInPlan(page, repair.id, 'exam-linked repair task');
   await completeTask(page, repair.id, { questions: 18, correct: 15, wrong: 3, outcome: 'ok' });
 
   await navigate(page, 'mistakes');
@@ -907,7 +981,7 @@ try {
   assert.equal(review3.reviewBaseDate, repairLog.date, '3-day review must anchor to the real repair completion date');
   assert.ok(review3.date >= due3, '3-day review must never be scheduled before its real +3 due date');
   assert.match(review3.reason || '', /Denemeden gelen yanlış onarımını/i);
-  await showTaskInPlan(page, review3.id, '3-day exam-wrong retention review');
+  review3 = await showTaskInPlan(page, review3.id, '3-day exam-wrong retention review');
   await completeTask(page, review3.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
 
   const due7 = addDays(repairLog.date, 7);
@@ -918,7 +992,7 @@ try {
   assert.ok(review7, '7-day exam-wrong retention review must materialize when due');
   assert.equal(review7.reviewBaseDate, repairLog.date, '7-day review must anchor to the real repair completion date');
   assert.ok(review7.date >= due7, '7-day review must never be scheduled before its real +7 due date');
-  await showTaskInPlan(page, review7.id, '7-day exam-wrong retention review');
+  review7 = await showTaskInPlan(page, review7.id, '7-day exam-wrong retention review');
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 

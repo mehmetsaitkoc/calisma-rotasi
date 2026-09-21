@@ -2563,7 +2563,7 @@ function premiumKpssSidebar(active){
 }
 
 function premiumKpssLayout(active,content){
- return '<div class="premium-ob-page">'+premiumKpssSidebar(active)+'<section class="premium-ob-main">'+
+ return '<div class="premium-ob-page" data-premium-surface="onboarding">'+premiumKpssSidebar(active)+'<section class="premium-ob-main">'+
    '<header class="premium-ob-top"><span>KPSS’ye giden yolda, yalnız değilsin.</span><small>“Plan, hayalleri hedefe dönüştürür.”</small></header>'+
    '<div class="premium-ob-canvas">'+premiumKpssStageRail(active)+content+'</div>'+
  '</section></div>';

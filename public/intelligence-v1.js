@@ -101,11 +101,11 @@ function longitudinalProfile(workspace,today){
 
 function targetRisk(input={}){
   const confidence=clamp(input.confidence||0);
-  const current=Number(input.currentNet),target=Number(input.targetNet),daysLeft=Number(input.daysLeft);
-  const completion=Number(input.completion),performance=Number(input.performance),retention=Number(input.retention);
+  const current=optionalNumber(input.currentNet),target=optionalNumber(input.targetNet),daysLeft=optionalNumber(input.daysLeft);
+  const completion=optionalNumber(input.completion),performance=optionalNumber(input.performance),retention=optionalNumber(input.retention);
   const trend=String(input.trend||'unknown');
   const openMistakes=Math.max(0,Number(input.openMistakes)||0);
-  const gap=Number.isFinite(current)&&Number.isFinite(target)?Math.max(0,target-current):null;
+  const gap=current!==null&&target!==null?Math.max(0,target-current):null;
   const reasons=[];
   let score=0;
   if(gap!==null){
@@ -113,20 +113,20 @@ function targetRisk(input={}){
     else if(gap>=18){score+=24;reasons.push('Hedef ile mevcut net arasında belirgin fark var.');}
     else if(gap>=8){score+=12;reasons.push('Hedefe ulaşmak için net artışı gerekiyor.');}
   }
-  if(Number.isFinite(daysLeft)){
+  if(daysLeft!==null){
     if(daysLeft<=30){score+=18;reasons.push('Hedef tarihine 30 günden az kaldı.');}
     else if(daysLeft<=60){score+=10;reasons.push('Hedef tarihi 60 günlük pencerenin içinde.');}
   }
-  if(Number.isFinite(completion)&&completion<55){score+=18;reasons.push('Plan gerçekleşme oranı düşük.');}
-  else if(Number.isFinite(completion)&&completion<72){score+=9;reasons.push('Plan gerçekleşme oranı hedeflenen istikrarın altında.');}
-  if(Number.isFinite(performance)&&performance<55){score+=16;reasons.push('Ölçülen soru performansı zayıf.');}
-  if(Number.isFinite(retention)&&retention<55){score+=14;reasons.push('3/7 tekrarlarında kalıcılık sinyali zayıf.');}
+  if(completion!==null&&completion<55){score+=18;reasons.push('Plan gerçekleşme oranı düşük.');}
+  else if(completion!==null&&completion<72){score+=9;reasons.push('Plan gerçekleşme oranı hedeflenen istikrarın altında.');}
+  if(performance!==null&&performance<55){score+=16;reasons.push('Ölçülen soru performansı zayıf.');}
+  if(retention!==null&&retention<55){score+=14;reasons.push('3/7 tekrarlarında kalıcılık sinyali zayıf.');}
   if(trend==='down'){score+=14;reasons.push('Son performans eğilimi aşağı yönlü.');}
   if(openMistakes>=8){score+=10;reasons.push('Açık yanlış yükü yükselmiş.');}
   else if(openMistakes>=3){score+=5;reasons.push('Çözülmemiş yanlışlar birikiyor.');}
 
   score=Math.round(clamp(score));
-  const reliable=confidence>=30&&(gap!==null||Number.isFinite(performance)||Number.isFinite(completion));
+  const reliable=confidence>=30&&(gap!==null||performance!==null||completion!==null);
   const band=!reliable?'insufficient':score>=65?'high':score>=40?'watch':'low';
   const label={insufficient:'Ölçüm için veri gerekiyor',high:'Hedef riski yüksek',watch:'Hedef riski izlenmeli',low:'Hedef riski kontrollü'}[band];
   const action=band==='high'?'Yeni konu yükünü azalt; zayıf alan, yanlış onarımı ve deneme geri bildirimine ağırlık ver.'
@@ -138,14 +138,14 @@ function targetRisk(input={}){
 
 function repairProposal(input={}){
   const confidence=clamp(input.confidence||0);
-  const performance=Number(input.performance),retention=Number(input.retention);
+  const performance=optionalNumber(input.performance),retention=optionalNumber(input.retention);
   const openMistakes=Math.max(0,Number(input.openMistakes)||0);
   const repeated=!!input.repeatedError;
   const trend=String(input.trend||'unknown');
   if(confidence<25)return {mode:'collect',priority:35,minutes:20,questions:10,reason:'Önce kısa bir ölçümle gerçek kanıt topla.'};
   let need=0,reasons=[];
-  if(Number.isFinite(performance)&&performance<60){need+=35;reasons.push('soru performansı düşük');}
-  if(Number.isFinite(retention)&&retention<60){need+=25;reasons.push('kalıcılık zayıf');}
+  if(performance!==null&&performance<60){need+=35;reasons.push('soru performansı düşük');}
+  if(retention!==null&&retention<60){need+=25;reasons.push('kalıcılık zayıf');}
   if(openMistakes>=3){need+=Math.min(20,openMistakes*2);reasons.push('açık yanlış var');}
   if(repeated){need+=20;reasons.push('aynı hata örüntüsü tekrarlanıyor');}
   if(trend==='down'){need+=12;reasons.push('eğilim aşağı yönlü');}

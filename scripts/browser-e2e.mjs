@@ -512,8 +512,9 @@ async function runKpssSectionExamContent(browser) {
   await submitWizard(page);
   await navigate(page, 'exams');
 
-  assert.ok(await page.getByText('KPSS Türkçe Bölüm Denemesi #01', { exact: true }).count(), 'KPSS Turkish section exam must be visible');
-  assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi #01', { exact: true }).count(), 'KPSS history section exam must be visible');
+  assert.ok(await page.getByText('KPSS Türkçe Bölüm Denemesi · Profesyonel #01', { exact: true }).count(), 'Professional KPSS Turkish section exam must be visible');
+  assert.equal(await page.getByText('KPSS Türkçe Bölüm Denemesi #01', { exact: true }).count(),0,'Superseded Turkish section seed must not remain active');
+  assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi #01', { exact: true }).count(), 'KPSS history section seed must remain visible until its professional replacement is approved');
 
   for(let setNo=1;setNo<=4;setNo++){
     assert.ok(await page.getByText('KPSS Türkçe · Sözcükte Anlam · Test '+setNo,{exact:true}).count(),'Professional Word Meaning Test '+setNo+' must be visible');
@@ -530,7 +531,7 @@ async function runKpssSectionExamContent(browser) {
   await page.locator('[data-action="close-modal"]').first().click();
   assert.ok(await page.getByText(/konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık/i).count(), 'Section-exam distribution must be described as approximate, not official-fixed');
 
-  const start = page.locator('[data-action="start-section-exam"][data-id="kpss-turkce-section-01"]').first();
+  const start = page.locator('[data-action="start-section-exam"][data-id="kpss-professional-turkce-section-01"]').first();
   await start.waitFor({ state: 'visible' });
   await start.click();
   const form = page.locator('#section-exam-form');
@@ -544,16 +545,20 @@ async function runKpssSectionExamContent(browser) {
   assert.match(await sectionScopeNotice.innerText(),/tam KPSS GY–GK neti değildir[\s\S]*Türkçe bölüm denemesidir/i,'Section result must not present itself as the full KPSS');
 
   const snapshot = await appState(page);
-  const attempts = snapshot.value.workspaces.kpss.assessments.filter(a => a.sectionId === 'kpss-turkce-section-01');
+  const attempts = snapshot.value.workspaces.kpss.assessments.filter(a => a.sectionId === 'kpss-professional-turkce-section-01');
   assert.equal(attempts.length, 1, 'Section exam must persist one assessment');
   const result = attempts[0];
   assert.equal(result.total, 30);
   assert.equal(result.correct, 0);
   assert.equal(result.blank, 30);
   assert.equal(result.net, 0);
-  assert.equal(result.topicBreakdown.length, 11, 'Turkish section result must preserve all 11 topic breakdown rows');
+  assert.equal(result.topicBreakdown.length, 9, 'Professional Turkish section result must preserve every blueprint topic with non-zero allocation');
   assert.equal(result.topicBreakdown.reduce((n,x)=>n+x.total,0),30,'Topic breakdown totals must equal the section question count');
-  assert.ok(result.skillBreakdown.some(x => x.skill === 'Paragrafta anlam' && x.total === 14), 'Paragraph weight must be preserved in stored evidence');
+  assert.equal(result.topicBreakdown.find(x=>x.topicId==='k-tr-3')?.total,15,'Multi-year paragraph weight must be preserved in stored evidence');
+  assert.ok(result.skillBreakdown.some(x => x.topicId==='k-tr-3' && x.skill === 'Ana düşünce'), 'Section result must persist skill-level paragraph evidence');
+  assert.ok(result.skillBreakdown.every(x=>x.topicId&&x.skill),'Every section skill row must remain tied to a topic');
+  assert.ok(Array.isArray(result.weakSkills)&&result.weakSkills.length>0,'Blank professional section fixture must persist weak-skill signals');
+  assert.ok(await page.getByText(/Zayıf kazanım sinyalleri:/i).count(),'Professional section result must surface weak skill signals to the student');
   await assertCleanRender(page, 'KPSS Turkish section exam result');
   assert.deepEqual(pageErrors, [], 'KPSS section exam page errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'KPSS section exam console errors:\n' + consoleErrors.join('\n'));

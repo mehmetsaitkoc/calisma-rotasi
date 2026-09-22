@@ -152,10 +152,17 @@ assert.ok(
   css.includes('content:none!important'),
   'Daily quote must use exactly one clean text layer without legacy pseudo overlays'
 );
-assert.ok(
-  !html.includes("scrollIntoView({block:'center',behavior:'smooth'})") &&
-  html.includes("if(ui.view==='today')render();else navigate('today')"),
-  'Starting Pomodoro from Today must not force a scroll/navigation jump'
-);
+{
+  const focusStart=html.indexOf('function focusSession(id)');
+  const focusEnd=html.indexOf('function replaceListRecord',focusStart);
+  const focusSource=html.slice(focusStart,focusEnd);
+  assert.ok(
+    focusStart>=0 &&
+    focusEnd>focusStart &&
+    focusSource.includes("if(ui.view==='today')renderKeepScroll();else navigate('today')") &&
+    !focusSource.includes('scrollIntoView'),
+    'Starting Pomodoro from Today must preserve viewport position without a focus-session scroll jump'
+  );
+}
 
 console.log('App Premium Next contract passed: KPSS target dashboard + real route data + unchanged sidebar + responsive/day-night guards');

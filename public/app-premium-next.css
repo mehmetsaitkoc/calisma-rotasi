@@ -6496,3 +6496,51 @@ body.pnx3-dashboard-ready .route-command-grid{
     white-space:nowrap!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V5.2 · TIMER STABILITY + FREE MODE */
+body.pnx3-dashboard-ready .pnx-reference-hero[data-pnx-timer-mode="free"] .pnx3-pomodoro-preview .pnx-pomodoro-ring{
+  background:conic-gradient(#20c8b5 0 100%,#294f82 100%)!important;
+  box-shadow:0 0 0 8px rgba(32,200,181,.16),0 16px 36px rgba(0,0,0,.22)!important;
+}
+body.pnx3-dashboard-ready .pnx-reference-hero[data-pnx-timer-mode="free"] .pnx3-preview-timer .pnx-pomodoro-play{
+  background:linear-gradient(145deg,#2ac9b8,#159c91)!important;
+  box-shadow:0 0 0 7px rgba(42,201,184,.13),0 9px 24px rgba(19,150,139,.26)!important;
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview>span{
+  min-height:18px!important;
+  max-width:230px!important;
+  text-align:center!important;
+}
+body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring,
+body.pnx3-dashboard-ready .pnx3-focus-tabs button{
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+@media(hover:none){
+  body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring:hover{
+    transform:none!important;
+  }
+}
+
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .pnx3-focus{
+    width:100%!important;
+    max-width:100%!important;
+    contain:layout paint!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero,
+  body.pnx3-dashboard-ready .pnx3-live-timer-card{
+    transition:none!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-pomodoro-preview .pnx-pomodoro-ring:hover{
+    transform:none!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-pomodoro-preview>span{
+    min-height:32px!important;
+    display:grid!important;
+    place-items:center!important;
+    line-height:1.25!important;
+  }
+}

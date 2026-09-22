@@ -148,6 +148,14 @@ assert.ok(
   'V5.4 must use the supplied reference on desktop while keeping a live responsive mobile hero'
 );
 assert.ok(
+  css.includes('APP PREMIUM NEXT V5.5 · PILOT READINESS PERSONALIZATION') &&
+  html.includes('data-student-name=') &&
+  html.includes('premium-ob-name-field') &&
+  js.includes('header?.dataset?.studentName') &&
+  !html.includes('<strong>Rota Hoca aktif</strong>'),
+  'V5.5 must keep desktop reference fidelity while restoring real student identity and removing retired teacher copy'
+);
+assert.ok(
   html.includes("plan:JSON.parse(JSON.stringify(space.plan||[]))") &&
   js.includes('Array.isArray(space?.plan)') &&
   js.includes('Bu Hafta Öne Çıkan Konular'),

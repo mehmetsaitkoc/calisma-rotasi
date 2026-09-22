@@ -89,8 +89,9 @@ async function assertTodayContract(page) {
 
   const greeting = ((await page.locator('.pnx3-greeting').textContent()) || '').trim();
   const profileName = ((await page.locator('.pnx-profile-copy strong').textContent()) || '').trim();
-  assert.ok(greeting && !/GÜNAYDIN\s+BUGÜN/i.test(greeting), 'Dashboard greeting must keep the real student identity');
-  assert.ok(profileName && profileName.toLocaleLowerCase('tr-TR') !== 'bugün', 'Topbar profile must keep the real student identity');
+  assert.equal(greeting, 'Günaydın E2E Öğrenci,', 'Dashboard greeting must use the name captured in KPSS onboarding');
+  assert.equal(profileName, 'E2E Öğrenci', 'Topbar profile must use the name captured in KPSS onboarding');
+  assert.equal(await page.locator('.route-v1-head').getAttribute('data-student-name'), 'E2E Öğrenci', 'Today must expose explicit read-only identity evidence to the presentation layer');
 
   assert.match(
     (await page.locator('.pnx-global-search').innerText()).trim(),
@@ -146,7 +147,10 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
 
-  // Stage 1 · welcome
+  // Stage 1 · welcome + identity
+  const nameInput = page.locator('#setup-wizard-form [name="name"]');
+  await nameInput.waitFor({ state: 'visible' });
+  await nameInput.fill('E2E Öğrenci');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   // Stage 2 · goals
@@ -177,6 +181,9 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   const strongTurkish = page.locator('#setup-wizard-form [name="strongSubjects"][value="k-tr"]');
   if (await strongTurkish.count()) await strongTurkish.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#setup-wizard-form button[type="submit"]').click();
+
+  assert.ok(await page.getByText('Akıllı rota açık',{exact:true}).count(),'KPSS summary must describe the active route engine');
+  assert.equal(await page.getByText('Rota Hoca aktif',{exact:true}).count(),0,'Retired Rota Hoca copy must not leak into KPSS onboarding');
 
   await page.locator('[data-action="summary-build"]').click();
   await page.locator('.route-building-card').waitFor({ state: 'visible' });

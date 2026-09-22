@@ -40,6 +40,12 @@
     const cached = String(header?.dataset?.pnxStudentName || '').trim();
     if (cached) return cached;
 
+    const explicit = String(header?.dataset?.studentName || '').trim();
+    if (explicit) {
+      if (header) header.dataset.pnxStudentName = explicit;
+      return explicit;
+    }
+
     const current = text(header?.querySelector('h1'));
     const match = current.match(/^([^,]+),/);
     let name = (match?.[1] || '').trim();
@@ -107,8 +113,9 @@
       topbar.append(profile);
     }
     const name = firstName(header);
+    const initials = name.split(/\s+/).filter(Boolean).slice(0,2).map((part) => part[0]).join('').toLocaleUpperCase('tr-TR') || 'R';
     profile.innerHTML =
-      '<span class="pnx-profile-avatar">' + (name.slice(0,2).toLocaleUpperCase('tr-TR') || 'R') + '</span>' +
+      '<span class="pnx-profile-avatar">' + initials + '</span>' +
       '<span class="pnx-profile-copy"><strong>' + name + '</strong><small>Öğrenci</small></span>' +
       '<span class="pnx-profile-chevron" aria-hidden="true">⌄</span>';
     topbar.dataset.pnxReference = '3';
@@ -136,7 +143,7 @@
       '<div class="pnx3-hand-note">Hedefine<br>biraz daha yakınsın,<br>sadece devam et.</div>' +
       '<div class="pnx-date-card"><span class="pnx-date-icon" aria-hidden="true"></span><div><strong>' +
         date.date +
-      '</strong><small>' + date.weekday + '</small></div><span class="pnx-date-arrows" aria-hidden="true">‹ &nbsp; ›</span></div>' +
+      '</strong><small>' + date.weekday + '</small></div><span class="pnx-date-arrows" aria-hidden="true"><i>‹</i><i>›</i></span></div>' +
       '<blockquote>“Büyük hedefler,<br>küçük ama istikrarlı adımlarla gerçekleşir.”</blockquote>';
   }
 

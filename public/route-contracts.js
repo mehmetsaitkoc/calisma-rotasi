@@ -196,6 +196,55 @@ function compareDecisionTraces(a,b){
     rightAdvantages:rightOnly
   });
 }
+function learningGainOutcome(raw={}){
+  raw=raw&&typeof raw==='object'?raw:{};
+  const before=raw.before&&typeof raw.before==='object'?raw.before:{};
+  const after=raw.after&&typeof raw.after==='object'?raw.after:{};
+  const accuracyBefore=Number(before.accuracy),accuracyAfter=Number(after.accuracy);
+  const netBefore=Number(before.net),netAfter=Number(after.net);
+  const masteryBefore=Number(before.mastery),masteryAfter=Number(after.mastery);
+  const completionBefore=Number(before.completion),completionAfter=Number(after.completion);
+  const deltas=Object.freeze({
+    accuracy:Number.isFinite(accuracyBefore)&&Number.isFinite(accuracyAfter)?accuracyAfter-accuracyBefore:null,
+    net:Number.isFinite(netBefore)&&Number.isFinite(netAfter)?netAfter-netBefore:null,
+    mastery:Number.isFinite(masteryBefore)&&Number.isFinite(masteryAfter)?masteryAfter-masteryBefore:null,
+    completion:Number.isFinite(completionBefore)&&Number.isFinite(completionAfter)?completionAfter-completionBefore:null
+  });
+  const followupDays=Math.max(0,Number(raw.followupDays)||0),samples=Math.max(0,Number(raw.samples)||0);
+  const confounded=raw.confounded===true,minimumEvidence=followupDays>=7&&samples>=2;
+  let weighted=0,weight=0;
+  if(deltas.accuracy!==null){weighted+=deltas.accuracy*100*.45;weight+=.45;}
+  if(deltas.net!==null){weighted+=deltas.net*2*.30;weight+=.30;}
+  if(deltas.mastery!==null){weighted+=deltas.mastery*.20;weight+=.20;}
+  if(deltas.completion!==null){weighted+=deltas.completion*100*.05;weight+=.05;}
+  const gainScore=weight?Math.round(weighted/weight):0;
+  const status=!minimumEvidence?'insufficient':confounded?'confounded':gainScore>=5?'helpful':gainScore<=-5?'harmful':'neutral';
+  return Object.freeze({
+    version:1,
+    decisionId:collapse(raw.decisionId||'',120),
+    taskId:collapse(raw.taskId||'',120),
+    mode:normalizeMode(raw.mode),
+    followupDays,
+    samples,
+    status,
+    gainScore,
+    deltas,
+    confounded,
+    evidence:Array.isArray(raw.evidence)?raw.evidence.slice(0,8).map(x=>studentText(x,180)).filter(Boolean):[]
+  });
+}
+function decisionOutcomeSummary(outcomes=[]){
+  const xs=(Array.isArray(outcomes)?outcomes:[]).map(learningGainOutcome);
+  const counts={helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0};
+  for(const x of xs)counts[x.status]=(counts[x.status]||0)+1;
+  const judged=xs.filter(x=>['helpful','neutral','harmful'].includes(x.status));
+  return Object.freeze({
+    total:xs.length,
+    judged:judged.length,
+    ...counts,
+    averageGain:judged.length?Math.round(judged.reduce((n,x)=>n+x.gainScore,0)/judged.length):0
+  });
+}
 function traceExplanation(raw,fallback=''){
   const trace=decisionTrace(raw),parts=trace.reasonCodes.slice(0,3).map(code=>TRACE_REASON_COPY[code]).filter(Boolean);
   if(parts.length)return studentText(parts.join(' '),500);
@@ -350,6 +399,8 @@ root.RotaContracts={
   TRACE_SCORE_WEIGHTS,
   decisionTraceEvidenceScore,
   compareDecisionTraces,
+  learningGainOutcome,
+  decisionOutcomeSummary,
   traceExplanation,
   studentText,
   modeCopy,

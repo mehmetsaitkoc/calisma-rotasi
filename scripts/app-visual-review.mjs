@@ -292,15 +292,15 @@ try{
 
   const pomodoroTab=page.locator('[data-pnx-timer-mode="pomodoro"]').first();
   await pomodoroTab.click();
-  const pomodoroRing=page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
+  const pomodoroRing=page.locator('.pnx3-focus:visible .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await pomodoroRing.waitFor({state:'visible'});
   await pomodoroRing.evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
-  const mobileFocusBefore=await page.locator('.pnx3-focus').boundingBox();
+  const mobileFocusBefore=await page.locator('.pnx3-focus:visible').first().boundingBox();
   const mobileScrollBefore=await page.evaluate(()=>window.scrollY);
   await pomodoroRing.evaluate(node=>node.click());
-  await page.locator('.pnx3-focus .route-focus-card').waitFor({state:'visible'});
+  await page.locator('.pnx3-focus:visible .route-focus-card').first().waitFor({state:'visible'});
   await page.clock.fastForward(500);
-  const mobileFocusAfter=await page.locator('.pnx3-focus').boundingBox();
+  const mobileFocusAfter=await page.locator('.pnx3-focus:visible').first().boundingBox();
   const mobileScrollAfter=await page.evaluate(()=>window.scrollY);
   assert.ok(mobileFocusBefore&&mobileFocusAfter,'Mobile Pomodoro slot must remain measurable');
   assert.ok(

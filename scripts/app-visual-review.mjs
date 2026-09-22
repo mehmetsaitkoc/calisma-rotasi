@@ -46,6 +46,8 @@ async function assertReferenceHero(page,label,{mobile=false}={}){
       titleScroll:title?.scrollWidth||0,
       titleClient:title?.clientWidth||0,
       beforeBackground:getComputedStyle(el,'::before').backgroundImage,
+      beforeFilter:getComputedStyle(el,'::before').filter,
+      titleOpacity:title?getComputedStyle(title).opacity:'0',
       dateDisplay:date?getComputedStyle(date).display:'missing'
     };
   });
@@ -58,7 +60,9 @@ async function assertReferenceHero(page,label,{mobile=false}={}){
     assert.ok(geometry.date.left>=geometry.hero.left-1&&geometry.date.right<=geometry.hero.right+1,label+': mobile date card must stay inside hero');
   }else{
     assert.ok(geometry.hero.height>=270,label+': desktop hero must keep the reference footprint');
-    assert.ok(geometry.beforeBackground.includes('kpss-hero-mountain.svg'),label+': desktop hero must use the crisp responsive mountain artwork');
+    assert.ok(geometry.beforeBackground.includes('hero-reference-composite.webp'),label+': desktop hero must restore the approved photographic mountain composition');
+    assert.ok(!geometry.beforeFilter.includes('blur('),label+': desktop hero must not use CSS blur');
+    assert.notEqual(geometry.titleOpacity,'0',label+': desktop hero title must remain live and crisp');
     const ratio=geometry.hero.width/geometry.hero.height;
     assert.ok(ratio>3.7&&ratio<4.15,label+': desktop hero aspect ratio must track the supplied reference');
   }

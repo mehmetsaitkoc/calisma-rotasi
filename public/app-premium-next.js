@@ -64,15 +64,17 @@
       greeting.className = 'pnx3-greeting';
       header.querySelector(':scope > div')?.prepend(greeting);
     }
-    greeting.textContent = 'GÜNAYDIN ' + name.toLocaleUpperCase('tr-TR') + ',';
+    greeting.textContent = 'Günaydın ' + name + ',';
 
     const kicker = header.querySelector('.route-today-kicker');
     if (kicker) kicker.style.display = 'none';
 
     const h1 = header.querySelector('h1');
-    if (h1 && h1.dataset.pnxTitle !== '3') {
-      h1.textContent = 'Bugün, hedefindeki sen için güçlü bir gün!';
-      h1.dataset.pnxTitle = '3';
+    if (h1 && h1.dataset.pnxTitle !== '54') {
+      const title = 'Bugün, hedefindeki sen için güçlü bir gün!';
+      h1.setAttribute('aria-label', title);
+      h1.innerHTML = 'Bugün, hedefindeki sen için <span class="pnx3-title-break">güçlü bir gün!</span>';
+      h1.dataset.pnxTitle = '54';
     }
 
     const subline = header.querySelector('.route-today-subline');

@@ -32,6 +32,37 @@ async function noOverflow(page,label){
   }));
   assert.ok(size.scroll<=size.inner+2,`${label} overflows viewport: ${size.scroll} > ${size.inner}`);
 }
+async function assertReferenceHero(page,label,{mobile=false}={}){
+  const hero=page.locator('.route-v1-head').first();
+  await hero.waitFor({state:'visible'});
+  const geometry=await hero.evaluate((el)=>{
+    const rect=node=>node?node.getBoundingClientRect():null;
+    const title=el.querySelector('h1');
+    const date=el.querySelector('.pnx-date-card');
+    return {
+      hero:rect(el),
+      title:rect(title),
+      date:rect(date),
+      titleScroll:title?.scrollWidth||0,
+      titleClient:title?.clientWidth||0,
+      beforeBackground:getComputedStyle(el,'::before').backgroundImage,
+      dateDisplay:date?getComputedStyle(date).display:'missing'
+    };
+  });
+  assert.ok(geometry.hero&&geometry.title,label+': hero/title geometry must be measurable');
+  if(mobile){
+    assert.ok(geometry.hero.height<=330,label+': mobile hero must stay compact');
+    assert.ok(geometry.titleScroll<=geometry.titleClient+2,label+': mobile hero title must not overflow');
+    assert.ok(geometry.beforeBackground.includes('kpss-hero-mountain.svg'),label+': mobile hero must use the responsive mountain artwork');
+    assert.ok(geometry.date&&geometry.dateDisplay!=='none',label+': mobile date card must remain visible');
+    assert.ok(geometry.date.left>=geometry.hero.left-1&&geometry.date.right<=geometry.hero.right+1,label+': mobile date card must stay inside hero');
+  }else{
+    assert.ok(geometry.hero.height>=270,label+': desktop hero must keep the reference footprint');
+    assert.ok(geometry.beforeBackground.includes('hero-reference-composite.webp'),label+': desktop hero must use the supplied exact reference composite');
+    const ratio=geometry.hero.width/geometry.hero.height;
+    assert.ok(ratio>3.7&&ratio<4.15,label+': desktop hero aspect ratio must track the supplied reference');
+  }
+}
 async function navigateDesktop(page,view){
   const button=page.locator(`.sidebar [data-action="nav"][data-view="${view}"]`).first();
   await button.waitFor({state:'visible'});
@@ -168,10 +199,12 @@ try{
   assert.ok(await page.locator('.pnx3-insight-archive').count(),'Explainability must remain available below the first-screen dashboard');
   assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(),'Today top bar must expose day/night mode');
   await noOverflow(page,'Today 1512');
+  await assertReferenceHero(page,'Today 1512');
   await page.screenshot({path:OUT+'/today-1512.png',fullPage:false});
 
   await page.setViewportSize({width:1440,height:900});
   await noOverflow(page,'Today 1440');
+  await assertReferenceHero(page,'Today 1440');
   await page.screenshot({path:OUT+'/today-1440.png',fullPage:false});
   await page.setViewportSize({width:1512,height:982});
 
@@ -229,6 +262,7 @@ try{
   await page.setViewportSize({width:390,height:844});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
   await noOverflow(page,'Today 390');
+  await assertReferenceHero(page,'Today 390',{mobile:true});
 
   // Mobile focus controls: Serbest must be a real stopwatch and Pomodoro must
   // keep the center card visually anchored while the core timer mounts.
@@ -277,6 +311,7 @@ try{
 
   await page.setViewportSize({width:360,height:800});
   await noOverflow(page,'Today 360');
+  await assertReferenceHero(page,'Today 360',{mobile:true});
   await assertMobileTodayTaskGeometry('Today 360');
   await page.screenshot({path:OUT+'/today-360.png',fullPage:false});
   await page.setViewportSize({width:390,height:844});

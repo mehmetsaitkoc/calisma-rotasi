@@ -133,5 +133,36 @@ assert.ok(
   css.includes('pnx3-live-timer-card') && css.includes('kpss-hero-mountain.svg') && css.includes('daily-quote-sunrise.svg'),
   'Live timer and approved visual assets must be styled in the dashboard layer'
 );
+assert.ok(
+  css.includes('APP PREMIUM NEXT V5 · APPROVED REFERENCE MATCH') &&
+  css.includes('position:absolute!important') &&
+  css.includes('visibility:hidden!important'),
+  'V5 must keep preview and live Pomodoro in one fixed dashboard footprint'
+);
+assert.ok(
+  html.includes("plan:JSON.parse(JSON.stringify(space.plan||[]))") &&
+  js.includes('Array.isArray(space?.plan)') &&
+  js.includes('Bu Hafta Öne Çıkan Konular'),
+  'Weekly highlights must read real planned KPSS tasks through the read-only evidence bridge'
+);
+assert.ok(
+  js.includes("card.replaceChildren()") &&
+  js.includes("pnx3-quote-kicker") &&
+  css.includes('.pnx3-quote-card:before') &&
+  css.includes('content:none!important'),
+  'Daily quote must use exactly one clean text layer without legacy pseudo overlays'
+);
+{
+  const focusStart=html.indexOf('function focusSession(id)');
+  const focusEnd=html.indexOf('function replaceListRecord',focusStart);
+  const focusSource=html.slice(focusStart,focusEnd);
+  assert.ok(
+    focusStart>=0 &&
+    focusEnd>focusStart &&
+    focusSource.includes("if(ui.view==='today')renderKeepScroll();else navigate('today')") &&
+    !focusSource.includes('scrollIntoView'),
+    'Starting Pomodoro from Today must preserve viewport position without a focus-session scroll jump'
+  );
+}
 
 console.log('App Premium Next contract passed: KPSS target dashboard + real route data + unchanged sidebar + responsive/day-night guards');

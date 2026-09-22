@@ -5952,3 +5952,417 @@ html[data-cr-color-mode="dark"] body.pnx3-dashboard-ready .pnx3-highlights-empty
     grid-template-columns:24px minmax(0,1fr) auto 10px;
   }
 }
+
+
+/* APP PREMIUM NEXT V5 · APPROVED REFERENCE MATCH */
+body.pnx3-dashboard-ready .content{
+  padding:14px 20px 48px!important;
+  background:linear-gradient(180deg,#f7faff 0%,#f5f8fd 100%)!important;
+}
+
+/* Top bar: compact, visible search and identity like the approved reference. */
+body.app-premium-next-ready .topbar{
+  height:62px!important;
+  min-height:62px!important;
+  grid-template-columns:minmax(320px,520px) 1fr auto!important;
+  padding:0 22px!important;
+  border-bottom:1px solid #e7edf6!important;
+  background:rgba(250,252,255,.94)!important;
+  box-shadow:0 8px 22px rgba(31,48,79,.035)!important;
+}
+body.app-premium-next-ready .pnx-global-search{
+  min-height:38px!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  border-color:#e4eaf4!important;
+  box-shadow:0 6px 18px rgba(31,49,82,.04)!important;
+}
+
+/* Hero: use the photographic journey artwork, leave breathing room for the copy. */
+body.pnx3-dashboard-ready .route-v1-head{
+  min-height:194px!important;
+  margin:0 0 12px!important;
+  padding:24px 470px 22px 24px!important;
+  overflow:hidden!important;
+  border:1px solid #e5ebf5!important;
+  border-radius:22px!important;
+  background:#f8fbff!important;
+  box-shadow:0 14px 34px rgba(35,58,98,.06)!important;
+}
+body.pnx3-dashboard-ready .route-v1-head:before{
+  display:block!important;
+  inset:0!important;
+  opacity:1!important;
+  filter:saturate(.98) brightness(1.03)!important;
+  border-radius:22px!important;
+  background:
+    linear-gradient(90deg,rgba(248,251,255,.99) 0%,rgba(248,251,255,.96) 27%,rgba(242,248,255,.60) 42%,rgba(236,246,255,.08) 66%,rgba(247,250,255,.30) 100%),
+    url("/hero-journey-final.webp") 64% 46%/cover no-repeat!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+}
+body.pnx3-dashboard-ready .route-v1-head:after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  border-radius:22px!important;
+  pointer-events:none!important;
+  background:linear-gradient(90deg,rgba(250,252,255,.96) 0%,rgba(250,252,255,.70) 31%,rgba(250,252,255,.08) 54%,transparent 76%)!important;
+}
+body.pnx3-dashboard-ready .route-v1-head>div:first-child{
+  max-width:585px!important;
+}
+body.pnx3-dashboard-ready .route-v1-head h1{
+  max-width:560px!important;
+  margin:0 0 8px!important;
+  font-size:38px!important;
+  line-height:1.02!important;
+  letter-spacing:-1.9px!important;
+}
+body.pnx3-dashboard-ready .route-today-subline{
+  max-width:570px!important;
+  font-size:13px!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art{
+  right:18px!important;
+  top:14px!important;
+  width:430px!important;
+  height:164px!important;
+  grid-template-columns:minmax(0,1fr) 178px!important;
+  gap:8px 14px!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art .pnx3-hand-note{
+  align-self:center!important;
+  transform:rotate(-5deg)!important;
+  color:#173b82!important;
+  font-size:16px!important;
+  line-height:1.16!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art .pnx-date-card{
+  min-height:60px!important;
+  background:rgba(255,255,255,.86)!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art blockquote{
+  color:#263f78!important;
+  font-size:10px!important;
+  font-style:italic!important;
+  font-weight:700!important;
+  line-height:1.42!important;
+}
+
+/* KPI rail */
+body.pnx3-dashboard-ready .premium-signal-rail{
+  gap:12px!important;
+}
+body.pnx3-dashboard-ready .premium-signal{
+  min-height:84px!important;
+  border-radius:18px!important;
+  box-shadow:0 9px 24px rgba(35,57,96,.045)!important;
+}
+
+/* Main 3-column dashboard: same footprint before and after Pomodoro start. */
+body.pnx3-dashboard-ready .pnx3-dashboard{
+  grid-template-columns:minmax(0,1.36fr) minmax(340px,.84fr) minmax(300px,.73fr)!important;
+  gap:12px!important;
+  min-height:360px!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card{
+  height:360px!important;
+  min-height:360px!important;
+  border-radius:18px!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus{
+  position:relative!important;
+  height:360px!important;
+  min-height:360px!important;
+  overflow:hidden!important;
+  border-radius:18px!important;
+}
+/* During a core render the real timer is born inside route-command-grid.
+   Keep that transient node out of layout until the dashboard portal moves it
+   into .pnx3-focus, otherwise the whole dashboard visibly jumps. */
+body.pnx3-dashboard-ready .route-command-grid + .route-focus-card{
+  position:absolute!important;
+  inset:auto!important;
+  width:1px!important;
+  height:1px!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus > .route-focus-card{
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:360px!important;
+  min-height:360px!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(180deg,rgba(4,14,31,.18),rgba(4,16,37,.92)),
+    url("/hero-journey-final.webp") 58% 54%/cover no-repeat!important;
+  transition:opacity .14s ease,visibility .14s ease!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus.pnx3-has-live-timer .pnx-reference-hero{
+  display:flex!important;
+  visibility:hidden!important;
+  opacity:0!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card{
+  position:absolute!important;
+  inset:0!important;
+  z-index:5!important;
+  width:100%!important;
+  height:360px!important;
+  min-height:360px!important;
+  margin:0!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(180deg,rgba(4,14,31,.24),rgba(4,16,37,.95)),
+    url("/hero-journey-final.webp") 58% 54%/cover no-repeat!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .clock{
+  width:190px!important;
+  height:190px!important;
+  margin:22px 0 0!important;
+  border-width:16px!important;
+  font-size:30px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls{
+  width:100%!important;
+  max-width:300px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-controls .btn.primary{
+  min-width:128px!important;
+}
+body.pnx3-dashboard-ready .pnx3-live-timer-card .timer-note{
+  display:none!important;
+}
+
+/* Lower row exactly follows Results / Highlights / Quote. */
+body.pnx3-dashboard-ready .pnx3-lower{
+  grid-template-columns:minmax(260px,.95fr) minmax(330px,1.16fr) minmax(280px,.90fr)!important;
+  gap:12px!important;
+  min-height:178px!important;
+  margin-top:12px!important;
+}
+body.pnx3-dashboard-ready .pnx3-results-card,
+body.pnx3-dashboard-ready .pnx3-highlights-card,
+body.pnx3-dashboard-ready .pnx3-quote-card{
+  min-height:178px!important;
+  height:178px!important;
+  border-radius:18px!important;
+}
+
+/* Highlights are compact and always useful when plan evidence exists. */
+body.pnx3-dashboard-ready .pnx3-highlights-card{
+  padding:12px 14px!important;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-list{
+  gap:5px!important;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-list>button{
+  min-height:28px!important;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-empty{
+  min-height:116px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:3px!important;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-empty strong{
+  color:#24345c!important;
+  font-size:10px!important;
+}
+body.pnx3-dashboard-ready .pnx3-highlights-empty span{
+  color:#8190aa!important;
+  font-size:8px!important;
+}
+
+/* One quote layer only. No pseudo-text, no legacy overlap. */
+body.pnx3-dashboard-ready .pnx3-quote-card{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-end!important;
+  padding:15px 17px 18px!important;
+  overflow:hidden!important;
+  color:#fff!important;
+  background:
+    linear-gradient(90deg,rgba(16,28,48,.72),rgba(17,29,49,.15)),
+    url("/daily-quote-sunrise.svg") 50% 52%/cover no-repeat!important;
+}
+body.pnx3-dashboard-ready .pnx3-quote-card:before,
+body.pnx3-dashboard-ready .pnx3-quote-card:after{
+  content:none!important;
+  display:none!important;
+}
+body.pnx3-dashboard-ready .pnx3-quote-kicker{
+  position:absolute!important;
+  z-index:2!important;
+  top:14px!important;
+  left:16px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  color:#fff!important;
+}
+body.pnx3-dashboard-ready .pnx3-quote-kicker span{
+  position:static!important;
+  color:#fff!important;
+  font-size:15px!important;
+}
+body.pnx3-dashboard-ready .pnx3-quote-kicker strong{
+  max-width:none!important;
+  color:#fff!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  line-height:1!important;
+}
+body.pnx3-dashboard-ready .pnx3-quote-card blockquote{
+  position:relative!important;
+  z-index:2!important;
+  max-width:250px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:#fff!important;
+  font-size:13px!important;
+  font-style:normal!important;
+  font-weight:650!important;
+  line-height:1.45!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.28)!important;
+}
+body.pnx3-dashboard-ready .pnx3-quote-line{
+  position:relative!important;
+  z-index:2!important;
+  width:22px!important;
+  height:2px!important;
+  display:block!important;
+  margin-top:10px!important;
+  border-radius:999px!important;
+  background:#fff!important;
+  opacity:.9!important;
+}
+
+/* Keep the first-screen density close to the approved reference. */
+body.pnx3-dashboard-ready .pnx3-footer{
+  margin-top:9px!important;
+}
+
+@media(max-width:1180px){
+  body.pnx3-dashboard-ready .route-v1-head{padding-right:360px!important}
+  body.pnx3-dashboard-ready .pnx-head-art{width:340px!important}
+  body.pnx3-dashboard-ready .pnx3-dashboard{
+    grid-template-columns:minmax(0,1.25fr) minmax(330px,.82fr)!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-side-stack{
+    grid-column:1/-1!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-lower{
+    grid-template-columns:1fr 1fr!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-quote-card{
+    grid-column:1/-1!important;
+    height:178px!important;
+  }
+}
+@media(max-width:900px){
+  body.pnx3-dashboard-ready .route-v1-head{
+    min-height:160px!important;
+    padding:20px!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head:before{
+    opacity:.32!important;
+    background-position:60% 50%!important;
+  }
+  body.pnx3-dashboard-ready .pnx-head-art{display:none!important}
+  body.pnx3-dashboard-ready .route-v1-head h1{
+    max-width:100%!important;
+    font-size:34px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-dashboard{
+    grid-template-columns:1fr!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card{
+    height:auto!important;
+    min-height:0!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-focus,
+  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero,
+  body.pnx3-dashboard-ready .pnx3-live-timer-card{
+    height:340px!important;
+    min-height:340px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-lower{
+    grid-template-columns:1fr!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-results-card,
+  body.pnx3-dashboard-ready .pnx3-highlights-card,
+  body.pnx3-dashboard-ready .pnx3-quote-card{
+    height:auto!important;
+    min-height:170px!important;
+    grid-column:auto!important;
+  }
+}
+@media(max-width:650px){
+  body.app-premium-next-ready .topbar{
+    height:58px!important;
+    min-height:58px!important;
+  }
+  body.pnx3-dashboard-ready .content{padding:10px 10px 96px!important}
+  body.pnx3-dashboard-ready .route-v1-head{
+    min-height:150px!important;
+    padding:18px 16px!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head h1{
+    font-size:30px!important;
+  }
+  body.pnx3-dashboard-ready .premium-signal{
+    min-height:72px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-focus,
+  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero,
+  body.pnx3-dashboard-ready .pnx3-live-timer-card{
+    height:330px!important;
+    min-height:330px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-live-timer-card .clock{
+    width:158px!important;
+    height:158px!important;
+    border-width:14px!important;
+    font-size:25px!important;
+  }
+}
+
+
+/* V5 POMODORO RAW-MOUNT GUARD */
+/* Core Today renders the real timer just before the premium compositor moves it
+   into the fixed center slot. Keep that transient raw node out of document flow,
+   otherwise the page gains ~40px and browser scroll anchoring visibly jumps. */
+body.pnx3-dashboard-ready .content > .route-focus-card:not(.pnx3-live-timer-card){
+  display:none!important;
+  position:absolute!important;
+  width:0!important;
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+  visibility:hidden!important;
+}
+body.pnx3-dashboard-ready .pnx3-dashboard,
+body.pnx3-dashboard-ready .pnx3-focus,
+body.pnx3-dashboard-ready .route-command-grid{
+  overflow-anchor:none!important;
+}

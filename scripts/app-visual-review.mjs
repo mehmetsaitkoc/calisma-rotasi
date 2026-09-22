@@ -158,9 +158,13 @@ try{
   assert.ok(await page.locator('.pnx3-week-card').isVisible(),'Today must expose the Bu Hafta card');
   assert.ok(await page.locator('.pnx3-goals-card').isVisible(),'Today must expose the KPSS goals card');
   assert.ok(await page.locator('.pnx3-highlights-card').isVisible(),'Today must expose the KPSS highlights card');
+  assert.ok(await page.locator('.pnx3-highlights-list > button').count(),'Weekly highlights must be populated from the real route plan');
   assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must be removed');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(),'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(),'Today must expose the daily quote card');
+  assert.equal(await page.locator('.pnx3-quote-card .pnx3-quote-kicker').count(),1,'Daily quote must have one kicker layer');
+  assert.equal(await page.locator('.pnx3-quote-card blockquote').count(),1,'Daily quote must have one quote layer');
+  assert.ok(await page.locator('.pnx-head-art').isVisible(),'Top hero visual and date area must stay visible on desktop');
   assert.ok(await page.locator('.pnx3-insight-archive').count(),'Explainability must remain available below the first-screen dashboard');
   assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(),'Today top bar must expose day/night mode');
   await noOverflow(page,'Today 1512');

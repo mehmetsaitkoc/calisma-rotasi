@@ -25,61 +25,6 @@ async function waitServer() {
   throw new Error('KPSS-only E2E server did not start.\n' + serverLog);
 }
 
-async function gotoLegacyResume(page, url) {
-  let navigationError = null;
-  try {
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
-  } catch (error) {
-    navigationError = error;
-    if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error;
-  }
-
-  // kpss-only.js intentionally performs location.reload() once when it migrates
-  // a configured legacy YKS selection back to KPSS. Do not fight that reload with
-  // repeated page.goto() calls; poll across execution-context replacements instead.
-  const deadline = Date.now() + 25000;
-  let lastStatus = null;
-  while (Date.now() < deadline) {
-    try {
-      lastStatus = await page.evaluate(() => {
-        const raw = localStorage.getItem('calisma-rotasi:all:v5:fresh-preview');
-        let activeExam = '';
-        try { activeExam = JSON.parse(raw || '{}').activeExam || ''; } catch {}
-        return {
-          href: location.href,
-          readyState: document.readyState,
-          activeExam,
-          hasShell: !!document.querySelector('.app-shell')
-        };
-      });
-      if (lastStatus.activeExam === 'kpss' && lastStatus.hasShell) return;
-      // Chromium can abort the migration reload before the fresh-preview key is
-      // rewritten. If it falls back to the fresh landing, restore KPSS on the
-      // preserved workspace state and resume once; this tests the migration target
-      // without relying on a fragile navigation race.
-      if (lastStatus.readyState === 'complete' && !lastStatus.hasShell && /[?&]fresh=1(?:&|$)/.test(new URL(lastStatus.href).search)) {
-        await page.evaluate(() => {
-          const preferred='calisma-rotasi:all:v5:fresh-preview';
-          const keys=[preferred,...Object.keys(localStorage).filter(key=>key!==preferred)];
-          for(const key of keys){
-            try {
-              const value=JSON.parse(localStorage.getItem(key)||'{}');
-              if(value?.workspaces?.kpss?.configured){value.activeExam='kpss';localStorage.setItem(key,JSON.stringify(value));if(key!==preferred)localStorage.setItem(preferred,JSON.stringify(value));break;}
-            } catch {}
-          }
-        });
-        try { await page.goto(url, { waitUntil: 'domcontentloaded' }); navigationError = null; } catch (error) { if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error; }
-      }
-    } catch {}
-    await sleep(100);
-  }
-
-  throw new Error(
-    'Legacy KPSS resume did not settle after the expected migration reload. ' +
-    JSON.stringify({ navigationError: navigationError ? String(navigationError) : '', lastStatus })
-  );
-}
-
 async function appState(page) {
   return page.evaluate(() => {
     const preferred = new URLSearchParams(location.search).get('fresh') === '1'

@@ -166,6 +166,28 @@ assert.ok(
 }
 
 assert.ok(
+  js.includes('stabilizeTimerHandoff') &&
+  js.includes("html.style.overflowAnchor = 'none'") &&
+  js.includes('currentFocus.getBoundingClientRect().top - initialTop') &&
+  js.includes("if (active instanceof HTMLElement) active.blur()"),
+  'Pomodoro handoff must pin the mobile viewport while core focus/timer renders swap'
+);
+assert.ok(
+  js.includes('freeTimerState') &&
+  js.includes('startFreeTimer(hero)') &&
+  js.includes("hero.dataset.pnxTimerMode = 'free'") &&
+  js.includes("freeTimerState.intervalId = window.setInterval"),
+  'Serbest mode must use a real count-up timer instead of a no-op add-log shortcut'
+);
+assert.ok(
+  css.includes('APP PREMIUM NEXT V5.2 · TIMER STABILITY + FREE MODE') &&
+  css.includes('contain:layout paint!important') &&
+  css.includes('transition:none!important') &&
+  css.includes('touch-action:manipulation'),
+  'Mobile timer slot must suppress touch-hover movement and transition flicker during timer handoff'
+);
+
+assert.ok(
   css.includes('APP PREMIUM NEXT V5.1 · MOBILE TODAY TASK ALIGNMENT') &&
   css.includes('.route-complete-label') &&
   css.includes('grid-template-columns:38px minmax(0,1fr) 38px!important') &&

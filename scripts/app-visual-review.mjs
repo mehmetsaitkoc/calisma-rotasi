@@ -55,13 +55,13 @@ async function assertReferenceHero(page,label,{mobile=false}={}){
   if(mobile){
     assert.ok(geometry.hero.height<=330,label+': mobile hero must stay compact');
     assert.ok(geometry.titleScroll<=geometry.titleClient+2,label+': mobile hero title must not overflow');
-    assert.ok(geometry.beforeBackground.includes('pexels-photo-10144908'),label+': mobile hero must use the photographic journey artwork');
+    assert.ok(geometry.beforeBackground.includes('pexels-photo-9803048'),label+': mobile hero must use the photographic journey artwork');
     assert.ok(!geometry.beforeFilter.includes('blur('),label+': mobile hero must not use CSS blur');
     assert.ok(geometry.date&&geometry.dateDisplay!=='none',label+': mobile date card must remain visible');
     assert.ok(geometry.date.left>=geometry.hero.left-1&&geometry.date.right<=geometry.hero.right+1,label+': mobile date card must stay inside hero');
   }else{
     assert.ok(geometry.hero.height>=270,label+': desktop hero must keep the reference footprint');
-    assert.ok(geometry.beforeBackground.includes('pexels-photo-10144908'),label+': desktop hero must use the photographic journey artwork');
+    assert.ok(geometry.beforeBackground.includes('pexels-photo-9803048'),label+': desktop hero must use the photographic journey artwork');
     assert.ok(!geometry.beforeFilter.includes('blur('),label+': desktop hero must not use CSS blur');
     assert.notEqual(geometry.titleOpacity,'0',label+': desktop hero title must remain live and crisp');
     const ratio=geometry.hero.width/geometry.hero.height;
@@ -324,6 +324,8 @@ try{
     'Mobile Pomodoro start must not shake the page scroll position'
   );
   await assertMobileTodayTaskGeometry('Today 390');
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.waitForTimeout(120);
   const hiddenSidebar=await page.locator('.sidebar').evaluate(el=>{
     const r=el.getBoundingClientRect();
     return {right:r.right,left:r.left,width:r.width};
@@ -335,6 +337,8 @@ try{
   await noOverflow(page,'Today 360');
   await assertReferenceHero(page,'Today 360',{mobile:true});
   await assertMobileTodayTaskGeometry('Today 360');
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.waitForTimeout(120);
   await page.screenshot({path:OUT+'/today-360.png',fullPage:false});
   await page.setViewportSize({width:390,height:844});
 

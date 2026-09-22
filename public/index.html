@@ -4311,10 +4311,21 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
   if(mode===1&&day.subjects.has(candidate.subjectId))return false;
   return true;
  }
- const scheduled=[];
+ const scheduled=[],deferred=[];
+ function deferReason(candidate){
+  const eligible=days.filter(function(day){return day.date>=candidate.earliest;});
+  if(!eligible.length)return 'not_due';
+  const cost=(candidate.minutes||25)+5;
+  if(eligible.every(function(day){return day.used+cost>day.limit;}))return 'capacity';
+  if(routeIsBacklog(candidate))return 'backlog_limit';
+  if(routeIsReviewLike(candidate)&&!routeIsCriticalReview(candidate))return 'review_limit';
+  const method=routeTaskMethod(candidate);
+  if(routeIsQuantitativeHeavy(method.key)||routeMethodLoad(method.key)===2)return 'cognitive_load';
+  return 'route_window';
+ }
  for(const candidate of candidates){
   let slot=null;for(let mode=0;mode<4&&!slot;mode++)slot=days.find(function(day){return fits(day,candidate,mode);});
-  if(!slot)continue;
+  if(!slot){deferred.push({...candidate,deferredBecause:deferReason(candidate)});continue;}
   const task={...candidate,date:slot.date,done:false,taskState:candidate.taskState==='later'&&slot.date===today()?'later':'open'};const finalTrace=routeDecisionTraceForCandidate(candidate,{assignedMinutes:task.minutes,dailyLimit:slot.limit});if(finalTrace)task.decisionTrace=finalTrace;delete task.earliest;
   const cost=task.minutes+5;slot.used+=cost;slot.subjects.add(task.subjectId);const method=routeTaskMethod(task);slot.methods.add(method.key);if(routeMethodLoad(method.key)===2)slot.heavy++;if(routeIsQuantitativeHeavy(method.key))slot.quantHeavy++;
   if(routeIsReviewLike(task)&&!routeIsCriticalReview(task)){slot.reviewUsed+=cost;const ws=weekState.get(slot.week);if(ws)ws.reviewUsed+=cost;}if(routeIsBacklog(task)){slot.backlogUsed+=cost;slot.backlogCount++;const ws=weekState.get(slot.week);if(ws)ws.backlogUsed+=cost;}
@@ -4326,6 +4337,7 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  space.route.lastReason=(reason+' Görevler yalnız süreye göre değil, ders yöntemi ve bilişsel yüke göre de dağıtıldı. Normal tekrarlar günün yaklaşık yarısını ve haftalık kapasitenin yaklaşık %45’ini aşmayacak şekilde yayılır; kritik yanlış ve onarım görevleri gerektiğinde bu sınırı aşabilir. Sayısal-ağır matematik/geometri/fen görevleri günlük sert sınıra takılır; kritik onarım gerektiğinde en fazla bir ek ağır slot açılabilir, ancak sınırsız biçimde aynı güne yığılmaz. Aksayan eski görevler de günün ve haftanın tamamını işgal etmez; toparlanma modunda aynı güne en fazla bir normal backlog görevi taşınır. Her derste yalnız sıradaki 2–3 uygun konu aktif cepheye alınır; ileri başlıklar temel sıra atlanarak programa doldurulmaz. Yeni çalışılan konular kısa süre içinde tekrar ana konu görevi olarak yığılmaz.'+(candidates.length>scheduled.length?' '+(candidates.length-scheduled.length)+' düşük öncelikli konu aktif rota penceresi dışında bırakıldı.':'')).slice(0,2000);
  space.route.lastChanged=changed;
  space.route.decisions=scheduled.slice(0,80).map(function(p){return {taskId:p.id,date:p.date,source:p.source||'curriculum',priority:p.priority||0,reason:p.reason||'',decisionTrace:p.decisionTrace||null};});
+ space.route.selectionAudit={date:start,dailyLimit:days.find(function(d){return d.date===start;})?.limit||routeEffectiveDailyMinutes(space),assignedMinutes:scheduled.filter(function(p){return p.date===start;}).reduce(function(n,p){return n+(Number(p.minutes)||0);},0),selected:scheduled.slice(0,120).map(function(p){return {taskId:p.id,topicId:p.topicId||'',date:p.date,score:Number(p.priority)||0,reasonCodes:p.decisionTrace?.reasonCodes||[]};}),deferred:deferred.slice(0,120).map(function(p){return {taskId:p.id,topicId:p.topicId||'',score:Number(p.priority)||0,reasonCodes:p.decisionTrace?.reasonCodes||[],deferredBecause:p.deferredBecause||'route_window'};})};
  routeRecordModeHistory(scheduled);
  routeRecordInterventions(scheduled);
  if(!silent)toast(changed?changed+' görev kapasite, tekrar payı ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');

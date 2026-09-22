@@ -165,4 +165,12 @@ assert.ok(
   );
 }
 
+assert.ok(
+  css.includes('APP PREMIUM NEXT V5.1 · MOBILE TODAY TASK ALIGNMENT') &&
+  css.includes('.route-complete-label') &&
+  css.includes('grid-template-columns:38px minmax(0,1fr) 38px!important') &&
+  css.includes('max-width:36px!important'),
+  'Mobile Today task rows must reserve a fixed completion column and hide the overflowing text label'
+);
+
 console.log('App Premium Next contract passed: KPSS target dashboard + real route data + unchanged sidebar + responsive/day-night guards');

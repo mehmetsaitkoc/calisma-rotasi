@@ -131,11 +131,11 @@
     const date = dateParts(header);
     art.setAttribute('aria-label', 'Bugünün motivasyon ve tarih alanı');
     art.innerHTML =
-      '<div class="pnx3-hand-note">Hedefine<br>biraz daha yakınsın,<br>devam et. 💙</div>' +
+      '<div class="pnx3-hand-note">Hedefine<br>biraz daha yakınsın,<br>sadece devam et.</div>' +
       '<div class="pnx-date-card"><span class="pnx-date-icon" aria-hidden="true"></span><div><strong>' +
         date.date +
       '</strong><small>' + date.weekday + '</small></div><span class="pnx-date-arrows" aria-hidden="true">‹ &nbsp; ›</span></div>' +
-      '<blockquote>“Planlı çalışan,<br>hedefine ulaşır.”</blockquote>';
+      '<blockquote>“Büyük hedefler,<br>küçük ama istikrarlı adımlarla gerçekleşir.”</blockquote>';
   }
 
   function normalizeSignalCopy(card, kind) {
@@ -277,7 +277,10 @@
   function mountLiveTimer(root, focus, hero) {
     const live = root.querySelector('.route-focus-card');
     focus.classList.toggle('pnx3-has-live-timer', !!live);
-    if (!live) return;
+    if (!live) {
+      hero.removeAttribute('aria-hidden');
+      return;
+    }
 
     live.classList.add('pnx3-live-timer-card');
     if (!focus.contains(live)) focus.appendChild(live);
@@ -552,9 +555,16 @@
       card.className = 'pnx3-quote-card';
       host.appendChild(card);
     }
-    card.innerHTML =
-      '<span>✧ &nbsp; Günün Sözü</span>' +
-      '<strong>“Zorluklar, seni daha güçlü bir sen haline getirir.”</strong>';
+    card.replaceChildren();
+    const kicker = document.createElement('div');
+    kicker.className = 'pnx3-quote-kicker';
+    kicker.innerHTML = '<span aria-hidden="true">☼</span><strong>Günün Sözü</strong>';
+    const quote = document.createElement('blockquote');
+    quote.textContent = '“Zorlandığın her an, güçlendiğin anın inşa sürecidir.”';
+    const line = document.createElement('i');
+    line.className = 'pnx3-quote-line';
+    line.setAttribute('aria-hidden','true');
+    card.append(kicker, quote, line);
   }
 
   function ensureHighlightsCard(host, root) {
@@ -565,42 +575,59 @@
       host.appendChild(card);
     }
 
-    const tasks = Array.from(root.querySelectorAll('.route-task'));
-    const grouped = new Map();
-    tasks.forEach((task) => {
-      const raw = text(
-        task.querySelector('.route-task-title strong, .route-task-title, h4, .route-task-copy strong, strong')
-      );
-      const label = raw
-        .replace(/^\d+\s*[.)-]?\s*/, '')
-        .split(/\s+[·–—-]\s+/)[0]
-        .trim();
-      if (!label || label.length > 46) return;
-      grouped.set(label, (grouped.get(label) || 0) + 1);
-    });
-
-    const items = [...grouped.entries()]
-      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'))
-      .slice(0, 4);
-
     const safe = (value) => String(value).replace(/[&<>"]/g, (char) => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'
     }[char]));
 
+    const space = kpssWorkspace();
+    const week = new Set(currentWeekDays());
+    const plan = Array.isArray(space?.plan) ? space.plan : [];
+    const usable = plan
+      .filter((task) => task && !task.done && task.title)
+      .sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')) || Number(b.priority || 0) - Number(a.priority || 0));
+    let source = usable.filter((task) => week.has(String(task.date || '')));
+    if (!source.length) source = usable.slice(0,12);
+
+    const grouped = new Map();
+    source.forEach((task) => {
+      const label = String(task.title || '')
+        .replace(/^\d+\s*[.)-]?\s*/, '')
+        .split(/\s+[·–—-]\s+/)[0]
+        .trim();
+      if (!label || label.length > 54) return;
+      const previous = grouped.get(label) || { count: 0, date: task.date || '' };
+      grouped.set(label, { count: previous.count + 1, date: previous.date || task.date || '' });
+    });
+
+    if (!grouped.size) {
+      Array.from(root.querySelectorAll('.route-task')).forEach((task) => {
+        const raw = text(task.querySelector('.route-task-title strong, .route-task-title, h4, .route-task-copy strong, strong'));
+        const label = raw.replace(/^\d+\s*[.)-]?\s*/, '').split(/\s+[·–—-]\s+/)[0].trim();
+        if (!label || label.length > 54) return;
+        const previous = grouped.get(label) || { count: 0, date: '' };
+        grouped.set(label, { count: previous.count + 1, date: previous.date });
+      });
+    }
+
+    const items = [...grouped.entries()]
+      .sort((a,b) => b[1].count - a[1].count || a[0].localeCompare(b[0], 'tr'))
+      .slice(0,4);
+
+    card.classList.toggle('is-empty', items.length === 0);
     card.innerHTML =
       '<header class="pnx3-highlights-head">' +
         '<div><span class="pnx3-highlights-icon" aria-hidden="true">✦</span><strong>Bu Hafta Öne Çıkan Konular</strong></div>' +
         '<button type="button" data-action="nav" data-view="topics">Tümünü gör →</button>' +
       '</header>' +
       (items.length
-        ? '<div class="pnx3-highlights-list">' + items.map(([label, count], index) =>
+        ? '<div class="pnx3-highlights-list">' + items.map(([label, meta], index) =>
             '<button type="button" data-action="nav" data-view="topics">' +
               '<span class="pnx3-highlight-dot" data-tone="' + ((index % 4) + 1) + '"></span>' +
               '<strong>' + safe(label) + '</strong>' +
-              '<small>' + count + ' görev</small><b aria-hidden="true">›</b>' +
+              '<small>' + meta.count + ' görev</small><b aria-hidden="true">›</b>' +
             '</button>'
           ).join('') + '</div>'
-        : '<div class="pnx3-highlights-empty">Bugünkü rota oluştuğunda öne çıkan konular burada görünecek.</div>');
+        : '<div class="pnx3-highlights-empty"><strong>İlk rota hazırlanıyor</strong><span>Görevlerin oluşur oluşmaz bu alan otomatik dolacak.</span></div>');
   }
 
   function ensureResultsCard(host) {

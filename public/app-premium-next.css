@@ -6366,3 +6366,133 @@ body.pnx3-dashboard-ready .pnx3-focus,
 body.pnx3-dashboard-ready .route-command-grid{
   overflow-anchor:none!important;
 }
+
+
+/* APP PREMIUM NEXT V5.1 · MOBILE TODAY TASK ALIGNMENT */
+@media(max-width:650px){
+  /* Mobile Today task rows stay as one stable three-column line:
+     index | task copy | circular completion control. */
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task{
+    grid-template-columns:38px minmax(0,1fr) 38px!important;
+    grid-template-rows:auto!important;
+    column-gap:10px!important;
+    row-gap:0!important;
+    align-items:center!important;
+    min-height:74px!important;
+    padding:10px 4px!important;
+    overflow:hidden!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task:before{
+    width:34px!important;
+    height:34px!important;
+    align-self:center!important;
+    justify-self:start!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-main{
+    grid-column:2!important;
+    grid-row:1!important;
+    min-width:0!important;
+    width:100%!important;
+    overflow:hidden!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-main h3{
+    display:-webkit-box!important;
+    max-width:100%!important;
+    margin:0 0 4px!important;
+    overflow:hidden!important;
+    -webkit-box-orient:vertical!important;
+    -webkit-line-clamp:2!important;
+    white-space:normal!important;
+    text-overflow:ellipsis!important;
+    line-height:1.25!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-meta{
+    min-width:0!important;
+    max-width:100%!important;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:5px!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-meta>span{
+    flex:0 0 auto!important;
+    min-width:0!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-actions{
+    grid-column:3!important;
+    grid-row:1!important;
+    align-self:center!important;
+    justify-self:end!important;
+    justify-content:center!important;
+    width:36px!important;
+    min-width:36px!important;
+    max-width:36px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    flex-wrap:nowrap!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-actions>*:not(.check-btn){
+    display:none!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-actions .check-btn,
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-complete-btn{
+    width:34px!important;
+    min-width:34px!important;
+    max-width:34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
+    display:grid!important;
+    place-items:center!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    border-radius:50%!important;
+    line-height:0!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-actions .check-btn .icon,
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-complete-btn .icon{
+    width:16px!important;
+    height:16px!important;
+    min-width:16px!important;
+    flex:0 0 16px!important;
+    margin:0!important;
+  }
+
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-complete-label{
+    display:none!important;
+  }
+
+  /* Header stays in its own grid and never collides with "Tümünü gör". */
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head{
+    grid-template-columns:28px minmax(0,1fr) auto!important;
+    gap:8px!important;
+    min-width:0!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head>div{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head h2{
+    max-width:100%!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    text-overflow:ellipsis!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .pnx-route-see-all{
+    justify-self:end!important;
+    white-space:nowrap!important;
+  }
+}

@@ -7053,7 +7053,7 @@ body.pnx3-dashboard-ready .route-v1-head:before{
   z-index:0!important;
   inset:0!important;
   display:block!important;
-  background:url("https://images.pexels.com/photos/10144908/pexels-photo-10144908.jpeg?auto=compress&cs=tinysrgb&w=1920") 68% 46%/cover no-repeat!important;
+  background:url("https://images.pexels.com/photos/9803048/pexels-photo-9803048.jpeg?auto=compress&cs=tinysrgb&w=1920") 60% 43%/cover no-repeat!important;
   filter:none!important;
   -webkit-filter:none!important;
   opacity:1!important;
@@ -7066,11 +7066,11 @@ body.pnx3-dashboard-ready .route-v1-head:after{
   inset:0!important;
   display:block!important;
   background:linear-gradient(90deg,
-    rgba(247,251,255,.97) 0%,
-    rgba(247,251,255,.92) 29%,
-    rgba(247,251,255,.55) 43%,
-    rgba(247,251,255,.12) 58%,
-    rgba(247,251,255,0) 73%)!important;
+    rgba(247,251,255,.91) 0%,
+    rgba(247,251,255,.82) 28%,
+    rgba(247,251,255,.38) 43%,
+    rgba(247,251,255,.08) 58%,
+    rgba(247,251,255,0) 72%)!important;
   pointer-events:none!important;
 }
 body.pnx3-dashboard-ready .route-v1-head>div:first-child{
@@ -7232,7 +7232,7 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{color:#7685a0!import
     display:block!important;
   }
   body.pnx3-dashboard-ready .route-v1-head:before{
-    background:url("https://images.pexels.com/photos/10144908/pexels-photo-10144908.jpeg?auto=compress&cs=tinysrgb&w=1920") 70% 46%/cover no-repeat!important;
+    background:url("https://images.pexels.com/photos/9803048/pexels-photo-9803048.jpeg?auto=compress&cs=tinysrgb&w=1920") 64% 48%/cover no-repeat!important;
   }
   body.pnx3-dashboard-ready .route-v1-head:after{
     background:linear-gradient(90deg,

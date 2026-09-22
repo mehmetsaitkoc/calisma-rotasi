@@ -19,7 +19,8 @@ assert.match(boundary, /value\?\.workspaces\?\.kpss && value\?\.workspaces\?\.yk
 assert.match(boundary, /!entry\.value\.workspaces\?\.kpss\?\.configured/, 'An unconfigured KPSS legacy migration must reuse the real onboarding flow');
 assert.match(boundary, /entry\.value\.activeExam = PRIMARY_EXAM/, 'A configured stale YKS selection must migrate to KPSS before the workspace resumes');
 assert.match(boundary, /localStorage\.setItem\(entry\.key, JSON\.stringify\(entry\.value\)\)/, 'KPSS-only migration must persist only the selected workspace switch');
-assert.match(boundary, /location\.reload\(\)/, 'A legacy YKS resume must reload against the migrated KPSS selection');
+assert.match(boundary, /startKpss\(\)/, 'A legacy YKS resume must route through the existing KPSS exam switch after migration');
+assert.doesNotMatch(boundary, /location\.reload\(\)/, 'Legacy KPSS migration must not rely on a reload that can reset fresh-preview state');
 assert.doesNotMatch(boundary, /delete\s+[^;\n]*workspaces/i, 'Compatibility boundary must never delete a legacy workspace');
 assert.match(boundary, /function setText\(node, value\)/, 'Academy scrubbing must be idempotent under the MutationObserver');
 assert.match(boundary, /if \(node && node\.textContent !== value\) node\.textContent = value/, 'Academy copy updates must not create endless observer churn');

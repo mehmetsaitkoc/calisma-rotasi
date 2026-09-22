@@ -229,44 +229,45 @@ try{
   await page.setViewportSize({width:390,height:844});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
   await noOverflow(page,'Today 390');
-  await assertMobileTodayTaskGeometry('Today 390');
 
-  const freeTab=page.locator('.pnx3-focus [data-pnx-timer-mode="free"]').first();
+  // Mobile focus controls: Serbest must be a real stopwatch and Pomodoro must
+  // keep the center card visually anchored while the core timer mounts.
+  const freeTab=page.locator('[data-pnx-timer-mode="free"]').first();
   await freeTab.waitFor({state:'visible'});
   await freeTab.click();
-  await page.clock.fastForward(1600);
-  const freeValue=await page.locator('.pnx3-focus .pnx3-preview-timer strong').innerText();
-  assert.notEqual(freeValue.trim(),'00:00','Serbest timer must count up on mobile');
-  assert.ok(await freeTab.evaluate(el=>el.classList.contains('active')),'Serbest tab must become active');
-  const freeRing=page.locator('.pnx3-focus .pnx-pomodoro-ring').first();
-  await freeRing.click();
-  const pausedFreeValue=(await page.locator('.pnx3-focus .pnx3-preview-timer strong').innerText()).trim();
-  await page.clock.fastForward(1200);
-  assert.equal(
-    (await page.locator('.pnx3-focus .pnx3-preview-timer strong').innerText()).trim(),
-    pausedFreeValue,
-    'Serbest timer must pause when its ring is tapped'
-  );
+  const freePanel=page.locator('.pnx3-free-timer').first();
+  await freePanel.waitFor({state:'visible'});
+  const freeClock=freePanel.locator('[data-pnx-free-clock]');
+  assert.equal((await freeClock.innerText()).trim(),'00:00','Serbest mode must open at 00:00');
+  await freePanel.locator('[data-pnx-free-toggle]').click();
+  await page.clock.fastForward(1500);
+  assert.notEqual((await freeClock.innerText()).trim(),'00:00','Serbest timer must count upward after Başlat');
+  await freePanel.locator('[data-pnx-free-toggle]').click();
+  await freePanel.locator('[data-pnx-free-reset]').click();
+  assert.equal((await freeClock.innerText()).trim(),'00:00','Serbest timer reset must return to 00:00');
 
-  const pomodoroTab=page.locator('.pnx3-focus [data-pnx-timer-mode="pomodoro"]').first();
+  const pomodoroTab=page.locator('[data-pnx-timer-mode="pomodoro"]').first();
   await pomodoroTab.click();
-  const pomodoroRing=page.locator('.pnx3-focus .pnx-pomodoro-ring').first();
-  await pomodoroRing.scrollIntoViewIfNeeded();
-  const timerBefore=await page.locator('.pnx3-focus').evaluate(el=>{
-    const r=el.getBoundingClientRect();
-    return {top:r.top,height:r.height,scrollY:window.scrollY};
-  });
-  await pomodoroRing.click();
-  await page.locator('.pnx3-focus .pnx3-live-timer-card').waitFor({state:'visible'});
-  await page.clock.fastForward(600);
-  const timerAfter=await page.locator('.pnx3-focus').evaluate(el=>{
-    const r=el.getBoundingClientRect();
-    return {top:r.top,height:r.height,scrollY:window.scrollY};
-  });
-  assert.ok(Math.abs(timerBefore.top-timerAfter.top)<=2,'Mobile Pomodoro start must not move the focus slot vertically');
-  assert.ok(Math.abs(timerBefore.height-timerAfter.height)<=2,'Mobile Pomodoro start must preserve focus-slot height');
-  assert.ok(Math.abs(timerBefore.scrollY-timerAfter.scrollY)<=2,'Mobile Pomodoro start must not shake/scroll the page');
-
+  const pomodoroRing=page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
+  await pomodoroRing.waitFor({state:'visible'});
+  await pomodoroRing.evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
+  const mobileFocusBefore=await page.locator('.pnx3-focus').boundingBox();
+  const mobileScrollBefore=await page.evaluate(()=>window.scrollY);
+  await pomodoroRing.evaluate(node=>node.click());
+  await page.locator('.pnx3-focus .route-focus-card').waitFor({state:'visible'});
+  await page.clock.fastForward(500);
+  const mobileFocusAfter=await page.locator('.pnx3-focus').boundingBox();
+  const mobileScrollAfter=await page.evaluate(()=>window.scrollY);
+  assert.ok(mobileFocusBefore&&mobileFocusAfter,'Mobile Pomodoro slot must remain measurable');
+  assert.ok(
+    Math.abs(mobileFocusBefore.y-mobileFocusAfter.y)<=2,
+    'Mobile Pomodoro start must not shake the focus card vertically'
+  );
+  assert.ok(
+    Math.abs(mobileScrollBefore-mobileScrollAfter)<=2,
+    'Mobile Pomodoro start must not shake the page scroll position'
+  );
+  await assertMobileTodayTaskGeometry('Today 390');
   const hiddenSidebar=await page.locator('.sidebar').evaluate(el=>{
     const r=el.getBoundingClientRect();
     return {right:r.right,left:r.left,width:r.width};

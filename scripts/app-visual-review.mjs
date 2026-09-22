@@ -58,7 +58,7 @@ async function assertReferenceHero(page,label,{mobile=false}={}){
     assert.ok(geometry.date.left>=geometry.hero.left-1&&geometry.date.right<=geometry.hero.right+1,label+': mobile date card must stay inside hero');
   }else{
     assert.ok(geometry.hero.height>=270,label+': desktop hero must keep the reference footprint');
-    assert.ok(geometry.beforeBackground.includes('hero-reference-composite.webp'),label+': desktop hero must use the supplied exact reference composite');
+    assert.ok(geometry.beforeBackground.includes('kpss-hero-mountain.svg'),label+': desktop hero must use the crisp responsive mountain artwork');
     const ratio=geometry.hero.width/geometry.hero.height;
     assert.ok(ratio>3.7&&ratio<4.15,label+': desktop hero aspect ratio must track the supplied reference');
   }
@@ -185,6 +185,17 @@ try{
   assert.ok(await page.locator('.pnx3-dashboard').isVisible(),'Today must expose the approved three-column dashboard');
   assert.ok(await page.locator('.pnx3-plan .route-task').count(),'Bugünün Planı must reuse the real route tasks');
   assert.ok(await page.getByText('Bugünün Planı',{exact:true}).count(),'Route panel must use the approved Bugünün Planı title');
+  const todayPlanAccess=await page.locator('.pnx3-plan-card .route-list').evaluate(el=>({
+    overflowY:getComputedStyle(el).overflowY,
+    scrollHeight:el.scrollHeight,
+    clientHeight:el.clientHeight
+  }));
+  assert.ok(['auto','scroll'].includes(todayPlanAccess.overflowY),'Bugünün Planı must remain vertically scrollable when lower tasks exceed the card');
+  if(todayPlanAccess.scrollHeight>todayPlanAccess.clientHeight+1){
+    const lastTask=page.locator('.pnx3-plan-card .route-task').last();
+    await lastTask.scrollIntoViewIfNeeded();
+    assert.ok(await lastTask.locator('.check-btn').last().isVisible(),'The last Today task completion control must stay reachable after scrolling');
+  }
   assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(),'Center focus card must expose the Pomodoro ring');
   assert.ok(await page.locator('.pnx3-week-card').isVisible(),'Today must expose the Bu Hafta card');
   assert.ok(await page.locator('.pnx3-goals-card').isVisible(),'Today must expose the KPSS goals card');

@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 
 const PORT=Number(process.env.APP_REVIEW_PORT||8802);
 const BASE=`http://127.0.0.1:${PORT}`;
-const FIXED_DAY='2026-09-21';
+const FIXED_DAY='2026-09-22';
 const OUT='artifacts/app-ui-premium-next';
 
 const server=spawn(process.execPath,['server.mjs'],{
@@ -46,6 +46,9 @@ async function assertReferenceHero(page,label,{mobile=false}={}){
       titleScroll:title?.scrollWidth||0,
       titleClient:title?.clientWidth||0,
       beforeBackground:getComputedStyle(el,'::before').backgroundImage,
+      liveCopyOpacity:getComputedStyle(el.querySelector(':scope > div:first-child')).opacity,
+      greeting:(el.querySelector('.pnx3-greeting')?.textContent||'').trim(),
+      dateText:(date?.querySelector('strong')?.textContent||'').trim(),
       dateDisplay:date?getComputedStyle(date).display:'missing'
     };
   });
@@ -59,6 +62,9 @@ async function assertReferenceHero(page,label,{mobile=false}={}){
   }else{
     assert.ok(geometry.hero.height>=270,label+': desktop hero must keep the reference footprint');
     assert.ok(geometry.beforeBackground.includes('hero-reference-composite.webp'),label+': desktop hero must use the supplied exact reference composite');
+    assert.notEqual(geometry.liveCopyOpacity,'0',label+': desktop hero must render live personalized copy over the reference scene');
+    assert.equal(geometry.greeting,'Günaydın Mehmet Sait,',label+': desktop hero must keep the real student name');
+    assert.equal(geometry.dateText,'22 Eylül 2026',label+': desktop hero date must come from the current app date, not baked artwork');
     const ratio=geometry.hero.width/geometry.hero.height;
     assert.ok(ratio>3.7&&ratio<4.15,label+': desktop hero aspect ratio must track the supplied reference');
   }
@@ -89,7 +95,8 @@ async function submitWizard(page){
 
   const form=()=>page.locator('#setup-wizard-form');
 
-  // Stage 1 · welcome
+  // Stage 1 · welcome + identity
+  await form().locator('[name="name"]').fill('Mehmet Sait');
   await form().locator('button[type="submit"]').click();
 
   // Stage 2 · goals
@@ -181,6 +188,9 @@ try{
   assert.ok(await page.locator('.pnx-global-search').isVisible(),'Today top bar must expose the KPSS search affordance');
   assert.match(await page.locator('.pnx-global-search').innerText(),/KPSS/i,'Search affordance must be KPSS-specific');
   assert.ok(await page.locator('.pnx-head-art').isVisible(),'Today header must include the journey/date visual');
+  assert.equal((await page.locator('.pnx3-greeting').innerText()).trim(),'Günaydın Mehmet Sait,','Visual review must preserve the configured student identity');
+  assert.equal((await page.locator('.pnx-profile-copy strong').innerText()).trim(),'Mehmet Sait','Topbar identity must match the configured student');
+  assert.equal(await page.getByText('Rota Hoca aktif',{exact:true}).count(),0,'Retired Rota Hoca onboarding copy must not survive into the product');
   assert.equal(await page.locator('.premium-signal-rail > .premium-signal:not([hidden])').count(),4,'Today must expose four premium status cards');
   assert.ok(await page.locator('.pnx3-dashboard').isVisible(),'Today must expose the approved three-column dashboard');
   assert.ok(await page.locator('.pnx3-plan .route-task').count(),'Bugünün Planı must reuse the real route tasks');
@@ -282,15 +292,15 @@ try{
 
   const pomodoroTab=page.locator('[data-pnx-timer-mode="pomodoro"]').first();
   await pomodoroTab.click();
-  const pomodoroRing=page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
+  const pomodoroRing=page.locator('.pnx3-focus:visible .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await pomodoroRing.waitFor({state:'visible'});
   await pomodoroRing.evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
-  const mobileFocusBefore=await page.locator('.pnx3-focus').boundingBox();
+  const mobileFocusBefore=await page.locator('.pnx3-focus:visible').first().boundingBox();
   const mobileScrollBefore=await page.evaluate(()=>window.scrollY);
   await pomodoroRing.evaluate(node=>node.click());
-  await page.locator('.pnx3-focus .route-focus-card').waitFor({state:'visible'});
+  await page.locator('.pnx3-focus:visible .route-focus-card').first().waitFor({state:'visible'});
   await page.clock.fastForward(500);
-  const mobileFocusAfter=await page.locator('.pnx3-focus').boundingBox();
+  const mobileFocusAfter=await page.locator('.pnx3-focus:visible').first().boundingBox();
   const mobileScrollAfter=await page.evaluate(()=>window.scrollY);
   assert.ok(mobileFocusBefore&&mobileFocusAfter,'Mobile Pomodoro slot must remain measurable');
   assert.ok(

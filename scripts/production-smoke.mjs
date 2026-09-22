@@ -85,7 +85,8 @@ async function finishKpssOnboarding(page) {
   const form = page.locator('#setup-wizard-form');
   await form.waitFor({ state: 'visible', timeout: 20_000 });
 
-  // Stage 1 · premium welcome
+  // Stage 1 · premium welcome + identity
+  await form.locator('[name="name"]').fill('Production Smoke');
   await form.locator('button[type="submit"]').click();
 
   // Stage 2 · goals and available time
@@ -199,7 +200,9 @@ try {
   await page.locator('.pnx3-lower').waitFor({ state: 'visible', timeout: 20_000 });
   assert.ok(await page.locator('.pnx3-plan .route-task').count(), 'Production KPSS dashboard must render the real Today route');
   assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(), 'Production KPSS dashboard must render the real focus timer');
-  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(), 'Production KPSS dashboard must render the Rota Hoca card');
+  assert.equal((await page.locator('.pnx3-greeting').innerText()).trim(), 'Günaydın Production Smoke,', 'Production hero must use the onboarding identity');
+  assert.equal((await page.locator('.pnx-profile-copy strong').innerText()).trim(), 'Production Smoke', 'Production topbar must use the onboarding identity');
+  assert.equal(await page.locator('.pnx3-teacher-card').count(), 0, 'Production KPSS dashboard must keep the retired Rota Hoca card removed');
   assert.ok(await page.locator('.pnx3-insight-archive').count(), 'Production KPSS dashboard must preserve explainability');
   assert.ok(await page.locator('.mobile-dock').isVisible(), 'Production 360px dashboard must expose the mobile navigation dock');
   const dashboardCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');

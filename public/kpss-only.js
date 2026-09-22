@@ -63,8 +63,12 @@
     legacyMigrating = true;
     try {
       // Change only the selected workspace. Keep legacy YKS data intact for backup compatibility.
+      // Reload so the application rehydrates from the migrated persisted state instead of
+      // overwriting it from a stale in-memory YKS workspace. The one-shot session marker
+      // prevents fresh-preview startup from clearing that state if the reload drops resume=1.
       entry.value.activeExam = PRIMARY_EXAM;
       localStorage.setItem(entry.key, JSON.stringify(entry.value));
+      try { sessionStorage.setItem('calisma-rotasi:kpss-legacy-resume:v1', '1'); } catch {}
       location.reload();
     } catch {
       legacyMigrating = false;

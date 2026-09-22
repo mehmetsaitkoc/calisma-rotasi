@@ -83,6 +83,9 @@ async function fillKpssStep(page) {
   const form = page.locator('#setup-wizard-form');
   await form.waitFor({ state: 'visible' });
 
+  const name = form.locator('[name="name"]');
+  if (await name.count()) await name.fill('KPSS E2E Öğrenci');
+
   const score85 = form.locator('[name="targetScore"][value="85"]');
   if (await score85.count()) await score85.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 

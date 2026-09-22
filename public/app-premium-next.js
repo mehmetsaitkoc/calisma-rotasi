@@ -40,6 +40,12 @@
     const cached = String(header?.dataset?.pnxStudentName || '').trim();
     if (cached) return cached;
 
+    const explicit = String(header?.dataset?.studentName || '').trim();
+    if (explicit) {
+      if (header) header.dataset.pnxStudentName = explicit;
+      return explicit;
+    }
+
     const current = text(header?.querySelector('h1'));
     const match = current.match(/^([^,]+),/);
     let name = (match?.[1] || '').trim();
@@ -107,8 +113,9 @@
       topbar.append(profile);
     }
     const name = firstName(header);
+    const initials = name.split(/\s+/).filter(Boolean).slice(0,2).map((part) => part[0]).join('').toLocaleUpperCase('tr-TR') || 'R';
     profile.innerHTML =
-      '<span class="pnx-profile-avatar">' + (name.slice(0,2).toLocaleUpperCase('tr-TR') || 'R') + '</span>' +
+      '<span class="pnx-profile-avatar">' + initials + '</span>' +
       '<span class="pnx-profile-copy"><strong>' + name + '</strong><small>Öğrenci</small></span>' +
       '<span class="pnx-profile-chevron" aria-hidden="true">⌄</span>';
     topbar.dataset.pnxReference = '3';
@@ -136,7 +143,7 @@
       '<div class="pnx3-hand-note">Hedefine<br>biraz daha yakınsın,<br>sadece devam et.</div>' +
       '<div class="pnx-date-card"><span class="pnx-date-icon" aria-hidden="true"></span><div><strong>' +
         date.date +
-      '</strong><small>' + date.weekday + '</small></div><span class="pnx-date-arrows" aria-hidden="true">‹ &nbsp; ›</span></div>' +
+      '</strong><small>' + date.weekday + '</small></div><span class="pnx-date-arrows" aria-hidden="true"><i>‹</i><i>›</i></span></div>' +
       '<blockquote>“Büyük hedefler,<br>küçük ama istikrarlı adımlarla gerçekleşir.”</blockquote>';
   }
 
@@ -190,19 +197,59 @@
     return text(root.querySelector('.route-task .route-task-reason')) || text(fallback?.querySelector('p')) || '';
   }
 
-  function stabilizeFocusViewport(anchorTop, frames = 22) {
+  function stabilizeFocusViewport(anchorTop, frames = 24) {
     if (!Number.isFinite(anchorTop)) return;
     document.body.classList.add('pnx3-timer-switching');
+
     let frame = 0;
+    let queuedRestore = false;
+    let finished = false;
+
+    const visibleFocus = () => {
+      const nodes = Array.from(document.querySelectorAll('.pnx3-focus'));
+      return nodes.find((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+      }) || nodes[0] || null;
+    };
+
+    const restore = () => {
+      const focus = visibleFocus();
+      if (!focus) return;
+      const delta = focus.getBoundingClientRect().top - anchorTop;
+      if (Math.abs(delta) > 0.5) window.scrollBy(0, delta);
+    };
+
+    const restoreAfterMutation = () => {
+      if (queuedRestore || finished) return;
+      queuedRestore = true;
+      queueMicrotask(() => {
+        queuedRestore = false;
+        restore();
+      });
+    };
+
+    const observer = new MutationObserver(restoreAfterMutation);
+    const observedRoot = document.querySelector('#app') || document.body;
+    if (observedRoot) observer.observe(observedRoot, { childList:true, subtree:true });
+
+    // Correct both synchronously and after each compositor mutation so the
+    // preview -> live timer handoff never paints at a different vertical Y.
+    restore();
     const keep = () => {
-      const focus = document.querySelector('.pnx3-focus');
-      if (focus) {
-        const delta = focus.getBoundingClientRect().top - anchorTop;
-        if (Math.abs(delta) > 0.5) window.scrollBy(0, delta);
-      }
+      restore();
       frame += 1;
-      if (frame < frames) requestAnimationFrame(keep);
-      else document.body.classList.remove('pnx3-timer-switching');
+      if (frame < frames) {
+        requestAnimationFrame(keep);
+        return;
+      }
+      requestAnimationFrame(() => {
+        restore();
+        finished = true;
+        observer.disconnect();
+        document.body.classList.remove('pnx3-timer-switching');
+      });
     };
     requestAnimationFrame(keep);
   }
@@ -339,7 +386,10 @@
       attempt += 1;
       if (attempt < 24) requestAnimationFrame(startRealTimerWhenReady);
     };
-    requestAnimationFrame(startRealTimerWhenReady);
+    // The core focus-session render is synchronous, so attempt the handoff immediately.
+    // If the timer control is not mounted yet, the helper continues retrying on animation frames.
+    // This removes the one-frame race where a user (or E2E) could see the live card still on “Başlat”.
+    startRealTimerWhenReady();
   }
 
   function ensureFocusHero(root, hero, reason) {

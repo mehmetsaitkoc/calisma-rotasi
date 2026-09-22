@@ -89,8 +89,9 @@ async function assertTodayContract(page) {
 
   const greeting = ((await page.locator('.pnx3-greeting').textContent()) || '').trim();
   const profileName = ((await page.locator('.pnx-profile-copy strong').textContent()) || '').trim();
-  assert.ok(greeting && !/GÜNAYDIN\s+BUGÜN/i.test(greeting), 'Dashboard greeting must keep the real student identity');
-  assert.ok(profileName && profileName.toLocaleLowerCase('tr-TR') !== 'bugün', 'Topbar profile must keep the real student identity');
+  assert.equal(greeting, 'Günaydın E2E Öğrenci,', 'Dashboard greeting must use the name captured in KPSS onboarding');
+  assert.equal(profileName, 'E2E Öğrenci', 'Topbar profile must use the name captured in KPSS onboarding');
+  assert.equal(await page.locator('.route-v1-head').getAttribute('data-student-name'), 'E2E Öğrenci', 'Today must expose explicit read-only identity evidence to the presentation layer');
 
   assert.match(
     (await page.locator('.pnx-global-search').innerText()).trim(),
@@ -134,7 +135,9 @@ async function assertTodayContract(page) {
   assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Today must not expose the retired Rota Hoca navigation');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(), 'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(), 'Today must expose the daily quote card');
-  assert.equal(await page.locator('.pnx3-insight-archive').count(), 1, 'Explainability must remain available below the dashboard');
+  const contractArchive = page.locator('.pnx3-insight-archive');
+  await contractArchive.waitFor({ state: 'attached' });
+  assert.equal(await contractArchive.count(), 1, 'Explainability must remain available below the dashboard');
   assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(), 'Today must expose the persistent day/night control');
 }
 
@@ -146,7 +149,10 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
 
-  // Stage 1 · welcome
+  // Stage 1 · welcome + identity
+  const nameInput = page.locator('#setup-wizard-form [name="name"]');
+  await nameInput.waitFor({ state: 'visible' });
+  await nameInput.fill('E2E Öğrenci');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   // Stage 2 · goals
@@ -177,6 +183,9 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   const strongTurkish = page.locator('#setup-wizard-form [name="strongSubjects"][value="k-tr"]');
   if (await strongTurkish.count()) await strongTurkish.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#setup-wizard-form button[type="submit"]').click();
+
+  assert.ok(await page.getByText('Akıllı rota açık',{exact:true}).count(),'KPSS summary must describe the active route engine');
+  assert.equal(await page.getByText('Rota Hoca aktif',{exact:true}).count(),0,'Retired Rota Hoca copy must not leak into KPSS onboarding');
 
   await page.locator('[data-action="summary-build"]').click();
   await page.locator('.route-building-card').waitFor({ state: 'visible' });
@@ -807,6 +816,7 @@ try {
 
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must preserve the Rota Hoca decision evidence');
   const insightArchive = page.locator('.pnx3-insight-archive');
+  await insightArchive.waitFor({ state: 'attached' });
   assert.equal(await insightArchive.count(), 1, 'Today must keep route explainability below the approved dashboard');
   assert.match(
     ((await insightArchive.locator('summary').textContent()) || '').trim(),
@@ -827,12 +837,12 @@ try {
 
   const beforeMode = latestTaskMode(space0, todayTask);
 
-  const startButton = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
+  const startButton = page.locator('.pnx3-focus:visible .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await startButton.waitFor({ state: 'visible' });
   assert.match((await startButton.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Preview timer must show the real planned task duration');
   await startButton.evaluate(node => node.scrollIntoView({ block: 'center', inline: 'nearest' }));
   const readFocusSlotBox = async () => {
-    const slot = page.locator('.pnx3-focus').first();
+    const slot = page.locator('.pnx3-focus:visible').first();
     await slot.waitFor({ state: 'visible' });
     return slot.evaluate(node => {
       const rect = node.getBoundingClientRect();
@@ -843,7 +853,7 @@ try {
   const scrollBeforeFocusStart = await page.evaluate(() => window.scrollY);
   await startButton.evaluate(node => node.click());
 
-  const focusCard = page.locator('.pnx3-focus .route-focus-card');
+  const focusCard = page.locator('.pnx3-focus:visible .route-focus-card').first();
   await focusCard.waitFor({ state: 'visible' });
   const focusSlotAfter = await readFocusSlotBox();
   const scrollAfterFocusStart = await page.evaluate(() => window.scrollY);

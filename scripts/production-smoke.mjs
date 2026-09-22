@@ -199,7 +199,7 @@ try {
   await page.locator('.pnx3-lower').waitFor({ state: 'visible', timeout: 20_000 });
   assert.ok(await page.locator('.pnx3-plan .route-task').count(), 'Production KPSS dashboard must render the real Today route');
   assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(), 'Production KPSS dashboard must render the real focus timer');
-  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(), 'Production KPSS dashboard must render the Rota Hoca card');
+  assert.equal(await page.locator('.pnx3-teacher-card').count(), 0, 'Production KPSS dashboard must not restore the retired Rota Hoca card');
   assert.ok(await page.locator('.pnx3-insight-archive').count(), 'Production KPSS dashboard must preserve explainability');
   assert.ok(await page.locator('.mobile-dock').isVisible(), 'Production 360px dashboard must expose the mobile navigation dock');
   const dashboardCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');

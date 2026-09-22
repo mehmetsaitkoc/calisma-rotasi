@@ -131,7 +131,7 @@ function rebalance(space,candidates,opts={}){
   const routeBacklogDailyCountLimit=r=>r?.active?1:2;
   const routeReviewWeeklyLimit=t=>Math.max(30,Math.round((t*.45)/5)*5);
   const routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5));
-  const routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{};
+  const routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},routeRefreshDecisionOutcomes=()=>{},toast=()=>{};
   const routeDecisionTraceForCandidate=(candidate,capacityOverride)=>candidate?.decisionTrace||null;
   const previousContracts=globalThis.RotaContracts;
   globalThis.RotaContracts={...(previousContracts||{}),decisionTraceEvidenceScore:(trace)=>({baseScore:Number(trace?.score)||0,evidenceScore:Number(trace?.evidenceScore)||0,finalScore:Number(trace?.finalScore??trace?.score)||0})};
@@ -141,7 +141,7 @@ function rebalance(space,candidates,opts={}){
     'routeIsReviewLike','routeIsCriticalReview','routeIsBacklog','routeHeavyLimit',
     'routeQuantitativeDailyLimit','routeReviewDailyLimit','routeBacklogDailyLimit',
     'routeBacklogDailyCountLimit','routeReviewWeeklyLimit','routeBacklogWeeklyLimit',
-    'routeRecordModeHistory','routeRecordInterventions','toast','routeDecisionTraceForCandidate',
+    'routeRecordModeHistory','routeRecordInterventions','routeRefreshDecisionOutcomes','toast','routeDecisionTraceForCandidate',
     rebalanceSrc+';return routeRebalance;'
   );
   const result=fn(
@@ -150,7 +150,7 @@ function rebalance(space,candidates,opts={}){
     routeIsReviewLike,routeIsCriticalReview,routeIsBacklog,routeHeavyLimit,
     routeQuantitativeDailyLimit,routeReviewDailyLimit,routeBacklogDailyLimit,
     routeBacklogDailyCountLimit,routeReviewWeeklyLimit,routeBacklogWeeklyLimit,
-    routeRecordModeHistory,routeRecordInterventions,toast,routeDecisionTraceForCandidate
+    routeRecordModeHistory,routeRecordInterventions,routeRefreshDecisionOutcomes,toast,routeDecisionTraceForCandidate
   )('route simulation',true);
   globalThis.RotaContracts=previousContracts;
   return result;

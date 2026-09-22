@@ -7326,3 +7326,68 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{
     background:linear-gradient(90deg,rgba(255,255,255,.52),rgba(255,255,255,.08) 68%,transparent)!important;
   }
 }
+
+
+/* V6.2 · HIGH-FIDELITY LIVE HERO
+   The old reference composite is only a tiny raster. Use the cleaner journey photo as
+   scenery and render all copy/date as live DOM so text stays crisp at every DPR. */
+@media(min-width:901px){
+  body.pnx3-dashboard-ready .route-v1-head{
+    min-height:300px!important;
+    aspect-ratio:auto!important;
+    padding:38px 360px 34px 34px!important;
+    display:flex!important;
+    align-items:center!important;
+    background:#dcecff!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head:before{
+    background:
+      linear-gradient(90deg,rgba(247,251,255,.90) 0%,rgba(247,251,255,.62) 35%,rgba(247,251,255,.10) 62%,rgba(247,251,255,.02) 100%),
+      url("/hero-journey-final.webp") 58% 50%/cover no-repeat!important;
+    filter:saturate(1.12) contrast(1.055)!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head>div:first-child{
+    position:relative!important;
+    inset:auto!important;
+    z-index:2!important;
+    max-width:720px!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head .pnx-head-art{
+    position:absolute!important;
+    z-index:3!important;
+    right:22px!important;
+    top:22px!important;
+    width:300px!important;
+    height:auto!important;
+    display:block!important;
+    opacity:1!important;
+    pointer-events:none!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head h1{
+    max-width:700px!important;
+    color:#071650!important;
+    font-size:44px!important;
+    line-height:1.02!important;
+    letter-spacing:-2px!important;
+    text-shadow:0 1px 0 rgba(255,255,255,.32)!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-greeting{color:#334b78!important}
+  body.pnx3-dashboard-ready .route-today-subline{
+    max-width:660px!important;color:#354b72!important;font-size:14px!important;
+  }
+  body.pnx3-dashboard-ready .pnx-head-art .pnx-date-card{
+    background:rgba(255,255,255,.90)!important;
+    border:1px solid rgba(218,228,242,.96)!important;
+    box-shadow:0 12px 28px rgba(24,44,78,.10)!important;
+    backdrop-filter:blur(10px)!important;
+  }
+}
+@media(max-width:900px){
+  body.pnx3-dashboard-ready .route-v1-head:before{
+    background:
+      linear-gradient(90deg,rgba(247,251,255,.90) 0%,rgba(247,251,255,.70) 40%,rgba(247,251,255,.14) 72%,rgba(247,251,255,.02) 100%),
+      url("/hero-journey-final.webp") 61% 50%/cover no-repeat!important;
+  }
+}

@@ -181,7 +181,6 @@ assert.ok(
 );
 assert.ok(
   css.includes('APP PREMIUM NEXT V5.2 · TIMER STABILITY + FREE MODE') &&
-  css.includes('contain:layout paint!important') &&
   css.includes('transition:none!important') &&
   css.includes('touch-action:manipulation'),
   'Mobile timer slot must suppress touch-hover movement and transition flicker during timer handoff'

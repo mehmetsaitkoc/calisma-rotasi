@@ -7246,3 +7246,64 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{
   }
   #toasts .toast:not(:last-child){display:none!important}
 }
+
+
+/* V6 · REFERENCE DASHBOARD FIDELITY
+   Restore the approved desktop composition; preserve all functional DOM and route behavior. */
+@media(min-width:901px){
+  body.pnx3-dashboard-ready .content{max-width:1512px!important;padding:22px 28px 64px!important}
+  body.pnx3-dashboard-ready .route-v1-head{
+    margin-bottom:14px!important;border-radius:22px!important;
+    box-shadow:0 12px 30px rgba(26,46,82,.07)!important;
+  }
+  body.pnx3-dashboard-ready .premium-signal-rail{
+    gap:12px!important;margin-bottom:14px!important;
+  }
+  body.pnx3-dashboard-ready .premium-signal{
+    min-height:82px!important;border-radius:17px!important;
+    border:1px solid #e2e8f2!important;
+    box-shadow:0 8px 22px rgba(28,45,78,.045)!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-dashboard{
+    grid-template-columns:minmax(0,1.48fr) minmax(330px,.82fr) minmax(280px,.70fr)!important;
+    gap:14px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card{
+    height:400px!important;min-height:400px!important;border-radius:18px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list{max-height:338px!important}
+  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
+    height:400px!important;min-height:400px!important;border-radius:18px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-side-stack{height:400px!important}
+}
+
+/* Mobile keeps the same visual identity without replacing the photographic hero
+   with the old pale illustration. */
+@media(max-width:900px){
+  body.pnx3-dashboard-ready .route-v1-head{
+    min-height:260px!important;
+    padding:20px 18px 18px!important;
+    background:#dfeeff!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head:before{
+    background:
+      linear-gradient(90deg,rgba(247,251,255,.97) 0%,rgba(247,251,255,.88) 44%,rgba(247,251,255,.30) 72%,rgba(247,251,255,.08) 100%),
+      url("/hero-reference-composite.webp") 57% 50%/cover no-repeat!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head:after{
+    background:linear-gradient(90deg,rgba(255,255,255,.72),rgba(255,255,255,.18) 70%,transparent)!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head h1{
+    max-width:88%!important;font-size:clamp(27px,7.2vw,34px)!important;
+  }
+  body.pnx3-dashboard-ready .route-today-subline{max-width:82%!important}
+  body.pnx3-dashboard-ready .pnx-head-art{margin-top:14px!important}
+}
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .route-v1-head{min-height:248px!important}
+  body.pnx3-dashboard-ready .premium-signal-rail{margin-top:0!important}
+  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
+    height:300px!important;min-height:300px!important;
+  }
+}

@@ -6525,11 +6525,6 @@ body.pnx3-dashboard-ready .pnx3-focus-tabs button{
 }
 
 @media(max-width:650px){
-  body.pnx3-dashboard-ready .pnx3-focus{
-    width:100%!important;
-    max-width:100%!important;
-    contain:layout paint!important;
-  }
   body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero,
   body.pnx3-dashboard-ready .pnx3-live-timer-card{
     transition:none!important;

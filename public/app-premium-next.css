@@ -6078,6 +6078,25 @@ body.pnx3-dashboard-ready .pnx3-focus{
   overflow:hidden!important;
   border-radius:18px!important;
 }
+/* During a core render the real timer is born inside route-command-grid.
+   Keep that transient node out of layout until the dashboard portal moves it
+   into .pnx3-focus, otherwise the whole dashboard visibly jumps. */
+body.pnx3-dashboard-ready .route-command-grid > .route-focus-card{
+  position:absolute!important;
+  inset:auto!important;
+  width:1px!important;
+  height:1px!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.pnx3-dashboard-ready .pnx3-focus > .route-focus-card{
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
 body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
   position:absolute!important;
   inset:0!important;

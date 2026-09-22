@@ -75,6 +75,27 @@ assert.ok(masteryDerived.reasonCodes.includes('POSITIVE_TREND'));
 const complianceOnly=C.decisionTraceFromSignals({mode:'repair',behavior:{lowCompliance:true}});
 assert.notEqual(complianceOnly.mode,'repair','Low compliance alone must not fabricate academic repair');
 
+const rankedRisk=C.decisionTraceFromSignals({
+  mode:'repair',score:50,confidence:90,
+  assessment:{risk:true},mistakes:{open:2,repeated:2},review:{due3:true}
+});
+const rankedRoutine=C.decisionTraceFromSignals({
+  mode:'steady',score:50,confidence:90,profilePriority:true
+});
+const riskScore=C.decisionTraceEvidenceScore(rankedRisk);
+const routineScore=C.decisionTraceEvidenceScore(rankedRoutine);
+assert.ok(riskScore.finalScore>routineScore.finalScore,'Real repair evidence must outrank equal base priority');
+assert.equal(riskScore.baseScore,50);
+assert.ok(riskScore.evidenceScore>0);
+const comparison=C.compareDecisionTraces(rankedRisk,rankedRoutine);
+assert.equal(comparison.preferred,'left');
+assert.ok(comparison.delta>0);
+assert.ok(comparison.leftAdvantages.includes('ASSESSMENT_RISK'));
+const masteryRank=C.decisionTraceEvidenceScore(C.decisionTraceFromSignals({
+  mode:'progress',score:50,confidence:90,mastery:{verified:true,samples:3},trend:{direction:'up',samples:3}
+}));
+assert.ok(masteryRank.finalScore<50,'Strong mastery/progress evidence must reduce repair-style urgency instead of inflating it');
+
 
 
 const envelope=C.teacherContextEnvelope({

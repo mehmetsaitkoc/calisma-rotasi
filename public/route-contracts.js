@@ -149,6 +149,53 @@ function decisionTraceFromSignals(raw={}){
   const confidence=Number.isFinite(baseConfidence)?baseConfidence:Math.min(92,Math.max(20,35+meaningful.length*12+(codes.includes('MASTERY_EVIDENCE')?8:0)));
   return decisionTrace({version:1,mode,confidence,score:Number(raw.score)||0,reasonCodes:codes,evidence,capacity});
 }
+const TRACE_SCORE_WEIGHTS=Object.freeze({
+  ASSESSMENT_RISK:18,
+  OPEN_MISTAKE:16,
+  REPEATED_MISTAKE:14,
+  REVIEW_DUE_3:8,
+  REVIEW_DUE_7:10,
+  RETENTION_STALE:6,
+  BELOW_PERSONAL_NORM:10,
+  NEGATIVE_TREND:12,
+  POSITIVE_TREND:-6,
+  TARGET_URGENCY:12,
+  PROFILE_PRIORITY:5,
+  LOW_COMPLIANCE:-5,
+  RECOVERY_ACTIVE:-4,
+  CAPACITY_CONSTRAINED:0,
+  MASTERY_EVIDENCE:-8,
+  LOW_EVIDENCE:-7
+});
+function decisionTraceEvidenceScore(raw={}){
+  const trace=decisionTrace(raw);
+  const base=Math.max(0,Number(trace.score)||0);
+  const evidenceDelta=trace.reasonCodes.reduce((sum,code)=>sum+(TRACE_SCORE_WEIGHTS[code]||0),0);
+  const confidenceFactor=.55+(.45*(trace.confidence/100));
+  const evidenceScore=Math.round(evidenceDelta*confidenceFactor);
+  const finalScore=Math.max(0,Math.min(200,Math.round(base+evidenceScore)));
+  return Object.freeze({
+    baseScore:base,
+    evidenceScore,
+    finalScore,
+    confidence:trace.confidence,
+    reasonCodes:trace.reasonCodes.slice()
+  });
+}
+function compareDecisionTraces(a,b){
+  const left=decisionTraceEvidenceScore(a),right=decisionTraceEvidenceScore(b);
+  const delta=left.finalScore-right.finalScore;
+  const leftOnly=left.reasonCodes.filter(code=>!right.reasonCodes.includes(code));
+  const rightOnly=right.reasonCodes.filter(code=>!left.reasonCodes.includes(code));
+  return Object.freeze({
+    delta,
+    preferred:delta>0?'left':delta<0?'right':'tie',
+    left,
+    right,
+    leftAdvantages:leftOnly,
+    rightAdvantages:rightOnly
+  });
+}
 function traceExplanation(raw,fallback=''){
   const trace=decisionTrace(raw),parts=trace.reasonCodes.slice(0,3).map(code=>TRACE_REASON_COPY[code]).filter(Boolean);
   if(parts.length)return studentText(parts.join(' '),500);
@@ -300,6 +347,9 @@ root.RotaContracts={
   normalizeReasonCodes,
   decisionTrace,
   decisionTraceFromSignals,
+  TRACE_SCORE_WEIGHTS,
+  decisionTraceEvidenceScore,
+  compareDecisionTraces,
   traceExplanation,
   studentText,
   modeCopy,

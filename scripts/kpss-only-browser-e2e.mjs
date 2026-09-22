@@ -53,9 +53,10 @@ async function gotoLegacyResume(page, url) {
         };
       });
       if (lastStatus.activeExam === 'kpss' && lastStatus.hasShell) return;
-      // If the migration reload was aborted back to the fresh landing URL, resume
-      // from the already-migrated local state once instead of waiting on an empty shell.
-      if (lastStatus.readyState === 'complete' && !lastStatus.hasShell && /[?&]fresh=1(?:&|$)/.test(new URL(lastStatus.href).search) && !/[?&]resume=1(?:&|$)/.test(new URL(lastStatus.href).search)) {
+      // The migration may finish in storage while Chromium remains on a fully loaded
+      // landing document (including the original resume URL). Once KPSS is persisted,
+      // perform one explicit resume navigation to mount the configured shell.
+      if (lastStatus.activeExam === 'kpss' && lastStatus.readyState === 'complete' && !lastStatus.hasShell) {
         try { await page.goto(url, { waitUntil: 'domcontentloaded' }); navigationError = null; } catch (error) { if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error; }
       }
     } catch {}

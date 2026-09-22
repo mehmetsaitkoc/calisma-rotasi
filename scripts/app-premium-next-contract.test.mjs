@@ -140,6 +140,14 @@ assert.ok(
   'V5 must keep preview and live Pomodoro in one fixed dashboard footprint'
 );
 assert.ok(
+  css.includes('APP PREMIUM NEXT V5.4 · EXACT REFERENCE HERO') &&
+  css.includes('hero-reference-composite.webp') &&
+  css.includes('kpss-hero-mountain.svg') &&
+  js.includes('pnx3-title-break') &&
+  js.includes("greeting.textContent = 'Günaydın ' + name + ','"),
+  'V5.4 must use the supplied reference on desktop while keeping a live responsive mobile hero'
+);
+assert.ok(
   html.includes("plan:JSON.parse(JSON.stringify(space.plan||[]))") &&
   js.includes('Array.isArray(space?.plan)') &&
   js.includes('Bu Hafta Öne Çıkan Konular'),

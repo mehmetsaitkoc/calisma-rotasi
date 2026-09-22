@@ -59,11 +59,14 @@ async function gotoLegacyResume(page, url) {
       // without relying on a fragile navigation race.
       if (lastStatus.readyState === 'complete' && !lastStatus.hasShell && /[?&]fresh=1(?:&|$)/.test(new URL(lastStatus.href).search)) {
         await page.evaluate(() => {
-          const key='calisma-rotasi:all:v5:fresh-preview';
-          try {
-            const value=JSON.parse(localStorage.getItem(key)||'{}');
-            if(value?.workspaces?.kpss?.configured){value.activeExam='kpss';localStorage.setItem(key,JSON.stringify(value));}
-          } catch {}
+          const preferred='calisma-rotasi:all:v5:fresh-preview';
+          const keys=[preferred,...Object.keys(localStorage).filter(key=>key!==preferred)];
+          for(const key of keys){
+            try {
+              const value=JSON.parse(localStorage.getItem(key)||'{}');
+              if(value?.workspaces?.kpss?.configured){value.activeExam='kpss';localStorage.setItem(key,JSON.stringify(value));if(key!==preferred)localStorage.setItem(preferred,JSON.stringify(value));break;}
+            } catch {}
+          }
         });
         try { await page.goto(url, { waitUntil: 'domcontentloaded' }); navigationError = null; } catch (error) { if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error; }
       }

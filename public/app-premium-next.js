@@ -346,7 +346,10 @@
       attempt += 1;
       if (attempt < 24) requestAnimationFrame(startRealTimerWhenReady);
     };
-    requestAnimationFrame(startRealTimerWhenReady);
+    // The core focus-session render is synchronous, so attempt the handoff immediately.
+    // If the timer control is not mounted yet, the helper continues retrying on animation frames.
+    // This removes the one-frame race where a user (or E2E) could see the live card still on “Başlat”.
+    startRealTimerWhenReady();
   }
 
   function ensureFocusHero(root, hero, reason) {

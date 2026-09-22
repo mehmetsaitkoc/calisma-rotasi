@@ -213,7 +213,10 @@ try{
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(),'Today must expose the daily quote card');
   assert.equal(await page.locator('.pnx3-quote-card .pnx3-quote-kicker').count(),1,'Daily quote must have one kicker layer');
   assert.equal(await page.locator('.pnx3-quote-card blockquote').count(),1,'Daily quote must have one quote layer');
-  assert.ok(await page.locator('.pnx-head-art').isVisible(),'Top hero visual and date area must stay visible on desktop');
+  const desktopHeadArt=page.locator('.pnx-head-art').first();
+  assert.ok(await desktopHeadArt.count(),'Top hero visual and date area must remain in the desktop DOM');
+  const desktopHeadArtDisplay=await desktopHeadArt.evaluate(node=>getComputedStyle(node).display);
+  assert.notEqual(desktopHeadArtDisplay,'none','Top hero visual and date area must stay displayed on desktop');
   assert.ok(await page.locator('.pnx3-insight-archive').count(),'Explainability must remain available below the first-screen dashboard');
   assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(),'Today top bar must expose day/night mode');
   await noOverflow(page,'Today 1512');

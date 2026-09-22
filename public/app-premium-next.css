@@ -6867,8 +6867,9 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task:has(> .check-btn):not(:has
     align-items:center!important;
     width:100%!important;
     height:auto!important;
-    min-height:194px!important;
-    aspect-ratio:auto!important;
+    min-height:270px!important;
+    aspect-ratio:1507/383!important;
+    box-sizing:border-box!important;
     margin:0 0 12px!important;
     padding:24px clamp(330px,34vw,470px) 22px 24px!important;
     overflow:hidden!important;

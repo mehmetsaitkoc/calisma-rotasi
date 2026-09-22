@@ -7021,207 +7021,289 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task:has(> .check-btn):not(:has
 }
 
 
-/* APP PREMIUM NEXT V5.6 · PHOTO HERO RECOVERY */
-/* Restore the approved photographic mountain composition. The bitmap supplies only the
-   photographic scene/right-side reference details; the important left copy remains live DOM
-   so it stays crisp instead of being baked into a soft screenshot. */
-@media(min-width:901px){
-  body.pnx3-dashboard-ready .route-v1-head{
-    position:relative!important;
-    isolation:isolate!important;
-    display:flex!important;
-    align-items:center!important;
-    width:100%!important;
-    min-height:270px!important;
-    aspect-ratio:1507/383!important;
-    margin:0 0 12px!important;
-    padding:24px clamp(330px,34vw,470px) 22px 24px!important;
-    overflow:hidden!important;
-    border:0!important;
-    border-radius:24px!important;
-    background:#eef5ff!important;
-    box-shadow:0 14px 34px rgba(35,58,98,.08)!important;
-  }
-  body.pnx3-dashboard-ready .route-v1-head:before{
-    content:""!important;
-    display:block!important;
-    position:absolute!important;
-    z-index:0!important;
-    inset:0!important;
-    opacity:1!important;
-    border-radius:24px!important;
-    background:url("/hero-reference-composite.webp") 50% 50%/100% 100% no-repeat!important;
-    filter:saturate(1.22) contrast(1.08) brightness(1.035)!important;
-    -webkit-filter:saturate(1.22) contrast(1.08) brightness(1.035)!important;
-    -webkit-mask-image:none!important;
-    mask-image:none!important;
-    image-rendering:auto!important;
-    pointer-events:none!important;
-  }
-  /* Mask the old baked-in left copy from the reference bitmap. This keeps the real
-     photographic mountains/person while the live HTML text above remains genuinely sharp. */
-  body.pnx3-dashboard-ready .route-v1-head:after{
-    content:""!important;
-    display:block!important;
-    position:absolute!important;
-    z-index:1!important;
-    left:0!important;
-    top:0!important;
-    width:61%!important;
-    height:82%!important;
-    border-radius:24px 0 34px 0!important;
-    background:linear-gradient(90deg,
-      rgba(249,252,255,.995) 0%,
-      rgba(249,252,255,.985) 50%,
-      rgba(249,252,255,.90) 69%,
-      rgba(249,252,255,.48) 84%,
-      rgba(249,252,255,0) 100%)!important;
-    pointer-events:none!important;
-  }
-  body.pnx3-dashboard-ready .route-v1-head>div:first-child{
-    position:relative!important;
-    inset:auto!important;
-    z-index:2!important;
-    width:auto!important;
-    max-width:585px!important;
-    opacity:1!important;
-    pointer-events:auto!important;
-  }
-  body.pnx3-dashboard-ready .pnx3-greeting{
-    margin:0 0 6px!important;
-    color:#35496f!important;
-    font-size:15px!important;
-    font-weight:560!important;
-    line-height:1.2!important;
-    letter-spacing:-.2px!important;
-    text-transform:none!important;
-    text-shadow:none!important;
-  }
-  body.pnx3-dashboard-ready .route-v1-head h1{
-    max-width:560px!important;
-    margin:0 0 10px!important;
-    color:#071540!important;
-    font-size:clamp(34px,2.95vw,42px)!important;
-    font-weight:900!important;
-    line-height:1.01!important;
-    letter-spacing:-2px!important;
-    text-shadow:none!important;
-    -webkit-font-smoothing:antialiased!important;
-    text-rendering:geometricPrecision!important;
-  }
-  body.pnx3-dashboard-ready .route-v1-head h1 .pnx3-title-break{
-    position:relative!important;
-    display:inline-block!important;
-  }
-  body.pnx3-dashboard-ready .route-v1-head h1 .pnx3-title-break:after{
-    content:""!important;
-    position:absolute!important;
-    left:2px!important;
-    right:2px!important;
-    bottom:-8px!important;
-    height:7px!important;
-    border-radius:999px!important;
-    background:#2378ef!important;
-    clip-path:polygon(0 58%,100% 0,100% 25%,2% 100%)!important;
-    transform:rotate(-4deg)!important;
-  }
-  body.pnx3-dashboard-ready .route-today-subline{
-    max-width:570px!important;
-    color:#405276!important;
-    font-size:12.5px!important;
-    font-weight:540!important;
-    line-height:1.45!important;
-    text-shadow:none!important;
-    -webkit-font-smoothing:antialiased!important;
-  }
-  /* The photographic reference already contains the handwritten note/date block.
-     Hiding the duplicate live art prevents a doubled/ghosted right side. */
-  body.pnx3-dashboard-ready .route-v1-head .pnx-head-art{
-    opacity:0!important;
-    visibility:hidden!important;
-    pointer-events:none!important;
-  }
-}
+/* APP PREMIUM NEXT V7 · APPROVED REFERENCE REBUILD
+   Source of truth: the user-approved desktop composition.
+   Presentation only: route engine, task completion, Pomodoro logic and persistence remain untouched. */
 
-
-/* APP PREMIUM NEXT V5.5 · PREMIUM VISUAL POLISH
-   Conservative presentation-only refinement. No route, timer, persistence or interaction behavior changes. */
 body.pnx3-dashboard-ready{
-  --pnx-card-border:#e2e8f2;
-  --pnx-card-shadow:0 12px 30px rgba(28,45,78,.055);
+  --ref-navy:#08152b;
+  --ref-blue:#1f67ff;
+  --ref-ink:#0a1742;
+  --ref-muted:#60708d;
+  --ref-line:#e1e8f2;
+  --ref-card:#ffffff;
+  --ref-shadow:0 10px 28px rgba(31,52,92,.055);
 }
+body.pnx3-dashboard-ready .content{
+  max-width:1512px!important;
+}
+
+/* Hero — real photo + live HTML copy. No baked text, no blur. */
+body.pnx3-dashboard-ready .route-v1-head{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  border:1px solid #dfe8f3!important;
+  background:#dceafb!important;
+  box-shadow:0 14px 32px rgba(30,53,92,.075)!important;
+}
+body.pnx3-dashboard-ready .route-v1-head:before{
+  content:""!important;
+  position:absolute!important;
+  z-index:0!important;
+  inset:0!important;
+  display:block!important;
+  background:url("https://images.pexels.com/photos/9803048/pexels-photo-9803048.jpeg?auto=compress&cs=tinysrgb&w=1920") 60% 43%/cover no-repeat!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  opacity:1!important;
+  pointer-events:none!important;
+}
+body.pnx3-dashboard-ready .route-v1-head:after{
+  content:""!important;
+  position:absolute!important;
+  z-index:1!important;
+  inset:0!important;
+  display:block!important;
+  background:linear-gradient(90deg,
+    rgba(247,251,255,.91) 0%,
+    rgba(247,251,255,.82) 28%,
+    rgba(247,251,255,.38) 43%,
+    rgba(247,251,255,.08) 58%,
+    rgba(247,251,255,0) 72%)!important;
+  pointer-events:none!important;
+}
+body.pnx3-dashboard-ready .route-v1-head>div:first-child{
+  position:relative!important;
+  z-index:2!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+body.pnx3-dashboard-ready .pnx3-greeting{
+  color:#334970!important;
+  font-weight:560!important;
+  text-transform:none!important;
+}
+body.pnx3-dashboard-ready .route-v1-head h1{
+  color:#071540!important;
+  font-weight:900!important;
+  line-height:1.01!important;
+  text-shadow:none!important;
+  -webkit-font-smoothing:antialiased!important;
+  text-rendering:geometricPrecision!important;
+}
+body.pnx3-dashboard-ready .route-today-subline{
+  color:#3d5175!important;
+  font-weight:520!important;
+  text-shadow:none!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art{
+  z-index:3!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:none!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art .pnx3-hand-note{
+  display:block!important;
+  color:#17366e!important;
+  font-weight:850!important;
+  line-height:1.14!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.8)!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art .pnx-date-card{
+  display:flex!important;
+  border:1px solid rgba(214,225,240,.95)!important;
+  background:rgba(255,255,255,.92)!important;
+  box-shadow:0 10px 24px rgba(27,48,84,.09)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body.pnx3-dashboard-ready .pnx-head-art blockquote{
+  display:block!important;
+  color:#314a78!important;
+  font-weight:650!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.75)!important;
+}
+
+/* Reference card rhythm */
+body.pnx3-dashboard-ready .premium-signal,
 body.pnx3-dashboard-ready .pnx3-plan-card,
 body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero,
 body.pnx3-dashboard-ready .pnx3-side-stack>section,
 body.pnx3-dashboard-ready .pnx3-lower>section{
-  border-color:var(--pnx-card-border)!important;
-  box-shadow:var(--pnx-card-shadow)!important;
+  border-color:var(--ref-line)!important;
+  box-shadow:var(--ref-shadow)!important;
 }
-body.pnx3-dashboard-ready .pnx3-dashboard,
-body.pnx3-dashboard-ready .pnx3-lower{
-  gap:12px!important;
-}
-body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head h2{
-  font-weight:820!important;
-  letter-spacing:-.55px!important;
-}
-body.pnx3-dashboard-ready .pnx3-plan-card .route-task strong{
-  color:#182242!important;
-  letter-spacing:-.12px!important;
-}
-body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{
-  color:#7b89a5!important;
-}
+body.pnx3-dashboard-ready .pnx3-plan-card .route-task strong{color:#182342!important}
+body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{color:#7685a0!important}
 
-@media(max-width:650px){
-  body.pnx3-dashboard-ready .content{
-    padding-left:14px!important;
-    padding-right:14px!important;
+@media(min-width:901px){
+  body.pnx3-dashboard-ready .content{padding:22px 28px 64px!important}
+  body.pnx3-dashboard-ready .route-v1-head{
+    min-height:270px!important;
+    height:auto!important;
+    aspect-ratio:1507/383!important;
+    margin:0 0 14px!important;
+    padding:36px clamp(340px,35vw,500px) 30px 30px!important;
+    border-radius:22px!important;
+    display:flex!important;
+    align-items:center!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head>div:first-child{max-width:610px!important}
+  body.pnx3-dashboard-ready .pnx3-greeting{
+    margin:0 0 7px!important;
+    font-size:16px!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head h1{
+    max-width:590px!important;
+    margin:0 0 11px!important;
+    font-size:clamp(36px,3vw,44px)!important;
+    letter-spacing:-2px!important;
+  }
+  body.pnx3-dashboard-ready .route-today-subline{
+    max-width:590px!important;
+    font-size:13px!important;
+    line-height:1.48!important;
+  }
+  body.pnx3-dashboard-ready .pnx-head-art{
+    position:absolute!important;
+    right:20px!important;
+    top:20px!important;
+    width:clamp(315px,31vw,430px)!important;
+    height:190px!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 184px!important;
+    grid-template-rows:1fr auto!important;
+    gap:10px 16px!important;
+    margin:0!important;
+  }
+  body.pnx3-dashboard-ready .pnx-head-art .pnx3-hand-note{
+    align-self:center!important;
+    justify-self:center!important;
+    max-width:150px!important;
+    transform:rotate(-5deg)!important;
+    font-size:17px!important;
+  }
+  body.pnx3-dashboard-ready .pnx-head-art .pnx-date-card{
+    min-height:64px!important;
+    padding:10px 11px!important;
+    border-radius:15px!important;
+  }
+  body.pnx3-dashboard-ready .pnx-head-art blockquote{
+    grid-column:2!important;
+    font-size:10px!important;
+    line-height:1.42!important;
   }
   body.pnx3-dashboard-ready .premium-signal-rail{
-    gap:8px!important;
+    gap:12px!important;
+    margin-bottom:14px!important;
   }
+  body.pnx3-dashboard-ready .premium-signal{
+    min-height:82px!important;
+    border-radius:17px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-dashboard{
+    grid-template-columns:minmax(0,1.48fr) minmax(330px,.82fr) minmax(280px,.70fr)!important;
+    gap:14px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card{
+    height:400px!important;
+    min-height:400px!important;
+    border-radius:18px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list{max-height:338px!important}
+  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
+    height:400px!important;
+    min-height:400px!important;
+    border-radius:18px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-side-stack{height:400px!important}
+}
+
+/* Mobile: same photographic identity, simplified composition. */
+@media(max-width:900px){
+  body.pnx3-dashboard-ready .route-v1-head{
+    min-height:260px!important;
+    height:auto!important;
+    aspect-ratio:auto!important;
+    margin:0 0 12px!important;
+    padding:20px 18px 18px!important;
+    border-radius:20px!important;
+    display:block!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head:before{
+    background:url("https://images.pexels.com/photos/9803048/pexels-photo-9803048.jpeg?auto=compress&cs=tinysrgb&w=1920") 64% 48%/cover no-repeat!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head:after{
+    background:linear-gradient(90deg,
+      rgba(247,251,255,.95) 0%,
+      rgba(247,251,255,.84) 40%,
+      rgba(247,251,255,.32) 67%,
+      rgba(247,251,255,.04) 100%)!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head>div:first-child{
+    max-width:100%!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-greeting{
+    margin:0 0 6px!important;
+    font-size:15px!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head h1{
+    max-width:88%!important;
+    margin:0 0 11px!important;
+    font-size:clamp(27px,7.1vw,33px)!important;
+    letter-spacing:-1.35px!important;
+    overflow-wrap:anywhere!important;
+  }
+  body.pnx3-dashboard-ready .route-today-subline{
+    max-width:82%!important;
+    font-size:11.5px!important;
+    line-height:1.45!important;
+  }
+  body.pnx3-dashboard-ready .pnx-head-art{
+    position:relative!important;
+    right:auto!important;
+    top:auto!important;
+    width:100%!important;
+    height:auto!important;
+    display:block!important;
+    margin:14px 0 0!important;
+  }
+  body.pnx3-dashboard-ready .pnx-head-art .pnx3-hand-note,
+  body.pnx3-dashboard-ready .pnx-head-art blockquote{display:none!important}
+  body.pnx3-dashboard-ready .pnx-head-art .pnx-date-card{
+    width:max-content!important;
+    max-width:100%!important;
+    min-height:48px!important;
+    margin:0!important;
+    padding:8px 9px!important;
+    border-radius:14px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list{
+    scrollbar-width:none!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list::-webkit-scrollbar{display:none!important}
+}
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .content{padding:12px 14px 104px!important}
+  body.pnx3-dashboard-ready .premium-signal-rail{gap:8px!important}
   body.pnx3-dashboard-ready .premium-signal{
     min-height:66px!important;
     padding:8px 9px!important;
     border-radius:16px!important;
   }
-  body.pnx3-dashboard-ready .premium-signal strong{
-    font-size:14px!important;
-  }
+  body.pnx3-dashboard-ready .premium-signal strong{font-size:14px!important}
   body.pnx3-dashboard-ready .pnx3-dashboard,
-  body.pnx3-dashboard-ready .pnx3-lower{
-    gap:12px!important;
-  }
+  body.pnx3-dashboard-ready .pnx3-lower{gap:12px!important}
   body.pnx3-dashboard-ready .pnx3-plan-card{
     border-radius:18px!important;
     padding:13px 13px 9px!important;
   }
-  body.pnx3-dashboard-ready .pnx3-plan-card .route-task{
-    min-height:58px!important;
-    padding:7px 5px!important;
-  }
   body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
-    min-height:268px!important;
-    height:268px!important;
+    min-height:286px!important;
+    height:286px!important;
     border-radius:18px!important;
   }
-  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero .pnx-pomodoro{
-    transform:scale(.92);
-    transform-origin:center center;
-  }
-  body.pnx3-dashboard-ready .pnx3-side-stack>section,
-  body.pnx3-dashboard-ready .pnx3-lower>section{
-    border-radius:18px!important;
-  }
-  body.pnx3-dashboard-ready .pnx3-teacher-card{
-    min-height:156px!important;
-  }
-}
-
-
-/* V5.5.1 · compact mobile notifications */
-@media(max-width:650px){
   #toasts{
     left:14px!important;
     right:14px!important;
@@ -7236,13 +7318,10 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{
     max-width:430px!important;
     margin:0 auto!important;
     padding:9px 12px!important;
-    border:1px solid rgba(255,255,255,.16)!important;
     border-radius:13px!important;
     font-size:10px!important;
     line-height:1.35!important;
     text-align:center!important;
-    box-shadow:0 10px 24px rgba(18,36,29,.16)!important;
-    white-space:normal!important;
   }
   #toasts .toast:not(:last-child){display:none!important}
 }

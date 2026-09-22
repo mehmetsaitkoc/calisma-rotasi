@@ -7307,3 +7307,22 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{
     height:300px!important;min-height:300px!important;
   }
 }
+
+
+/* V6.1 · reference hero clarity */
+@media(min-width:901px){
+  body.pnx3-dashboard-ready .route-v1-head:before{
+    filter:saturate(1.08) contrast(1.035)!important;
+  }
+}
+@media(max-width:900px){
+  body.pnx3-dashboard-ready .route-v1-head:before{
+    background:
+      linear-gradient(90deg,rgba(247,251,255,.88) 0%,rgba(247,251,255,.72) 38%,rgba(247,251,255,.18) 68%,rgba(247,251,255,.03) 100%),
+      url("/hero-reference-composite.webp") 57% 50%/cover no-repeat!important;
+    filter:saturate(1.07) contrast(1.03)!important;
+  }
+  body.pnx3-dashboard-ready .route-v1-head:after{
+    background:linear-gradient(90deg,rgba(255,255,255,.52),rgba(255,255,255,.08) 68%,transparent)!important;
+  }
+}

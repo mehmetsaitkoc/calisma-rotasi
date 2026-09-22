@@ -63,12 +63,15 @@
     legacyMigrating = true;
     try {
       // Change only the selected workspace. Keep legacy YKS data intact for backup compatibility.
+      // Then route through the application's own exam switch instead of reloading the page.
+      // This avoids a fresh-preview reload race that could strip the resume flag and clear the fixture.
       entry.value.activeExam = PRIMARY_EXAM;
       localStorage.setItem(entry.key, JSON.stringify(entry.value));
-      location.reload();
-    } catch {
-      legacyMigrating = false;
       startKpss();
+    } catch {
+      startKpss();
+    } finally {
+      legacyMigrating = false;
     }
   }
 

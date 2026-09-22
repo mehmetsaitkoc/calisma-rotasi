@@ -25,6 +25,14 @@ async function waitServer() {
   throw new Error('KPSS-only E2E server did not start.\n' + serverLog);
 }
 
+async function gotoAllowAppRedirect(page, url) {
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+  } catch (error) {
+    if (!/net::ERR_ABORTED/i.test(String(error))) throw error;
+  }
+}
+
 async function appState(page) {
   return page.evaluate(() => {
     const preferred = new URLSearchParams(location.search).get('fresh') === '1'
@@ -156,7 +164,7 @@ try {
     return { workspaceId };
   });
 
-  await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  await gotoAllowAppRedirect(page, BASE + '/?fresh=1&resume=1');
   await page.locator('.app-shell').waitFor({ state: 'visible' });
   snapshot = await appState(page);
   assert.equal(snapshot.value.activeExam, 'kpss', 'Legacy active YKS state must redirect to KPSS');

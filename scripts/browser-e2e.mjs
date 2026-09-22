@@ -830,9 +830,10 @@ try {
   const startButton = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await startButton.waitFor({ state: 'visible' });
   assert.match((await startButton.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Preview timer must show the real planned task duration');
+  await startButton.evaluate(node => node.scrollIntoView({ block: 'center', inline: 'nearest' }));
   const focusSlotBefore = await page.locator('.pnx3-focus').boundingBox();
   const scrollBeforeFocusStart = await page.evaluate(() => window.scrollY);
-  await startButton.click();
+  await startButton.evaluate(node => node.click());
 
   const focusCard = page.locator('.pnx3-focus .route-focus-card');
   await focusCard.waitFor({ state: 'visible' });
@@ -847,7 +848,6 @@ try {
     documentYBefore: focusSlotBefore.y + scrollBeforeFocusStart,
     documentYAfter: focusSlotAfter.y + scrollAfterFocusStart
   };
-  console.log('pomodoro-focus-geometry', JSON.stringify(focusStartGeometry));
   assert.ok(
     Math.abs(focusSlotBefore.y - focusSlotAfter.y) <= 2,
     'Pomodoro start must not move the focus card vertically: ' + JSON.stringify(focusStartGeometry)

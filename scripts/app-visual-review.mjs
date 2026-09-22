@@ -55,7 +55,8 @@ async function assertReferenceHero(page,label,{mobile=false}={}){
   if(mobile){
     assert.ok(geometry.hero.height<=330,label+': mobile hero must stay compact');
     assert.ok(geometry.titleScroll<=geometry.titleClient+2,label+': mobile hero title must not overflow');
-    assert.ok(geometry.beforeBackground.includes('kpss-hero-mountain.svg'),label+': mobile hero must use the responsive mountain artwork');
+    assert.ok(geometry.beforeBackground.includes('hero-reference-composite.webp'),label+': mobile hero must preserve the approved photographic mountain composition');
+    assert.ok(!geometry.beforeFilter.includes('blur('),label+': mobile hero must not use CSS blur');
     assert.ok(geometry.date&&geometry.dateDisplay!=='none',label+': mobile date card must remain visible');
     assert.ok(geometry.date.left>=geometry.hero.left-1&&geometry.date.right<=geometry.hero.right+1,label+': mobile date card must stay inside hero');
   }else{

@@ -9,6 +9,8 @@
   const text = (node) => (node?.textContent || '').trim();
   const unique = (values) => [...new Set(values.filter(Boolean))];
 
+  let selectedTimerMode = 'pomodoro';
+
   const freeTimerState = {
     elapsedMs: 0,
     startedAt: 0,
@@ -107,12 +109,14 @@
 
   function enterFreeTimer(hero) {
     if (!hero) return;
+    selectedTimerMode = 'free';
     hero.dataset.pnxTimerMode = 'free';
     startFreeTimer(hero);
   }
 
   function leaveFreeTimer(hero, minutes, mode = 'pomodoro') {
     if (freeTimerState.hero === hero) pauseFreeTimer(hero);
+    selectedTimerMode = mode;
     hero.dataset.pnxTimerMode = mode;
     const nodes = freeTimerNodes(hero);
     setTextNode(nodes.value, Math.max(1, Number(minutes) || 40) + ':00');
@@ -388,7 +392,11 @@
     const meta = text(grow.querySelector('p'));
     const minutes = Math.max(1, Number(meta.match(/(\d+)\s*dk/i)?.[1] || 40));
     hero.dataset.pnxPlannedMinutes = String(minutes);
-    if (!hero.dataset.pnxTimerMode) hero.dataset.pnxTimerMode = 'pomodoro';
+    if (!hero.dataset.pnxTimerMode) hero.dataset.pnxTimerMode = selectedTimerMode;
+    if (hero.dataset.pnxTimerMode === 'free' && freeTimerState.hero && freeTimerState.hero !== hero) {
+      freeTimerState.hero = hero;
+      freeTimerState.lastSecond = -1;
+    }
 
     if (!hero.querySelector('.pnx-pomodoro')) {
       const timer = document.createElement('div');

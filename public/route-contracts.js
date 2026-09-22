@@ -78,6 +78,47 @@ const SOURCE_REASON=Object.freeze({
   checkpoint:'Haftalık ilerlemeyi kontrol etmek için kısa bir doğrulama görevi.'
 });
 
+const TRACE_REASON_COPY=Object.freeze({
+  ASSESSMENT_RISK:'Son ölçümlerde bu konuda risk görünüyor.',
+  OPEN_MISTAKE:'Bu konuda kapanmamış bir yanlışın var.',
+  REPEATED_MISTAKE:'Aynı konu veya hata tipi tekrar ediyor.',
+  REVIEW_DUE_3:'3 günlük tekrar zamanı geldi.',
+  REVIEW_DUE_7:'7 günlük tekrar zamanı geldi.',
+  RETENTION_STALE:'Bu konudaki güvenilir kanıtın eskidi; kısa bir hatırlama kontrolü yararlı.',
+  BELOW_PERSONAL_NORM:'Son performansın kendi yakın dönem normalinin altında.',
+  NEGATIVE_TREND:'Son güvenilir veriler düşüş eğilimi gösteriyor.',
+  POSITIVE_TREND:'Son güvenilir veriler istikrarlı gelişim gösteriyor.',
+  TARGET_URGENCY:'Sınava kalan süre bu konunun önceliğini artırıyor.',
+  PROFILE_PRIORITY:'Bu dersi öncelikli seçtiğin için planda öne çıktı.',
+  LOW_COMPLIANCE:'Son görevlerde tamamlama oranı düşük; yük uygulanabilir tutuluyor.',
+  RECOVERY_ACTIVE:'Toparlanma döneminde olduğun için yük kontrollü tutuluyor.',
+  CAPACITY_CONSTRAINED:'Günlük kapasiteni aşmamak için çalışma süresi sınırlandı.',
+  MASTERY_EVIDENCE:'Birden fazla güvenilir kanıt bu konuda ilerlemeyi destekliyor.',
+  LOW_EVIDENCE:'Keskin karar için henüz yeterli gerçek veri yok.'
+});
+function normalizeReasonCodes(codes){
+  const seen=new Set(),out=[];
+  for(const raw of Array.isArray(codes)?codes:[]){
+    const code=collapse(raw,60).toUpperCase();
+    if(!TRACE_REASON_COPY[code]||seen.has(code))continue;
+    seen.add(code);out.push(code);
+  }
+  return out;
+}
+function decisionTrace(raw={}){
+  const reasonCodes=normalizeReasonCodes(raw.reasonCodes);
+  const confidence=Math.max(0,Math.min(100,Number(raw.confidence)||0));
+  const evidence=Array.isArray(raw.evidence)?raw.evidence.slice(0,8).map(x=>studentText(x,180)).filter(Boolean):[];
+  const cap=raw.capacity&&typeof raw.capacity==='object'?raw.capacity:{};
+  const requestedMinutes=Math.max(0,Number(cap.requestedMinutes)||0),assignedMinutes=Math.max(0,Number(cap.assignedMinutes)||0),dailyLimit=Math.max(0,Number(cap.dailyLimit)||0);
+  return Object.freeze({version:1,mode:normalizeMode(raw.mode),confidence,score:Number(raw.score)||0,reasonCodes,evidence,capacity:Object.freeze({requestedMinutes,assignedMinutes,dailyLimit,constrained:cap.constrained===true||requestedMinutes>assignedMinutes&&requestedMinutes>0})});
+}
+function traceExplanation(raw,fallback=''){
+  const trace=decisionTrace(raw),parts=trace.reasonCodes.slice(0,3).map(code=>TRACE_REASON_COPY[code]).filter(Boolean);
+  if(parts.length)return studentText(parts.join(' '),500);
+  return studentText(fallback,500);
+}
+
 function collapse(value,max=700){
   return String(value??'').replace(/\s+/g,' ').trim().slice(0,max);
 }
@@ -106,6 +147,8 @@ function modeCopy(mode){
   return MODE_COPY[normalizeMode(mode)]||MODE_COPY.steady;
 }
 function taskReason(task){
+  const traced=traceExplanation(task?.decisionTrace||task?.trace||{},'');
+  if(traced)return traced;
   const direct=studentText(task?.reason||'',500);
   if(direct)return direct;
   return SOURCE_REASON[task?.source]||'Bu görev, mevcut seviyen, hedefin ve son çalışma verilerin birlikte değerlendirilerek bugün planlandı.';
@@ -217,6 +260,10 @@ root.RotaContracts={
   validateEntitlement,
   MODE_COPY,
   SOURCE_REASON,
+  TRACE_REASON_COPY,
+  normalizeReasonCodes,
+  decisionTrace,
+  traceExplanation,
   studentText,
   modeCopy,
   taskReason,

@@ -324,6 +324,8 @@ try{
     'Mobile Pomodoro start must not shake the page scroll position'
   );
   await assertMobileTodayTaskGeometry('Today 390');
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.waitForTimeout(120);
   const hiddenSidebar=await page.locator('.sidebar').evaluate(el=>{
     const r=el.getBoundingClientRect();
     return {right:r.right,left:r.left,width:r.width};
@@ -335,6 +337,8 @@ try{
   await noOverflow(page,'Today 360');
   await assertReferenceHero(page,'Today 360',{mobile:true});
   await assertMobileTodayTaskGeometry('Today 360');
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.waitForTimeout(120);
   await page.screenshot({path:OUT+'/today-360.png',fullPage:false});
   await page.setViewportSize({width:390,height:844});
 

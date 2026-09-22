@@ -234,7 +234,7 @@ function learningGainOutcome(raw={}){
   });
 }
 function decisionOutcomeSummary(outcomes=[]){
-  const xs=(Array.isArray(outcomes)?outcomes:[]).map(learningGainOutcome);
+  const xs=(Array.isArray(outcomes)?outcomes:[]).map(x=>x&&x.version===1&&['helpful','neutral','harmful','insufficient','confounded'].includes(x.status)?x:learningGainOutcome(x));
   const counts={helpful:0,neutral:0,harmful:0,insufficient:0,confounded:0};
   for(const x of xs)counts[x.status]=(counts[x.status]||0)+1;
   const judged=xs.filter(x=>['helpful','neutral','harmful'].includes(x.status));

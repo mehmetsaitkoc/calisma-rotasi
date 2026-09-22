@@ -98,6 +98,31 @@ assert.ok(masteryRank.finalScore<50,'Strong mastery/progress evidence must reduc
 
 
 
+const helpfulOutcome=C.learningGainOutcome({
+  decisionId:'d1',taskId:'t1',mode:'repair',followupDays:14,samples:3,
+  before:{accuracy:.52,net:45,mastery:48,completion:.80},
+  after:{accuracy:.68,net:50,mastery:63,completion:.86},
+  evidence:['14 günlük doğrulama','3 bağımsız performans örneği']
+});
+assert.equal(helpfulOutcome.status,'helpful');
+assert.ok(helpfulOutcome.gainScore>=5);
+assert.equal(helpfulOutcome.deltas.net,5);
+const harmfulOutcome=C.learningGainOutcome({
+  decisionId:'d2',taskId:'t2',mode:'progress',followupDays:14,samples:3,
+  before:{accuracy:.82,net:70,mastery:78},after:{accuracy:.70,net:66,mastery:67}
+});
+assert.equal(harmfulOutcome.status,'harmful');
+const insufficientOutcome=C.learningGainOutcome({decisionId:'d3',followupDays:3,samples:1,before:{accuracy:.5},after:{accuracy:.9}});
+assert.equal(insufficientOutcome.status,'insufficient','Short follow-up must not be called successful');
+const confoundedOutcome=C.learningGainOutcome({decisionId:'d4',followupDays:14,samples:3,confounded:true,before:{accuracy:.5},after:{accuracy:.8}});
+assert.equal(confoundedOutcome.status,'confounded','Confounded evidence must not be credited to the decision');
+const outcomeSummary=C.decisionOutcomeSummary([helpfulOutcome,harmfulOutcome,insufficientOutcome,confoundedOutcome]);
+assert.equal(outcomeSummary.total,4);
+assert.equal(outcomeSummary.helpful,1);
+assert.equal(outcomeSummary.harmful,1);
+assert.equal(outcomeSummary.insufficient,1);
+assert.equal(outcomeSummary.confounded,1);
+
 const envelope=C.teacherContextEnvelope({
   todayPlan:[
     {subject:'Matematik',topic:'Problemler',title:'Problemler',minutes:35,targetQuestions:18,reason:'stale evidence nedeniyle bugün',mode:'repair',modeLabel:'ONARIM'}

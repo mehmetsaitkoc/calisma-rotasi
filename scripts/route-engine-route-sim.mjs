@@ -448,28 +448,26 @@ sim('R21 DecisionTrace evidence ranking',()=>{
   rebalance(space,candidates,{limit:30});
   return space;
 },space=>{
-  assert.equal(space.plan[0]?.id,'repair');
-  assert.equal(space.route.selectionAudit.selected[0].score,92);
-  const deferred=space.route.selectionAudit.deferred.find(x=>x.taskId==='routine');
-  assert.ok(deferred);
-  assert.equal(deferred.comparison.selectedTaskId,'repair');
-  assert.equal(deferred.comparison.scoreDelta,37);
-  assert.ok(deferred.comparison.selectedAdvantages.includes('OPEN_MISTAKE'));
+  const pool=space.route.selectionAudit.rankingPool;
+  assert.equal(pool[0].taskId,'repair');
+  assert.equal(pool[0].score,92);
+  assert.equal(pool[1].taskId,'routine');
+  assert.equal(pool[1].score,55);
+  assert.equal(space.plan.find(p=>p.date===TODAY)?.id,'repair','Higher evidence score must own the earliest capacity slot');
 });
 
 // R22 — audit preserves base/evidence/final score decomposition.
 sim('R22 selection audit score decomposition',()=>{
   const space=baseSpace(30);
   rebalance(space,[{id:'a',routeKey:'a',earliest:TODAY,minutes:25,subjectId:'k-tr',topicId:'t1',priority:40,source:'curriculum',methodKey:'paragraph',decisionTrace:{score:40,evidenceScore:12,finalScore:52,reasonCodes:['REVIEW_DUE_3']}}],{limit:30});
-  return space.route.selectionAudit.selected[0];
+  return space.route.selectionAudit.rankingPool[0];
 },audit=>{
   assert.equal(audit.baseScore,40);
   assert.equal(audit.evidenceScore,12);
   assert.equal(audit.score,52);
 });
 
-
-// R23 — eight competing candidates must be ordered by evidence without bypassing hard scheduler limits.
+// R23 — eight competing candidates are compared in one auditable tournament while scheduler safety remains intact.
 sim('R23 eight-candidate evidence tournament',()=>{
   const space=baseSpace(60);
   const make=(id,subjectId,score,finalScore,codes,extra={})=>({id,routeKey:id,earliest:TODAY,minutes:25,subjectId,topicId:id,priority:score,source:'curriculum',methodKey:subjectId==='k-ma'?'quant':subjectId==='k-tr'?'paragraph':subjectId==='k-ta'?'history':'geography',decisionTrace:{score,evidenceScore:finalScore-score,finalScore,reasonCodes:codes},...extra});
@@ -486,14 +484,12 @@ sim('R23 eight-candidate evidence tournament',()=>{
   rebalance(space,candidates,{limit:60});
   return space;
 },space=>{
-  const audit=space.route.selectionAudit;
-  assert.equal(audit.selected[0].taskId,'mistakes','Repeated/open mistakes should win the evidence tournament');
-  assert.ok(audit.selected.some(x=>x.taskId==='exam'),'Assessment risk should survive the first capacity window');
-  assert.ok(audit.deferred.length>=1,'Eight candidates under tight capacity must produce deferred comparisons');
-  for(const d of audit.deferred){
-    assert.ok(d.comparison&&d.comparison.selectedTaskId,'Every deferred candidate must name a selected comparator');
-    assert.ok(Number.isFinite(d.comparison.scoreDelta),'Every deferred comparison must expose a numeric score delta');
-  }
+  const audit=space.route.selectionAudit,pool=audit.rankingPool;
+  assert.equal(pool.length,8,'Audit must compare exactly the top eight candidates');
+  assert.deepEqual(pool.map(x=>x.taskId),['mistakes','exam','urgent','review7','review3','profile','low-evidence','mastered']);
+  assert.deepEqual(pool.map(x=>x.score),[104,98,96,94,91,86,76,73]);
+  assert.equal(space.plan.find(p=>p.date===TODAY)?.id,'mistakes','Tournament winner must receive the earliest available slot');
+  assert.ok(space.plan.some(p=>p.id==='exam'&&p.date===TODAY),'Second-highest compatible candidate should share the first day when capacity allows');
   for(const p of space.plan)assert.ok(p.routeRank&&Number.isFinite(p.routeRank.finalScore),'Scheduled tasks must retain ranking evidence');
 });
 

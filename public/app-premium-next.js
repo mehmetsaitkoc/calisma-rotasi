@@ -440,6 +440,12 @@
       hero.prepend(tabs);
     }
 
+    const currentTabs = hero.querySelector('.pnx3-focus-tabs');
+    const selectedMode = hero.dataset.pnxTimerMode || 'pomodoro';
+    currentTabs?.querySelectorAll('[data-pnx-timer-mode]').forEach((button) => {
+      button.classList.toggle('active', button.dataset.pnxTimerMode === selectedMode);
+    });
+
     if (hero.dataset.pnxTimerMode === 'free') renderFreeTimer(hero);
     else leaveFreeTimer(hero, minutes, hero.dataset.pnxTimerMode || 'pomodoro');
 

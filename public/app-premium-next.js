@@ -60,10 +60,11 @@
       setTextNode(nodes.value, formatFreeElapsed(elapsed));
       freeTimerState.lastSecond = second;
     }
-    if (nodes.icon) nodes.icon.textContent = freeTimerState.startedAt ? 'Ⅱ' : '▶';
-    if (nodes.caption) nodes.caption.textContent = freeTimerState.startedAt
-      ? 'Serbest çalışma sürüyor · dokun duraklat'
-      : 'Serbest çalışma · dokun başlat';
+    setTextNode(nodes.icon, freeTimerState.startedAt ? 'Ⅱ' : '▶');
+    setTextNode(
+      nodes.caption,
+      freeTimerState.startedAt ? 'Serbest çalışma sürüyor · dokun duraklat' : 'Serbest çalışma · dokun başlat'
+    );
     if (nodes.ring) nodes.ring.setAttribute('aria-label', freeTimerState.startedAt ? 'Serbest sayacı duraklat' : 'Serbest sayacı başlat');
   }
 
@@ -115,8 +116,8 @@
     hero.dataset.pnxTimerMode = mode;
     const nodes = freeTimerNodes(hero);
     setTextNode(nodes.value, Math.max(1, Number(minutes) || 40) + ':00');
-    if (nodes.icon) nodes.icon.textContent = '▶';
-    if (nodes.caption) nodes.caption.textContent = mode === 'countdown' ? 'Geri sayımı başlat' : 'Pomodoro ile başla';
+    setTextNode(nodes.icon, '▶');
+    setTextNode(nodes.caption, mode === 'countdown' ? 'Geri sayımı başlat' : 'Pomodoro ile başla');
     if (nodes.ring) nodes.ring.setAttribute('aria-label', Math.max(1, Number(minutes) || 40) + ' dakikalık ' + (mode === 'countdown' ? 'geri sayımı' : 'Pomodoro sayacını') + ' başlat');
   }
 

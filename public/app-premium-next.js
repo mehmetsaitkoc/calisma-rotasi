@@ -188,16 +188,143 @@
     return text(root.querySelector('.route-task .route-task-reason')) || text(fallback?.querySelector('p')) || '';
   }
 
+  function stabilizeFocusViewport(anchorTop, frames = 22) {
+    if (!Number.isFinite(anchorTop)) return;
+    document.body.classList.add('pnx3-timer-switching');
+    let frame = 0;
+    const keep = () => {
+      const focus = document.querySelector('.pnx3-focus');
+      if (focus) {
+        const delta = focus.getBoundingClientRect().top - anchorTop;
+        if (Math.abs(delta) > 0.5) window.scrollBy(0, delta);
+      }
+      frame += 1;
+      if (frame < frames) requestAnimationFrame(keep);
+      else document.body.classList.remove('pnx3-timer-switching');
+    };
+    requestAnimationFrame(keep);
+  }
+
+  const freeTimerState = {
+    running: false,
+    startedAt: 0,
+    elapsedMs: 0,
+    interval: 0
+  };
+
+  function freeElapsedMs() {
+    return freeTimerState.elapsedMs + (freeTimerState.running ? Math.max(0, Date.now() - freeTimerState.startedAt) : 0);
+  }
+
+  function formatFreeTime(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const minutes = Math.floor(total / 60);
+    const seconds = total % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+  }
+
+  function syncFreeTimerPanel() {
+    const panel = document.querySelector('.pnx3-free-timer');
+    if (!panel) return;
+    const clock = panel.querySelector('[data-pnx-free-clock]');
+    const toggle = panel.querySelector('[data-pnx-free-toggle]');
+    if (clock) clock.textContent = formatFreeTime(freeElapsedMs());
+    if (toggle) toggle.textContent = freeTimerState.running ? 'Duraklat' : (freeElapsedMs() > 0 ? 'Devam et' : 'Başlat');
+  }
+
+  function ensureFreeTimerTicker() {
+    if (freeTimerState.interval) return;
+    freeTimerState.interval = window.setInterval(syncFreeTimerPanel, 250);
+  }
+
+  function toggleFreeTimer() {
+    if (freeTimerState.running) {
+      freeTimerState.elapsedMs = freeElapsedMs();
+      freeTimerState.running = false;
+      freeTimerState.startedAt = 0;
+    } else {
+      freeTimerState.running = true;
+      freeTimerState.startedAt = Date.now();
+      ensureFreeTimerTicker();
+    }
+    syncFreeTimerPanel();
+  }
+
+  function resetFreeTimer() {
+    freeTimerState.running = false;
+    freeTimerState.startedAt = 0;
+    freeTimerState.elapsedMs = 0;
+    syncFreeTimerPanel();
+  }
+
+  function saveFreeTimer(root) {
+    const minutes = Math.max(1, Math.round(freeElapsedMs() / 60000));
+    if (freeTimerState.running) {
+      freeTimerState.elapsedMs = freeElapsedMs();
+      freeTimerState.running = false;
+      freeTimerState.startedAt = 0;
+    }
+    const addLog = root.querySelector('[data-action="add-log"]');
+    if (!addLog) return;
+    addLog.click();
+    requestAnimationFrame(() => {
+      const form = document.querySelector('#log-form');
+      const minutesInput = form?.querySelector('[name="minutes"]');
+      const titleInput = form?.querySelector('[name="title"]');
+      if (minutesInput) {
+        minutesInput.value = String(minutes);
+        minutesInput.dispatchEvent(new Event('input', { bubbles:true }));
+      }
+      if (titleInput && !titleInput.value) {
+        titleInput.value = 'Serbest çalışma';
+        titleInput.dispatchEvent(new Event('input', { bubbles:true }));
+      }
+    });
+  }
+
+  function ensureFreeTimerPanel(root, hero) {
+    let panel = hero.querySelector('.pnx3-free-timer');
+    if (!panel) {
+      panel = document.createElement('section');
+      panel.className = 'pnx3-free-timer';
+      panel.innerHTML =
+        '<small>SERBEST ÇALIŞMA</small>' +
+        '<strong data-pnx-free-clock>00:00</strong>' +
+        '<span>Süreyi sen yönet; kronometre yukarı sayar.</span>' +
+        '<div class="pnx3-free-controls">' +
+          '<button type="button" class="btn primary" data-pnx-free-toggle>Başlat</button>' +
+          '<button type="button" class="btn ghost" data-pnx-free-reset>Sıfırla</button>' +
+          '<button type="button" class="btn ghost" data-pnx-free-save>Kaydet</button>' +
+        '</div>';
+      panel.querySelector('[data-pnx-free-toggle]')?.addEventListener('click', toggleFreeTimer);
+      panel.querySelector('[data-pnx-free-reset]')?.addEventListener('click', resetFreeTimer);
+      panel.querySelector('[data-pnx-free-save]')?.addEventListener('click', () => saveFreeTimer(root));
+      hero.appendChild(panel);
+    }
+    ensureFreeTimerTicker();
+    syncFreeTimerPanel();
+    return panel;
+  }
+
+  function setPreviewMode(root, hero, tabs, mode) {
+    tabs.querySelectorAll('[data-pnx-timer-mode]').forEach((button) => {
+      button.classList.toggle('active', button.dataset.pnxTimerMode === mode);
+    });
+    hero.classList.toggle('pnx3-free-mode', mode === 'free');
+    if (mode === 'free') ensureFreeTimerPanel(root, hero);
+  }
+
   function startPreviewTimer(root, hero) {
     const start = hero.querySelector(':scope > .route-start-big[data-action="focus-session"]');
     if (!start) return;
+    const anchorTop = hero.closest('.pnx3-focus')?.getBoundingClientRect().top;
+    stabilizeFocusViewport(anchorTop);
     start.click();
 
     // focus-session prepares the existing real timer and re-renders Today.
-    // The dashboard MutationObserver can replace the timer DOM more than once,
-    // so resolve the real toggle from document and retry across animation frames.
-    // This is only a handoff: duration, endAt, pause/resume, reset and logging
-    // remain owned by the application's timer() infrastructure.
+    // Resolve the real toggle from document and retry across animation frames.
+    // The viewport anchor above keeps the center card at the same screen Y
+    // throughout both render passes, preventing the visible mobile shake.
     let attempt = 0;
     const startRealTimerWhenReady = () => {
       const toggle = document.querySelector('#timer-toggle');
@@ -234,15 +361,14 @@
       const free = tabs.querySelector('[data-pnx-timer-mode="free"]');
 
       pomodoro?.addEventListener('click', () => {
-        tabs.querySelectorAll('button').forEach((button) => button.classList.toggle('active', button === pomodoro));
+        setPreviewMode(root, hero, tabs, 'pomodoro');
       });
       countdown?.addEventListener('click', () => {
-        tabs.querySelectorAll('button').forEach((button) => button.classList.toggle('active', button === countdown));
+        setPreviewMode(root, hero, tabs, 'countdown');
         startPreviewTimer(root, hero);
       });
       free?.addEventListener('click', () => {
-        const addLog = root.querySelector('[data-action="add-log"]');
-        if (addLog) addLog.click();
+        setPreviewMode(root, hero, tabs, 'free');
       });
       hero.prepend(tabs);
     }

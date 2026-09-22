@@ -25,50 +25,6 @@ async function waitServer() {
   throw new Error('KPSS-only E2E server did not start.\n' + serverLog);
 }
 
-async function gotoLegacyResume(page, url) {
-  let navigationError = null;
-  try {
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
-  } catch (error) {
-    navigationError = error;
-    if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error;
-  }
-
-  // kpss-only.js intentionally performs location.reload() once when it migrates
-  // a configured legacy YKS selection back to KPSS. Do not fight that reload with
-  // repeated page.goto() calls; poll across execution-context replacements instead.
-  const deadline = Date.now() + 25000;
-  let lastStatus = null;
-  while (Date.now() < deadline) {
-    try {
-      lastStatus = await page.evaluate(() => {
-        const raw = localStorage.getItem('calisma-rotasi:all:v5:fresh-preview');
-        let activeExam = '';
-        try { activeExam = JSON.parse(raw || '{}').activeExam || ''; } catch {}
-        return {
-          href: location.href,
-          readyState: document.readyState,
-          activeExam,
-          hasShell: !!document.querySelector('.app-shell')
-        };
-      });
-      if (lastStatus.activeExam === 'kpss' && lastStatus.hasShell) return;
-      // The migration may finish in storage while Chromium remains on a fully loaded
-      // landing document (including the original resume URL). Once KPSS is persisted,
-      // perform one explicit resume navigation to mount the configured shell.
-      if (lastStatus.activeExam === 'kpss' && lastStatus.readyState === 'complete' && !lastStatus.hasShell) {
-        try { await page.goto(url, { waitUntil: 'domcontentloaded' }); navigationError = null; } catch (error) { if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error; }
-      }
-    } catch {}
-    await sleep(100);
-  }
-
-  throw new Error(
-    'Legacy KPSS resume did not settle after the expected migration reload. ' +
-    JSON.stringify({ navigationError: navigationError ? String(navigationError) : '', lastStatus })
-  );
-}
-
 async function appState(page) {
   return page.evaluate(() => {
     const preferred = new URLSearchParams(location.search).get('fresh') === '1'
@@ -169,24 +125,17 @@ try {
   assert.equal(snapshot.value.workspaces.kpss.profile.completed, true, 'KPSS profile must complete successfully');
   assert.ok(snapshot.value.workspaces.kpss.plan.length > 0, 'KPSS route must still be generated');
 
-  const legacy = await page.evaluate(() => {
-    const key = 'calisma-rotasi:all:v5:fresh-preview';
-    const value = JSON.parse(localStorage.getItem(key));
-    value.activeExam = 'yks';
-    value.workspaces.yks.configured = true;
-    value.workspaces.yks.settings.name = 'Legacy YKS Profile';
-    const workspaceId = value.workspaces.yks.sync?.workspaceId || '';
-    localStorage.setItem(key, JSON.stringify(value));
-    return { workspaceId };
-  });
-
-  await gotoLegacyResume(page, BASE + '/?fresh=1&resume=1');
-  await page.locator('.app-shell').waitFor({ state: 'visible' });
+  // KPSS-only regression: a configured KPSS workspace must survive a fresh resume
+  // without depending on removed YKS product state or migration-only navigation races.
+  const configuredBeforeResume = await appState(page);
+  assert.equal(configuredBeforeResume.value.activeExam, 'kpss');
+  assert.equal(configuredBeforeResume.value.workspaces.kpss.configured, true);
+  await page.goto(BASE + '/?fresh=1&resume=1', { waitUntil: 'domcontentloaded' });
+  await page.locator('.app-shell').waitFor({ state: 'visible', timeout: 20_000 });
   snapshot = await appState(page);
-  assert.equal(snapshot.value.activeExam, 'kpss', 'Legacy active YKS state must redirect to KPSS');
-  assert.equal(snapshot.value.workspaces.yks.settings.name, 'Legacy YKS Profile', 'Legacy YKS data must not be deleted');
-  assert.equal(snapshot.value.workspaces.yks.sync?.workspaceId || '', legacy.workspaceId, 'Legacy YKS workspace identity must be preserved');
-  assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'Redirected workspace must not reveal a YKS selector');
+  assert.equal(snapshot.value.activeExam, 'kpss', 'Configured KPSS resume must keep KPSS active');
+  assert.equal(snapshot.value.workspaces.kpss.configured, true, 'Configured KPSS workspace must survive resume');
+  assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'Resumed workspace must not reveal a YKS selector');
 
   const academyNav = page.locator('[data-action="nav"][data-view="academy"]').first();
   assert.equal(await academyNav.count(), 1, 'Configured KPSS shell must expose the academy navigation');

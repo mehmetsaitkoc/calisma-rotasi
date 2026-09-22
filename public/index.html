@@ -4131,9 +4131,23 @@ function routeRecordInterventions(tasks){
   if(!mode)continue;
   const key=todayKey+'|'+p.subjectId+'|'+p.topicId+'|'+mode;if(list.some(function(x){return x.key===key||(!x.key&&x.date===todayKey&&x.subjectId===p.subjectId&&x.topicId===p.topicId&&x.mode===mode);}))continue;
   const student=routeStudentModel(p.subjectId,p.topicId),practice=routePracticeSignal(p.subjectId,p.topicId),behavior=routeBehaviorSignal(p.subjectId,p.topicId),method=routeStudyMethod(p.subjectId,p.topicId,p.title);
-  list.push({id:R.uid(),key,date:todayKey,subjectId:p.subjectId,topicId:p.topicId,mode,source:p.source||'',method:method.key||'',taskId:p.id,taskDate:p.date,confidence:student.confidence||adaptive.confidence||0,baselineAccuracy:practice.known?Math.round((practice.weightedAccuracy||practice.accuracy)*100):null,baselineCompletion:behavior.known?Math.round(behavior.completion*100):null,baselineNeed:student.learningNeed,baselineAnswered:practice.answered||0,reason:(p.reason||adaptive.note||'').slice(0,500),created:Date.now()});
+  let baselineMastery=null;try{const m=routeTopicMasteryScore(p.topicId);if(m?.known&&Number.isFinite(m.score))baselineMastery=m.score;}catch{}const decisionId=p.decisionTrace?'decision:'+p.id+':'+todayKey:R.uid();list.push({id:R.uid(),decisionId,key,date:todayKey,subjectId:p.subjectId,topicId:p.topicId,mode,source:p.source||'',method:method.key||'',taskId:p.id,taskDate:p.date,decisionTrace:p.decisionTrace||null,routeRank:p.routeRank||null,confidence:student.confidence||adaptive.confidence||0,baselineAccuracy:practice.known?Math.round((practice.weightedAccuracy||practice.accuracy)*100):null,baselineCompletion:behavior.known?Math.round(behavior.completion*100):null,baselineMastery,baselineNeed:student.learningNeed,baselineAnswered:practice.answered||0,reason:(p.reason||adaptive.note||'').slice(0,500),created:Date.now()});
  }
  space.route.interventions=list.slice(-120);
+}
+function routeDecisionLearningGain(intervention,horizon=14){
+ const contracts=globalThis.RotaContracts;if(!contracts?.learningGainOutcome||!intervention)return null;
+ const follow=routeInterventionFollowup(intervention,horizon),performance=follow.performance||{},behavior=follow.behavior||{};
+ const samples=Math.max(Number(performance.sessions)||0,Number(behavior.total)||0);
+ const baseAccuracy=Number.isFinite(intervention.baselineAccuracy)?intervention.baselineAccuracy/100:null,afterAccuracy=performance.known&&Number.isFinite(performance.accuracy)?performance.accuracy:null;
+ const baseCompletion=Number.isFinite(intervention.baselineCompletion)?intervention.baselineCompletion/100:null,afterCompletion=behavior.known&&Number.isFinite(behavior.completion)?behavior.completion:null;
+ let masteryAfter=null;try{const m=routeTopicMasteryScore(intervention.topicId);if(m?.known&&Number.isFinite(m.score))masteryAfter=m.score;}catch{}
+ return contracts.learningGainOutcome({decisionId:intervention.decisionId||intervention.id,taskId:intervention.taskId,mode:intervention.mode,followupDays:horizon,samples,before:{accuracy:baseAccuracy,mastery:intervention.baselineMastery,completion:baseCompletion},after:{accuracy:afterAccuracy,mastery:masteryAfter,completion:afterCompletion},confounded:intervention.confounded===true,evidence:[performance.known?'Takip performansı '+Math.round((performance.accuracy||0)*100)+'%':'',behavior.known?'Takip tamamlama '+Math.round((behavior.completion||0)*100)+'%':''].filter(Boolean)});
+}
+function routeRefreshDecisionOutcomes(){
+ routeEnsure();const space=w(),out=[];
+ for(const intervention of (space.route.interventions||[])){const horizons=[7,14,30].map(function(h){return routeDecisionLearningGain(intervention,h);}).filter(Boolean);out.push({decisionId:intervention.decisionId||intervention.id,taskId:intervention.taskId||'',subjectId:intervention.subjectId,topicId:intervention.topicId,mode:intervention.mode,horizons,summary:globalThis.RotaContracts?.decisionOutcomeSummary?globalThis.RotaContracts.decisionOutcomeSummary(horizons):null});}
+ space.route.decisionOutcomes=out.slice(-120);return space.route.decisionOutcomes;
 }
 function routeInterventionEffectSignal(subjectId,topicId='',mode=''){
  const xs=(w().route?.interventions||[]).filter(function(x){return x.subjectId===subjectId&&(!topicId||x.topicId===topicId)&&(!mode||x.mode===mode);}).map(function(x){return {intervention:x,evaluation:routeInterventionEvaluation(x)};}).filter(function(x){return ['helpful','neutral','harmful'].includes(x.evaluation.status);}).slice(-12);
@@ -4351,6 +4365,7 @@ function routeRebalance(reason='Rota güncellendi',silent=false){
  space.route.selectionAudit={date:start,dailyLimit:days.find(function(d){return d.date===start;})?.limit||routeEffectiveDailyMinutes(space),assignedMinutes:scheduled.filter(function(p){return p.date===start;}).reduce(function(n,p){return n+(Number(p.minutes)||0);},0),selected:selectedAudit,deferred:deferredAudit,rankingPool:rankingAudit};
  routeRecordModeHistory(scheduled);
  routeRecordInterventions(scheduled);
+ routeRefreshDecisionOutcomes();
  if(!silent)toast(changed?changed+' görev kapasite, tekrar payı ve bilişsel yük dengesiyle yeniden yerleştirildi.':'Rotan kontrol edildi; yerleşim değişmedi.');
  return {changed,scheduled:scheduled.length};
 }

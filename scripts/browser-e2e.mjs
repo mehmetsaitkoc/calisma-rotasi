@@ -839,7 +839,19 @@ try {
   const focusSlotAfter = await page.locator('.pnx3-focus').boundingBox();
   const scrollAfterFocusStart = await page.evaluate(() => window.scrollY);
   assert.ok(focusSlotBefore && focusSlotAfter, 'Pomodoro focus slot must remain measurable before and after start');
-  assert.ok(Math.abs(focusSlotBefore.y - focusSlotAfter.y) <= 2, 'Pomodoro start must not move the focus card vertically');
+  const focusStartGeometry = {
+    before: focusSlotBefore,
+    after: focusSlotAfter,
+    scrollBefore: scrollBeforeFocusStart,
+    scrollAfter: scrollAfterFocusStart,
+    documentYBefore: focusSlotBefore.y + scrollBeforeFocusStart,
+    documentYAfter: focusSlotAfter.y + scrollAfterFocusStart
+  };
+  console.log('pomodoro-focus-geometry', JSON.stringify(focusStartGeometry));
+  assert.ok(
+    Math.abs(focusSlotBefore.y - focusSlotAfter.y) <= 2,
+    'Pomodoro start must not move the focus card vertically: ' + JSON.stringify(focusStartGeometry)
+  );
   assert.ok(Math.abs(focusSlotBefore.height - focusSlotAfter.height) <= 2, 'Pomodoro start must keep the same focus-card height');
   assert.ok(Math.abs(scrollBeforeFocusStart - scrollAfterFocusStart) <= 2, 'Pomodoro start must not force-scroll the Today page');
   assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Pomodoro start must bind the real task title to the focus card');

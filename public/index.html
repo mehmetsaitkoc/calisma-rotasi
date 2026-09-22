@@ -2295,7 +2295,13 @@ if(typeof module==='object')module.exports=root.RotaVideo;
 'use strict';
 const QUERY=new URLSearchParams(location.search);
 const FRESH_PREVIEW=QUERY.get('fresh')==='1';
-const FRESH_RESET=FRESH_PREVIEW&&QUERY.get('resume')!=='1';
+const LEGACY_KPSS_RESUME_KEY='calisma-rotasi:kpss-legacy-resume:v1';
+let LEGACY_KPSS_RESUME=false;
+try{
+ LEGACY_KPSS_RESUME=sessionStorage.getItem(LEGACY_KPSS_RESUME_KEY)==='1';
+ if(LEGACY_KPSS_RESUME)sessionStorage.removeItem(LEGACY_KPSS_RESUME_KEY);
+}catch{}
+const FRESH_RESET=FRESH_PREVIEW&&QUERY.get('resume')!=='1'&&!LEGACY_KPSS_RESUME;
 const THEME_KEY='calisma-rotasi:ui-theme:v1';
 const THEME_VALUES=[''];
 const THEME_NAMES={'':'ROTA SIGNATURE'};

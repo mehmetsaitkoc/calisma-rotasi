@@ -135,7 +135,9 @@ async function assertTodayContract(page) {
   assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Today must not expose the retired Rota Hoca navigation');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(), 'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(), 'Today must expose the daily quote card');
-  assert.equal(await page.locator('.pnx3-insight-archive').count(), 1, 'Explainability must remain available below the dashboard');
+  const contractArchive = page.locator('.pnx3-insight-archive');
+  await contractArchive.waitFor({ state: 'attached' });
+  assert.equal(await contractArchive.count(), 1, 'Explainability must remain available below the dashboard');
   assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(), 'Today must expose the persistent day/night control');
 }
 
@@ -814,6 +816,7 @@ try {
 
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must preserve the Rota Hoca decision evidence');
   const insightArchive = page.locator('.pnx3-insight-archive');
+  await insightArchive.waitFor({ state: 'attached' });
   assert.equal(await insightArchive.count(), 1, 'Today must keep route explainability below the approved dashboard');
   assert.match(
     ((await insightArchive.locator('summary').textContent()) || '').trim(),

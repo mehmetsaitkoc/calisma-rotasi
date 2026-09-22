@@ -2341,7 +2341,8 @@ window.RotaDashboardEvidence=Object.freeze({
   return {
    exam:'kpss',
    exams:JSON.parse(JSON.stringify(space.exams||[])),
-   logs:JSON.parse(JSON.stringify(space.logs||[]))
+   logs:JSON.parse(JSON.stringify(space.logs||[])),
+   plan:JSON.parse(JSON.stringify(space.plan||[]))
   };
  }
 });
@@ -4918,7 +4919,7 @@ function download(name,contents,type){const blob=new Blob([contents],{type}),url
 function exportBackup(){const payload=window.RotaContracts?.makeBackupEnvelope?window.RotaContracts.makeBackupEnvelope(state,{appVersion:'4.1'}):state;download(`calisma-rotasi-yedek-${today()}.json`,JSON.stringify(payload,null,2),'application/json');toast(window.RotaContracts?.makeBackupEnvelope?'İki sınavın versiyonlu ve bütünlük kontrollü yedeği hazırlandı.':'İki sınavın kayıtlarını içeren yedek hazırlandı.');}
 function exportCsv(){const cell=v=>'"'+String(v??'').replace(/^[=+@\-]/,"'$&").replace(/"/g,'""')+'"',outcomeLabel=v=>({stuck:'Zorlandım',ok:'Normal geçti',strong:'Rahat tamamladım'}[v]||''),difficultyLabel=v=>({concept:'Konu / kavram eksiği',process:'İşlem / uygulama hatası',speed:'Süre yetişmedi',attention:'Dikkat hatası',strategy:'Soruya yaklaşım'}[v]||'');const rows=[['Sınav','Tarih','Ders','Çalışma','Dakika','Soru','Doğru','Yanlış','Çalışma hissi','Zorlanma nedeni','Not'],...w().logs.map(l=>[examLabel(),l.date,subName(l.subjectId,true),l.title,l.minutes,l.questions,Number.isInteger(l.correct)?l.correct:'',Number.isInteger(l.wrong)?l.wrong:'',outcomeLabel(l.outcome),difficultyLabel(l.difficulty),l.note])];download(`calisma-rotasi-${state.activeExam}-gunluk-${today()}.csv`,'\ufeff'+rows.map(row=>row.map(cell).join(';')).join('\r\n'),'text/csv;charset=utf-8');}
 function resetTimer(t){t.seconds=t.duration*60;t.endAt=0;t.sessionId='';saveTimers();}
-function focusSession(id){const p=w().plan.find(x=>x.id===id);if(!p)return;const t=timer();const action=()=>{const planned=Math.max(1,Math.min(240,Math.round(Number(p.minutes)||25)));t.duration=planned;t.seconds=planned*60;t.endAt=0;t.subjectId=p.subjectId;t.sessionId=p.id;saveTimers();navigate('today');($('.route-focus-card')||$('#timer-subject'))?.scrollIntoView({block:'center',behavior:'smooth'});toast(planned+' dakikalık odak kartın hazır.');};if(t.endAt||remaining(t)<t.duration*60){confirmAction('Odak dersini değiştir?','Mevcut sayaç sıfırlanacak. Henüz kaydetmediğin süre günlüğe eklenmez.',action,'Değiştir');}else action();}
+function focusSession(id){const p=w().plan.find(x=>x.id===id);if(!p)return;const t=timer();const action=()=>{const planned=Math.max(1,Math.min(240,Math.round(Number(p.minutes)||25)));t.duration=planned;t.seconds=planned*60;t.endAt=0;t.subjectId=p.subjectId;t.sessionId=p.id;saveTimers();if(ui.view==='today')render();else navigate('today');toast(planned+' dakikalık odak kartın hazır.');};if(t.endAt||remaining(t)<t.duration*60){confirmAction('Odak dersini değiştir?','Mevcut sayaç sıfırlanacak. Henüz kaydetmediğin süre günlüğe eklenmez.',action,'Değiştir');}else action();}
 function replaceListRecord(list,record,id){const idx=id?list.findIndex(x=>x.id===id):-1;if(idx>=0)list[idx]=record;else list.push(record);}
 function ensureSubject(id){if(!C.subjects.some(s=>s.id===id&&s.exam===state.activeExam))throw Error('Seçili sınava ait bir ders seç.');return id;}
 function onSubmit(event){const form=event.target;if(!(form instanceof HTMLFormElement))return;event.preventDefault();try{

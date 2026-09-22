@@ -201,6 +201,39 @@ try{
   await page.setViewportSize({width:390,height:844});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
   await noOverflow(page,'Today 390');
+  const mobileTodayPlan=await page.locator('.pnx3-plan-card').evaluate(card=>{
+    const task=card.querySelector('.route-task');
+    const action=task?.querySelector('.route-task-actions');
+    const check=action?.querySelector('.check-btn');
+    const rect=(el)=>{
+      if(!el)return null;
+      const r=el.getBoundingClientRect();
+      return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
+    };
+    return {
+      card:rect(card),
+      task:rect(task),
+      action:rect(action),
+      check:rect(check),
+      taskScrollWidth:task?.scrollWidth||0,
+      taskClientWidth:task?.clientWidth||0
+    };
+  });
+  assert.ok(mobileTodayPlan.task&&mobileTodayPlan.check,'Mobile Today must expose a measurable plan row and completion control');
+  assert.ok(
+    mobileTodayPlan.check.left>=mobileTodayPlan.task.left-1 &&
+    mobileTodayPlan.check.right<=mobileTodayPlan.task.right+1,
+    'Mobile Today completion control must stay inside its task row'
+  );
+  assert.ok(
+    Math.abs(mobileTodayPlan.check.width-mobileTodayPlan.check.height)<=2 &&
+    mobileTodayPlan.check.width<=40,
+    'Mobile Today completion control must remain a compact circular control'
+  );
+  assert.ok(
+    mobileTodayPlan.taskScrollWidth<=mobileTodayPlan.taskClientWidth+2,
+    'Mobile Today task content must not overflow its row'
+  );
   const hiddenSidebar=await page.locator('.sidebar').evaluate(el=>{
     const r=el.getBoundingClientRect();
     return {right:r.right,left:r.left,width:r.width};

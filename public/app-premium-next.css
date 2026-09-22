@@ -6841,12 +6841,12 @@ body.app-premium-next-ready .premium-ob-name-field input:focus{
     border-radius:24px!important;
     pointer-events:none!important;
     background:linear-gradient(90deg,
-      rgba(250,252,255,.995) 0%,
-      rgba(250,252,255,.985) 22%,
-      rgba(248,251,255,.91) 34%,
-      rgba(246,250,255,.58) 42%,
-      rgba(246,250,255,.08) 50%,
-      transparent 56%)!important;
+      rgba(250,252,255,.998) 0%,
+      rgba(250,252,255,.995) 28%,
+      rgba(249,252,255,.97) 39%,
+      rgba(247,251,255,.82) 47%,
+      rgba(246,250,255,.28) 55%,
+      transparent 61%)!important;
   }
   body.pnx3-dashboard-ready .route-v1-head>div:first-child{
     position:absolute!important;

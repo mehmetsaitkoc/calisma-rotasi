@@ -7140,9 +7140,9 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{color:#7685a0!import
 @media(min-width:901px){
   body.pnx3-dashboard-ready .content{padding:22px 28px 64px!important}
   body.pnx3-dashboard-ready .route-v1-head{
-    min-height:278px!important;
-    height:278px!important;
-    aspect-ratio:auto!important;
+    min-height:270px!important;
+    height:auto!important;
+    aspect-ratio:1507/383!important;
     margin:0 0 14px!important;
     padding:36px clamp(340px,35vw,500px) 30px 30px!important;
     border-radius:22px!important;

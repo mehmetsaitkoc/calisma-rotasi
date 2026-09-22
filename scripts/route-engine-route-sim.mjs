@@ -133,7 +133,8 @@ function rebalance(space,candidates,opts={}){
   const routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5));
   const routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{};
   const routeDecisionTraceForCandidate=(candidate,capacityOverride)=>candidate?.decisionTrace||null;
-  globalThis.RotaContracts={decisionTraceEvidenceScore:(trace)=>({baseScore:Number(trace?.score)||0,evidenceScore:Number(trace?.evidenceScore)||0,finalScore:Number(trace?.finalScore??trace?.score)||0})};
+  const previousContracts=globalThis.RotaContracts;
+  globalThis.RotaContracts={...(previousContracts||{}),decisionTraceEvidenceScore:(trace)=>({baseScore:Number(trace?.score)||0,evidenceScore:Number(trace?.evidenceScore)||0,finalScore:Number(trace?.finalScore??trace?.score)||0})};
   const fn=new Function(
     'state','w','today','R','routeEnsure','routeRecoverySignal','routeBuildCandidates',
     'routeEffectiveDailyMinutes','routeTaskMethod','routeMethodLoad','routeIsQuantitativeHeavy',
@@ -143,7 +144,7 @@ function rebalance(space,candidates,opts={}){
     'routeRecordModeHistory','routeRecordInterventions','toast','routeDecisionTraceForCandidate',
     rebalanceSrc+';return routeRebalance;'
   );
-  return fn(
+  const result=fn(
     state,()=>space,today,R,routeEnsure,routeRecoverySignal,routeBuildCandidates,
     routeEffectiveDailyMinutes,routeTaskMethod,routeMethodLoad,routeIsQuantitativeHeavy,
     routeIsReviewLike,routeIsCriticalReview,routeIsBacklog,routeHeavyLimit,
@@ -151,6 +152,8 @@ function rebalance(space,candidates,opts={}){
     routeBacklogDailyCountLimit,routeReviewWeeklyLimit,routeBacklogWeeklyLimit,
     routeRecordModeHistory,routeRecordInterventions,toast,routeDecisionTraceForCandidate
   )('route simulation',true);
+  globalThis.RotaContracts=previousContracts;
+  return result;
 }
 function fullRoute(space,buildOpts={},scheduleOpts={}){
   const candidates=makeBuild(space,buildOpts);
@@ -465,9 +468,38 @@ sim('R22 selection audit score decomposition',()=>{
   assert.equal(audit.score,52);
 });
 
+
+// R23 — eight competing candidates must be ordered by evidence without bypassing hard scheduler limits.
+sim('R23 eight-candidate evidence tournament',()=>{
+  const space=baseSpace(60);
+  const make=(id,subjectId,score,finalScore,codes,extra={})=>({id,routeKey:id,earliest:TODAY,minutes:25,subjectId,topicId:id,priority:score,source:'curriculum',methodKey:subjectId==='k-ma'?'quant':subjectId==='k-tr'?'paragraph':subjectId==='k-ta'?'history':'geography',decisionTrace:{score,evidenceScore:finalScore-score,finalScore,reasonCodes:codes},...extra});
+  const candidates=[
+    make('profile','k-tr',82,86,['PROFILE_PRIORITY']),
+    make('exam','k-ta',64,98,['ASSESSMENT_RISK','NEGATIVE_TREND']),
+    make('mistakes','k-co',58,104,['OPEN_MISTAKE','REPEATED_MISTAKE']),
+    make('review3','k-tr',70,91,['REVIEW_DUE_3']),
+    make('review7','k-ta',68,94,['REVIEW_DUE_7']),
+    make('mastered','k-co',90,73,['MASTERY_EVIDENCE','POSITIVE_TREND']),
+    make('urgent','k-ma',62,96,['TARGET_URGENCY','BELOW_PERSONAL_NORM']),
+    make('low-evidence','k-tr',88,76,['LOW_EVIDENCE'])
+  ];
+  rebalance(space,candidates,{limit:60});
+  return space;
+},space=>{
+  const audit=space.route.selectionAudit;
+  assert.equal(audit.selected[0].taskId,'mistakes','Repeated/open mistakes should win the evidence tournament');
+  assert.ok(audit.selected.some(x=>x.taskId==='exam'),'Assessment risk should survive the first capacity window');
+  assert.ok(audit.deferred.length>=1,'Eight candidates under tight capacity must produce deferred comparisons');
+  for(const d of audit.deferred){
+    assert.ok(d.comparison&&d.comparison.selectedTaskId,'Every deferred candidate must name a selected comparator');
+    assert.ok(Number.isFinite(d.comparison.scoreDelta),'Every deferred comparison must expose a numeric score delta');
+  }
+  for(const p of space.plan)assert.ok(p.routeRank&&Number.isFinite(p.routeRank.finalScore),'Scheduled tasks must retain ranking evidence');
+});
+
 if(failures.length)console.error('Route simulation failures:',JSON.stringify(failures,null,2));
 assert.equal(failures.length,0,`${failures.length} route simulations failed`);
-assert.equal(passed,25,'Expected exactly 25 route simulations');
+assert.equal(passed,26,'Expected exactly 26 route simulations');
 console.log(`route-engine-route-sim: ${passed} real candidate/scheduler simulations passed`);
 
 // Route Engine 2.0 regression: extracted rebalance must receive the same decision-trace helper as production.

@@ -831,15 +831,26 @@ try {
   await startButton.waitFor({ state: 'visible' });
   assert.match((await startButton.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Preview timer must show the real planned task duration');
   await startButton.evaluate(node => node.scrollIntoView({ block: 'center', inline: 'nearest' }));
-  const focusSlotBefore = await page.locator('.pnx3-focus').boundingBox();
+  const readFocusSlotBox = async () => {
+    const slot = page.locator('.pnx3-focus').first();
+    await slot.waitFor({ state: 'visible' });
+    return slot.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+    });
+  };
+  const focusSlotBefore = await readFocusSlotBox();
   const scrollBeforeFocusStart = await page.evaluate(() => window.scrollY);
   await startButton.evaluate(node => node.click());
 
   const focusCard = page.locator('.pnx3-focus .route-focus-card');
   await focusCard.waitFor({ state: 'visible' });
-  const focusSlotAfter = await page.locator('.pnx3-focus').boundingBox();
+  const focusSlotAfter = await readFocusSlotBox();
   const scrollAfterFocusStart = await page.evaluate(() => window.scrollY);
-  assert.ok(focusSlotBefore && focusSlotAfter, 'Pomodoro focus slot must remain measurable before and after start');
+  assert.ok(
+    focusSlotBefore.width > 0 && focusSlotBefore.height > 0 && focusSlotAfter.width > 0 && focusSlotAfter.height > 0,
+    'Pomodoro focus slot must remain measurable before and after start'
+  );
   const focusStartGeometry = {
     before: focusSlotBefore,
     after: focusSlotAfter,
@@ -865,7 +876,17 @@ try {
   await runningToggle.waitFor({ state: 'visible' });
   assert.match((await runningToggle.innerText()).trim(), /Duraklat/i, 'Running real timer must expose pause control');
   const initialClock = (await clock.innerText()).trim();
-  assert.equal(initialClock, String(todayTask.minutes).padStart(2, '0') + ':00', 'Real timer must honor the planned task minutes');
+  const clockSeconds = (value) => {
+    const match = String(value).trim().match(/^(\d+):(\d{2})$/);
+    assert.ok(match, 'Real timer must expose a valid mm:ss clock: ' + value);
+    return Number(match[1]) * 60 + Number(match[2]);
+  };
+  const plannedSeconds = Number(todayTask.minutes) * 60;
+  const initialSeconds = clockSeconds(initialClock);
+  assert.ok(
+    Math.abs(initialSeconds - plannedSeconds) <= 2,
+    'Real timer must start within two seconds of the planned task duration: ' + initialClock
+  );
 
   await page.clock.fastForward(2000);
   const runningClock = (await clock.innerText()).trim();

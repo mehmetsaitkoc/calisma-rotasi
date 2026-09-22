@@ -26,23 +26,41 @@ async function waitServer() {
 }
 
 async function gotoLegacyResume(page, url) {
-  let lastError = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
-    } catch (error) {
-      lastError = error;
-      if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error;
-    }
-    try {
-      await page.locator('.app-shell').waitFor({ state: 'visible', timeout: 6000 });
-      return;
-    } catch (error) {
-      lastError = error;
-      await sleep(160);
-    }
+  let navigationError = null;
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+  } catch (error) {
+    navigationError = error;
+    if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error;
   }
-  throw lastError || new Error('Legacy KPSS resume did not reach the configured app shell');
+
+  // kpss-only.js intentionally performs location.reload() once when it migrates
+  // a configured legacy YKS selection back to KPSS. Do not fight that reload with
+  // repeated page.goto() calls; poll across execution-context replacements instead.
+  const deadline = Date.now() + 15000;
+  let lastStatus = null;
+  while (Date.now() < deadline) {
+    try {
+      lastStatus = await page.evaluate(() => {
+        const raw = localStorage.getItem('calisma-rotasi:all:v5:fresh-preview');
+        let activeExam = '';
+        try { activeExam = JSON.parse(raw || '{}').activeExam || ''; } catch {}
+        return {
+          href: location.href,
+          readyState: document.readyState,
+          activeExam,
+          hasShell: !!document.querySelector('.app-shell')
+        };
+      });
+      if (lastStatus.activeExam === 'kpss' && lastStatus.hasShell) return;
+    } catch {}
+    await sleep(100);
+  }
+
+  throw new Error(
+    'Legacy KPSS resume did not settle after the expected migration reload. ' +
+    JSON.stringify({ navigationError: navigationError ? String(navigationError) : '', lastStatus })
+  );
 }
 
 async function appState(page) {

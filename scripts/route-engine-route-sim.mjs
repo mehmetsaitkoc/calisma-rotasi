@@ -488,8 +488,10 @@ sim('R23 eight-candidate evidence tournament',()=>{
   assert.equal(pool.length,8,'Audit must compare exactly the top eight candidates');
   assert.deepEqual(pool.map(x=>x.taskId),['mistakes','exam','urgent','review7','review3','profile','low-evidence','mastered']);
   assert.deepEqual(pool.map(x=>x.score),[104,98,96,94,91,86,76,73]);
-  assert.equal(space.plan.find(p=>p.date===TODAY)?.id,'mistakes','Tournament winner must receive the earliest available slot');
-  assert.ok(space.plan.some(p=>p.id==='exam'&&p.date===TODAY),'Second-highest compatible candidate should share the first day when capacity allows');
+  const todayIds=space.plan.filter(p=>p.date===TODAY).map(p=>p.id);
+  assert.ok(todayIds.includes('mistakes'),'Tournament winner must receive an earliest-day capacity slot');
+  assert.ok(todayIds.includes('exam'),'Second-highest compatible candidate should share the first day when capacity allows');
+  assert.ok(!todayIds.includes('mastered'),'Strong mastery must not displace stronger risk evidence from the first day');
   for(const p of space.plan)assert.ok(p.routeRank&&Number.isFinite(p.routeRank.finalScore),'Scheduled tasks must retain ranking evidence');
 });
 

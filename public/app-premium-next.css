@@ -7218,3 +7218,31 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{
     min-height:156px!important;
   }
 }
+
+
+/* V5.5.1 · compact mobile notifications */
+@media(max-width:650px){
+  #toasts{
+    left:14px!important;
+    right:14px!important;
+    bottom:86px!important;
+    width:auto!important;
+    max-width:none!important;
+    transform:none!important;
+    display:block!important;
+  }
+  #toasts .toast{
+    width:100%!important;
+    max-width:430px!important;
+    margin:0 auto!important;
+    padding:9px 12px!important;
+    border:1px solid rgba(255,255,255,.16)!important;
+    border-radius:13px!important;
+    font-size:10px!important;
+    line-height:1.35!important;
+    text-align:center!important;
+    box-shadow:0 10px 24px rgba(18,36,29,.16)!important;
+    white-space:normal!important;
+  }
+  #toasts .toast:not(:last-child){display:none!important}
+}

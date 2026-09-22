@@ -6366,3 +6366,120 @@ body.pnx3-dashboard-ready .pnx3-focus,
 body.pnx3-dashboard-ready .route-command-grid{
   overflow-anchor:none!important;
 }
+
+
+/* V5 MOBILE TODAY PLAN · NO ACTION OVERFLOW */
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .pnx3-plan-card{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    padding:12px 10px 8px!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head{
+    min-width:0!important;
+    gap:8px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head h2{
+    min-width:0!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .pnx-route-see-all{
+    flex:0 0 auto!important;
+    white-space:nowrap!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-list{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:hidden!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    grid-template-columns:34px minmax(0,1fr) 36px!important;
+    column-gap:8px!important;
+    padding:9px 2px!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task:before{
+    width:30px!important;
+    height:30px!important;
+    box-sizing:border-box!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-main{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-main h3{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-meta{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-actions{
+    grid-column:3!important;
+    grid-row:1!important;
+    width:36px!important;
+    min-width:36px!important;
+    max-width:36px!important;
+    overflow:hidden!important;
+    justify-self:end!important;
+    box-sizing:border-box!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-actions .check-btn{
+    position:relative!important;
+    flex:0 0 32px!important;
+    width:32px!important;
+    min-width:32px!important;
+    max-width:32px!important;
+    height:32px!important;
+    min-height:32px!important;
+    max-height:32px!important;
+    margin:0!important;
+    padding:0!important;
+    border-radius:50%!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    display:grid!important;
+    place-items:center!important;
+    font-size:0!important;
+    line-height:0!important;
+    text-indent:0!important;
+    white-space:nowrap!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-actions .check-btn:before{
+    content:"✓"!important;
+    position:static!important;
+    display:block!important;
+    width:auto!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+    color:currentColor!important;
+    background:none!important;
+    font-size:16px!important;
+    font-weight:850!important;
+    line-height:1!important;
+    text-indent:0!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task-actions .check-btn:after{
+    content:none!important;
+    display:none!important;
+  }
+}

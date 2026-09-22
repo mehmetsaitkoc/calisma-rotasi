@@ -9,6 +9,169 @@
   const text = (node) => (node?.textContent || '').trim();
   const unique = (values) => [...new Set(values.filter(Boolean))];
 
+  const freeTimerState = {
+    elapsedMs: 0,
+    startedAt: 0,
+    intervalId: 0,
+    hero: null,
+    lastSecond: -1
+  };
+
+  function setTextNode(node, value) {
+    if (!node) return;
+    if (node.firstChild?.nodeType === Node.TEXT_NODE && node.childNodes.length === 1) {
+      node.firstChild.nodeValue = value;
+      return;
+    }
+    node.textContent = value;
+  }
+
+  function formatFreeElapsed(milliseconds) {
+    const total = Math.max(0, Math.floor(Number(milliseconds || 0) / 1000));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+    return hours ? String(hours).padStart(2, '0') + ':' + mm + ':' + ss : mm + ':' + ss;
+  }
+
+  function currentFreeElapsed() {
+    return freeTimerState.elapsedMs + (freeTimerState.startedAt ? Date.now() - freeTimerState.startedAt : 0);
+  }
+
+  function freeTimerNodes(hero) {
+    const preview = hero?.querySelector('.pnx3-pomodoro-preview');
+    return {
+      preview,
+      ring: preview?.querySelector('.pnx-pomodoro-ring'),
+      value: preview?.querySelector('.pnx3-preview-timer strong'),
+      icon: preview?.querySelector('.pnx-pomodoro-play'),
+      caption: preview?.querySelector(':scope > span')
+    };
+  }
+
+  function renderFreeTimer(hero) {
+    if (!hero) return;
+    const nodes = freeTimerNodes(hero);
+    const elapsed = currentFreeElapsed();
+    const second = Math.floor(elapsed / 1000);
+    if (second !== freeTimerState.lastSecond || freeTimerState.hero !== hero) {
+      setTextNode(nodes.value, formatFreeElapsed(elapsed));
+      freeTimerState.lastSecond = second;
+    }
+    if (nodes.icon) nodes.icon.textContent = freeTimerState.startedAt ? 'Ⅱ' : '▶';
+    if (nodes.caption) nodes.caption.textContent = freeTimerState.startedAt
+      ? 'Serbest çalışma sürüyor · dokun duraklat'
+      : 'Serbest çalışma · dokun başlat';
+    if (nodes.ring) nodes.ring.setAttribute('aria-label', freeTimerState.startedAt ? 'Serbest sayacı duraklat' : 'Serbest sayacı başlat');
+  }
+
+  function stopFreeTicker() {
+    if (freeTimerState.intervalId) {
+      clearInterval(freeTimerState.intervalId);
+      freeTimerState.intervalId = 0;
+    }
+  }
+
+  function pauseFreeTimer(hero = freeTimerState.hero) {
+    if (freeTimerState.startedAt) {
+      freeTimerState.elapsedMs += Date.now() - freeTimerState.startedAt;
+      freeTimerState.startedAt = 0;
+    }
+    stopFreeTicker();
+    renderFreeTimer(hero);
+  }
+
+  function startFreeTimer(hero) {
+    if (!hero) return;
+    if (freeTimerState.hero !== hero) {
+      stopFreeTicker();
+      freeTimerState.elapsedMs = 0;
+      freeTimerState.startedAt = 0;
+      freeTimerState.lastSecond = -1;
+      freeTimerState.hero = hero;
+    }
+    if (!freeTimerState.startedAt) freeTimerState.startedAt = Date.now();
+    stopFreeTicker();
+    freeTimerState.intervalId = window.setInterval(() => {
+      if (!freeTimerState.hero?.isConnected) {
+        pauseFreeTimer(freeTimerState.hero);
+        return;
+      }
+      renderFreeTimer(freeTimerState.hero);
+    }, 250);
+    renderFreeTimer(hero);
+  }
+
+  function enterFreeTimer(hero) {
+    if (!hero) return;
+    hero.dataset.pnxTimerMode = 'free';
+    startFreeTimer(hero);
+  }
+
+  function leaveFreeTimer(hero, minutes, mode = 'pomodoro') {
+    if (freeTimerState.hero === hero) pauseFreeTimer(hero);
+    hero.dataset.pnxTimerMode = mode;
+    const nodes = freeTimerNodes(hero);
+    setTextNode(nodes.value, Math.max(1, Number(minutes) || 40) + ':00');
+    if (nodes.icon) nodes.icon.textContent = '▶';
+    if (nodes.caption) nodes.caption.textContent = mode === 'countdown' ? 'Geri sayımı başlat' : 'Pomodoro ile başla';
+    if (nodes.ring) nodes.ring.setAttribute('aria-label', Math.max(1, Number(minutes) || 40) + ' dakikalık ' + (mode === 'countdown' ? 'geri sayımı' : 'Pomodoro sayacını') + ' başlat');
+  }
+
+  function toggleFreeTimer(hero) {
+    if (freeTimerState.hero !== hero || !freeTimerState.startedAt) startFreeTimer(hero);
+    else pauseFreeTimer(hero);
+  }
+
+  function stabilizeTimerHandoff() {
+    const focus = document.querySelector('.pnx3-focus');
+    const initialTop = focus?.getBoundingClientRect().top;
+    const initialX = window.scrollX;
+    const initialY = window.scrollY;
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = {
+      htmlScrollBehavior: html.style.scrollBehavior,
+      htmlOverflowAnchor: html.style.overflowAnchor,
+      bodyOverflowAnchor: body?.style?.overflowAnchor || ''
+    };
+
+    const active = document.activeElement;
+    if (active instanceof HTMLElement) active.blur();
+
+    html.style.scrollBehavior = 'auto';
+    html.style.overflowAnchor = 'none';
+    if (body) body.style.overflowAnchor = 'none';
+
+    let frames = 0;
+    let settledFrames = 0;
+    const restore = () => {
+      const currentFocus = document.querySelector('.pnx3-focus');
+      if (currentFocus && Number.isFinite(initialTop)) {
+        const delta = currentFocus.getBoundingClientRect().top - initialTop;
+        if (Math.abs(delta) > 0.5) window.scrollBy(0, delta);
+      } else if (Math.abs(window.scrollY - initialY) > 0.5 || Math.abs(window.scrollX - initialX) > 0.5) {
+        window.scrollTo(initialX, initialY);
+      }
+    };
+    const finish = () => {
+      restore();
+      html.style.scrollBehavior = previous.htmlScrollBehavior;
+      html.style.overflowAnchor = previous.htmlOverflowAnchor;
+      if (body) body.style.overflowAnchor = previous.bodyOverflowAnchor;
+    };
+    const tick = () => {
+      restore();
+      frames += 1;
+      if (document.querySelector('.pnx3-focus .pnx3-live-timer-card')) settledFrames += 1;
+      if (frames < 48 && settledFrames < 5) requestAnimationFrame(tick);
+      else finish();
+    };
+    requestAnimationFrame(tick);
+  }
+
   function signalByLabel(rail, label) {
     return Array.from(rail?.querySelectorAll(':scope > .premium-signal') || [])
       .find((card) => text(card.querySelector('small')).toLocaleUpperCase('tr-TR') === label);
@@ -190,14 +353,14 @@
 
   function startPreviewTimer(root, hero) {
     const start = hero.querySelector(':scope > .route-start-big[data-action="focus-session"]');
-    if (!start) return;
+    if (!start || hero.dataset.pnxTimerStarting === '1') return;
+    hero.dataset.pnxTimerStarting = '1';
+    stabilizeTimerHandoff();
     start.click();
 
     // focus-session prepares the existing real timer and re-renders Today.
-    // The dashboard MutationObserver can replace the timer DOM more than once,
-    // so resolve the real toggle from document and retry across animation frames.
-    // This is only a handoff: duration, endAt, pause/resume, reset and logging
-    // remain owned by the application's timer() infrastructure.
+    // Resolve the real toggle after composition and start it without allowing
+    // mobile focus/scroll anchoring to move the viewport between the two renders.
     let attempt = 0;
     const startRealTimerWhenReady = () => {
       const toggle = document.querySelector('#timer-toggle');
@@ -221,35 +384,12 @@
     const total = hero.querySelector(':scope > .route-total');
     if (!grow || !start || !total) return;
 
-    if (!hero.querySelector('.pnx3-focus-tabs')) {
-      const tabs = document.createElement('div');
-      tabs.className = 'pnx3-focus-tabs';
-      tabs.innerHTML =
-        '<button type="button" class="active" data-pnx-timer-mode="pomodoro">Pomodoro</button>' +
-        '<button type="button" data-pnx-timer-mode="countdown">Geri Sayım</button>' +
-        '<button type="button" data-pnx-timer-mode="free">Serbest</button>';
-
-      const pomodoro = tabs.querySelector('[data-pnx-timer-mode="pomodoro"]');
-      const countdown = tabs.querySelector('[data-pnx-timer-mode="countdown"]');
-      const free = tabs.querySelector('[data-pnx-timer-mode="free"]');
-
-      pomodoro?.addEventListener('click', () => {
-        tabs.querySelectorAll('button').forEach((button) => button.classList.toggle('active', button === pomodoro));
-      });
-      countdown?.addEventListener('click', () => {
-        tabs.querySelectorAll('button').forEach((button) => button.classList.toggle('active', button === countdown));
-        startPreviewTimer(root, hero);
-      });
-      free?.addEventListener('click', () => {
-        const addLog = root.querySelector('[data-action="add-log"]');
-        if (addLog) addLog.click();
-      });
-      hero.prepend(tabs);
-    }
+    const meta = text(grow.querySelector('p'));
+    const minutes = Math.max(1, Number(meta.match(/(\d+)\s*dk/i)?.[1] || 40));
+    hero.dataset.pnxPlannedMinutes = String(minutes);
+    if (!hero.dataset.pnxTimerMode) hero.dataset.pnxTimerMode = 'pomodoro';
 
     if (!hero.querySelector('.pnx-pomodoro')) {
-      const meta = text(grow.querySelector('p'));
-      const minutes = Math.max(1, Number(meta.match(/(\d+)\s*dk/i)?.[1] || 40));
       const timer = document.createElement('div');
       timer.className = 'pnx-pomodoro pnx3-pomodoro-preview';
       timer.innerHTML =
@@ -258,9 +398,49 @@
           '<i class="pnx-pomodoro-play" aria-hidden="true">▶</i></span>' +
         '</button>' +
         '<span>Pomodoro ile başla</span>';
-      timer.querySelector('.pnx-pomodoro-ring')?.addEventListener('click', () => startPreviewTimer(root, hero));
+      const ring = timer.querySelector('.pnx-pomodoro-ring');
+      ring?.addEventListener('click', (event) => {
+        if (event.currentTarget instanceof HTMLElement) event.currentTarget.blur();
+        if (hero.dataset.pnxTimerMode === 'free') toggleFreeTimer(hero);
+        else startPreviewTimer(root, hero);
+      });
       hero.insertBefore(timer, start);
     }
+
+    if (!hero.querySelector('.pnx3-focus-tabs')) {
+      const tabs = document.createElement('div');
+      tabs.className = 'pnx3-focus-tabs';
+      tabs.innerHTML =
+        '<button type="button" class="active" data-pnx-timer-mode="pomodoro">Pomodoro</button>' +
+        '<button type="button" data-pnx-timer-mode="countdown">Geri Sayım</button>' +
+        '<button type="button" data-pnx-timer-mode="free">Serbest</button>';
+
+      const activate = (button) => {
+        tabs.querySelectorAll('button').forEach((item) => item.classList.toggle('active', item === button));
+        if (button instanceof HTMLElement) button.blur();
+      };
+      const pomodoro = tabs.querySelector('[data-pnx-timer-mode="pomodoro"]');
+      const countdown = tabs.querySelector('[data-pnx-timer-mode="countdown"]');
+      const free = tabs.querySelector('[data-pnx-timer-mode="free"]');
+
+      pomodoro?.addEventListener('click', () => {
+        activate(pomodoro);
+        leaveFreeTimer(hero, minutes, 'pomodoro');
+      });
+      countdown?.addEventListener('click', () => {
+        activate(countdown);
+        leaveFreeTimer(hero, minutes, 'countdown');
+        startPreviewTimer(root, hero);
+      });
+      free?.addEventListener('click', () => {
+        activate(free);
+        enterFreeTimer(hero);
+      });
+      hero.prepend(tabs);
+    }
+
+    if (hero.dataset.pnxTimerMode === 'free') renderFreeTimer(hero);
+    else leaveFreeTimer(hero, minutes, hero.dataset.pnxTimerMode || 'pomodoro');
 
     let quote = hero.querySelector('.pnx3-focus-quote');
     if (!quote) {
@@ -282,6 +462,7 @@
       return;
     }
 
+    if (freeTimerState.hero === hero) pauseFreeTimer(hero);
     live.classList.add('pnx3-live-timer-card');
     if (!focus.contains(live)) focus.appendChild(live);
     hero.setAttribute('aria-hidden', 'true');

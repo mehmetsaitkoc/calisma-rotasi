@@ -133,6 +133,7 @@ function rebalance(space,candidates,opts={}){
   const routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5));
   const routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{};
   const routeDecisionTraceForCandidate=(candidate,capacityOverride)=>candidate?.decisionTrace||null;
+  globalThis.RotaContracts={decisionTraceEvidenceScore:(trace)=>({baseScore:Number(trace?.score)||0,evidenceScore:Number(trace?.evidenceScore)||0,finalScore:Number(trace?.finalScore??trace?.score)||0})};
   const fn=new Function(
     'state','w','today','R','routeEnsure','routeRecoverySignal','routeBuildCandidates',
     'routeEffectiveDailyMinutes','routeTaskMethod','routeMethodLoad','routeIsQuantitativeHeavy',
@@ -433,9 +434,40 @@ sim('R20 earliest and capacity safety',()=>{
   for(const xs of x.days.values())assert.ok(xs.reduce((n,p)=>n+taskCost(p),0)<=120);
 });
 
+
+// R21 — equal base priority is resolved by DecisionTrace evidence score.
+sim('R21 DecisionTrace evidence ranking',()=>{
+  const space=baseSpace(30);
+  const candidates=[
+    {id:'routine',routeKey:'routine',earliest:TODAY,minutes:25,subjectId:'k-tr',topicId:'t1',priority:50,source:'curriculum',methodKey:'paragraph',decisionTrace:{score:50,finalScore:55,reasonCodes:['PROFILE_PRIORITY']}},
+    {id:'repair',routeKey:'repair',earliest:TODAY,minutes:25,subjectId:'k-ta',topicId:'h1',priority:50,source:'mistake',kind:'review',methodKey:'history',decisionTrace:{score:50,finalScore:92,reasonCodes:['OPEN_MISTAKE','REPEATED_MISTAKE']}}
+  ];
+  rebalance(space,candidates,{limit:30});
+  return space;
+},space=>{
+  assert.equal(space.plan[0]?.id,'repair');
+  assert.equal(space.route.selectionAudit.selected[0].score,92);
+  const deferred=space.route.selectionAudit.deferred.find(x=>x.taskId==='routine');
+  assert.ok(deferred);
+  assert.equal(deferred.comparison.selectedTaskId,'repair');
+  assert.equal(deferred.comparison.scoreDelta,37);
+  assert.ok(deferred.comparison.selectedAdvantages.includes('OPEN_MISTAKE'));
+});
+
+// R22 — audit preserves base/evidence/final score decomposition.
+sim('R22 selection audit score decomposition',()=>{
+  const space=baseSpace(30);
+  rebalance(space,[{id:'a',routeKey:'a',earliest:TODAY,minutes:25,subjectId:'k-tr',topicId:'t1',priority:40,source:'curriculum',methodKey:'paragraph',decisionTrace:{score:40,evidenceScore:12,finalScore:52,reasonCodes:['REVIEW_DUE_3']}}],{limit:30});
+  return space.route.selectionAudit.selected[0];
+},audit=>{
+  assert.equal(audit.baseScore,40);
+  assert.equal(audit.evidenceScore,12);
+  assert.equal(audit.score,52);
+});
+
 if(failures.length)console.error('Route simulation failures:',JSON.stringify(failures,null,2));
 assert.equal(failures.length,0,`${failures.length} route simulations failed`);
-assert.equal(passed,23,'Expected exactly 23 route simulations');
+assert.equal(passed,25,'Expected exactly 25 route simulations');
 console.log(`route-engine-route-sim: ${passed} real candidate/scheduler simulations passed`);
 
 // Route Engine 2.0 regression: extracted rebalance must receive the same decision-trace helper as production.

@@ -7142,3 +7142,79 @@ body.pnx3-dashboard-ready .pnx3-plan-card .route-task:has(> .check-btn):not(:has
     pointer-events:none!important;
   }
 }
+
+
+/* APP PREMIUM NEXT V5.5 · PREMIUM VISUAL POLISH
+   Conservative presentation-only refinement. No route, timer, persistence or interaction behavior changes. */
+body.pnx3-dashboard-ready{
+  --pnx-card-border:#e2e8f2;
+  --pnx-card-shadow:0 12px 30px rgba(28,45,78,.055);
+}
+body.pnx3-dashboard-ready .pnx3-plan-card,
+body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero,
+body.pnx3-dashboard-ready .pnx3-side-stack>section,
+body.pnx3-dashboard-ready .pnx3-lower>section{
+  border-color:var(--pnx-card-border)!important;
+  box-shadow:var(--pnx-card-shadow)!important;
+}
+body.pnx3-dashboard-ready .pnx3-dashboard,
+body.pnx3-dashboard-ready .pnx3-lower{
+  gap:12px!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .route-list-head h2{
+  font-weight:820!important;
+  letter-spacing:-.55px!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .route-task strong{
+  color:#182242!important;
+  letter-spacing:-.12px!important;
+}
+body.pnx3-dashboard-ready .pnx3-plan-card .route-task small{
+  color:#7b89a5!important;
+}
+
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .content{
+    padding-left:14px!important;
+    padding-right:14px!important;
+  }
+  body.pnx3-dashboard-ready .premium-signal-rail{
+    gap:8px!important;
+  }
+  body.pnx3-dashboard-ready .premium-signal{
+    min-height:66px!important;
+    padding:8px 9px!important;
+    border-radius:16px!important;
+  }
+  body.pnx3-dashboard-ready .premium-signal strong{
+    font-size:14px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-dashboard,
+  body.pnx3-dashboard-ready .pnx3-lower{
+    gap:12px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card{
+    border-radius:18px!important;
+    padding:13px 13px 9px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-plan-card .route-task{
+    min-height:58px!important;
+    padding:7px 5px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero{
+    min-height:268px!important;
+    height:268px!important;
+    border-radius:18px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-focus .pnx-reference-hero .pnx-pomodoro{
+    transform:scale(.92);
+    transform-origin:center center;
+  }
+  body.pnx3-dashboard-ready .pnx3-side-stack>section,
+  body.pnx3-dashboard-ready .pnx3-lower>section{
+    border-radius:18px!important;
+  }
+  body.pnx3-dashboard-ready .pnx3-teacher-card{
+    min-height:156px!important;
+  }
+}

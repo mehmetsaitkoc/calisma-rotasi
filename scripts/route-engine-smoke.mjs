@@ -1815,7 +1815,7 @@ for(const marker of [
   assert.ok(task.includes('data-action="complete-session"'),'Mobile completion must keep the existing completion action');
   assert.ok(focus.includes("t.sessionId=p.id"),'Focus start must link the existing plan task to the timer');
   assert.ok(!focus.includes('scrollIntoView'),'Focus start must stay in-place and must not force-scroll the Today dashboard');
-  assert.ok(focus.includes("if(ui.view==='today')render();else navigate('today')"),'Focus start must reuse the current Today surface instead of navigating when already visible');
+  assert.ok(focus.includes("if(ui.view==='today')renderKeepScroll();else navigate('today')"),'Focus start must reuse the current Today surface and preserve viewport position instead of navigating when already visible');
   assert.ok(timer.includes("p=t.sessionId?w().plan.find"),'Focus card must derive its task from the linked timer session');
   assert.ok(today.includes("focusActive=!!focusTimer.sessionId&&w().plan.some"),'Today must show focus only for a real unfinished linked task');
 }

@@ -132,13 +132,14 @@ function rebalance(space,candidates,opts={}){
   const routeReviewWeeklyLimit=t=>Math.max(30,Math.round((t*.45)/5)*5);
   const routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5));
   const routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{};
+  const routeDecisionTraceForCandidate=(candidate,capacityOverride)=>candidate?.decisionTrace||null;
   const fn=new Function(
     'state','w','today','R','routeEnsure','routeRecoverySignal','routeBuildCandidates',
     'routeEffectiveDailyMinutes','routeTaskMethod','routeMethodLoad','routeIsQuantitativeHeavy',
     'routeIsReviewLike','routeIsCriticalReview','routeIsBacklog','routeHeavyLimit',
     'routeQuantitativeDailyLimit','routeReviewDailyLimit','routeBacklogDailyLimit',
     'routeBacklogDailyCountLimit','routeReviewWeeklyLimit','routeBacklogWeeklyLimit',
-    'routeRecordModeHistory','routeRecordInterventions','toast',
+    'routeRecordModeHistory','routeRecordInterventions','toast','routeDecisionTraceForCandidate',
     rebalanceSrc+';return routeRebalance;'
   );
   return fn(
@@ -147,7 +148,7 @@ function rebalance(space,candidates,opts={}){
     routeIsReviewLike,routeIsCriticalReview,routeIsBacklog,routeHeavyLimit,
     routeQuantitativeDailyLimit,routeReviewDailyLimit,routeBacklogDailyLimit,
     routeBacklogDailyCountLimit,routeReviewWeeklyLimit,routeBacklogWeeklyLimit,
-    routeRecordModeHistory,routeRecordInterventions,toast
+    routeRecordModeHistory,routeRecordInterventions,toast,routeDecisionTraceForCandidate
   )('route simulation',true);
 }
 function fullRoute(space,buildOpts={},scheduleOpts={}){
@@ -436,3 +437,6 @@ if(failures.length)console.error('Route simulation failures:',JSON.stringify(fai
 assert.equal(failures.length,0,`${failures.length} route simulations failed`);
 assert.equal(passed,23,'Expected exactly 23 route simulations');
 console.log(`route-engine-route-sim: ${passed} real candidate/scheduler simulations passed`);
+
+// Route Engine 2.0 regression: extracted rebalance must receive the same decision-trace helper as production.
+assert.ok(rebalanceSrc.includes('routeDecisionTraceForCandidate(candidate'), 'Decision trace helper must be used when scheduled tasks are finalized');

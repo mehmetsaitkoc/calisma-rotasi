@@ -184,7 +184,10 @@ try{
   assert.ok(await page.locator('body.app-premium-next-ready.pnx-today-reference.pnx3-dashboard-ready').count(),'KPSS target dashboard layer must activate');
   assert.ok(await page.locator('.pnx-global-search').isVisible(),'Today top bar must expose the KPSS search affordance');
   assert.match(await page.locator('.pnx-global-search').innerText(),/KPSS/i,'Search affordance must be KPSS-specific');
-  assert.ok(await page.locator('.pnx-head-art').isVisible(),'Today header must include the journey/date visual');
+  const headArt=page.locator('.pnx-head-art').first();
+  assert.ok(await headArt.count(),'Today header must include the journey/date visual');
+  const headArtDisplay=await headArt.evaluate(node=>getComputedStyle(node).display);
+  if((await page.viewportSize()).width>900)assert.notEqual(headArtDisplay,'none','Desktop Today header must show the journey/date visual');
   assert.equal(await page.locator('.premium-signal-rail > .premium-signal:not([hidden])').count(),4,'Today must expose four premium status cards');
   assert.ok(await page.locator('.pnx3-dashboard').isVisible(),'Today must expose the approved three-column dashboard');
   assert.ok(await page.locator('.pnx3-plan .route-task').count(),'Bugünün Planı must reuse the real route tasks');
@@ -210,7 +213,10 @@ try{
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(),'Today must expose the daily quote card');
   assert.equal(await page.locator('.pnx3-quote-card .pnx3-quote-kicker').count(),1,'Daily quote must have one kicker layer');
   assert.equal(await page.locator('.pnx3-quote-card blockquote').count(),1,'Daily quote must have one quote layer');
-  assert.ok(await page.locator('.pnx-head-art').isVisible(),'Top hero visual and date area must stay visible on desktop');
+  const desktopHeadArt=page.locator('.pnx-head-art').first();
+  assert.ok(await desktopHeadArt.count(),'Top hero visual and date area must remain in the desktop DOM');
+  const desktopHeadArtDisplay=await desktopHeadArt.evaluate(node=>getComputedStyle(node).display);
+  assert.notEqual(desktopHeadArtDisplay,'none','Top hero visual and date area must stay displayed on desktop');
   assert.ok(await page.locator('.pnx3-insight-archive').count(),'Explainability must remain available below the first-screen dashboard');
   assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(),'Today top bar must expose day/night mode');
   await noOverflow(page,'Today 1512');

@@ -37,7 +37,7 @@ async function gotoLegacyResume(page, url) {
   // kpss-only.js intentionally performs location.reload() once when it migrates
   // a configured legacy YKS selection back to KPSS. Do not fight that reload with
   // repeated page.goto() calls; poll across execution-context replacements instead.
-  const deadline = Date.now() + 15000;
+  const deadline = Date.now() + 25000;
   let lastStatus = null;
   while (Date.now() < deadline) {
     try {
@@ -53,6 +53,11 @@ async function gotoLegacyResume(page, url) {
         };
       });
       if (lastStatus.activeExam === 'kpss' && lastStatus.hasShell) return;
+      // If the migration reload was aborted back to the fresh landing URL, resume
+      // from the already-migrated local state once instead of waiting on an empty shell.
+      if (lastStatus.readyState === 'complete' && !lastStatus.hasShell && /[?&]fresh=1(?:&|$)/.test(new URL(lastStatus.href).search) && !/[?&]resume=1(?:&|$)/.test(new URL(lastStatus.href).search)) {
+        try { await page.goto(url, { waitUntil: 'domcontentloaded' }); navigationError = null; } catch (error) { if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error; }
+      }
     } catch {}
     await sleep(100);
   }

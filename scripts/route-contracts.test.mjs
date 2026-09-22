@@ -46,6 +46,36 @@ assert.throws(()=>C.validateEntitlement({...freeEntitlement,schema:'wrong'}),/ye
 assert.match(C.taskReason({source:'mini_repair'}),/Mini denemede/i);
 assert.match(C.taskReason({source:'spaced_review'}),/hatırlamayı güçlendirmek/i);
 assert.ok(!/confounded|evidence factor|hysteresis/i.test(C.studentText('confounded evidence factor hysteresis')));
+const trace=C.decisionTrace({
+  mode:'repair',confidence:82,score:91,
+  reasonCodes:['ASSESSMENT_RISK','OPEN_MISTAKE','ASSESSMENT_RISK','NOT_REAL'],
+  evidence:['Deneme 2/5','Açık yanlış 3'],
+  capacity:{requestedMinutes:55,assignedMinutes:35,dailyLimit:90}
+});
+assert.deepEqual(trace.reasonCodes,['ASSESSMENT_RISK','OPEN_MISTAKE']);
+assert.equal(trace.capacity.constrained,true);
+assert.match(C.traceExplanation(trace),/Son ölçümlerde/i);
+assert.match(C.traceExplanation(trace),/kapanmamış/i);
+assert.match(C.taskReason({source:'curriculum',decisionTrace:trace}),/Son ölçümlerde/i,'Decision trace must outrank generic source copy');
+assert.equal(C.traceExplanation({reasonCodes:['NOT_REAL']},''),'','Unknown reason codes must not invent student-facing claims');
+const derived=C.decisionTraceFromSignals({
+  mode:'repair',score:88,
+  assessment:{risk:true,evidence:'Matematik denemesi %42 doğruluk'},
+  mistakes:{open:2,repeated:1},
+  review:{due3:true},
+  mastery:{verified:false,stale:false,samples:1},
+  capacity:{requestedMinutes:55,assignedMinutes:35,dailyLimit:90}
+});
+assert.deepEqual(derived.reasonCodes,['ASSESSMENT_RISK','OPEN_MISTAKE','REPEATED_MISTAKE','REVIEW_DUE_3','CAPACITY_CONSTRAINED']);
+assert.equal(derived.capacity.constrained,true);
+assert.ok(derived.evidence.some(x=>/denemesi/i.test(x)));
+const masteryDerived=C.decisionTraceFromSignals({mode:'progress',mastery:{verified:true,samples:3,evidence:'3 ayrı günde güçlü sonuç'},trend:{direction:'up',samples:3}});
+assert.ok(masteryDerived.reasonCodes.includes('MASTERY_EVIDENCE'));
+assert.ok(masteryDerived.reasonCodes.includes('POSITIVE_TREND'));
+const complianceOnly=C.decisionTraceFromSignals({mode:'repair',behavior:{lowCompliance:true}});
+assert.notEqual(complianceOnly.mode,'repair','Low compliance alone must not fabricate academic repair');
+
+
 
 const envelope=C.teacherContextEnvelope({
   todayPlan:[

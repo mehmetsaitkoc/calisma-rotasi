@@ -78,6 +78,83 @@ const SOURCE_REASON=Object.freeze({
   checkpoint:'Haftalık ilerlemeyi kontrol etmek için kısa bir doğrulama görevi.'
 });
 
+const TRACE_REASON_COPY=Object.freeze({
+  ASSESSMENT_RISK:'Son ölçümlerde bu konuda risk görünüyor.',
+  OPEN_MISTAKE:'Bu konuda kapanmamış bir yanlışın var.',
+  REPEATED_MISTAKE:'Aynı konu veya hata tipi tekrar ediyor.',
+  REVIEW_DUE_3:'3 günlük tekrar zamanı geldi.',
+  REVIEW_DUE_7:'7 günlük tekrar zamanı geldi.',
+  RETENTION_STALE:'Bu konudaki güvenilir kanıtın eskidi; kısa bir hatırlama kontrolü yararlı.',
+  BELOW_PERSONAL_NORM:'Son performansın kendi yakın dönem normalinin altında.',
+  NEGATIVE_TREND:'Son güvenilir veriler düşüş eğilimi gösteriyor.',
+  POSITIVE_TREND:'Son güvenilir veriler istikrarlı gelişim gösteriyor.',
+  TARGET_URGENCY:'Sınava kalan süre bu konunun önceliğini artırıyor.',
+  PROFILE_PRIORITY:'Bu dersi öncelikli seçtiğin için planda öne çıktı.',
+  LOW_COMPLIANCE:'Son görevlerde tamamlama oranı düşük; yük uygulanabilir tutuluyor.',
+  RECOVERY_ACTIVE:'Toparlanma döneminde olduğun için yük kontrollü tutuluyor.',
+  CAPACITY_CONSTRAINED:'Günlük kapasiteni aşmamak için çalışma süresi sınırlandı.',
+  MASTERY_EVIDENCE:'Birden fazla güvenilir kanıt bu konuda ilerlemeyi destekliyor.',
+  LOW_EVIDENCE:'Keskin karar için henüz yeterli gerçek veri yok.'
+});
+function normalizeReasonCodes(codes){
+  const seen=new Set(),out=[];
+  for(const raw of Array.isArray(codes)?codes:[]){
+    const code=collapse(raw,60).toUpperCase();
+    if(!TRACE_REASON_COPY[code]||seen.has(code))continue;
+    seen.add(code);out.push(code);
+  }
+  return out;
+}
+function decisionTrace(raw={}){
+  const reasonCodes=normalizeReasonCodes(raw.reasonCodes);
+  const confidence=Math.max(0,Math.min(100,Number(raw.confidence)||0));
+  const evidence=Array.isArray(raw.evidence)?raw.evidence.slice(0,8).map(x=>studentText(x,180)).filter(Boolean):[];
+  const cap=raw.capacity&&typeof raw.capacity==='object'?raw.capacity:{};
+  const requestedMinutes=Math.max(0,Number(cap.requestedMinutes)||0),assignedMinutes=Math.max(0,Number(cap.assignedMinutes)||0),dailyLimit=Math.max(0,Number(cap.dailyLimit)||0);
+  return Object.freeze({version:1,mode:normalizeMode(raw.mode),confidence,score:Number(raw.score)||0,reasonCodes,evidence,capacity:Object.freeze({requestedMinutes,assignedMinutes,dailyLimit,constrained:cap.constrained===true||requestedMinutes>assignedMinutes&&requestedMinutes>0})});
+}
+function decisionTraceFromSignals(raw={}){
+  raw=raw&&typeof raw==='object'?raw:{};
+  const codes=[];
+  const evidence=[];
+  const add=(code,text)=>{codes.push(code);if(text)evidence.push(studentText(text,180));};
+  const assessment=raw.assessment&&typeof raw.assessment==='object'?raw.assessment:{};
+  const mistakes=raw.mistakes&&typeof raw.mistakes==='object'?raw.mistakes:{};
+  const review=raw.review&&typeof raw.review==='object'?raw.review:{};
+  const mastery=raw.mastery&&typeof raw.mastery==='object'?raw.mastery:{};
+  const capacity=raw.capacity&&typeof raw.capacity==='object'?raw.capacity:{};
+  const behavior=raw.behavior&&typeof raw.behavior==='object'?raw.behavior:{};
+  const trend=raw.trend&&typeof raw.trend==='object'?raw.trend:{};
+  if(assessment.risk===true||Number(assessment.riskScore)>0)add('ASSESSMENT_RISK',assessment.evidence||'Son güvenilir ölçüm bu konuda risk gösteriyor.');
+  if(Number(mistakes.open)>0)add('OPEN_MISTAKE',mistakes.open+' açık yanlış');
+  if(Number(mistakes.repeated)>0)add('REPEATED_MISTAKE',mistakes.repeated+' tekrar eden yanlış');
+  if(review.due3===true||Number(review.wave)===3)add('REVIEW_DUE_3','3 günlük tekrar zamanı geldi.');
+  if(review.due7===true||Number(review.wave)===7)add('REVIEW_DUE_7','7 günlük tekrar zamanı geldi.');
+  if(mastery.stale===true)add('RETENTION_STALE',mastery.evidence||'Son güvenilir mastery kanıtı eskidi.');
+  if(mastery.verified===true&&Number(mastery.samples)>=2)add('MASTERY_EVIDENCE',mastery.evidence||mastery.samples+' ayrı güvenilir mastery kanıtı');
+  if(trend.belowPersonalNorm===true)add('BELOW_PERSONAL_NORM',trend.evidence||'Yakın dönem kişisel normalinin altında.');
+  if(trend.direction==='down')add('NEGATIVE_TREND',trend.evidence||'Güvenilir performans trendi aşağı yönlü.');
+  if(trend.direction==='up'&&Number(trend.samples)>=2)add('POSITIVE_TREND',trend.evidence||'Güvenilir performans trendi yukarı yönlü.');
+  if(raw.targetUrgency===true)add('TARGET_URGENCY',raw.targetEvidence||'Sınava kalan süre önceliği artırıyor.');
+  if(raw.profilePriority===true)add('PROFILE_PRIORITY',raw.profileEvidence||'Öğrenci profili bu alanı öncelikli işaretliyor.');
+  if(behavior.lowCompliance===true)add('LOW_COMPLIANCE',behavior.evidence||'Son görev tamamlama oranı düşük.');
+  if(behavior.recoveryActive===true)add('RECOVERY_ACTIVE',behavior.evidence||'Toparlanma politikası aktif.');
+  const requested=Math.max(0,Number(capacity.requestedMinutes)||0),assigned=Math.max(0,Number(capacity.assignedMinutes)||0);
+  if(capacity.constrained===true||(requested>0&&assigned<requested))add('CAPACITY_CONSTRAINED',requested&&assigned?requested+' dk istek, '+assigned+' dk atandı.':'Günlük kapasite sınırı uygulandı.');
+  const meaningful=codes.filter(code=>code!=='LOW_COMPLIANCE'&&code!=='CAPACITY_CONSTRAINED');
+  if(!meaningful.length&&raw.lowEvidence===true)add('LOW_EVIDENCE',raw.lowEvidenceText||'Keskin karar için yeterli gerçek veri yok.');
+  let mode=normalizeMode(raw.mode);
+  if(mode==='repair'&&codes.length===1&&codes[0]==='LOW_COMPLIANCE')mode='ease';
+  const baseConfidence=Number(raw.confidence);
+  const confidence=Number.isFinite(baseConfidence)?baseConfidence:Math.min(92,Math.max(20,35+meaningful.length*12+(codes.includes('MASTERY_EVIDENCE')?8:0)));
+  return decisionTrace({version:1,mode,confidence,score:Number(raw.score)||0,reasonCodes:codes,evidence,capacity});
+}
+function traceExplanation(raw,fallback=''){
+  const trace=decisionTrace(raw),parts=trace.reasonCodes.slice(0,3).map(code=>TRACE_REASON_COPY[code]).filter(Boolean);
+  if(parts.length)return studentText(parts.join(' '),500);
+  return studentText(fallback,500);
+}
+
 function collapse(value,max=700){
   return String(value??'').replace(/\s+/g,' ').trim().slice(0,max);
 }
@@ -106,6 +183,8 @@ function modeCopy(mode){
   return MODE_COPY[normalizeMode(mode)]||MODE_COPY.steady;
 }
 function taskReason(task){
+  const traced=traceExplanation(task?.decisionTrace||task?.trace||{},'');
+  if(traced)return traced;
   const direct=studentText(task?.reason||'',500);
   if(direct)return direct;
   return SOURCE_REASON[task?.source]||'Bu görev, mevcut seviyen, hedefin ve son çalışma verilerin birlikte değerlendirilerek bugün planlandı.';
@@ -217,6 +296,11 @@ root.RotaContracts={
   validateEntitlement,
   MODE_COPY,
   SOURCE_REASON,
+  TRACE_REASON_COPY,
+  normalizeReasonCodes,
+  decisionTrace,
+  decisionTraceFromSignals,
+  traceExplanation,
   studentText,
   modeCopy,
   taskReason,

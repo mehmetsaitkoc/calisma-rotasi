@@ -839,12 +839,14 @@ try {
       return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
     });
   };
+  await page.waitForFunction(() => { const n=document.querySelector('.pnx3-focus'); if(!n)return false; const r=n.getBoundingClientRect(); return r.width>0&&r.height>0; });
   const focusSlotBefore = await readFocusSlotBox();
   const scrollBeforeFocusStart = await page.evaluate(() => window.scrollY);
   await startButton.evaluate(node => node.click());
 
   const focusCard = page.locator('.pnx3-focus .route-focus-card');
   await focusCard.waitFor({ state: 'visible' });
+  await page.waitForFunction(() => { const n=document.querySelector('.pnx3-focus'); if(!n)return false; const r=n.getBoundingClientRect(); return r.width>0&&r.height>0; });
   const focusSlotAfter = await readFocusSlotBox();
   const scrollAfterFocusStart = await page.evaluate(() => window.scrollY);
   assert.ok(

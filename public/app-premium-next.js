@@ -197,19 +197,59 @@
     return text(root.querySelector('.route-task .route-task-reason')) || text(fallback?.querySelector('p')) || '';
   }
 
-  function stabilizeFocusViewport(anchorTop, frames = 22) {
+  function stabilizeFocusViewport(anchorTop, frames = 24) {
     if (!Number.isFinite(anchorTop)) return;
     document.body.classList.add('pnx3-timer-switching');
+
     let frame = 0;
+    let queuedRestore = false;
+    let finished = false;
+
+    const visibleFocus = () => {
+      const nodes = Array.from(document.querySelectorAll('.pnx3-focus'));
+      return nodes.find((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+      }) || nodes[0] || null;
+    };
+
+    const restore = () => {
+      const focus = visibleFocus();
+      if (!focus) return;
+      const delta = focus.getBoundingClientRect().top - anchorTop;
+      if (Math.abs(delta) > 0.5) window.scrollBy(0, delta);
+    };
+
+    const restoreAfterMutation = () => {
+      if (queuedRestore || finished) return;
+      queuedRestore = true;
+      queueMicrotask(() => {
+        queuedRestore = false;
+        restore();
+      });
+    };
+
+    const observer = new MutationObserver(restoreAfterMutation);
+    const observedRoot = document.querySelector('#app') || document.body;
+    if (observedRoot) observer.observe(observedRoot, { childList:true, subtree:true });
+
+    // Correct both synchronously and after each compositor mutation so the
+    // preview -> live timer handoff never paints at a different vertical Y.
+    restore();
     const keep = () => {
-      const focus = document.querySelector('.pnx3-focus');
-      if (focus) {
-        const delta = focus.getBoundingClientRect().top - anchorTop;
-        if (Math.abs(delta) > 0.5) window.scrollBy(0, delta);
-      }
+      restore();
       frame += 1;
-      if (frame < frames) requestAnimationFrame(keep);
-      else document.body.classList.remove('pnx3-timer-switching');
+      if (frame < frames) {
+        requestAnimationFrame(keep);
+        return;
+      }
+      requestAnimationFrame(() => {
+        restore();
+        finished = true;
+        observer.disconnect();
+        document.body.classList.remove('pnx3-timer-switching');
+      });
     };
     requestAnimationFrame(keep);
   }

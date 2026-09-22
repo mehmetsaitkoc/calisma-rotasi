@@ -6496,3 +6496,99 @@ body.pnx3-dashboard-ready .route-command-grid{
     white-space:nowrap!important;
   }
 }
+
+
+/* V5.2 TIMER STABILITY + FREE MODE */
+body.pnx3-timer-switching{
+  scroll-behavior:auto!important;
+}
+body.pnx3-timer-switching .pnx3-focus,
+body.pnx3-timer-switching .pnx3-focus *{
+  transition:none!important;
+  animation:none!important;
+}
+
+body.pnx3-dashboard-ready .pnx3-free-timer{
+  position:absolute;
+  inset:56px 16px 18px;
+  z-index:8;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:10px;
+  padding:18px;
+  border-radius:16px;
+  background:rgba(5,16,37,.90);
+  backdrop-filter:blur(4px);
+  text-align:center;
+}
+body.pnx3-dashboard-ready .pnx-reference-hero.pnx3-free-mode .pnx3-free-timer{
+  display:flex;
+}
+body.pnx3-dashboard-ready .pnx-reference-hero.pnx3-free-mode .pnx-pomodoro,
+body.pnx3-dashboard-ready .pnx-reference-hero.pnx3-free-mode > .route-start-big,
+body.pnx3-dashboard-ready .pnx-reference-hero.pnx3-free-mode > .route-total,
+body.pnx3-dashboard-ready .pnx-reference-hero.pnx3-free-mode > .grow,
+body.pnx3-dashboard-ready .pnx-reference-hero.pnx3-free-mode > .pnx3-focus-quote{
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.pnx3-dashboard-ready .pnx3-free-timer > small{
+  color:#77b9ff;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:1.3px;
+}
+body.pnx3-dashboard-ready .pnx3-free-timer > strong{
+  color:#fff;
+  font-size:42px;
+  font-weight:850;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-1.8px;
+  line-height:1;
+}
+body.pnx3-dashboard-ready .pnx3-free-timer > span{
+  color:#aebed7;
+  font-size:10px;
+}
+body.pnx3-dashboard-ready .pnx3-free-controls{
+  display:flex;
+  justify-content:center;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:4px;
+}
+body.pnx3-dashboard-ready .pnx3-free-controls .btn{
+  min-height:32px!important;
+  padding:0 12px!important;
+  border-radius:9px!important;
+  font-size:9px!important;
+}
+body.pnx3-dashboard-ready .pnx3-free-controls .btn.primary{
+  background:#1675ff!important;
+  border-color:#1675ff!important;
+  color:#fff!important;
+}
+body.pnx3-dashboard-ready .pnx3-free-controls .btn.ghost{
+  background:rgba(7,18,39,.72)!important;
+  border-color:rgba(255,255,255,.12)!important;
+  color:#e7f0ff!important;
+}
+
+@media(max-width:650px){
+  body.pnx3-dashboard-ready .pnx3-free-timer{
+    inset:54px 10px 12px;
+    padding:14px 10px;
+  }
+  body.pnx3-dashboard-ready .pnx3-free-timer > strong{
+    font-size:36px;
+  }
+  body.pnx3-dashboard-ready .pnx3-free-controls{
+    width:100%;
+  }
+  body.pnx3-dashboard-ready .pnx3-free-controls .btn{
+    flex:1 1 86px;
+    min-width:0!important;
+  }
+}

@@ -830,10 +830,18 @@ try {
   const startButton = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await startButton.waitFor({ state: 'visible' });
   assert.match((await startButton.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Preview timer must show the real planned task duration');
+  const focusSlotBefore = await page.locator('.pnx3-focus').boundingBox();
+  const scrollBeforeFocusStart = await page.evaluate(() => window.scrollY);
   await startButton.click();
 
   const focusCard = page.locator('.pnx3-focus .route-focus-card');
   await focusCard.waitFor({ state: 'visible' });
+  const focusSlotAfter = await page.locator('.pnx3-focus').boundingBox();
+  const scrollAfterFocusStart = await page.evaluate(() => window.scrollY);
+  assert.ok(focusSlotBefore && focusSlotAfter, 'Pomodoro focus slot must remain measurable before and after start');
+  assert.ok(Math.abs(focusSlotBefore.y - focusSlotAfter.y) <= 2, 'Pomodoro start must not move the focus card vertically');
+  assert.ok(Math.abs(focusSlotBefore.height - focusSlotAfter.height) <= 2, 'Pomodoro start must keep the same focus-card height');
+  assert.ok(Math.abs(scrollBeforeFocusStart - scrollAfterFocusStart) <= 2, 'Pomodoro start must not force-scroll the Today page');
   assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Pomodoro start must bind the real task title to the focus card');
   assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Pomodoro start must expose the focus-session state');
   assert.ok(await page.locator('[data-action="timer-log"]').count(), 'Focused task must expose the real finish-and-record action');

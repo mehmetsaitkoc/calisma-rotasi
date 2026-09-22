@@ -198,9 +198,38 @@ try{
   assert.match(await page.locator('.pnx3-goals-card').innerText(),/KPSS Genel Net/i,'Goals must stay bound to KPSS exam evidence');
 
   
+  async function assertMobileTodayTaskGeometry(label){
+    const task=page.locator('.pnx3-plan-card .route-task').first();
+    await task.waitFor({state:'visible'});
+    const geometry=await task.evaluate(el=>{
+      const main=el.querySelector('.route-task-main');
+      const actions=el.querySelector('.route-task-actions');
+      const check=el.querySelector('.route-complete-btn,.check-btn');
+      const labelNode=el.querySelector('.route-complete-label');
+      const rect=node=>node?node.getBoundingClientRect():null;
+      return {
+        task:rect(el),
+        main:rect(main),
+        actions:rect(actions),
+        check:rect(check),
+        labelDisplay:labelNode?getComputedStyle(labelNode).display:'missing',
+        scrollWidth:el.scrollWidth,
+        clientWidth:el.clientWidth
+      };
+    });
+    assert.ok(geometry.task&&geometry.main&&geometry.actions&&geometry.check,label+': mobile task geometry must be measurable');
+    assert.ok(geometry.scrollWidth<=geometry.clientWidth+1,label+': mobile task row must not overflow horizontally');
+    assert.ok(geometry.actions.width<=38.5,label+': mobile completion action must stay in its fixed right column');
+    assert.ok(geometry.check.width<=35.5&&geometry.check.height<=35.5,label+': mobile completion control must remain circular-sized');
+    assert.ok(geometry.check.right<=geometry.task.right+1&&geometry.check.left>=geometry.task.left-1,label+': completion control must stay inside the task row');
+    assert.ok(geometry.main.right<=geometry.actions.left+1,label+': task copy must not overlap the completion control');
+    assert.equal(geometry.labelDisplay,'none',label+': mobile Tamamla text must be hidden inside the icon-only completion control');
+  }
+
   await page.setViewportSize({width:390,height:844});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
   await noOverflow(page,'Today 390');
+  await assertMobileTodayTaskGeometry('Today 390');
   const hiddenSidebar=await page.locator('.sidebar').evaluate(el=>{
     const r=el.getBoundingClientRect();
     return {right:r.right,left:r.left,width:r.width};
@@ -210,6 +239,7 @@ try{
 
   await page.setViewportSize({width:360,height:800});
   await noOverflow(page,'Today 360');
+  await assertMobileTodayTaskGeometry('Today 360');
   await page.screenshot({path:OUT+'/today-360.png',fullPage:false});
   await page.setViewportSize({width:390,height:844});
 

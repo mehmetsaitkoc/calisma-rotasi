@@ -46,6 +46,19 @@ assert.throws(()=>C.validateEntitlement({...freeEntitlement,schema:'wrong'}),/ye
 assert.match(C.taskReason({source:'mini_repair'}),/Mini denemede/i);
 assert.match(C.taskReason({source:'spaced_review'}),/hatırlamayı güçlendirmek/i);
 assert.ok(!/confounded|evidence factor|hysteresis/i.test(C.studentText('confounded evidence factor hysteresis')));
+const trace=C.decisionTrace({
+  mode:'repair',confidence:82,score:91,
+  reasonCodes:['ASSESSMENT_RISK','OPEN_MISTAKE','ASSESSMENT_RISK','NOT_REAL'],
+  evidence:['Deneme 2/5','Açık yanlış 3'],
+  capacity:{requestedMinutes:55,assignedMinutes:35,dailyLimit:90}
+});
+assert.deepEqual(trace.reasonCodes,['ASSESSMENT_RISK','OPEN_MISTAKE']);
+assert.equal(trace.capacity.constrained,true);
+assert.match(C.traceExplanation(trace),/Son ölçümlerde/i);
+assert.match(C.traceExplanation(trace),/kapanmamış/i);
+assert.match(C.taskReason({source:'curriculum',decisionTrace:trace}),/Son ölçümlerde/i,'Decision trace must outrank generic source copy');
+assert.equal(C.traceExplanation({reasonCodes:['NOT_REAL']},''),'','Unknown reason codes must not invent student-facing claims');
+
 
 const envelope=C.teacherContextEnvelope({
   todayPlan:[

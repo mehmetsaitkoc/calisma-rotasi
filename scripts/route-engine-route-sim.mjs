@@ -495,9 +495,23 @@ sim('R23 eight-candidate evidence tournament',()=>{
   for(const p of space.plan)assert.ok(p.routeRank&&Number.isFinite(p.routeRank.finalScore),'Scheduled tasks must retain ranking evidence');
 });
 
+
+// R24 — DecisionTrace must survive into intervention/outcome telemetry contract.
+sim('R24 decision outcome telemetry linkage',()=>{
+  const trace={score:72,confidence:88,reasonCodes:['ASSESSMENT_RISK','OPEN_MISTAKE']};
+  const task={id:'decision-task',routeKey:'decision-task',earliest:TODAY,minutes:25,subjectId:'k-ta',topicId:'h1',priority:72,source:'curriculum',methodKey:'history',decisionTrace:trace};
+  const space=baseSpace(60);rebalance(space,[task],{limit:60});
+  const scheduled=space.plan.find(p=>p.id==='decision-task');
+  return {scheduled,audit:space.route.selectionAudit.rankingPool.find(x=>x.taskId==='decision-task')};
+},x=>{
+  assert.deepEqual(x.scheduled.decisionTrace.reasonCodes,['ASSESSMENT_RISK','OPEN_MISTAKE']);
+  assert.equal(x.audit.taskId,'decision-task');
+  assert.ok(Number.isFinite(x.audit.score));
+});
+
 if(failures.length)console.error('Route simulation failures:',JSON.stringify(failures,null,2));
 assert.equal(failures.length,0,`${failures.length} route simulations failed`);
-assert.equal(passed,26,'Expected exactly 26 route simulations');
+assert.equal(passed,27,'Expected exactly 27 route simulations');
 console.log(`route-engine-route-sim: ${passed} real candidate/scheduler simulations passed`);
 
 // Route Engine 2.0 regression: extracted rebalance must receive the same decision-trace helper as production.

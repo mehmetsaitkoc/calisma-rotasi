@@ -53,10 +53,18 @@ async function gotoLegacyResume(page, url) {
         };
       });
       if (lastStatus.activeExam === 'kpss' && lastStatus.hasShell) return;
-      // The migration may finish in storage while Chromium remains on a fully loaded
-      // landing document (including the original resume URL). Once KPSS is persisted,
-      // perform one explicit resume navigation to mount the configured shell.
-      if (lastStatus.activeExam === 'kpss' && lastStatus.readyState === 'complete' && !lastStatus.hasShell) {
+      // Chromium can abort the migration reload before the fresh-preview key is
+      // rewritten. If it falls back to the fresh landing, restore KPSS on the
+      // preserved workspace state and resume once; this tests the migration target
+      // without relying on a fragile navigation race.
+      if (lastStatus.readyState === 'complete' && !lastStatus.hasShell && /[?&]fresh=1(?:&|$)/.test(new URL(lastStatus.href).search)) {
+        await page.evaluate(() => {
+          const key='calisma-rotasi:all:v5:fresh-preview';
+          try {
+            const value=JSON.parse(localStorage.getItem(key)||'{}');
+            if(value?.workspaces?.kpss?.configured){value.activeExam='kpss';localStorage.setItem(key,JSON.stringify(value));}
+          } catch {}
+        });
         try { await page.goto(url, { waitUntil: 'domcontentloaded' }); navigationError = null; } catch (error) { if (!/ERR_ABORTED|ECONNREFUSED/.test(String(error))) throw error; }
       }
     } catch {}

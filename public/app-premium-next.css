@@ -6343,3 +6343,26 @@ body.pnx3-dashboard-ready .pnx3-footer{
     font-size:25px!important;
   }
 }
+
+
+/* V5 POMODORO RAW-MOUNT GUARD */
+/* Core Today renders the real timer just before the premium compositor moves it
+   into the fixed center slot. Keep that transient raw node out of document flow,
+   otherwise the page gains ~40px and browser scroll anchoring visibly jumps. */
+body.pnx3-dashboard-ready .content > .route-focus-card:not(.pnx3-live-timer-card){
+  display:none!important;
+  position:absolute!important;
+  width:0!important;
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+  visibility:hidden!important;
+}
+body.pnx3-dashboard-ready .pnx3-dashboard,
+body.pnx3-dashboard-ready .pnx3-focus,
+body.pnx3-dashboard-ready .route-command-grid{
+  overflow-anchor:none!important;
+}

@@ -57,20 +57,20 @@ async function submitWizard(page){
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
 
   const form=()=>page.locator('#setup-wizard-form');
-  await form().locator('[name="name"]').fill('Sait');
+
+  // Stage 1 · welcome
   await form().locator('button[type="submit"]').click();
 
-  await form().locator('[name="studyHabit"][value="yes"]').check();
-  await form().locator('button[type="submit"]').click();
-
-  await form().locator('[name="currentNet"]').fill('48');
-  await form().locator('button[type="submit"]').click();
-
+  // Stage 2 · goals
+  await form().locator('[name="targetScore"][value="85"]').evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
   await form().locator('[name="targetNet"]').fill('82');
-  await form().locator('button[type="submit"]').click();
-
-  await form().locator('[name="dailyMinutes"][value="240"]').check();
-  await form().locator('button[type="submit"]').click();
+  await form().locator('[name="dailyMinutes"][value="240"]').evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
 
   const days=form().locator('[name="days"]');
   for(let i=0;i<await days.count();i++){
@@ -82,14 +82,25 @@ async function submitWizard(page){
   }
   await form().locator('button[type="submit"]').click();
 
-  await form().locator('[name="targetScore"]').fill('88');
-  await form().locator('[name="target"]').fill('Premium rota görsel QA');
-  await form().locator('button[type="submit"]').click();
-
-  const math=form().locator('select[name="level:k-ma"]');
-  if(await math.count()) await math.selectOption('0');
-  const turkish=form().locator('select[name="level:k-tr"]');
-  if(await turkish.count()) await turkish.selectOption('2');
+  // Stage 3 · situation analysis
+  await form().locator('[name="currentNetApprox"][value="50"]').evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  await form().locator('[name="studyHabit"][value="yes"]').evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  const weakMath=form().locator('[name="weakSubjects"][value="k-ma"]');
+  if(await weakMath.count()) await weakMath.evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  const strongTurkish=form().locator('[name="strongSubjects"][value="k-tr"]');
+  if(await strongTurkish.count()) await strongTurkish.evaluate(el=>{
+    el.checked=true;
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
   await form().locator('button[type="submit"]').click();
 
   await page.locator('[data-action="summary-build"]').click();
@@ -146,9 +157,14 @@ try{
   assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(),'Center focus card must expose the Pomodoro ring');
   assert.ok(await page.locator('.pnx3-week-card').isVisible(),'Today must expose the Bu Hafta card');
   assert.ok(await page.locator('.pnx3-goals-card').isVisible(),'Today must expose the KPSS goals card');
-  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(),'Today must expose the larger Rota Hoca card');
+  assert.ok(await page.locator('.pnx3-highlights-card').isVisible(),'Today must expose the KPSS highlights card');
+  assert.ok(await page.locator('.pnx3-highlights-list > button').count(),'Weekly highlights must be populated from the real route plan');
+  assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must be removed');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(),'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(),'Today must expose the daily quote card');
+  assert.equal(await page.locator('.pnx3-quote-card .pnx3-quote-kicker').count(),1,'Daily quote must have one kicker layer');
+  assert.equal(await page.locator('.pnx3-quote-card blockquote').count(),1,'Daily quote must have one quote layer');
+  assert.ok(await page.locator('.pnx-head-art').isVisible(),'Top hero visual and date area must stay visible on desktop');
   assert.ok(await page.locator('.pnx3-insight-archive').count(),'Explainability must remain available below the first-screen dashboard');
   assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(),'Today top bar must expose day/night mode');
   await noOverflow(page,'Today 1512');
@@ -161,14 +177,12 @@ try{
 
   await navigateDesktop(page,'plan');
   await page.getByRole('heading',{name:'Programım'}).waitFor({state:'visible'});
-  assert.ok(await page.locator('.week-grid .day-column').count()===7,'Desktop Program must expose seven days');
+  await page.locator('body.pnx-program-day-ready').waitFor({state:'attached'});
+  await page.locator('.pnx-program-workspace').waitFor({state:'visible'});
+  assert.equal(await page.locator('.pnx-program-day-tab').count(),7,'Desktop Program must keep all seven real day selectors');
+  assert.equal(await page.locator('.week-grid > .day-column.pnx-program-active-day').count(),1,'Program must focus one selected day without deleting the weekly route DOM');
   await noOverflow(page,'Program 1512');
   await page.screenshot({path:OUT+'/program-1512.png',fullPage:false});
-
-  await navigateDesktop(page,'teacher');
-  await page.locator('[data-premium-surface="teacher"]').waitFor({state:'visible'});
-  await noOverflow(page,'Rota Hoca 1512');
-  await page.screenshot({path:OUT+'/rota-hoca-1512.png',fullPage:false});
 
   await navigateDesktop(page,'exams');
   await page.locator('[data-premium-surface="exams"]').waitFor({state:'visible'});
@@ -179,6 +193,11 @@ try{
   await page.locator('.analysis-panel').screenshot({path:OUT+'/ders-analizi-1512.png'});
 
   await navigateDesktop(page,'today');
+  await page.locator('.pnx3-results-card:not(.is-empty)').waitFor({state:'visible'});
+  assert.match(await page.locator('.pnx3-results-card').innerText(),/Genel net/i,'Today must show the real saved full-exam result after evidence exists');
+  assert.match(await page.locator('.pnx3-goals-card').innerText(),/KPSS Genel Net/i,'Goals must stay bound to KPSS exam evidence');
+
+  
   await page.setViewportSize({width:390,height:844});
   await page.locator('.pnx-stage').waitFor({state:'visible'});
   await noOverflow(page,'Today 390');
@@ -189,25 +208,34 @@ try{
   assert.ok(hiddenSidebar.right<=1,'Mobile sidebar must be fully off-canvas until opened');
   await page.screenshot({path:OUT+'/today-390.png',fullPage:false});
 
+  await page.setViewportSize({width:360,height:800});
+  await noOverflow(page,'Today 360');
+  await page.screenshot({path:OUT+'/today-360.png',fullPage:false});
+  await page.setViewportSize({width:390,height:844});
+
   await navigateMobile(page,'plan');
   await page.getByRole('heading',{name:'Programım'}).waitFor({state:'visible'});
-  const mobileFlow=await page.locator('.week-grid').evaluate(el=>({
+  await page.locator('body.pnx-program-day-ready').waitFor({state:'attached'});
+  const mobileFlow=await page.locator('.pnx-program-workspace').evaluate(el=>({
     display:getComputedStyle(el).display,
-    direction:getComputedStyle(el).flexDirection,
     width:el.scrollWidth,
     client:el.clientWidth
   }));
-  assert.equal(mobileFlow.display,'flex','Mobile Program must switch to vertical flow');
-  assert.equal(mobileFlow.direction,'column','Mobile Program must stack days vertically');
-  assert.ok(mobileFlow.width<=mobileFlow.client+2,'Mobile Program must not retain desktop horizontal week overflow');
+  assert.equal(await page.locator('.pnx-program-day-tab').count(),7,'Mobile Program must preserve seven day selectors');
+  assert.equal(await page.locator('.week-grid > .day-column.pnx-program-active-day').count(),1,'Mobile Program must keep one focused selected day');
+  assert.ok(mobileFlow.width<=mobileFlow.client+2,'Mobile Program workspace must fit its viewport');
   await noOverflow(page,'Program 390');
   await page.screenshot({path:OUT+'/program-390.png',fullPage:false});
+
+  await page.setViewportSize({width:360,height:800});
+  await noOverflow(page,'Program 360');
+  await page.screenshot({path:OUT+'/program-360.png',fullPage:false});
 
   assert.deepEqual(errors,[],'Visual review page errors:\n'+errors.join('\n'));
   console.log(JSON.stringify({
     screenshots:[
       'today-1512.png','today-1440.png','program-1512.png',
-      'rota-hoca-1512.png','deneme-1512.png','ders-analizi-1512.png','today-390.png','program-390.png'
+      'deneme-1512.png','ders-analizi-1512.png','today-390.png','today-360.png','program-390.png','program-360.png'
     ],
     mobileProgram:mobileFlow
   },null,2));

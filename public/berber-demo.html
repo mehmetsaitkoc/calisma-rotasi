@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c">
+<title>Berber Dijital Vitrin — Canlı Demo</title>
+<meta name="description" content="Berber ve erkek kuaförleri için mobil uyumlu dijital vitrin ve WhatsApp randevu demosu.">
+<style>
+:root{--bg:#0a0a0b;--panel:#111214;--panel2:#171719;--text:#f7f2e8;--muted:#b8b2a9;--accent:#d8ad61;--line:#29292d;--green:#25d366;--shadow:0 18px 60px rgba(0,0,0,.38)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}button{cursor:pointer}
+.wrap{width:min(1180px,calc(100% - 32px));margin:auto}.topbar{position:sticky;top:0;z-index:40;background:rgba(10,10,11,.84);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.2px}.mark{width:38px;height:38px;border:1px solid var(--accent);border-radius:12px;display:grid;place-items:center;color:var(--accent);font-size:20px}.brand small{display:block;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.navlinks{display:flex;align-items:center;gap:24px;font-size:14px;color:#ddd}.navlinks a:hover{color:var(--accent)}.navActions{display:flex;gap:10px}.btn{border:0;border-radius:14px;padding:12px 17px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s}.btn:hover{transform:translateY(-1px)}.btn.gold{background:var(--accent);color:#15110b}.btn.out{background:#171719;color:var(--text);border:1px solid #303035}.btn.whatsapp{background:var(--green);color:#071d0f}
+.hero{min-height:660px;display:grid;align-items:end;background:linear-gradient(90deg,rgba(5,5,6,.98) 0%,rgba(5,5,6,.83) 44%,rgba(5,5,6,.18) 75%),url("https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1800&q=88") center/cover no-repeat;position:relative}
+.hero:after{content:"";position:absolute;inset:auto 0 0;height:140px;background:linear-gradient(transparent,var(--bg))}.heroInner{position:relative;z-index:2;padding:88px 0 100px;max-width:660px}.eyebrow{color:var(--accent);font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:900}.hero h1{font-family:Georgia,serif;font-size:clamp(48px,7vw,92px);line-height:.95;margin:16px 0 20px;letter-spacing:-.045em}.hero h1 em{color:var(--accent);font-style:italic}.hero p{font-size:19px;color:#ddd;max-width:600px}.heroButtons{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}.status{display:inline-flex;align-items:center;gap:8px;margin-top:26px;padding:9px 13px;border-radius:999px;background:rgba(10,10,11,.65);border:1px solid rgba(255,255,255,.12);font-size:13px}.dot{width:9px;height:9px;border-radius:50%;background:#37df7b;box-shadow:0 0 14px #37df7b}
+.section{padding:76px 0}.sectionHead{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:28px}.sectionHead h2{font-family:Georgia,serif;font-size:clamp(34px,5vw,54px);margin:0}.sectionHead p{color:var(--muted);max-width:540px;margin:0}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:linear-gradient(180deg,#171719,#101012);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)}.serviceImg{height:180px;background-size:cover;background-position:center}.cardBody{padding:19px}.price{color:var(--accent);font-weight:900}.muted{color:var(--muted)}
+.split{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}.priceBox,.bookBox,.reviews,.demoPanel,.beforeBox{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:var(--shadow)}
+.priceRow{display:flex;justify-content:space-between;gap:18px;padding:15px 0;border-bottom:1px dashed #343439}.priceRow:last-child{border-bottom:0}.priceRow b:last-child{color:var(--accent)}
+.staff{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.staffCard{text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px}.avatar{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;background-size:cover;background-position:center;border:2px solid var(--accent)}
+.gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-auto-rows:220px;gap:12px}.gallery div{border-radius:20px;background-size:cover;background-position:center;border:1px solid var(--line)}.gallery div:first-child{grid-row:span 2}
+.beforeBox{padding:0;overflow:hidden;position:relative;min-height:420px}.beforeWrap{position:absolute;inset:0}.before,.after{position:absolute;inset:0;background-size:cover;background-position:center}.before{background-image:url("https://images.unsplash.com/photo-1593702288056-f7b2b8b6bd4a?auto=format&fit=crop&w=1200&q=82")}.after{background-image:url("https://images.unsplash.com/photo-1622287162716-f311baa1a2b8?auto=format&fit=crop&w=1200&q=82");clip-path:inset(0 50% 0 0)}.sliderLine{position:absolute;top:0;bottom:0;left:50%;width:2px;background:white}.sliderKnob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;font-weight:900}.range{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize}
+.reviewGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.review{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px}.stars{color:#f5c967;letter-spacing:3px}
+.cta{margin:72px auto 0;background:linear-gradient(135deg,#1b1710,#0f0f11);border:1px solid #4b3a21;border-radius:28px;padding:38px;display:flex;justify-content:space-between;align-items:center;gap:24px}.cta h3{font-family:Georgia,serif;font-size:38px;margin:0 0 8px}.footer{padding:36px 0 90px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);margin-top:72px}
+.fab{position:fixed;right:18px;bottom:18px;z-index:50;width:58px;height:58px;border-radius:50%;border:0;background:var(--green);color:white;font-size:26px;box-shadow:0 16px 45px rgba(0,0,0,.45)}
+.demoBtn{position:fixed;right:18px;bottom:86px;z-index:50;border:1px solid #66502c;background:#15120d;color:var(--accent);border-radius:999px;padding:11px 14px;font-weight:900;box-shadow:var(--shadow)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(7px);z-index:70;display:none;align-items:center;justify-content:center;padding:18px}.overlay.show{display:flex}.modal{width:min(680px,100%);max-height:90vh;overflow:auto;background:#111214;border:1px solid #34343a;border-radius:24px;padding:26px;box-shadow:0 30px 100px rgba(0,0,0,.6)}.modalHead{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:20px}.modal h3{font-size:26px;margin:0}.close{border:0;background:#222226;color:white;width:38px;height:38px;border-radius:50%}.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em}.field input,.field select{width:100%;background:#0b0b0c;border:1px solid #303036;color:white;border-radius:13px;padding:12px 13px;outline:none}.field input:focus,.field select:focus{border-color:var(--accent)}.themeRow{display:flex;gap:9px;flex-wrap:wrap}.theme{border:1px solid #333;background:#171719;color:white;border-radius:999px;padding:9px 13px}.theme.active{border-color:var(--accent);color:var(--accent)}
+.smallNote{font-size:12px;color:var(--muted);margin-top:12px}
+@media(max-width:900px){.navlinks{display:none}.hero{min-height:610px;background:linear-gradient(180deg,rgba(5,5,6,.25),rgba(5,5,6,.94) 72%),url("https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=85") 58% center/cover no-repeat}.heroInner{padding:260px 0 74px}.grid4{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}.staff,.reviewGrid{grid-template-columns:1fr}.gallery{grid-template-columns:1fr 1fr;grid-auto-rows:170px}.gallery div:first-child{grid-row:auto;grid-column:span 2}.cta{align-items:flex-start;flex-direction:column}}
+@media(max-width:560px){.wrap{width:min(100% - 22px,1180px)}.nav{height:64px}.brand small{display:none}.navActions .btn.out{display:none}.hero h1{font-size:52px}.hero p{font-size:16px}.heroButtons .btn{width:100%}.section{padding:56px 0}.sectionHead{align-items:flex-start;flex-direction:column}.grid4{grid-template-columns:1fr}.formGrid{grid-template-columns:1fr}.field.full{grid-column:auto}.gallery{grid-template-columns:1fr}.gallery div:first-child{grid-column:auto}.cta{padding:26px}.cta h3{font-size:31px}.demoBtn{bottom:82px;font-size:12px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap nav">
+    <a class="brand" href="#"><span class="mark">✂</span><span><span id="brandName">Mersin Barber Studio</span><small id="brandSub">Erkek Kuaförü</small></span></a>
+    <nav class="navlinks"><a href="#hizmetler">Hizmetler</a><a href="#fiyatlar">Fiyatlar</a><a href="#ekip">Ekibimiz</a><a href="#galeri">Galeri</a><a href="#yorumlar">Yorumlar</a></nav>
+    <div class="navActions"><button class="btn out" onclick="openDemo()">⚙ Demo Modu</button><button class="btn gold" onclick="openBooking()">Randevu Al</button></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="heroInner">
+      <div class="eyebrow">Mersin • Erkek Bakım Stüdyosu</div>
+      <h1>Tarzın <em>bizim işimiz.</em></h1>
+      <p id="slogan">Klasik dokunuşlar, modern stiller. Saç, sakal ve bakım hizmetlerinde özenli işçilik.</p>
+      <div class="heroButtons"><button class="btn whatsapp" onclick="openWhatsApp()">● WhatsApp ile Ulaş</button><button class="btn out" onclick="openBooking()">▣ Randevu Talebi</button></div>
+      <div class="status"><span class="dot" id="statusDot"></span><span id="openStatus">Şu an açığız</span></div>
+    </div>
+  </div>
+</section>
+
+<main>
+<section class="section" id="hizmetler">
+  <div class="wrap">
+    <div class="sectionHead"><div><div class="eyebrow">Hizmetlerimiz</div><h2>İyi görünmek detaylarda.</h2></div><p>Her hizmet için tek dokunuşla randevu talebi oluşturabilir, WhatsApp üzerinden doğrudan işletmeye ulaşabilirsin.</p></div>
+    <div class="grid4">
+      <article class="card"><div class="serviceImg" style="background-image:url('https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=82')"></div><div class="cardBody"><h3>Saç Kesimi</h3><p class="muted">Yüz şekline ve stiline uygun modern kesim.</p><span class="price" data-price="hair">350 TL</span></div></article>
+      <article class="card"><div class="serviceImg" style="background-image:url('https://images.unsplash.com/photo-1622296089863-eb7fc530daa8?auto=format&fit=crop&w=800&q=82')"></div><div class="cardBody"><h3>Sakal Tasarımı</h3><p class="muted">Hat belirleme, sıcak havlu ve bakım.</p><span class="price" data-price="beard">250 TL</span></div></article>
+      <article class="card"><div class="serviceImg" style="background-image:url('https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=800&q=82')"></div><div class="cardBody"><h3>Saç + Sakal</h3><p class="muted">Tam bakım, tek randevuda eksiksiz görünüm.</p><span class="price" data-price="combo">550 TL</span></div></article>
+      <article class="card"><div class="serviceImg" style="background-image:url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=800&q=82')"></div><div class="cardBody"><h3>Cilt Bakımı</h3><p class="muted">Temizleme, arındırma ve bakım dokunuşu.</p><span class="price" data-price="skin">400 TL</span></div></article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="fiyatlar">
+  <div class="wrap split">
+    <div class="priceBox">
+      <div class="eyebrow">Fiyat Listesi</div><h2 style="font-family:Georgia,serif;font-size:42px;margin:8px 0 20px">Net fiyat, kolay karar.</h2>
+      <div class="priceRow"><span>Saç Kesimi</span><b data-price="hair">350 TL</b></div>
+      <div class="priceRow"><span>Sakal Tasarımı</span><b data-price="beard">250 TL</b></div>
+      <div class="priceRow"><span>Saç + Sakal</span><b data-price="combo">550 TL</b></div>
+      <div class="priceRow"><span>Cilt Bakımı</span><b data-price="skin">400 TL</b></div>
+      <div class="priceRow"><span>Çocuk Saç Kesimi</span><b>300 TL</b></div>
+    </div>
+    <div class="bookBox">
+      <div class="eyebrow">Bu Haftanın Fırsatı</div><h2 id="campaign" style="font-family:Georgia,serif;font-size:42px;margin:8px 0 14px">Saç + Sakal 550 TL</h2>
+      <p class="muted">Kampanya alanı işletme sahibinin istediği teklif, özel gün veya duyuru için anında değiştirilebilir.</p>
+      <button class="btn gold" onclick="openBooking()" style="margin-top:18px">Hemen Randevu Talebi Oluştur →</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="ekip">
+  <div class="wrap"><div class="sectionHead"><div><div class="eyebrow">Ekibimiz</div><h2>Ustanı seç.</h2></div><p>Müşteri randevu sırasında istediği personeli seçebilir.</p></div>
+    <div class="staff">
+      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=500&q=82')"></div><h3>Usta 1</h3><p class="muted">Fade & modern kesim</p><button class="btn out" onclick="bookStaff('Usta 1')">Uzmandan randevu</button></div>
+      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=82')"></div><h3>Usta 2</h3><p class="muted">Sakal & klasik stil</p><button class="btn out" onclick="bookStaff('Usta 2')">Uzmandan randevu</button></div>
+      <div class="staffCard"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=82')"></div><h3>Usta 3</h3><p class="muted">Saç tasarımı & bakım</p><button class="btn out" onclick="bookStaff('Usta 3')">Uzmandan randevu</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap split">
+    <div><div class="sectionHead"><div><div class="eyebrow">Önce / Sonra</div><h2>Sonucu göster.</h2></div></div><p class="muted">Müşteri kaydırarak dönüşümü görebilir. Satış demosunda en güçlü bölümlerden biri.</p></div>
+    <div class="beforeBox"><div class="beforeWrap"><div class="before"></div><div class="after" id="afterImage"></div><div class="sliderLine" id="sliderLine"></div><div class="sliderKnob" id="sliderKnob">↔</div><input class="range" aria-label="Önce sonra kaydırıcı" type="range" min="0" max="100" value="50" oninput="slideBefore(this.value)"></div></div>
+  </div>
+</section>
+
+<section class="section" id="galeri">
+  <div class="wrap"><div class="sectionHead"><div><div class="eyebrow">Galeri</div><h2>İşin konuşsun.</h2></div><p>Gerçek müşteride bu alan işletmenin kendi saç, sakal ve dükkân fotoğraflarıyla doldurulur.</p></div>
+    <div class="gallery">
+      <div style="background-image:url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=84')"></div>
+      <div style="background-image:url('https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=700&q=82')"></div>
+      <div style="background-image:url('https://images.unsplash.com/photo-1593702295094-aea22597af65?auto=format&fit=crop&w=700&q=82')"></div>
+      <div style="background-image:url('https://images.unsplash.com/photo-1622287162716-f311baa1a2b8?auto=format&fit=crop&w=700&q=82')"></div>
+      <div style="background-image:url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=700&q=82')"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="yorumlar">
+  <div class="wrap"><div class="sectionHead"><div><div class="eyebrow">Müşteri Yorumları</div><h2>Güven ilk bakışta.</h2></div><p>Canlı müşteri sitesinde gerçek Google yorumları veya izinli müşteri geri bildirimleri kullanılabilir.</p></div>
+    <div class="reviewGrid">
+      <div class="review"><div class="stars">★★★★★</div><p>“Randevu çok kolaydı, beklemeden girdim. Kesim de tam istediğim gibi oldu.”</p><b>— Emre K.</b></div>
+      <div class="review"><div class="stars">★★★★★</div><p>“Konum, fiyat ve randevu tek sayfada. İlk kez gelecek biri için çok rahat.”</p><b>— Burak A.</b></div>
+      <div class="review"><div class="stars">★★★★★</div><p>“Saç + sakal hizmetinden memnun kaldım. Tekrar geleceğim.”</p><b>— Mert D.</b></div>
+    </div>
+    <div class="cta">
+      <div><div class="eyebrow">Dijital Vitrin</div><h3 id="ctaName">Mersin Barber Studio'a ulaşmak çok kolay.</h3><p class="muted" id="addressText">Yenişehir, Mersin • 09:00–22:00</p></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn whatsapp" onclick="openWhatsApp()">WhatsApp</button><button class="btn out" onclick="openMaps()">Yol Tarifi</button><button class="btn gold" onclick="openBooking()">Randevu Al</button></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer"><div class="wrap" style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap"><span>© <span id="year"></span> <span id="footerName">Mersin Barber Studio</span></span><span>Demo: Berber Dijital Vitrin</span></div></footer>
+<button class="demoBtn" onclick="openDemo()">⚙ İşletmeyi Canlı Değiştir</button>
+<button class="fab" aria-label="WhatsApp" onclick="openWhatsApp()">☎</button>
+
+<div class="overlay" id="bookingOverlay">
+  <div class="modal"><div class="modalHead"><div><div class="eyebrow">Randevu Talebi</div><h3>Randevunu oluştur</h3></div><button class="close" onclick="closeOverlay('bookingOverlay')">×</button></div>
+    <div class="formGrid">
+      <div class="field"><label>Hizmet</label><select id="bookService"><option>Saç Kesimi</option><option>Sakal Tasarımı</option><option>Saç + Sakal</option><option>Cilt Bakımı</option></select></div>
+      <div class="field"><label>Berber</label><select id="bookStaff"><option>Fark etmez</option><option>Usta 1</option><option>Usta 2</option><option>Usta 3</option></select></div>
+      <div class="field"><label>Tarih</label><input id="bookDate" type="date"></div>
+      <div class="field"><label>Saat</label><select id="bookTime"><option>10:00</option><option>11:30</option><option>13:00</option><option>15:00</option><option>17:30</option><option>19:00</option><option>20:30</option></select></div>
+      <div class="field"><label>Ad Soyad</label><input id="bookName" placeholder="Örn. Ahmet Yılmaz"></div>
+      <div class="field"><label>Telefon</label><input id="bookPhone" placeholder="05xx xxx xx xx"></div>
+      <div class="field full"><button class="btn whatsapp" onclick="sendBooking()">WhatsApp'ta Randevuyu Tamamla</button></div>
+    </div><div class="smallNote">Demo sürümüdür. Mesaj doğrudan işletmenin WhatsApp hattına yönlendirilir.</div>
+  </div>
+</div>
+
+<div class="overlay" id="demoOverlay">
+  <div class="modal"><div class="modalHead"><div><div class="eyebrow">Satış Demo Modu</div><h3>Bu siteyi 30 saniyede işletmeye çevir</h3></div><button class="close" onclick="closeOverlay('demoOverlay')">×</button></div>
+    <div class="formGrid">
+      <div class="field"><label>İşletme Adı</label><input id="demoName" value="Mersin Barber Studio"></div>
+      <div class="field"><label>Alt Başlık</label><input id="demoSub" value="Erkek Kuaförü"></div>
+      <div class="field full"><label>Slogan</label><input id="demoSlogan" value="Klasik dokunuşlar, modern stiller. Saç, sakal ve bakım hizmetlerinde özenli işçilik."></div>
+      <div class="field"><label>Telefon / WhatsApp</label><input id="demoPhone" value="905555555555"></div>
+      <div class="field"><label>Instagram</label><input id="demoInstagram" value="@mersinbarberdemo"></div>
+      <div class="field full"><label>Adres</label><input id="demoAddress" value="Yenişehir, Mersin"></div>
+      <div class="field full"><label>Kampanya</label><input id="demoCampaign" value="Saç + Sakal 550 TL"></div>
+      <div class="field full"><label>Tema</label><div class="themeRow"><button class="theme active" data-theme="gold" onclick="setTheme('gold',this)">Altın</button><button class="theme" data-theme="blue" onclick="setTheme('blue',this)">Mavi</button><button class="theme" data-theme="burgundy" onclick="setTheme('burgundy',this)">Bordo</button><button class="theme" data-theme="green" onclick="setTheme('green',this)">Yeşil</button></div></div>
+      <div class="field full"><button class="btn gold" onclick="applyDemo()">Demoyu Güncelle</button></div>
+    </div><div class="smallNote">Değişiklikler yalnızca bu cihazdaki demo oturumunda görünür; gerçek müşteri sitesi ayrıca hazırlanır.</div>
+  </div>
+</div>
+
+<script>
+var state={name:"Mersin Barber Studio",sub:"Erkek Kuaförü",phone:"905555555555",instagram:"@mersinbarberdemo",address:"Yenişehir, Mersin",campaign:"Saç + Sakal 550 TL"};
+function q(id){return document.getElementById(id)}
+function openBooking(){q("bookingOverlay").classList.add("show")}
+function openDemo(){q("demoOverlay").classList.add("show")}
+function closeOverlay(id){q(id).classList.remove("show")}
+document.querySelectorAll(".overlay").forEach(function(el){el.addEventListener("click",function(e){if(e.target===el)el.classList.remove("show")})})
+function setTheme(name,btn){var colors={gold:"#d8ad61",blue:"#5ea5ff",burgundy:"#d46b7a",green:"#56c596"};document.documentElement.style.setProperty("--accent",colors[name]||colors.gold);document.querySelectorAll(".theme").forEach(function(b){b.classList.remove("active")});if(btn)btn.classList.add("active")}
+function applyDemo(){state.name=q("demoName").value.trim()||"Berber";state.sub=q("demoSub").value.trim()||"Erkek Kuaförü";state.phone=(q("demoPhone").value||"").replace(/\D/g,"")||"905555555555";state.instagram=q("demoInstagram").value.trim()||"@instagram";state.address=q("demoAddress").value.trim()||"Mersin";state.campaign=q("demoCampaign").value.trim()||"Haftanın Kampanyası";var slogan=q("demoSlogan").value.trim();q("brandName").textContent=state.name;q("brandSub").textContent=state.sub;q("slogan").textContent=slogan;q("campaign").textContent=state.campaign;q("ctaName").textContent=state.name+"'a ulaşmak çok kolay.";q("addressText").textContent=state.address+" • 09:00–22:00";q("footerName").textContent=state.name;document.title=state.name+" — Dijital Vitrin";closeOverlay("demoOverlay");window.scrollTo({top:0,behavior:"smooth"})}
+function openWhatsApp(){var msg="Merhaba "+state.name+", bilgi ve randevu almak istiyorum.";window.open("https://wa.me/"+state.phone+"?text="+encodeURIComponent(msg),"_blank")}
+function sendBooking(){var s=q("bookService").value,st=q("bookStaff").value,d=q("bookDate").value,t=q("bookTime").value,n=q("bookName").value.trim(),p=q("bookPhone").value.trim();var msg="Merhaba "+state.name+", randevu talebi oluşturmak istiyorum.%0A%0AHizmet: "+s+"%0ABerber: "+st+"%0ATarih: "+(d||"Belirtilmedi")+"%0ASaat: "+t+"%0AAd Soyad: "+(n||"Belirtilmedi")+"%0ATelefon: "+(p||"Belirtilmedi");window.open("https://wa.me/"+state.phone+"?text="+msg,"_blank")}
+function bookStaff(name){q("bookStaff").value=name;openBooking()}
+function openMaps(){window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(state.address),"_blank")}
+function slideBefore(v){q("afterImage").style.clipPath="inset(0 "+(100-v)+"% 0 0)";q("sliderLine").style.left=v+"%";q("sliderKnob").style.left=v+"%"}
+function updateStatus(){var h=new Date().getHours(),open=h>=9&&h<22;q("openStatus").textContent=open?"Şu an açığız • 22:00'ye kadar":"Şu an kapalıyız • 09:00'da açılıyor";q("statusDot").style.background=open?"#37df7b":"#ff6b6b";q("statusDot").style.boxShadow=open?"0 0 14px #37df7b":"0 0 14px #ff6b6b"}
+q("year").textContent=new Date().getFullYear();var dt=new Date();dt.setDate(dt.getDate()+1);q("bookDate").value=dt.toISOString().slice(0,10);q("bookDate").min=new Date().toISOString().slice(0,10);updateStatus();
+</script>
+</body></html>

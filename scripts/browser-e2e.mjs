@@ -13,6 +13,12 @@ const addDays = (date, days) => {
   return d.toISOString().slice(0, 10);
 };
 
+const addMonths = (month, months) => {
+  const [year, value] = String(month).split('-').map(Number);
+  const d = new Date(Date.UTC(year, value - 1 + months, 1, 12));
+  return d.toISOString().slice(0, 7);
+};
+
 async function waitServer() {
   for (let i = 0; i < 80; i++) {
     try {
@@ -124,7 +130,8 @@ async function assertTodayContract(page) {
   assert.ok(await page.locator('.pnx3-focus .pnx-pomodoro').isVisible(), 'Today must expose the real focus timer');
   assert.ok(await page.locator('.pnx3-week-card').isVisible(), 'Today must expose the weekly progress card');
   assert.ok(await page.locator('.pnx3-goals-card').isVisible(), 'Today must expose KPSS goals');
-  assert.ok(await page.locator('.pnx3-teacher-card').isVisible(), 'Today must expose Rota Hoca');
+  assert.ok(await page.locator('.pnx3-highlights-card').isVisible(), 'Today must expose weekly KPSS highlights');
+  assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Today must not expose the retired Rota Hoca navigation');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(), 'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(), 'Today must expose the daily quote card');
   assert.equal(await page.locator('.pnx3-insight-archive').count(), 1, 'Explainability must remain available below the dashboard');
@@ -139,23 +146,16 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
 
-  await page.locator('#setup-wizard-form [name="name"]').fill('E2E Öğrenci');
+  // Stage 1 · welcome
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
-  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').check();
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
-
-  await page.locator('#setup-wizard-form [name="currentNet"]').fill('48');
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
-
+  // Stage 2 · goals
+  await page.locator('#setup-wizard-form [name="targetScore"][value="85"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#setup-wizard-form [name="targetNet"]').fill('82');
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
-
-  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').check();
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
+  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
 
   const dayBoxes = page.locator('#setup-wizard-form [name="days"]');
-  assert.equal(await dayBoxes.count(), 7, 'Working-day onboarding must expose all seven days');
+  assert.equal(await dayBoxes.count(), 7, 'Premium goals stage must expose all seven working days');
   for (let i = 0; i < await dayBoxes.count(); i++) {
     const box = dayBoxes.nth(i);
     const day = Number(await box.getAttribute('value'));
@@ -166,17 +166,16 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
       await label.click();
     }
   }
-  assert.equal(await page.locator('#setup-wizard-form [name="days"]:checked').count(), workingDays.length, 'Wizard must preserve the requested working-day selection');
+  assert.equal(await page.locator('#setup-wizard-form [name="days"]:checked').count(), workingDays.length, 'Premium goals stage must preserve requested working days');
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
-  await page.locator('#setup-wizard-form [name="targetScore"]').fill('88');
-  await page.locator('#setup-wizard-form [name="target"]').fill('E2E kişisel rota');
-  await page.locator('#setup-wizard-form button[type="submit"]').click();
-
-  const mathLevel = page.locator('#setup-wizard-form select[name="level:k-ma"]');
-  if (await mathLevel.count()) await mathLevel.selectOption('0');
-  const turkishLevel = page.locator('#setup-wizard-form select[name="level:k-tr"]');
-  if (await turkishLevel.count()) await turkishLevel.selectOption('2');
+  // Stage 3 · situation analysis
+  await page.locator('#setup-wizard-form [name="currentNetApprox"][value="50"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  const weakMath = page.locator('#setup-wizard-form [name="weakSubjects"][value="k-ma"]');
+  if (await weakMath.count()) await weakMath.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  const strongTurkish = page.locator('#setup-wizard-form [name="strongSubjects"][value="k-tr"]');
+  if (await strongTurkish.count()) await strongTurkish.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#setup-wizard-form button[type="submit"]').click();
 
   await page.locator('[data-action="summary-build"]').click();
@@ -199,18 +198,97 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
 }
 
 async function showTaskInPlan(page, id, label) {
-  await navigate(page, 'plan');
-  const thisWeek = page.locator('[data-action="week-today"]').first();
-  if (await thisWeek.count() && await thisWeek.isVisible()) await thisWeek.click();
+  const initial = await appState(page);
+  const original = initial.value.workspaces.kpss.plan.find(p => p.id === id);
+  assert.ok(original, label + ': görev gerçek KPSS planında bulunmalı');
 
-  const taskButton = page.locator(`[data-action="complete-session"][data-id="${id}"]`);
-  for (let hop = 0; hop < 4; hop++) {
-    if (await taskButton.count() && await taskButton.isVisible()) return;
-    const next = page.locator('[data-action="week-next"]').first();
-    assert.ok(await next.count() && await next.isVisible(), label + ': Programım sonraki hafta kontrolü görünür olmalı');
+  const sameEvidence = (candidate, reference) => {
+    if (!candidate || !reference || candidate.done) return false;
+    if (
+      reference.source === 'spaced_review' &&
+      candidate.source === 'spaced_review' &&
+      candidate.reviewWave === reference.reviewWave &&
+      candidate.reviewBaseTaskId === reference.reviewBaseTaskId
+    ) return true;
+    if (
+      reference.sourceMistakeId &&
+      candidate.sourceMistakeId === reference.sourceMistakeId &&
+      candidate.source === reference.source
+    ) return true;
+    if (
+      reference.sourceAssessmentId &&
+      candidate.sourceAssessmentId === reference.sourceAssessmentId &&
+      candidate.source === reference.source
+    ) return true;
+    if (reference.routeKey && candidate.routeKey === reference.routeKey) return true;
+    return candidate.source === reference.source &&
+      candidate.subjectId === reference.subjectId &&
+      candidate.topicId === reference.topicId &&
+      candidate.title === reference.title;
+  };
+
+  let current = original;
+  const followEvidence = plan =>
+    plan.find(p => p.id === current.id && !p.done) ||
+    plan.find(p => sameEvidence(p, original)) ||
+    plan.find(p => sameEvidence(p, current)) ||
+    null;
+
+  // Keep Route on the current simulated day while locating the real task in Programım.
+  // If the clock advances before the task is rendered, routeAutoSync can correctly
+  // treat other open work as overdue and move this same evidence forward again.
+  await navigate(page, 'plan');
+  await page.getByRole('heading', { name: 'Programım' }).waitFor({ state: 'visible' });
+  await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
+
+  let snapshot = await appState(page);
+  current = followEvidence(snapshot.value.workspaces.kpss.plan);
+  assert.ok(current, label + ': görev kanıt kimliği Programım açılırken korunmalı');
+
+  const thisWeek = page.locator('.pnx-program-week-strip [data-action="week-today"]:visible').first();
+  assert.ok(await thisWeek.count(), label + ': görünür Programım hafta kontrolü bulunmalı');
+  await thisWeek.click();
+  await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
+
+  for (let hop = 0; hop < 5; hop++) {
+    snapshot = await appState(page);
+    current = followEvidence(snapshot.value.workspaces.kpss.plan);
+    assert.ok(current?.date, label + ': görevin gerçek bir plan tarihi olmalı');
+
+    let taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+    if (await taskButton.count()) {
+      const column = taskButton.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " day-column ")][1]');
+      assert.ok(await column.count(), label + ': görev gerçek Programım gün sütununda bulunmalı');
+      const index = await column.evaluate(el => Array.from(el.parentElement?.children || []).indexOf(el));
+      const tab = page.locator(`.pnx-program-day-tab[data-pnx-program-day="${index}"]:visible`).first();
+      assert.ok(index >= 0 && await tab.count(), label + ': görevin görünür gün sekmesi bulunmalı');
+      await tab.click();
+
+      taskButton = page.locator(`[data-action="complete-session"][data-id="${current.id}"]`).first();
+      await taskButton.waitFor({ state: 'visible' });
+
+      // The task is now already rendered. Move only Date to its scheduled day and
+      // complete without another render. The log therefore records the real plan day,
+      // and the normal submit path may rebalance afterward exactly as production does.
+      await page.clock.setFixedTime(new Date(current.date + 'T09:00:00+03:00'));
+      const simulatedDay = await page.evaluate(() => {
+        const d = new Date();
+        return d.getFullYear() + '-' +
+          String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0');
+      });
+      assert.equal(simulatedDay, current.date, label + ': tamamlanma günü gerçek plan günüyle eşleşmeli');
+      assert.ok(await taskButton.isVisible(), label + ': görev plan günü ayarlandıktan sonra görünür kalmalı');
+      return current;
+    }
+
+    const next = page.locator('.pnx-program-week-strip [data-action="week-next"]:visible').first();
+    assert.ok(await next.count(), label + ': görünür Programım sonraki hafta kontrolü bulunmalı');
     await next.click();
+    await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
   }
-  assert.ok(await taskButton.count() && await taskButton.isVisible(), label + ': görev Programım içinde erişilebilir olmalı');
+
+  assert.fail(label + ': görev kanıt kimliği korunarak görünür Programım akışında erişilebilir olmalı');
 }
 
 async function completeTask(page, id, { questions = 20, correct = 15, wrong = 5, outcome = 'ok' } = {}) {
@@ -752,23 +830,84 @@ try {
   const startButton = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await startButton.waitFor({ state: 'visible' });
   assert.match((await startButton.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Preview timer must show the real planned task duration');
-  await startButton.click();
+  await startButton.evaluate(node => node.scrollIntoView({ block: 'center', inline: 'nearest' }));
+  const focusSlotBefore = await page.locator('.pnx3-focus').boundingBox();
+  const scrollBeforeFocusStart = await page.evaluate(() => window.scrollY);
+  await startButton.evaluate(node => node.click());
 
   const focusCard = page.locator('.pnx3-focus .route-focus-card');
   await focusCard.waitFor({ state: 'visible' });
+  const focusSlotAfter = await page.locator('.pnx3-focus').boundingBox();
+  const scrollAfterFocusStart = await page.evaluate(() => window.scrollY);
+  assert.ok(focusSlotBefore && focusSlotAfter, 'Pomodoro focus slot must remain measurable before and after start');
+  const focusStartGeometry = {
+    before: focusSlotBefore,
+    after: focusSlotAfter,
+    scrollBefore: scrollBeforeFocusStart,
+    scrollAfter: scrollAfterFocusStart,
+    documentYBefore: focusSlotBefore.y + scrollBeforeFocusStart,
+    documentYAfter: focusSlotAfter.y + scrollAfterFocusStart
+  };
+  assert.ok(
+    Math.abs(focusSlotBefore.y - focusSlotAfter.y) <= 2,
+    'Pomodoro start must not move the focus card vertically: ' + JSON.stringify(focusStartGeometry)
+  );
+  assert.ok(Math.abs(focusSlotBefore.height - focusSlotAfter.height) <= 2, 'Pomodoro start must keep the same focus-card height');
+  assert.ok(Math.abs(scrollBeforeFocusStart - scrollAfterFocusStart) <= 2, 'Pomodoro start must not force-scroll the Today page');
   assert.ok((await focusCard.innerText()).includes(todayTask.title), 'Pomodoro start must bind the real task title to the focus card');
   assert.ok(await focusCard.getByText('ODAK OTURUMU', { exact: true }).count(), 'Pomodoro start must expose the focus-session state');
-  assert.ok(await focusCard.getByText('Bitir ve kaydet', { exact: false }).count(), 'Focused task must expose the finish-and-record action');
-  assert.match(((await focusCard.locator('.route-focus-subject').textContent()) || '').trim(), /çalışma kaydına otomatik bağlanacak/i, 'Focus card must preserve the task/log linkage contract');
+  assert.ok(await page.locator('[data-action="timer-log"]').count(), 'Focused task must expose the real finish-and-record action');
+  assert.match(await focusCard.innerText(), /çalışma kaydına otomatik bağlanacak/i, 'Focus card must explain the task/log linkage');
 
-  const clock = focusCard.locator('#clock');
+  const clock = page.locator('#clock').first();
   await clock.waitFor({ state: 'visible' });
+  const runningToggle = page.locator('#timer-toggle').first();
+  await runningToggle.waitFor({ state: 'visible' });
+  assert.match((await runningToggle.innerText()).trim(), /Duraklat/i, 'Running real timer must expose pause control');
   const initialClock = (await clock.innerText()).trim();
   assert.equal(initialClock, String(todayTask.minutes).padStart(2, '0') + ':00', 'Real timer must honor the planned task minutes');
+
   await page.clock.fastForward(2000);
   const runningClock = (await clock.innerText()).trim();
   assert.notEqual(runningClock, initialClock, 'Real Pomodoro clock must count down after the dashboard play control is pressed');
-  assert.ok(await focusCard.getByText('Duraklat', { exact: false }).count(), 'Running Pomodoro must expose pause control');
+  if (todayTask.minutes === 40) {
+    assert.match(runningClock, /^39:\d{2}$/, 'A 40-minute real task must enter the 39:xx range after it starts');
+  }
+
+  const pauseToggle = page.locator('#timer-toggle').first();
+  await pauseToggle.click();
+  const pausedToggle = page.locator('#timer-toggle').first();
+  await pausedToggle.waitFor({ state: 'visible' });
+  assert.match((await pausedToggle.innerText()).trim(), /Başlat/i, 'Paused real timer must expose resume control');
+  const pausedClock = (await page.locator('#clock').first().innerText()).trim();
+  await page.clock.fastForward(1600);
+  assert.equal((await page.locator('#clock').first().innerText()).trim(), pausedClock, 'Paused Pomodoro must keep its remaining time');
+
+  await page.locator('#timer-toggle').first().click();
+  const resumedToggle = page.locator('#timer-toggle').first();
+  await resumedToggle.waitFor({ state: 'visible' });
+  assert.match((await resumedToggle.innerText()).trim(), /Duraklat/i, 'Resumed real timer must expose pause control again');
+  await page.clock.fastForward(1600);
+  const resumedClock = (await page.locator('#clock').first().innerText()).trim();
+  assert.notEqual(resumedClock, pausedClock, 'Resumed Pomodoro must continue the existing real countdown');
+
+  await navigate(page, 'today');
+  const rerenderedFocus = page.locator('.pnx3-focus .route-focus-card');
+  await rerenderedFocus.waitFor({ state: 'visible' });
+  assert.ok((await rerenderedFocus.innerText()).includes(todayTask.title), 'Today rerender must preserve the task-bound focus session');
+  const beforeRerenderAdvance = (await page.locator('#clock').first().innerText()).trim();
+  await page.clock.fastForward(1200);
+  const afterRerenderAdvance = (await page.locator('#clock').first().innerText()).trim();
+  assert.notEqual(afterRerenderAdvance, beforeRerenderAdvance, 'Today rerender must not stop or replace the real running timer');
+
+  assert.ok(await page.locator('[data-action="timer-log"]').count(), 'Task-bound real timer must preserve its log action');
+  await page.locator('[data-action="timer-reset"]').first().click();
+  await page.getByText('Sayacı sıfırla?', { exact: true }).waitFor({ state: 'visible' });
+  await page.locator('[data-action="confirm"]').click();
+  const resetPreview = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
+  await resetPreview.waitFor({ state: 'visible' });
+  assert.match((await resetPreview.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Confirmed reset must restore the planned duration and return to the task preview');
+  assert.equal(await page.locator('.pnx3-focus .route-focus-card').count(), 0, 'Reset must preserve the existing behavior of clearing the live focus session');
 
   snapshot = await appState(page);
   const spaceAfterFocus = snapshot.value.workspaces.kpss;
@@ -840,7 +979,7 @@ try {
 
   let repair = space.plan.find(p => !p.done && p.sourceMistakeId === mistake.id);
   assert.ok(repair, 'Exam-linked wrong must create a repair task');
-  await showTaskInPlan(page, repair.id, 'exam-linked repair task');
+  repair = await showTaskInPlan(page, repair.id, 'exam-linked repair task');
   await completeTask(page, repair.id, { questions: 18, correct: 15, wrong: 3, outcome: 'ok' });
 
   await navigate(page, 'mistakes');
@@ -863,7 +1002,7 @@ try {
   assert.equal(review3.reviewBaseDate, repairLog.date, '3-day review must anchor to the real repair completion date');
   assert.ok(review3.date >= due3, '3-day review must never be scheduled before its real +3 due date');
   assert.match(review3.reason || '', /Denemeden gelen yanlış onarımını/i);
-  await showTaskInPlan(page, review3.id, '3-day exam-wrong retention review');
+  review3 = await showTaskInPlan(page, review3.id, '3-day exam-wrong retention review');
   await completeTask(page, review3.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
 
   const due7 = addDays(repairLog.date, 7);
@@ -874,37 +1013,16 @@ try {
   assert.ok(review7, '7-day exam-wrong retention review must materialize when due');
   assert.equal(review7.reviewBaseDate, repairLog.date, '7-day review must anchor to the real repair completion date');
   assert.ok(review7.date >= due7, '7-day review must never be scheduled before its real +7 due date');
-  await showTaskInPlan(page, review7.id, '7-day exam-wrong retention review');
+  review7 = await showTaskInPlan(page, review7.id, '7-day exam-wrong retention review');
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 
-  await navigate(page, 'teacher');
-  await page.locator('[data-premium-surface="teacher"]').waitFor({ state: 'visible' });
-  assert.equal(await page.locator('.teacher-premium-flow span').count(), 4, 'Premium Rota Hoca surface must stay visible');
-  await page.locator('#teacher-question').fill('Bugünkü görevlerimi neden bu şekilde seçtin?');
-  await page.locator('#teacher-form button[type="submit"]').click();
-  await page.locator('#teacher-avatar-quote').filter({ hasText: 'E2E Rota Hoca cevabı' }).waitFor({ state: 'visible' });
-  assert.equal(await page.locator('[data-action="teacher-followup"]').count(),0,'Free Rota Hoca must not expose advanced continuation calls');
-  const plusContinuation=page.getByText('Gelişmiş devamlar Plus',{exact:true});
-  await plusContinuation.waitFor({state:'visible'});
-  await plusContinuation.click();
-  await page.getByText('Bir adım ötesi Rota Plus’ta.',{exact:true}).waitFor({state:'visible'});
-  assert.ok(await page.getByText(/yalnız doğrulanmış üyelikle açılır/i).count(),'Plus teacher gate must explain verified membership access in user language');
-  await page.locator('[data-action="close-modal"]').click();
-
-  assert.ok(teacherRequest, 'Rota Hoca request must reach the backend boundary');
-  assert.ok(teacherRequest.studentContext?.todayPlan, 'Rota Hoca must receive todayPlan');
-  assert.ok(teacherRequest.studentContext?.studentModel, 'Rota Hoca must receive Student Model');
-  assert.ok(teacherRequest.studentContext?.routeDecision, 'Rota Hoca must receive route decision');
-  assert.ok(teacherRequest.studentContext?.mastery, 'Rota Hoca must receive mastery context');
-  assert.equal(teacherRequest.studentContext?.contextVersion, 2, 'Rota Hoca context must carry the bounded v2 contract');
-  assert.ok(teacherRequest.studentContext?.routeMode?.explanation, 'Rota Hoca must receive student-facing route-mode explanation');
-  assert.ok(teacherRequest.studentContext?.todaySummary, 'Rota Hoca must receive todaySummary');
-  assert.ok(teacherRequest.studentContext?.contextHealth?.hasStudentModel, 'Rota Hoca v2 context must expose context health');
-  assert.ok((teacherRequest.studentContext?.todayPlan||[]).length <= 8, 'Rota Hoca todayPlan must stay bounded');
-  const teacherContextText = JSON.stringify(teacherRequest.studentContext);
-  assert.ok(!/confounded|evidence factor|stale evidence|hysteresis|counterfactual/i.test(teacherContextText), 'Technical route jargon must not leak into teacher context');
-  await assertCleanRender(page, 'Rota Hoca');
+  // Rota Hoca is retired from the product surface. Legacy internal data/contracts may remain,
+  // but students must not be able to navigate to or render the teacher workspace.
+  assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Rota Hoca navigation must stay removed');
+  assert.equal(await page.locator('[data-premium-surface="teacher"]').count(), 0, 'Rota Hoca surface must stay unreachable');
+  assert.equal(teacherRequest, null, 'Retired Rota Hoca UI must not call the teacher backend during the learning loop');
+  await assertCleanRender(page, 'after retired Rota Hoca surface check');
 
   // Behavior hardening: Daha sonra must be reversible without duplicate evidence,
   // Atla must reschedule the task, and both signals must survive a real reload.
@@ -1043,10 +1161,22 @@ try {
     await assertCleanRender(page,'Plus premium monthly report with long subject name');
   }
 
-  // Sparse-evidence UI regression: previous month has real logs while the selected month is empty.
-  // The report must blame the missing current-month evidence, never the previous month.
+  // Sparse-evidence UI regression: use the month immediately after the latest real
+  // study log. Retention work can legitimately cross a calendar boundary, so a
+  // hard-coded October fixture is no longer guaranteed to be empty.
+  snapshot = await appState(page);
+  space = snapshot.value.workspaces.kpss;
+  const latestLogMonth = space.logs.map(log => String(log.date || '').slice(0, 7)).filter(Boolean).sort().at(-1);
+  assert.match(latestLogMonth || '', /^\d{4}-\d{2}$/, 'Sparse report regression needs a real previous-month study log');
+  const emptySelectedMonth = addMonths(latestLogMonth, 1);
+  assert.equal(
+    space.logs.some(log => String(log.date || '').startsWith(emptySelectedMonth)),
+    false,
+    'Sparse report regression must select a genuinely empty month'
+  );
+
   const missingCurrentMonthInput = page.locator('#report-month');
-  await missingCurrentMonthInput.fill('2026-10');
+  await missingCurrentMonthInput.fill(emptySelectedMonth);
   await missingCurrentMonthInput.dispatchEvent('change');
   await page.getByRole('heading', { name: 'Aylık raporum' }).waitFor({ state: 'visible' });
   assert.ok(
@@ -1058,7 +1188,7 @@ try {
     0,
     'Missing current-month evidence must never be mislabeled as missing previous-month evidence'
   );
-  await page.locator('#report-month').fill('2026-09');
+  await page.locator('#report-month').fill(latestLogMonth);
   await page.locator('#report-month').dispatchEvent('change');
   await page.getByRole('heading', { name: 'Aylık raporum' }).waitFor({ state: 'visible' });
 

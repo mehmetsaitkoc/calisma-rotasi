@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const loader=fs.readFileSync(new URL('../public/landing-final.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../public/app-premium-next.css',import.meta.url),'utf8');
 const js=fs.readFileSync(new URL('../public/app-premium-next.js',import.meta.url),'utf8');
+const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 
 for(const marker of [
   'APP PREMIUM NEXT LOADER',
@@ -18,7 +19,7 @@ for(const marker of [
   '.pnx3-focus',
   '.pnx3-week-card',
   '.pnx3-goals-card',
-  '.pnx3-teacher-card',
+  '.pnx3-highlights-card',
   '.pnx3-results-card',
   '.pnx3-quote-card',
   '.pnx3-insight-archive',
@@ -44,7 +45,7 @@ for(const marker of [
   'pnx3-focus',
   'pnx3-week-card',
   'pnx3-goals-card',
-  'pnx3-teacher-card',
+  'pnx3-highlights-card',
   'pnx3-results-card',
   'pnx3-quote-card',
   'pnxStudentName',
@@ -91,15 +92,77 @@ assert.ok(
 );
 assert.ok(
   css.includes('APP PREMIUM NEXT V3.2 · REFERENCE VISUAL + REAL POMODORO'),
-  'V3 must use the approved mountain/teacher/quote visual direction'
+  'V3 must use the approved mountain/highlights/quote visual direction'
 );
 assert.ok(
-  js.includes('startPreviewTimer(root, hero)') && js.includes("document.querySelector('#timer-toggle')"),
-  'Dashboard Pomodoro must hand off to the real application timer'
+  js.includes('removeTeacherUi()') &&
+  js.includes('Bu Hafta Öne Çıkan Konular') &&
+  !js.includes('function ensureTeacherCard'),
+  'Approved KPSS dashboard must remove Rota Hoca and expose the real-plan highlights card'
+);
+assert.ok(
+  js.includes('startPreviewTimer(root, hero)') &&
+  js.includes("document.querySelector('#timer-toggle')") &&
+  js.includes('startRealTimerWhenReady'),
+  'Dashboard Pomodoro must hand off to the real application timer and survive Today rerenders'
+);
+assert.ok(
+  js.includes('kpssWorkspace()') &&
+  js.includes('currentWeekDays()') &&
+  js.includes('latestExam(kpssWorkspace())'),
+  'Week, goals and latest-exam cards must read persisted KPSS evidence instead of fabricated dashboard values'
+);
+assert.ok(
+  html.includes('window.RotaDashboardEvidence=Object.freeze') &&
+  js.includes('window.RotaDashboardEvidence?.kpssWorkspace?.()'),
+  'Dashboard evidence must come from the read-only core evidence bridge instead of browser storage or fabricated state'
+);
+assert.ok(
+  js.includes('APP PREMIUM NEXT V4 · PROGRAM DAILY TIMELINE') &&
+  js.includes('/dashboard-evidence.css') &&
+  js.includes('/program-daily-timeline-core.css') &&
+  js.includes('/program-daily-timeline-rail.css'),
+  'Latest main Programım timeline and evidence-only dashboard styling must survive the branch sync'
+);
+assert.ok(
+  js.includes('Henüz tam deneme kaydı yok') &&
+  !js.includes("const hasSignal = !!gap"),
+  'Latest exam card must expose a truthful empty state instead of reusing target-gap signals as exam results'
 );
 assert.ok(
   css.includes('pnx3-live-timer-card') && css.includes('kpss-hero-mountain.svg') && css.includes('daily-quote-sunrise.svg'),
   'Live timer and approved visual assets must be styled in the dashboard layer'
 );
+assert.ok(
+  css.includes('APP PREMIUM NEXT V5 · APPROVED REFERENCE MATCH') &&
+  css.includes('position:absolute!important') &&
+  css.includes('visibility:hidden!important'),
+  'V5 must keep preview and live Pomodoro in one fixed dashboard footprint'
+);
+assert.ok(
+  html.includes("plan:JSON.parse(JSON.stringify(space.plan||[]))") &&
+  js.includes('Array.isArray(space?.plan)') &&
+  js.includes('Bu Hafta Öne Çıkan Konular'),
+  'Weekly highlights must read real planned KPSS tasks through the read-only evidence bridge'
+);
+assert.ok(
+  js.includes("card.replaceChildren()") &&
+  js.includes("pnx3-quote-kicker") &&
+  css.includes('.pnx3-quote-card:before') &&
+  css.includes('content:none!important'),
+  'Daily quote must use exactly one clean text layer without legacy pseudo overlays'
+);
+{
+  const focusStart=html.indexOf('function focusSession(id)');
+  const focusEnd=html.indexOf('function replaceListRecord',focusStart);
+  const focusSource=html.slice(focusStart,focusEnd);
+  assert.ok(
+    focusStart>=0 &&
+    focusEnd>focusStart &&
+    focusSource.includes("if(ui.view==='today')renderKeepScroll();else navigate('today')") &&
+    !focusSource.includes('scrollIntoView'),
+    'Starting Pomodoro from Today must preserve viewport position without a focus-session scroll jump'
+  );
+}
 
 console.log('App Premium Next contract passed: KPSS target dashboard + real route data + unchanged sidebar + responsive/day-night guards');

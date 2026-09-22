@@ -424,19 +424,19 @@ function buildCandidates(space,persona,currentDate){
   return {candidates,models,adaptives,risks,recovery,weak};
 }
 function rebalance(space,persona,currentDate,candidates,recovery){
-  const state={activeExam:'kpss'},R={dayAdd},routeEnsure=()=>{},routeBuildCandidates=()=>candidates.map(x=>({...x})),routeEffectiveDailyMinutes=()=>persona.dailyMinutes,routeTaskMethod=p=>({key:taskMethod(p.subjectId)}),routeMethodLoad=k=>['quant','geometry','science','logic','ydt_reading'].includes(k)?2:['biology','paragraph','grammar','ydt_grammar'].includes(k)?1:0,routeIsQuantitativeHeavy=quantitative,routeIsReviewLike=isReviewLike,routeIsCriticalReview=isCriticalReview,routeIsBacklog=p=>p.source==='backlog',routeHeavyLimit=l=>l<=90?1:l<=180?2:3,routeQuantitativeDailyLimit=l=>l<=90?1:2,routeReviewDailyLimit=l=>Math.max(30,Math.round((l*.5)/5)*5),routeBacklogDailyLimit=(l,r)=>Math.min(l,Math.max(30,Math.round((l*(r?.active?(r.severe?.30:.35):.45))/5)*5)),routeBacklogDailyCountLimit=r=>r?.active?1:2,routeReviewWeeklyLimit=t=>Math.max(30,Math.round((t*.45)/5)*5),routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5)),routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{},routeRecoverySignal=()=>recovery;
+  const state={activeExam:'kpss'},R={dayAdd},routeEnsure=()=>{},routeBuildCandidates=()=>candidates.map(x=>({...x})),routeEffectiveDailyMinutes=()=>persona.dailyMinutes,routeTaskMethod=p=>({key:taskMethod(p.subjectId)}),routeMethodLoad=k=>['quant','geometry','science','logic','ydt_reading'].includes(k)?2:['biology','paragraph','grammar','ydt_grammar'].includes(k)?1:0,routeIsQuantitativeHeavy=quantitative,routeIsReviewLike=isReviewLike,routeIsCriticalReview=isCriticalReview,routeIsBacklog=p=>p.source==='backlog',routeHeavyLimit=l=>l<=90?1:l<=180?2:3,routeQuantitativeDailyLimit=l=>l<=90?1:2,routeReviewDailyLimit=l=>Math.max(30,Math.round((l*.5)/5)*5),routeBacklogDailyLimit=(l,r)=>Math.min(l,Math.max(30,Math.round((l*(r?.active?(r.severe?.30:.35):.45))/5)*5)),routeBacklogDailyCountLimit=r=>r?.active?1:2,routeReviewWeeklyLimit=t=>Math.max(30,Math.round((t*.45)/5)*5),routeBacklogWeeklyLimit=(t,r)=>Math.min(t,Math.max(30,Math.round((t*(r?.active?(r.severe?.20:.25):.35))/5)*5)),routeRecordModeHistory=()=>{},routeRecordInterventions=()=>{},toast=()=>{},routeRecoverySignal=()=>recovery,routeDecisionTraceForCandidate=(candidate,capacityOverride)=>candidate?.decisionTrace||null;
   const fn=new Function(
     'state','w','today','R','routeEnsure','routeRecoverySignal','routeBuildCandidates','routeEffectiveDailyMinutes',
     'routeTaskMethod','routeMethodLoad','routeIsQuantitativeHeavy','routeIsReviewLike','routeIsCriticalReview',
     'routeIsBacklog','routeHeavyLimit','routeQuantitativeDailyLimit','routeReviewDailyLimit','routeBacklogDailyLimit',
-    'routeBacklogDailyCountLimit','routeReviewWeeklyLimit','routeBacklogWeeklyLimit','routeRecordModeHistory','routeRecordInterventions','toast',
+    'routeBacklogDailyCountLimit','routeReviewWeeklyLimit','routeBacklogWeeklyLimit','routeRecordModeHistory','routeRecordInterventions','toast','routeDecisionTraceForCandidate',
     rebalanceSrc+';return routeRebalance;'
   );
   return fn(
     state,()=>space,()=>currentDate,R,routeEnsure,routeRecoverySignal,routeBuildCandidates,routeEffectiveDailyMinutes,
     routeTaskMethod,routeMethodLoad,routeIsQuantitativeHeavy,routeIsReviewLike,routeIsCriticalReview,
     routeIsBacklog,routeHeavyLimit,routeQuantitativeDailyLimit,routeReviewDailyLimit,routeBacklogDailyLimit,
-    routeBacklogDailyCountLimit,routeReviewWeeklyLimit,routeBacklogWeeklyLimit,routeRecordModeHistory,routeRecordInterventions,toast
+    routeBacklogDailyCountLimit,routeReviewWeeklyLimit,routeBacklogWeeklyLimit,routeRecordModeHistory,routeRecordInterventions,toast,routeDecisionTraceForCandidate
   )('closed loop',true);
 }
 function completionRate(persona,dayIndex){

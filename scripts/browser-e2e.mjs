@@ -837,12 +837,12 @@ try {
 
   const beforeMode = latestTaskMode(space0, todayTask);
 
-  const startButton = page.locator('.pnx3-focus .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
+  const startButton = page.locator('.pnx3-focus:visible .pnx3-pomodoro-preview .pnx-pomodoro-ring').first();
   await startButton.waitFor({ state: 'visible' });
   assert.match((await startButton.innerText()).trim(), new RegExp('^' + todayTask.minutes + ':00'), 'Preview timer must show the real planned task duration');
   await startButton.evaluate(node => node.scrollIntoView({ block: 'center', inline: 'nearest' }));
   const readFocusSlotBox = async () => {
-    const slot = page.locator('.pnx3-focus').first();
+    const slot = page.locator('.pnx3-focus:visible').first();
     await slot.waitFor({ state: 'visible' });
     return slot.evaluate(node => {
       const rect = node.getBoundingClientRect();
@@ -853,7 +853,7 @@ try {
   const scrollBeforeFocusStart = await page.evaluate(() => window.scrollY);
   await startButton.evaluate(node => node.click());
 
-  const focusCard = page.locator('.pnx3-focus .route-focus-card');
+  const focusCard = page.locator('.pnx3-focus:visible .route-focus-card').first();
   await focusCard.waitFor({ state: 'visible' });
   const focusSlotAfter = await readFocusSlotBox();
   const scrollAfterFocusStart = await page.evaluate(() => window.scrollY);

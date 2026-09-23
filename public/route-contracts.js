@@ -67,7 +67,7 @@ const MODE_COPY=Object.freeze({
 const SOURCE_REASON=Object.freeze({
   mistake:'Yanlış defterindeki açığı kapatmak için bugün tekrar ediyorsun.',
   mini_repair:'Mini denemede görülen konu veya alt-konu açığını kapatmak için eklendi.',
-  ai_teacher:'Rota Hoca’da zorlandığın noktayı kısa bir tekrar ile pekiştirmek için eklendi.',
+  ai_teacher:'Önceki çalışmanda zorlandığın noktayı kısa bir tekrar ile pekiştirmek için eklendi.',
   exam:'Son deneme verin bu dersin bugün daha fazla dikkat istemesine işaret ediyor.',
   profile:'Başlangıç seviyen ve hedefin bu dersi öne çıkarıyor.',
   priority:'Bu dersi öncelikli seçtiğin için planda daha görünür tutuluyor.',

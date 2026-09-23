@@ -2717,7 +2717,7 @@ function premiumKpssSummaryView(){
    '</div>'+
    '<aside class="premium-ob-ready-art"><div class="premium-ob-laptop"><div><strong>İlk haftanın planı</strong><span>Pzt · Matematik</span><span>Sal · Türkçe</span><span>Çar · '+esc(weakText)+'</span><span>Per · 3. gün tekrarı</span><span>Cum · Deneme + analiz</span></div></div><blockquote>“Planlı adımlar, büyük başarılara götürür.”</blockquote></aside>'+
  '</section>'+
- '<section class="premium-ob-ready-features"><article><span>'+icon('refresh')+'</span><div><strong>Akıllı tekrar açık</strong><p>3. ve 7. gün tekrarları rotaya otomatik yerleşecek.</p></div></article><article><span>'+icon('chart')+'</span><div><strong>Deneme analizi hazır</strong><p>Yeni denemelerin geldikçe ağırlıklar güncellenecek.</p></div></article><article><span>'+icon('spark')+'</span><div><strong>Rota Hoca aktif</strong><p>Takıldığın konularda çalışma akışının yanında.</p></div></article></section>';
+ '<section class="premium-ob-ready-features"><article><span>'+icon('refresh')+'</span><div><strong>Akıllı tekrar açık</strong><p>3. ve 7. gün tekrarları rotaya otomatik yerleşecek.</p></div></article><article><span>'+icon('chart')+'</span><div><strong>Deneme analizi hazır</strong><p>Yeni denemelerin geldikçe ağırlıklar güncellenecek.</p></div></article><article><span>'+icon('check')+'</span><div><strong>İlerlemen tek yerde</strong><p>Tamamladığın görevleri ve günlük ilerlemeni ana sayfada takip et.</p></div></article></section>';
  return premiumKpssLayout(4,body);
 }
 
@@ -2849,7 +2849,7 @@ function routeEnsure(space=w()){
  return space.route;
 }
 function routeEvent(taskId,action){routeEnsure();const date=today();if(w().taskEvents.some(function(ev){return ev.taskId===taskId&&ev.action===action&&ev.date===date;}))return;w().taskEvents.push({id:R.uid(),taskId,date,action,created:Date.now()});w().taskEvents=w().taskEvents.slice(-300);}
-function routeSourceLabel(source){return ({backlog:'AKSAYAN',mistake:'YANLIŞ TEKRARI',mini_repair:'MİNİ ONARIM',retention_refresh:'KORUMA TEKRARI',ai_teacher:'ROTA HOCA',exam:'DENEME SİNYALİ',profile:'SEVİYE PROFİLİ',priority:'ÖNCELİKLİ DERS',curriculum:'KONU ROTASI',review:'TEKRAR',spaced_review:'TEKRAR',checkpoint:'HAFTALIK KONTROL'}[source]||'ROTA');}
+function routeSourceLabel(source){return ({backlog:'AKSAYAN',mistake:'YANLIŞ TEKRARI',mini_repair:'MİNİ ONARIM',retention_refresh:'KORUMA TEKRARI',ai_teacher:'KİŞİSEL TEKRAR',exam:'DENEME SİNYALİ',profile:'SEVİYE PROFİLİ',priority:'ÖNCELİKLİ DERS',curriculum:'KONU ROTASI',review:'TEKRAR',spaced_review:'TEKRAR',checkpoint:'HAFTALIK KONTROL'}[source]||'ROTA');}
 function routeTaskSourceLabel(task){
  if(task?.source==='spaced_review'&&task.reviewVariant==='challenge')return 'SEVİYE YOKLAMA';
  return task?.source==='spaced_review'&&[1,3,7].includes(task.reviewWave)?(task.reviewWave===1?'1 GÜN ONARIMI':task.reviewWave+' GÜN TEKRARI'):routeSourceLabel(task?.source);
@@ -3823,7 +3823,7 @@ function routeCandidateFromPlan(p){
  const overdue=effectiveDate<today(),days=overdue?Math.max(1,Math.floor((new Date(today()+'T12:00:00')-new Date(effectiveDate+'T12:00:00'))/86400000)):0;
  let source=p.source||'curriculum',priority=Number.isFinite(p.priority)?p.priority:35,reason=p.reason||'Haftalık çalışma rotandaki görev.';
  if(p.sourceMistakeId){source='mistake';priority=Math.max(priority,78);reason='Yanlış defterindeki bir tekrar görevi.';}
- else if(p.sourceTeacherQuestionId){source='ai_teacher';priority=Math.max(priority,72);reason='Rota Hoca’da tekrar gerektiren bir sorudan geldi.';}
+ else if(p.sourceTeacherQuestionId){source='ai_teacher';priority=Math.max(priority,72);reason='Önceki çalışmanda tekrar gerektiren bir sorudan geldi.';}
  else if(source==='mini_repair'){const skill=miniAdaptive?.skillWeakness?.primary?.skill||'';priority=Math.max(priority,84);reason=skill?'Mini denemede “'+skill+'” alt alanında açık görüldü; bu görev yeni konu eklemek yerine o açığı kapatıyor.':'Mini deneme bu konuda ONARIM sinyali verdi; yeni konuya geçmeden önce kısa bir düzeltme turu gerekiyor.';}
  else if(overdue&&!routeIsReviewLike(p)){source='backlog';priority=Math.max(priority,82+Math.min(12,days*3));reason=days+' gün önce tamamlanmadığı için rota motoru yeniden yerleştiriyor.';}
  else if(overdue&&routeIsReviewLike(p)){priority=Math.max(priority,70+Math.min(12,days*2));reason=(p.reason||'Tekrar görevi.')+' Tekrar zamanı geçtiği için ilk uygun güne taşınıyor.';}
@@ -5106,7 +5106,7 @@ function onAction(event){const b=event.target.closest('[data-action]');if(!b)ret
  case 'export':exportBackup();break;
  case 'import':if(sampleSaved){toast('Yedek yüklemek için önce üstten örnek gösterimden çık.',true);break;}$('#backup-file').value='';$('#backup-file').click();break;
  case 'export-csv':exportCsv();break;
- case 'reset-workspace':if(storageBlocked){toast('Önceki kayıt okunamadığı için üzerine yazılmadı. Geçerli bir yedek yükle.',true);break;}confirmAction(`${examLabel()} kayıtlarını sıfırla?`,`Bu sınavın tüm yerel kayıtları silinir. Önce yedek al. ${state.activeExam==='kpss'?'YKS':'KPSS'} kayıtların korunur.`,()=>{leaveVideo();const exam=state.activeExam;studyClocks[exam]={};saveStudyClocks();state.workspaces[exam]=R.workspace(exam);teacherStore[exam]=[];saveTeacherStore();delete timers[exam];saveTimers();ui.view='setup';commit('Seçili sınav alanı ve Rota Hoca soru geçmişi sıfırlandı.');},'Bu sınavı sıfırla',true);break;
+ case 'reset-workspace':if(storageBlocked){toast('Önceki kayıt okunamadığı için üzerine yazılmadı. Geçerli bir yedek yükle.',true);break;}confirmAction(`${examLabel()} kayıtlarını sıfırla?`,`Bu sınavın tüm yerel kayıtları silinir. Önce yedek al. ${state.activeExam==='kpss'?'YKS':'KPSS'} kayıtların korunur.`,()=>{leaveVideo();const exam=state.activeExam;studyClocks[exam]={};saveStudyClocks();state.workspaces[exam]=R.workspace(exam);teacherStore[exam]=[];saveTeacherStore();delete timers[exam];saveTimers();ui.view='setup';commit('Seçili sınav alanı ve soru geçmişi sıfırlandı.');},'Bu sınavı sıfırla',true);break;
  }}catch(e){toast(e.message||'İşlem tamamlanamadı. Lütfen yeniden dene.',true);}}
 /* Included inside app.js's closure at build time. Shares the existing workspaces,
    modal/dialog helpers, storage guard and paid-preview shell. */

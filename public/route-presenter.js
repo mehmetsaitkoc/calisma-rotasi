@@ -6,7 +6,7 @@ const CONTRACTS=root.RotaContracts||(typeof require==='function'?require('./rout
 const FALLBACK_REASONS=Object.freeze({
   mistake:'Yanlış defterindeki açığı kapatmak için bugün tekrar ediyorsun.',
   mini_repair:'Mini denemede görülen açığı kapatmak için bugün kısa bir onarım yapıyorsun.',
-  ai_teacher:'Rota Hoca’da zorlandığın noktayı pekiştirmek için bugün tekrar ediyorsun.',
+  ai_teacher:'Önceki çalışmanda zorlandığın noktayı pekiştirmek için bugün tekrar ediyorsun.',
   exam:'Son deneme verin bu dersi bugün biraz daha öne çıkarıyor.',
   profile:'Başlangıç seviyen ve hedefin bu görevi bugün öne çıkarıyor.',
   priority:'Bu dersi öncelikli seçtiğin için bugün rotanda yer aldı.',

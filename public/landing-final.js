@@ -352,4 +352,12 @@
     product.dataset.kpssOnly = '1';
     document.head.appendChild(product);
   }
+  // One shared system and one dashboard composition; no application state ownership.
+  ['/rota-foundations.css?v=8', '/rota-dashboard.css?v=8'].forEach((href) => {
+    if (document.querySelector('link[href="' + href + '"]')) return;
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = href;
+    document.head.appendChild(style);
+  });
 })();

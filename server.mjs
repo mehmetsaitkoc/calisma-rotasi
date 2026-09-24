@@ -388,9 +388,14 @@ async function serve(req,res){
   catch{return json(res,404,{error:'Bulunamadı.'});}
   if(!st.isFile())return json(res,404,{error:'Bulunamadı.'});
   const etag='W/"'+st.size.toString(16)+'-'+Math.floor(st.mtimeMs).toString(16)+'"';
-  const cache='public, max-age=300, stale-while-revalidate=86400';
+  const cache='public, max-age=300, stale-while-revalidate=86400',type=mime(real);
+  const compressible=/^(?:text\/|application\/(?:json|javascript))/.test(type)||type.startsWith('image/svg+xml');
+  if(compressible&&st.size<=2*1024*1024){
+    const raw=await fs.promises.readFile(real);
+    return sendEncoded(req,res,{key:'static-'+st.size+'-'+Math.floor(st.mtimeMs),raw,type,cache,etag});
+  }
   if(req.headers['if-none-match']===etag){res.writeHead(304,{'etag':etag,'cache-control':cache});return res.end();}
-  res.writeHead(200,{'content-type':mime(real),'content-length':st.size,'cache-control':cache,'etag':etag});
+  res.writeHead(200,{'content-type':type,'content-length':st.size,'cache-control':cache,'etag':etag});
   const stream=fs.createReadStream(real);stream.on('error',()=>res.destroy());stream.pipe(res);
 }
 

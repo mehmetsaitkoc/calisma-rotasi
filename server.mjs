@@ -341,6 +341,7 @@ if(WEB_QUESTION_FILES.size!==6||[...WEB_QUESTION_FILES.values()].reduce((n,x)=>n
   throw Error('Web KPSS soru bankası bundle haritası beklenen 6 ders / 256 test ile eşleşmiyor.');
 }
 const WEB_BETA_FLAG=accounts.mode==='local-only'?'<script>window.RotaWebBeta=true</script>':'';
+const WEB_PUBLIC_META='<meta name="theme-color" content="#071225"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta property="og:title" content="Çalışma Rotası · Sana Özel KPSS Rotası"><meta property="og:description" content="Hedefine, seviyene ve çalışma performansına göre değişen kişisel KPSS çalışma rotası."><meta property="og:type" content="website">';
 const SOCIAL_ORIGIN=(()=>{
   const candidate=process.env.ROTA_APP_ORIGIN||process.env.RENDER_EXTERNAL_URL||'';
   try{

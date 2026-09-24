@@ -5,9 +5,9 @@ import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 const premium=fs.readFileSync(new URL('../public/app-premium-next.js',import.meta.url),'utf8');
 const segment=(start,end)=>{const at=html.indexOf(start);assert.ok(at>=0,start);const until=html.indexOf(end,at+start.length);assert.ok(until>at,end);return html.slice(at,until);};
-assert.ok(html.includes('teacher:teacherPage'));
-assert.ok(!html.includes("if(view==='teacher')view='today'"));assert.ok(!html.includes("if(ui.view==='teacher')ui.view='today'"));
-assert.ok(!premium.includes("document.querySelectorAll('[data-view=\"teacher\"]')"),'Premium layer must not remove restored navigation');
+assert.ok(!html.includes('teacher:teacherPage'),'Public Web Beta must not route to the retired teacher page');
+assert.ok(html.includes("if(ui.view==='teacher')ui.view='today'"),'Persisted/direct teacher view must be redirected to Today');
+assert.ok(premium.includes("document.querySelectorAll('[data-view=\"teacher\"]')"),'Presentation layer must remove retired teacher navigation');
 assert.ok(!html.includes('name="apiKey"'),'Student flow must not expose API-key setup');
 assert.ok(!html.includes("fetch('/api/teacher'"));assert.ok(!html.includes("fetch('/api/tts'"));
 assert.ok(html.includes('data-account-action="login"'));
@@ -55,4 +55,4 @@ pending=context.teacherMic();await tick();setAccount('student-b');resolveDictati
 let resolvePhoto;context.compressTeacherPhoto=()=>new Promise(resolve=>{resolvePhoto=resolve;});setAccount('student-a');pending=context.teacherAttachPhoto({name:'A.jpg'});await tick();setAccount('student-b');resolvePhoto({full:'A-full',thumb:'A-thumb'});await pending;assert.equal(ui.teacherPhotoData,'','Compressed photos must not attach after account switch');
 assert.equal(context.teacherSafePhoto('data:image/png;base64,x" onerror="x'),'', 'Stored photo attributes cannot inject HTML');
 assert.equal(context.teacherCleanHistory([{id:'x" onclick="x',subjectId:'k-ta',question:'x'}]).length,0);
-console.log('Teacher account isolation passed: restored route, authenticated requests, stale answer/follow-up/audio/photo/dictation isolation, stop cancellation and explicit provider disclosure');
+console.log('Dormant teacher isolation passed: public route retired while legacy authenticated request state remains account-isolated and cannot leak stale answer/audio/photo/dictation state');

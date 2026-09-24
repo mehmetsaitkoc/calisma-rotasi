@@ -11,9 +11,5 @@ services:
     envVars:
       - key: ROTA_ACCOUNTS_MODE
         value: local-only
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: ROTA_AI_PROFILE
-        value: best
       - key: HOST
         value: 0.0.0.0

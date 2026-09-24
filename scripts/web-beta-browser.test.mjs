@@ -15,7 +15,6 @@ async function start(){
       HOST:'127.0.0.1',
       RENDER:'true',
       NODE_ENV:'production',
-      ROTA_ACCOUNTS_MODE:'local-only',
       ROTA_APP_ORIGIN:'https://beta.example',
       OPENAI_API_KEY:''
     },
@@ -61,6 +60,7 @@ try{
   }
   assert.ok(visible.includes('Ücretsiz Web Beta'),'Landing must identify the current public beta honestly');
   assert.equal(await page.locator('[data-exam="kpss"]').count(),1,'Landing must keep exactly one real KPSS product entry');
+  assert.equal(await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),0,'Web Beta must not expose unfinished monetization controls');
 
   await page.getByRole('button',{name:'Web Beta'}).click();
   await page.getByRole('heading',{name:'Ücretsiz Web Beta'}).waitFor({state:'visible'});
@@ -72,6 +72,7 @@ try{
   await page.locator('.v6-main-cta').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
   assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must not exist in Web Beta');
+  assert.equal(await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),0,'Onboarding must stay free of unfinished billing surfaces');
 
   assert.deepEqual(errors,[],'Web Beta page errors:\n'+errors.join('\n'));
   console.log('Web Beta browser passed: honest landing, local-only disclosure, direct KPSS onboarding, no Rota Hoca.');

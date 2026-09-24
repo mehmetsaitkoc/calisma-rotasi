@@ -110,7 +110,7 @@
     video.append(play,el('strong','', 'Örnek Paneli Gör'));
     video.addEventListener('click',()=>document.querySelector('.v6-dashboard')?.scrollIntoView({behavior:'smooth',block:'center'}));
     actions.append(start,video);
-    const betaNote = el('p','v6-beta-note','Web Beta · Çalışmaların bu tarayıcıda saklanır. Instagram içinden açtıysan Safari/Chrome’da devam etmen önerilir.');
+    const betaNote = button('Beta bilgisi · Çalışmaların bu tarayıcıda saklanır. Instagram içinden açtıysan Safari/Chrome’da devam etmen önerilir.',null,'v6-beta-note',{accountAction:'open'});
 
     const features = el('div','v6-feature-strip');
     [

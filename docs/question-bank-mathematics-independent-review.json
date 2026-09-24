@@ -1,0 +1,280 @@
+{
+  "reviewer": "codex-editorial-independent-math-review",
+  "reviewedOn": "2026-09-23",
+  "scope": "Matematik konuları 1–12",
+  "tests": 48,
+  "questions": 576,
+  "readAndChecked": 576,
+  "substantiveRewrites": 90,
+  "individualDistractorNotes": 2304,
+  "independentEnumerationChecks": 90,
+  "approved": 576,
+  "rejected": [],
+  "duplicates": [],
+  "testIssues": [],
+  "topicReports": [
+    {
+      "topic": 1,
+      "rewrittenIds": [
+        "kpss-ma-01-t2-q11",
+        "kpss-ma-01-t3-q09",
+        "kpss-ma-01-t4-q07",
+        "kpss-ma-01-t4-q08",
+        "kpss-ma-01-t4-q09",
+        "kpss-ma-01-t4-q10",
+        "kpss-ma-01-t4-q11"
+      ],
+      "summary": "48 soru tek tek okundu; doğru cevaplar ve sınırlar doğrulandı. 7 yüzeysel zor soru çok koşullu çıkarımla yeniden yazıldı. 192 çeldirici açıklaması seçenek özelinde düzeltildi; özellikle mümkün fakat optimum olmayan değerler için yanlış olan “koşulları sağlamaz” genellemesi kaldırıldı."
+    },
+    {
+      "topic": 2,
+      "rewrittenIds": [
+        "kpss-ma-02-t4-q07",
+        "kpss-ma-02-t4-q08",
+        "kpss-ma-02-t4-q09",
+        "kpss-ma-02-t4-q10",
+        "kpss-ma-02-t4-q11"
+      ],
+      "summary": "48 soru ve çözümleri okundu; yazarın üç serileştirme öncesi düzeltmesinin final dosyalarda bulunduğu doğrulandı. Test 4’te beş yüzeysel zor soru, çok koşullu optimizasyon/sayma problemlerine dönüştürüldü. 192 yanlış seçenek açıklaması seçenek ve hata özelinde yeniden yazıldı."
+    },
+    {
+      "topic": 3,
+      "rewrittenIds": [
+        "kpss-ma-03-t3-q09",
+        "kpss-ma-03-t3-q12",
+        "kpss-ma-03-t4-q07",
+        "kpss-ma-03-t4-q08",
+        "kpss-ma-03-t4-q09",
+        "kpss-ma-03-t4-q10",
+        "kpss-ma-03-t4-q11",
+        "kpss-ma-03-t4-q12"
+      ],
+      "summary": "48 kök, cevap ve çözüm bağımsız okundu; serileştirilmiş düzeltmeler doğrulandı. 8 düşük seçicilikte zor soru yeniden kuruldu. Tüm 192 yanlış seçenek açıklaması seçenek özelinde gerekçelendirildi. Tam bölünme, kalan sınırı ve optimum/olası ayrımı korundu."
+    },
+    {
+      "topic": 4,
+      "rewrittenIds": [
+        "kpss-ma-04-t3-q10",
+        "kpss-ma-04-t3-q11",
+        "kpss-ma-04-t4-q07",
+        "kpss-ma-04-t4-q08",
+        "kpss-ma-04-t4-q09",
+        "kpss-ma-04-t4-q10",
+        "kpss-ma-04-t4-q11",
+        "kpss-ma-04-t4-q12"
+      ],
+      "summary": "48 soru tek tek okundu. 8 zor soru asal-bölen optimizasyonu, EBOB ve kare bölüm birlikte sayımı, döşemede iç bölge, sınırlandırılmış çarpan çiftleri gibi çok koşullu sorulara dönüştürüldü. 192 yanlış şık gerekçesi özel olarak yeniden yazıldı."
+    },
+    {
+      "topic": 5,
+      "rewrittenIds": [
+        "kpss-ma-05-t3-q12",
+        "kpss-ma-05-t4-q07",
+        "kpss-ma-05-t4-q08",
+        "kpss-ma-05-t4-q09",
+        "kpss-ma-05-t4-q10",
+        "kpss-ma-05-t4-q11",
+        "kpss-ma-05-t4-q12"
+      ],
+      "summary": "48 kök/cevap/çözüm incelendi. T4q04 eş değer iki yanlış şıktan biri değiştirildi; tüm 192 not özgülleştirildi. 7 kolay etiketlenmiş zor soru, tanım kümesi, terslerin kareleri, iki teleskopik seri, üç aşamalı tüketim ve iki ölçekli sayı doğrusu gibi koşulları birleştiren sorulara dönüştürüldü."
+    },
+    {
+      "topic": 6,
+      "rewrittenIds": [
+        "kpss-ma-06-t4-q07",
+        "kpss-ma-06-t4-q08",
+        "kpss-ma-06-t4-q09",
+        "kpss-ma-06-t4-q10",
+        "kpss-ma-06-t4-q11",
+        "kpss-ma-06-t4-q12"
+      ],
+      "summary": "48 soru kök/cevap/çözümü okundu. Geniş alt aralığın da doğru sayılabileceği toplam aralığı kökü tam değer kümesini soracak biçimde netleştirildi. Test 4 son altı soru parametreyle kök/çözüm sayısı, kısıtlı uzaklık minimumu, tanım kümesi ve bütün aralıkta çift eşitsizlikle güçlendirildi. 192 not soru özelinde yazıldı."
+    },
+    {
+      "topic": 7,
+      "rewrittenIds": [
+        "kpss-ma-07-t3-q08",
+        "kpss-ma-07-t3-q09",
+        "kpss-ma-07-t3-q12",
+        "kpss-ma-07-t4-q07",
+        "kpss-ma-07-t4-q08",
+        "kpss-ma-07-t4-q09",
+        "kpss-ma-07-t4-q12"
+      ],
+      "summary": "48 kök/cevap/çözüm okundu. Yedi yüzeysel zor soru sıfır-basamak optimizasyonu, farklı köklerin karşılaştırılması, iki tabanlı eşitsizlik, küp açılımı, eşlenik kareler ve ters teleskopik toplamla güçlendirildi. 192 yanlış şık notu ve kısa temel köklerin kesin anlatımı düzeltildi."
+    },
+    {
+      "topic": 8,
+      "rewrittenIds": [
+        "kpss-ma-08-t3-q09",
+        "kpss-ma-08-t3-q10",
+        "kpss-ma-08-t4-q07",
+        "kpss-ma-08-t4-q09",
+        "kpss-ma-08-t4-q10",
+        "kpss-ma-08-t4-q11",
+        "kpss-ma-08-t4-q12"
+      ],
+      "summary": "48 soru/çözüm bağımsız okundu; final dosyadaki son iki yazar düzeltmesi doğrulandı. Yedi soru ters oran-fark yerine geri çözüm, sistemden kareler farkı, iki tarife, üç kutu aktarımı ve asal farklı tam sayı sistemiyle güçlendirildi. Tüm şık notları soru özelinde yazıldı."
+    },
+    {
+      "topic": 9,
+      "rewrittenIds": [
+        "kpss-ma-09-t3-q09",
+        "kpss-ma-09-t3-q11",
+        "kpss-ma-09-t4-q07",
+        "kpss-ma-09-t4-q08",
+        "kpss-ma-09-t4-q09",
+        "kpss-ma-09-t4-q11",
+        "kpss-ma-09-t4-q12"
+      ],
+      "summary": "48 problem ve çözümü bağımsız okundu; sayısal hataya rastlanmadı. Yedi yüzeysel zor madde, iki yönlü grup değişimi, ikiz yaşları, bağlantılı karışım eklemeleri, üç aşamalı iş, molalı yolun ters hesabı ve hasarlı stok maliyetiyle güçlendirildi. 192 yanlış seçenek açıklaması ayrı hata nedenleriyle yenilendi."
+    },
+    {
+      "topic": 10,
+      "rewrittenIds": [
+        "kpss-ma-10-t3-q09",
+        "kpss-ma-10-t3-q10",
+        "kpss-ma-10-t3-q11",
+        "kpss-ma-10-t3-q12",
+        "kpss-ma-10-t4-q07",
+        "kpss-ma-10-t4-q08",
+        "kpss-ma-10-t4-q09",
+        "kpss-ma-10-t4-q10",
+        "kpss-ma-10-t4-q11",
+        "kpss-ma-10-t4-q12"
+      ],
+      "summary": "48 küme sorusu bağımsız okundu. On seçici soru çoklu alt küme koşulları, üçlü Venn bölge sınırları ve üyelik denklemleriyle yeniden yazıldı. 192 yanlış seçenek açıklaması koşula özgü biçimde düzeltildi; minimum/maksimum sorularında mümkün ama uç olmayan değerler yanlış biçimde imkansız diye nitelendirilmedi."
+    },
+    {
+      "topic": 11,
+      "rewrittenIds": [
+        "kpss-ma-11-t3-q09",
+        "kpss-ma-11-t3-q11",
+        "kpss-ma-11-t3-q12",
+        "kpss-ma-11-t4-q07",
+        "kpss-ma-11-t4-q08",
+        "kpss-ma-11-t4-q09",
+        "kpss-ma-11-t4-q10",
+        "kpss-ma-11-t4-q11",
+        "kpss-ma-11-t4-q12"
+      ],
+      "summary": "48 olasılık ve sayma sorusunun kök, cevap ve çözümü bağımsız okundu. Dokuz soru çoklu komite, koşullu çekiliş, uç/komşuluk ve rakam kısıtlarıyla seçici hâle getirildi. 192 yanlış seçenek açıklaması örnek uzay, sıralı/sırasız seçim ve tekrar sayım hatalarına göre ayrıştırıldı."
+    },
+    {
+      "topic": 12,
+      "rewrittenIds": [
+        "kpss-ma-12-t3-q09",
+        "kpss-ma-12-t3-q10",
+        "kpss-ma-12-t3-q11",
+        "kpss-ma-12-t3-q12",
+        "kpss-ma-12-t4-q07",
+        "kpss-ma-12-t4-q08",
+        "kpss-ma-12-t4-q09",
+        "kpss-ma-12-t4-q10",
+        "kpss-ma-12-t4-q12"
+      ],
+      "summary": "48 sayısal mantık sorusu bağımsız okundu. Dokuz yüzeysel zor madde, dizi süzme, değişen sıra, ters puan, tatilli nöbet, paket optimizasyonu, fazlı sinyal, dallanan makine, tam sayı kaynak sınırı ve tablo parametrelerini birleştiren seçici sorulara dönüştürüldü. Tüm 192 yanlış seçenek açıklaması ayrı gerekçelerle yazıldı."
+    }
+  ],
+  "spacingProofreading": {
+    "reviewedOn": "2026-09-23",
+    "reviewer": "codex-editorial-independent-math-review",
+    "questions": 91,
+    "questionIds": [
+      "kpss-ma-04-t1-q05",
+      "kpss-ma-04-t1-q06",
+      "kpss-ma-04-t1-q09",
+      "kpss-ma-04-t2-q11",
+      "kpss-ma-04-t3-q01",
+      "kpss-ma-04-t3-q08",
+      "kpss-ma-04-t3-q12",
+      "kpss-ma-03-t1-q11",
+      "kpss-ma-03-t3-q06",
+      "kpss-ma-03-t4-q05",
+      "kpss-ma-06-t1-q02",
+      "kpss-ma-06-t1-q04",
+      "kpss-ma-06-t1-q05",
+      "kpss-ma-06-t1-q10",
+      "kpss-ma-06-t2-q05",
+      "kpss-ma-06-t2-q06",
+      "kpss-ma-06-t2-q08",
+      "kpss-ma-06-t2-q11",
+      "kpss-ma-06-t3-q01",
+      "kpss-ma-06-t3-q02",
+      "kpss-ma-06-t3-q03",
+      "kpss-ma-06-t3-q05",
+      "kpss-ma-06-t3-q06",
+      "kpss-ma-06-t3-q09",
+      "kpss-ma-06-t3-q11",
+      "kpss-ma-06-t3-q12",
+      "kpss-ma-06-t4-q02",
+      "kpss-ma-06-t4-q03",
+      "kpss-ma-06-t4-q04",
+      "kpss-ma-10-t2-q08",
+      "kpss-ma-10-t3-q01",
+      "kpss-ma-10-t3-q08",
+      "kpss-ma-10-t4-q06",
+      "kpss-ma-11-t1-q10",
+      "kpss-ma-11-t2-q03",
+      "kpss-ma-11-t2-q05",
+      "kpss-ma-08-t1-q08",
+      "kpss-ma-08-t1-q12",
+      "kpss-ma-08-t2-q06",
+      "kpss-ma-08-t2-q12",
+      "kpss-ma-08-t3-q04",
+      "kpss-ma-08-t3-q08",
+      "kpss-ma-08-t3-q11",
+      "kpss-ma-08-t4-q02",
+      "kpss-ma-08-t4-q05",
+      "kpss-ma-08-t4-q08",
+      "kpss-ma-09-t1-q01",
+      "kpss-ma-09-t1-q07",
+      "kpss-ma-09-t1-q08",
+      "kpss-ma-09-t1-q12",
+      "kpss-ma-09-t2-q02",
+      "kpss-ma-09-t2-q06",
+      "kpss-ma-09-t2-q08",
+      "kpss-ma-09-t3-q03",
+      "kpss-ma-09-t3-q04",
+      "kpss-ma-09-t3-q06",
+      "kpss-ma-09-t3-q10",
+      "kpss-ma-09-t4-q01",
+      "kpss-ma-09-t4-q02",
+      "kpss-ma-09-t4-q03",
+      "kpss-ma-09-t4-q05",
+      "kpss-ma-09-t4-q10",
+      "kpss-ma-05-t1-q04",
+      "kpss-ma-05-t1-q07",
+      "kpss-ma-05-t1-q10",
+      "kpss-ma-05-t2-q01",
+      "kpss-ma-05-t2-q11",
+      "kpss-ma-05-t3-q01",
+      "kpss-ma-05-t3-q03",
+      "kpss-ma-05-t3-q04",
+      "kpss-ma-05-t3-q11",
+      "kpss-ma-05-t4-q02",
+      "kpss-ma-02-t2-q04",
+      "kpss-ma-02-t2-q11",
+      "kpss-ma-02-t4-q06",
+      "kpss-ma-12-t3-q04",
+      "kpss-ma-12-t3-q07",
+      "kpss-ma-12-t4-q02",
+      "kpss-ma-12-t4-q11",
+      "kpss-ma-01-t3-q06",
+      "kpss-ma-01-t4-q02",
+      "kpss-ma-01-t4-q03",
+      "kpss-ma-01-t4-q05",
+      "kpss-ma-01-t4-q06",
+      "kpss-ma-01-t4-q12",
+      "kpss-ma-07-t1-q11",
+      "kpss-ma-07-t2-q10",
+      "kpss-ma-07-t2-q12",
+      "kpss-ma-07-t3-q07",
+      "kpss-ma-07-t3-q10",
+      "kpss-ma-07-t3-q11"
+    ],
+    "record": "question-bank-mathematics-spacing-review.json",
+    "whitespaceOnly": true,
+    "answerAndOptionOrderUnchanged": true
+  }
+}

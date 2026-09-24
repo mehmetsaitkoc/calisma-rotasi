@@ -1,0 +1,218 @@
+[
+  {
+    "id": "kpss-tr4-t1-q01",
+    "permutations": 24,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 0
+  },
+  {
+    "id": "kpss-tr4-t1-q02",
+    "permutations": 24,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t1-q04",
+    "permutations": 24,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 2
+  },
+  {
+    "id": "kpss-tr4-t1-q05",
+    "permutations": 24,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 1
+  },
+  {
+    "id": "kpss-tr4-t1-q07",
+    "permutations": 120,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t1-q08",
+    "permutations": 120,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 3
+  },
+  {
+    "id": "kpss-tr4-t1-q10",
+    "permutations": 120,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t1-q11",
+    "permutations": 120,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 0
+  },
+  {
+    "id": "kpss-tr4-t1-q12",
+    "permutations": 720,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 3
+  },
+  {
+    "id": "kpss-tr4-t4-q01",
+    "permutations": 120,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t4-q02",
+    "permutations": 720,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 2
+  },
+  {
+    "id": "kpss-tr4-t4-q04",
+    "permutations": 720,
+    "validPlacements": 8,
+    "uniqueCorrectOption": 1
+  },
+  {
+    "id": "kpss-tr4-t4-q05",
+    "permutations": 720,
+    "validPlacements": 8,
+    "uniqueCorrectOption": 3
+  },
+  {
+    "id": "kpss-tr4-t4-q07",
+    "permutations": 720,
+    "validPlacements": 4,
+    "uniqueCorrectOption": 0
+  },
+  {
+    "id": "kpss-tr4-t4-q08",
+    "permutations": 720,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 3
+  },
+  {
+    "id": "kpss-tr4-t4-q10",
+    "permutations": 720,
+    "validPlacements": 4,
+    "uniqueCorrectOption": 0
+  },
+  {
+    "id": "kpss-tr4-t4-q11",
+    "permutations": 720,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 0
+  },
+  {
+    "id": "kpss-tr4-t4-q12",
+    "permutations": 720,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 1
+  },
+  {
+    "id": "kpss-tr4-t3-q01",
+    "permutations": 120,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t3-q02",
+    "permutations": 120,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 0
+  },
+  {
+    "id": "kpss-tr4-t3-q04",
+    "permutations": 120,
+    "validPlacements": 6,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t3-q05",
+    "permutations": 120,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 1
+  },
+  {
+    "id": "kpss-tr4-t3-q07",
+    "permutations": 120,
+    "validPlacements": 4,
+    "uniqueCorrectOption": 3
+  },
+  {
+    "id": "kpss-tr4-t3-q08",
+    "permutations": 120,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 2
+  },
+  {
+    "id": "kpss-tr4-t3-q10",
+    "permutations": 720,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 3
+  },
+  {
+    "id": "kpss-tr4-t3-q11",
+    "permutations": 720,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t3-q12",
+    "permutations": 720,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 3
+  },
+  {
+    "id": "kpss-tr4-t2-q01",
+    "permutations": 24,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 2
+  },
+  {
+    "id": "kpss-tr4-t2-q02",
+    "permutations": 120,
+    "validPlacements": 4,
+    "uniqueCorrectOption": 1
+  },
+  {
+    "id": "kpss-tr4-t2-q04",
+    "permutations": 120,
+    "validPlacements": 4,
+    "uniqueCorrectOption": 0
+  },
+  {
+    "id": "kpss-tr4-t2-q05",
+    "permutations": 120,
+    "validPlacements": 3,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t2-q07",
+    "permutations": 120,
+    "validPlacements": 4,
+    "uniqueCorrectOption": 0
+  },
+  {
+    "id": "kpss-tr4-t2-q08",
+    "permutations": 120,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 3
+  },
+  {
+    "id": "kpss-tr4-t2-q10",
+    "permutations": 120,
+    "validPlacements": 1,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t2-q11",
+    "permutations": 720,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 4
+  },
+  {
+    "id": "kpss-tr4-t2-q12",
+    "permutations": 720,
+    "validPlacements": 2,
+    "uniqueCorrectOption": 1
+  }
+]

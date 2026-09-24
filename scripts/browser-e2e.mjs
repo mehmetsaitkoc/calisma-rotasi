@@ -4,7 +4,8 @@ import { chromium } from 'playwright';
 
 const PORT = Number(process.env.E2E_PORT || 8799);
 const BASE = `http://127.0.0.1:${PORT}`;
-const FIXED_DAY = '2026-09-21';
+// Keep bank publication reviews valid while preserving deterministic route dates.
+const FIXED_DAY = '2026-09-24';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const addDays = (date, days) => {
@@ -418,14 +419,14 @@ async function runRestDayInitialRouteVisibility(browser) {
   page.on('pageerror', e => pageErrors.push(String(e?.stack || e)));
   page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
 
-  await page.clock.install({ time: new Date('2026-09-20T09:00:00+03:00') }); // Sunday
+  await page.clock.install({ time: new Date('2026-09-27T09:00:00+03:00') }); // Sunday
   await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
   await submitWizard(page, { workingDays: [1,2,3,4,5], expectView: 'plan' });
 
   const snapshot = await appState(page);
   const space = snapshot.value.workspaces.kpss;
   assert.ok(space.plan.length > 0, 'Rest-day onboarding must still generate a route');
-  assert.ok(space.plan.some(p => p.date > '2026-09-20'), 'Rest-day route must schedule tasks on the next selected working day');
+  assert.ok(space.plan.some(p => p.date > '2026-09-27'), 'Rest-day route must schedule tasks on the next selected working day');
   assert.equal(await page.locator('[data-premium-surface="today"]').count(), 0, 'Initial route build on a rest day must not strand the student on empty Today');
   await assertCleanRender(page, 'rest-day initial route visibility');
   assert.deepEqual(pageErrors, [], 'Rest-day page errors:\n' + pageErrors.join('\n'));
@@ -449,10 +450,14 @@ async function runMiniRepairProvenance(browser) {
   await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
   await submitWizard(page);
 
+  const miniId = 'kpss-bank-k-ma-9-t1';
+  assert.equal(await page.evaluate(id => RotaQuestionBank.getTest(id)?.questions.length, miniId), 12, 'Mini provenance fixture must use an approved 12-question bank test');
   const runBlankMini = async date => {
     await page.clock.setFixedTime(new Date(date + 'T09:00:00+03:00'));
-    await navigate(page, 'exams');
-    const start = page.locator('[data-action="start-mini-exam"][data-id="kpss-problemler-01"]').first();
+    await navigate(page, 'topics');
+    const mathCard = page.locator('.subject-card[data-subject="k-ma"]');
+    if (await mathCard.getAttribute('open') === null) await mathCard.locator(':scope > summary').click();
+    const start = page.locator('[data-topic-tests="k-ma-9"] [data-action="start-mini-exam"][data-id="' + miniId + '"]').first();
     await start.waitFor({ state: 'visible' });
     await start.click();
     const form = page.locator('#mini-exam-form');
@@ -461,9 +466,10 @@ async function runMiniRepairProvenance(browser) {
     await page.locator('.mini-result-hero').waitFor({ state: 'visible' });
     const snapshot = await appState(page);
     const attempts = snapshot.value.workspaces.kpss.assessments
-      .filter(a => a.miniId === 'kpss-problemler-01')
+      .filter(a => a.miniId === miniId)
       .sort((a,b) => String(b.date).localeCompare(String(a.date)) || Number(b.created||0)-Number(a.created||0));
     assert.ok(attempts[0], 'Mini exam must persist a real assessment');
+    assert.equal(attempts[0].questionEvidence.length, 12, 'Every bank mini attempt must retain question evidence');
     const close = page.locator('[data-action="close-modal"]').first();
     if (await close.count() && await close.isVisible()) await close.click();
     return attempts[0];
@@ -602,11 +608,12 @@ async function runKpssSectionExamContent(browser) {
   await submitWizard(page);
   await navigate(page, 'exams');
 
-  assert.ok(await page.getByText('KPSS Türkçe Bölüm Denemesi #01', { exact: true }).count(), 'KPSS Turkish section exam must be visible');
-  assert.ok(await page.getByText('KPSS Tarih Bölüm Denemesi #01', { exact: true }).count(), 'KPSS history section exam must be visible');
-  assert.ok(await page.getByText(/konu içi dağılım geçmiş sınav eğilimlerine göre yaklaşık/i).count(), 'Section-exam distribution must be described as approximate, not official-fixed');
+  assert.ok(await page.getByText('Türkçe · Branş Denemesi 1', { exact: true }).count(), 'KPSS Turkish branch exam must be visible');
+  assert.ok(await page.getByText('Tarih · Branş Denemesi 1', { exact: true }).count(), 'KPSS history branch exam must be visible');
+  assert.equal(await page.locator('[data-action="start-section-exam"]').count(), 18, 'All six subjects must expose three branch variants');
+  assert.ok(await page.getByText(/Konu kotaları editoryal ürün planıdır; ÖSYM konu başına sabit sayı garantisi değildir/i).count(), 'Branch-exam quotas must not be represented as official fixed topic counts');
 
-  const start = page.locator('[data-action="start-section-exam"][data-id="kpss-turkce-section-01"]').first();
+  const start = page.locator('[data-action="start-section-exam"][data-id="kpss-bank-k-tr-branch-1"]').first();
   await start.waitFor({ state: 'visible' });
   await start.click();
   const form = page.locator('#section-exam-form');
@@ -620,7 +627,7 @@ async function runKpssSectionExamContent(browser) {
   assert.match(await sectionScopeNotice.innerText(),/tam KPSS GY–GK neti değildir[\s\S]*Türkçe bölüm denemesidir/i,'Section result must not present itself as the full KPSS');
 
   const snapshot = await appState(page);
-  const attempts = snapshot.value.workspaces.kpss.assessments.filter(a => a.sectionId === 'kpss-turkce-section-01');
+  const attempts = snapshot.value.workspaces.kpss.assessments.filter(a => a.sectionId === 'kpss-bank-k-tr-branch-1');
   assert.equal(attempts.length, 1, 'Section exam must persist one assessment');
   const result = attempts[0];
   assert.equal(result.total, 30);
@@ -629,7 +636,10 @@ async function runKpssSectionExamContent(browser) {
   assert.equal(result.net, 0);
   assert.equal(result.topicBreakdown.length, 11, 'Turkish section result must preserve all 11 topic breakdown rows');
   assert.equal(result.topicBreakdown.reduce((n,x)=>n+x.total,0),30,'Topic breakdown totals must equal the section question count');
-  assert.ok(result.skillBreakdown.some(x => x.skill === 'Paragrafta anlam' && x.total === 14), 'Paragraph weight must be preserved in stored evidence');
+  assert.equal(result.topicBreakdown.find(x => x.topicId === 'k-tr-3')?.total, 13, 'Editorial paragraph quota must be preserved in the topic breakdown');
+  assert.equal(result.questionEvidence.length, 30, 'Branch result must preserve every question evidence record');
+  assert.equal(result.questionEvidence.filter(x => x.topicId === 'k-tr-3').length, 13, 'Saved question evidence must agree with the paragraph quota');
+  assert.equal(result.skillBreakdown.reduce((n, x) => n + x.total, 0), 30, 'Skill breakdown must cover the full branch result');
   await assertCleanRender(page, 'KPSS Turkish section exam result');
   assert.deepEqual(pageErrors, [], 'KPSS section exam page errors:\n' + pageErrors.join('\n'));
   assert.deepEqual(consoleErrors.filter(x => !/favicon/i.test(x)), [], 'KPSS section exam console errors:\n' + consoleErrors.join('\n'));
@@ -807,6 +817,7 @@ try {
 
   assert.ok(await page.locator('.route-coach-insight .route-reason-kicker').count(), 'Today must preserve the Rota Hoca decision evidence');
   const insightArchive = page.locator('.pnx3-insight-archive');
+  await insightArchive.waitFor({ state: 'attached' });
   assert.equal(await insightArchive.count(), 1, 'Today must keep route explainability below the approved dashboard');
   assert.match(
     ((await insightArchive.locator('summary').textContent()) || '').trim(),
@@ -876,6 +887,7 @@ try {
   await clock.waitFor({ state: 'visible' });
   const runningToggle = page.locator('#timer-toggle').first();
   await runningToggle.waitFor({ state: 'visible' });
+  await runningToggle.filter({ hasText: /Duraklat/i }).waitFor({ state: 'visible' });
   assert.match((await runningToggle.innerText()).trim(), /Duraklat/i, 'Running real timer must expose pause control');
   const initialClock = (await clock.innerText()).trim();
   const clockSeconds = (value) => {

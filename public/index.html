@@ -516,6 +516,8 @@ html[data-ui-theme="cyan"] .theme-page-badge{background:#087b93!important}
 .content{padding-top:34px}
 @media(max-width:900px){.topbar-exam-pill{display:none}.topbar{padding-inline:24px}}
 @media(max-width:650px){.topbar{top:var(--preview-h);height:62px;padding:0 16px}.topbar-context{gap:5px}.breadcrumb{max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sidebar{padding:23px 17px}.nav-label-secondary{margin-top:17px;padding-top:14px}.content{padding-top:22px}}
+/* Keep the base mobile header within the viewport before premium enhancement. */
+@media(max-width:650px){.topbar>.row{min-width:0}.topbar-right{flex-shrink:0}}
 
 /* Route Coach Insight v1 — explain the route without adding a second decision source. */
 .route-coach-insight{align-items:center;padding:15px 16px;gap:13px}.route-coach-insight>.icon{width:19px;height:19px;flex:0 0 auto}.route-coach-insight .route-reason-kicker{display:block;font-size:8px;font-weight:800;letter-spacing:1.25px;color:#6f875f;margin-bottom:3px}.route-coach-insight strong{display:block;font-size:12px;color:#304c37;margin-bottom:2px}.route-coach-insight p{font-size:10px;color:#6c7867;line-height:1.65}.route-coach-insight .btn{flex:0 0 auto;background:var(--paper);border-color:#d4decf}
@@ -1134,9 +1136,11 @@ input:focus,select:focus,textarea:focus{
 .official-source-block,.mini-history{border-radius:18px!important;border-color:var(--premium-line)!important}
 .mini-result-hero{
   border-radius:20px!important;
-  background:linear-gradient(135deg,color-mix(in srgb,var(--ink) 96%,#fff),color-mix(in srgb,var(--accent) 78%,#123c30))!important;
+  background:linear-gradient(135deg,#1c273e,#4b46b6)!important;
   box-shadow:0 20px 54px color-mix(in srgb,var(--ink) 18%,transparent);
 }
+.mini-result-hero h2,.mini-result-hero>strong{color:#fff!important}
+.mini-result-hero p,.mini-result-hero .eyebrow{color:#e2e7ff!important}
 .mini-learning-impact{
   display:grid;gap:5px;
   margin:14px 0;
@@ -1875,6 +1879,15 @@ input:focus,select:focus,textarea:focus{border-color:#aaa6ff!important;box-shado
   .exam-card,.exam-card.yks{min-height:260px!important}
 }
 
+
+/* Readable question-bank content; existing app surfaces keep their own type scale. */
+[data-question-bank-test] .mini-question legend{font-size:14px;line-height:1.65}
+[data-question-bank-test] .mini-question label>span{font-size:14px;line-height:1.6;min-height:44px}
+[data-question-bank-test] .mini-question label b{font-size:11px}
+[data-question-bank-review] article p,[data-question-bank-review] li{font-size:14px;line-height:1.65}
+[data-question-bank-review] summary{font-size:15px;line-height:1.6;cursor:pointer}
+[data-question-bank-review] article small{font-size:12px;line-height:1.6}
+[data-question-bank-review] li{margin:8px 0}
 </style>
 </head>
 <body>
@@ -1910,10 +1923,271 @@ input:focus,select:focus,textarea:focus{border-color:#aaa6ff!important;box-shado
 <script src="/kpss-history-08.js"></script>
 <script src="/kpss-history-09.js"></script>
 <script src="/kpss-history-10.js"></script>
+<script src="/question-bank.js"></script>
+<script src="/questions/kpss/blueprints.js"></script>
+<!-- KPSS BANK MODULES START -->
+<script src="/questions/kpss/cografya/bolgesel-kalkinma/test-1.js"></script>
+<script src="/questions/kpss/cografya/bolgesel-kalkinma/test-2.js"></script>
+<script src="/questions/kpss/cografya/bolgesel-kalkinma/test-3.js"></script>
+<script src="/questions/kpss/cografya/bolgesel-kalkinma/test-4.js"></script>
+<script src="/questions/kpss/cografya/cografi-konum/test-1.js"></script>
+<script src="/questions/kpss/cografya/cografi-konum/test-2.js"></script>
+<script src="/questions/kpss/cografya/cografi-konum/test-3.js"></script>
+<script src="/questions/kpss/cografya/cografi-konum/test-4.js"></script>
+<script src="/questions/kpss/cografya/gocler/test-1.js"></script>
+<script src="/questions/kpss/cografya/gocler/test-2.js"></script>
+<script src="/questions/kpss/cografya/gocler/test-3.js"></script>
+<script src="/questions/kpss/cografya/gocler/test-4.js"></script>
+<script src="/questions/kpss/cografya/iklim-ve-bitki-ortusu/test-1.js"></script>
+<script src="/questions/kpss/cografya/iklim-ve-bitki-ortusu/test-2.js"></script>
+<script src="/questions/kpss/cografya/iklim-ve-bitki-ortusu/test-3.js"></script>
+<script src="/questions/kpss/cografya/iklim-ve-bitki-ortusu/test-4.js"></script>
+<script src="/questions/kpss/cografya/maden-ve-enerji/test-1.js"></script>
+<script src="/questions/kpss/cografya/maden-ve-enerji/test-2.js"></script>
+<script src="/questions/kpss/cografya/maden-ve-enerji/test-3.js"></script>
+<script src="/questions/kpss/cografya/maden-ve-enerji/test-4.js"></script>
+<script src="/questions/kpss/cografya/nufus-ve-yerlesme/test-1.js"></script>
+<script src="/questions/kpss/cografya/nufus-ve-yerlesme/test-2.js"></script>
+<script src="/questions/kpss/cografya/nufus-ve-yerlesme/test-3.js"></script>
+<script src="/questions/kpss/cografya/nufus-ve-yerlesme/test-4.js"></script>
+<script src="/questions/kpss/cografya/sanayi/test-1.js"></script>
+<script src="/questions/kpss/cografya/sanayi/test-2.js"></script>
+<script src="/questions/kpss/cografya/sanayi/test-3.js"></script>
+<script src="/questions/kpss/cografya/sanayi/test-4.js"></script>
+<script src="/questions/kpss/cografya/tarim-ve-hayvancilik/test-1.js"></script>
+<script src="/questions/kpss/cografya/tarim-ve-hayvancilik/test-2.js"></script>
+<script src="/questions/kpss/cografya/tarim-ve-hayvancilik/test-3.js"></script>
+<script src="/questions/kpss/cografya/tarim-ve-hayvancilik/test-4.js"></script>
+<script src="/questions/kpss/cografya/toprak-ve-su/test-1.js"></script>
+<script src="/questions/kpss/cografya/toprak-ve-su/test-2.js"></script>
+<script src="/questions/kpss/cografya/toprak-ve-su/test-3.js"></script>
+<script src="/questions/kpss/cografya/toprak-ve-su/test-4.js"></script>
+<script src="/questions/kpss/cografya/turizm/test-1.js"></script>
+<script src="/questions/kpss/cografya/turizm/test-2.js"></script>
+<script src="/questions/kpss/cografya/turizm/test-3.js"></script>
+<script src="/questions/kpss/cografya/turizm/test-4.js"></script>
+<script src="/questions/kpss/cografya/ulasim-ve-ticaret/test-1.js"></script>
+<script src="/questions/kpss/cografya/ulasim-ve-ticaret/test-2.js"></script>
+<script src="/questions/kpss/cografya/ulasim-ve-ticaret/test-3.js"></script>
+<script src="/questions/kpss/cografya/ulasim-ve-ticaret/test-4.js"></script>
+<script src="/questions/kpss/cografya/yer-sekilleri/test-1.js"></script>
+<script src="/questions/kpss/cografya/yer-sekilleri/test-2.js"></script>
+<script src="/questions/kpss/cografya/yer-sekilleri/test-3.js"></script>
+<script src="/questions/kpss/cografya/yer-sekilleri/test-4.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/guncel-gelismeler/test-1.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/guncel-gelismeler/test-2.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/guncel-gelismeler/test-3.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/guncel-gelismeler/test-4.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/kultur-sanat-spor/test-1.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/kultur-sanat-spor/test-2.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/kultur-sanat-spor/test-3.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/kultur-sanat-spor/test-4.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/kurum-ve-kuruluslar/test-1.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/kurum-ve-kuruluslar/test-2.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/kurum-ve-kuruluslar/test-3.js"></script>
+<script src="/questions/kpss/guncel-bilgiler/kurum-ve-kuruluslar/test-4.js"></script>
+<script src="/questions/kpss/matematik/analitik-geometri/test-1.js"></script>
+<script src="/questions/kpss/matematik/analitik-geometri/test-2.js"></script>
+<script src="/questions/kpss/matematik/analitik-geometri/test-3.js"></script>
+<script src="/questions/kpss/matematik/analitik-geometri/test-4.js"></script>
+<script src="/questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-1.js"></script>
+<script src="/questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-2.js"></script>
+<script src="/questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-3.js"></script>
+<script src="/questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-4.js"></script>
+<script src="/questions/kpss/matematik/bolme-ve-bolunebilme/test-1.js"></script>
+<script src="/questions/kpss/matematik/bolme-ve-bolunebilme/test-2.js"></script>
+<script src="/questions/kpss/matematik/bolme-ve-bolunebilme/test-3.js"></script>
+<script src="/questions/kpss/matematik/bolme-ve-bolunebilme/test-4.js"></script>
+<script src="/questions/kpss/matematik/cember-ve-daire/test-1.js"></script>
+<script src="/questions/kpss/matematik/cember-ve-daire/test-2.js"></script>
+<script src="/questions/kpss/matematik/cember-ve-daire/test-3.js"></script>
+<script src="/questions/kpss/matematik/cember-ve-daire/test-4.js"></script>
+<script src="/questions/kpss/matematik/dortgenler-ve-cokgenler/test-1.js"></script>
+<script src="/questions/kpss/matematik/dortgenler-ve-cokgenler/test-2.js"></script>
+<script src="/questions/kpss/matematik/dortgenler-ve-cokgenler/test-3.js"></script>
+<script src="/questions/kpss/matematik/dortgenler-ve-cokgenler/test-4.js"></script>
+<script src="/questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-1.js"></script>
+<script src="/questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-2.js"></script>
+<script src="/questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-3.js"></script>
+<script src="/questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-4.js"></script>
+<script src="/questions/kpss/matematik/kati-cisimler/test-1.js"></script>
+<script src="/questions/kpss/matematik/kati-cisimler/test-2.js"></script>
+<script src="/questions/kpss/matematik/kati-cisimler/test-3.js"></script>
+<script src="/questions/kpss/matematik/kati-cisimler/test-4.js"></script>
+<script src="/questions/kpss/matematik/kumeler/test-1.js"></script>
+<script src="/questions/kpss/matematik/kumeler/test-2.js"></script>
+<script src="/questions/kpss/matematik/kumeler/test-3.js"></script>
+<script src="/questions/kpss/matematik/kumeler/test-4.js"></script>
+<script src="/questions/kpss/matematik/olasilik-ve-kombinasyon/test-1.js"></script>
+<script src="/questions/kpss/matematik/olasilik-ve-kombinasyon/test-2.js"></script>
+<script src="/questions/kpss/matematik/olasilik-ve-kombinasyon/test-3.js"></script>
+<script src="/questions/kpss/matematik/olasilik-ve-kombinasyon/test-4.js"></script>
+<script src="/questions/kpss/matematik/oran-oranti-ve-denklemler/test-1.js"></script>
+<script src="/questions/kpss/matematik/oran-oranti-ve-denklemler/test-2.js"></script>
+<script src="/questions/kpss/matematik/oran-oranti-ve-denklemler/test-3.js"></script>
+<script src="/questions/kpss/matematik/oran-oranti-ve-denklemler/test-4.js"></script>
+<script src="/questions/kpss/matematik/problemler/test-1.js"></script>
+<script src="/questions/kpss/matematik/problemler/test-2.js"></script>
+<script src="/questions/kpss/matematik/problemler/test-3.js"></script>
+<script src="/questions/kpss/matematik/problemler/test-4.js"></script>
+<script src="/questions/kpss/matematik/rasyonel-sayilar/test-1.js"></script>
+<script src="/questions/kpss/matematik/rasyonel-sayilar/test-2.js"></script>
+<script src="/questions/kpss/matematik/rasyonel-sayilar/test-3.js"></script>
+<script src="/questions/kpss/matematik/rasyonel-sayilar/test-4.js"></script>
+<script src="/questions/kpss/matematik/sayi-basamaklari/test-1.js"></script>
+<script src="/questions/kpss/matematik/sayi-basamaklari/test-2.js"></script>
+<script src="/questions/kpss/matematik/sayi-basamaklari/test-3.js"></script>
+<script src="/questions/kpss/matematik/sayi-basamaklari/test-4.js"></script>
+<script src="/questions/kpss/matematik/sayisal-mantik/test-1.js"></script>
+<script src="/questions/kpss/matematik/sayisal-mantik/test-2.js"></script>
+<script src="/questions/kpss/matematik/sayisal-mantik/test-3.js"></script>
+<script src="/questions/kpss/matematik/sayisal-mantik/test-4.js"></script>
+<script src="/questions/kpss/matematik/temel-kavramlar/test-1.js"></script>
+<script src="/questions/kpss/matematik/temel-kavramlar/test-2.js"></script>
+<script src="/questions/kpss/matematik/temel-kavramlar/test-3.js"></script>
+<script src="/questions/kpss/matematik/temel-kavramlar/test-4.js"></script>
+<script src="/questions/kpss/matematik/ucgenler/test-1.js"></script>
+<script src="/questions/kpss/matematik/ucgenler/test-2.js"></script>
+<script src="/questions/kpss/matematik/ucgenler/test-3.js"></script>
+<script src="/questions/kpss/matematik/ucgenler/test-4.js"></script>
+<script src="/questions/kpss/matematik/uslu-ve-koklu-sayilar/test-1.js"></script>
+<script src="/questions/kpss/matematik/uslu-ve-koklu-sayilar/test-2.js"></script>
+<script src="/questions/kpss/matematik/uslu-ve-koklu-sayilar/test-3.js"></script>
+<script src="/questions/kpss/matematik/uslu-ve-koklu-sayilar/test-4.js"></script>
+<script src="/questions/kpss/tarih/ataturk-donemi-dis-politika/test-1.js"></script>
+<script src="/questions/kpss/tarih/ataturk-donemi-dis-politika/test-2.js"></script>
+<script src="/questions/kpss/tarih/ataturk-donemi-dis-politika/test-3.js"></script>
+<script src="/questions/kpss/tarih/ataturk-donemi-dis-politika/test-4.js"></script>
+<script src="/questions/kpss/tarih/ataturk-ilke-inkilaplari/test-1.js"></script>
+<script src="/questions/kpss/tarih/ataturk-ilke-inkilaplari/test-2.js"></script>
+<script src="/questions/kpss/tarih/ataturk-ilke-inkilaplari/test-3.js"></script>
+<script src="/questions/kpss/tarih/ataturk-ilke-inkilaplari/test-4.js"></script>
+<script src="/questions/kpss/tarih/cagdas-turk-dunya-tarihi/test-1.js"></script>
+<script src="/questions/kpss/tarih/cagdas-turk-dunya-tarihi/test-2.js"></script>
+<script src="/questions/kpss/tarih/cagdas-turk-dunya-tarihi/test-3.js"></script>
+<script src="/questions/kpss/tarih/cagdas-turk-dunya-tarihi/test-4.js"></script>
+<script src="/questions/kpss/tarih/ilk-turk-devletleri/test-1.js"></script>
+<script src="/questions/kpss/tarih/ilk-turk-devletleri/test-2.js"></script>
+<script src="/questions/kpss/tarih/ilk-turk-devletleri/test-3.js"></script>
+<script src="/questions/kpss/tarih/ilk-turk-devletleri/test-4.js"></script>
+<script src="/questions/kpss/tarih/ilk-turk-islam-devletleri/test-1.js"></script>
+<script src="/questions/kpss/tarih/ilk-turk-islam-devletleri/test-2.js"></script>
+<script src="/questions/kpss/tarih/ilk-turk-islam-devletleri/test-3.js"></script>
+<script src="/questions/kpss/tarih/ilk-turk-islam-devletleri/test-4.js"></script>
+<script src="/questions/kpss/tarih/kurtulus-savasi-cepheleri/test-1.js"></script>
+<script src="/questions/kpss/tarih/kurtulus-savasi-cepheleri/test-2.js"></script>
+<script src="/questions/kpss/tarih/kurtulus-savasi-cepheleri/test-3.js"></script>
+<script src="/questions/kpss/tarih/kurtulus-savasi-cepheleri/test-4.js"></script>
+<script src="/questions/kpss/tarih/milli-mucadele-hazirlik/test-1.js"></script>
+<script src="/questions/kpss/tarih/milli-mucadele-hazirlik/test-2.js"></script>
+<script src="/questions/kpss/tarih/milli-mucadele-hazirlik/test-3.js"></script>
+<script src="/questions/kpss/tarih/milli-mucadele-hazirlik/test-4.js"></script>
+<script src="/questions/kpss/tarih/osmanli-kultur-medeniyet/test-1.js"></script>
+<script src="/questions/kpss/tarih/osmanli-kultur-medeniyet/test-2.js"></script>
+<script src="/questions/kpss/tarih/osmanli-kultur-medeniyet/test-3.js"></script>
+<script src="/questions/kpss/tarih/osmanli-kultur-medeniyet/test-4.js"></script>
+<script src="/questions/kpss/tarih/osmanli-kurulus/test-1.js"></script>
+<script src="/questions/kpss/tarih/osmanli-kurulus/test-2.js"></script>
+<script src="/questions/kpss/tarih/osmanli-kurulus/test-3.js"></script>
+<script src="/questions/kpss/tarih/osmanli-kurulus/test-4.js"></script>
+<script src="/questions/kpss/tarih/osmanli-yenilesme/test-1.js"></script>
+<script src="/questions/kpss/tarih/osmanli-yenilesme/test-2.js"></script>
+<script src="/questions/kpss/tarih/osmanli-yenilesme/test-3.js"></script>
+<script src="/questions/kpss/tarih/osmanli-yenilesme/test-4.js"></script>
+<script src="/questions/kpss/tarih/osmanli-yukselme/test-1.js"></script>
+<script src="/questions/kpss/tarih/osmanli-yukselme/test-2.js"></script>
+<script src="/questions/kpss/tarih/osmanli-yukselme/test-3.js"></script>
+<script src="/questions/kpss/tarih/osmanli-yukselme/test-4.js"></script>
+<script src="/questions/kpss/tarih/turkiye-selcuklu-devleti/test-1.js"></script>
+<script src="/questions/kpss/tarih/turkiye-selcuklu-devleti/test-2.js"></script>
+<script src="/questions/kpss/tarih/turkiye-selcuklu-devleti/test-3.js"></script>
+<script src="/questions/kpss/tarih/turkiye-selcuklu-devleti/test-4.js"></script>
+<script src="/questions/kpss/tarih/yirminci-yuzyil-osmanli/test-1.js"></script>
+<script src="/questions/kpss/tarih/yirminci-yuzyil-osmanli/test-2.js"></script>
+<script src="/questions/kpss/tarih/yirminci-yuzyil-osmanli/test-3.js"></script>
+<script src="/questions/kpss/tarih/yirminci-yuzyil-osmanli/test-4.js"></script>
+<script src="/questions/kpss/turkce/anlatim-bozukluklari/test-1.js"></script>
+<script src="/questions/kpss/turkce/anlatim-bozukluklari/test-2.js"></script>
+<script src="/questions/kpss/turkce/anlatim-bozukluklari/test-3.js"></script>
+<script src="/questions/kpss/turkce/anlatim-bozukluklari/test-4.js"></script>
+<script src="/questions/kpss/turkce/cumle-turleri/test-1.js"></script>
+<script src="/questions/kpss/turkce/cumle-turleri/test-2.js"></script>
+<script src="/questions/kpss/turkce/cumle-turleri/test-3.js"></script>
+<script src="/questions/kpss/turkce/cumle-turleri/test-4.js"></script>
+<script src="/questions/kpss/turkce/cumlede-anlam/test-1.js"></script>
+<script src="/questions/kpss/turkce/cumlede-anlam/test-2.js"></script>
+<script src="/questions/kpss/turkce/cumlede-anlam/test-3.js"></script>
+<script src="/questions/kpss/turkce/cumlede-anlam/test-4.js"></script>
+<script src="/questions/kpss/turkce/cumlenin-ogeleri/test-1.js"></script>
+<script src="/questions/kpss/turkce/cumlenin-ogeleri/test-2.js"></script>
+<script src="/questions/kpss/turkce/cumlenin-ogeleri/test-3.js"></script>
+<script src="/questions/kpss/turkce/cumlenin-ogeleri/test-4.js"></script>
+<script src="/questions/kpss/turkce/noktalama-isaretleri/test-1.js"></script>
+<script src="/questions/kpss/turkce/noktalama-isaretleri/test-2.js"></script>
+<script src="/questions/kpss/turkce/noktalama-isaretleri/test-3.js"></script>
+<script src="/questions/kpss/turkce/noktalama-isaretleri/test-4.js"></script>
+<script src="/questions/kpss/turkce/paragrafta-anlam/test-1.js"></script>
+<script src="/questions/kpss/turkce/paragrafta-anlam/test-2.js"></script>
+<script src="/questions/kpss/turkce/paragrafta-anlam/test-3.js"></script>
+<script src="/questions/kpss/turkce/paragrafta-anlam/test-4.js"></script>
+<script src="/questions/kpss/turkce/ses-bilgisi/test-1.js"></script>
+<script src="/questions/kpss/turkce/ses-bilgisi/test-2.js"></script>
+<script src="/questions/kpss/turkce/ses-bilgisi/test-3.js"></script>
+<script src="/questions/kpss/turkce/ses-bilgisi/test-4.js"></script>
+<script src="/questions/kpss/turkce/sozcuk-turleri/test-1.js"></script>
+<script src="/questions/kpss/turkce/sozcuk-turleri/test-2.js"></script>
+<script src="/questions/kpss/turkce/sozcuk-turleri/test-3.js"></script>
+<script src="/questions/kpss/turkce/sozcuk-turleri/test-4.js"></script>
+<script src="/questions/kpss/turkce/sozcukte-anlam/test-1.js"></script>
+<script src="/questions/kpss/turkce/sozcukte-anlam/test-2.js"></script>
+<script src="/questions/kpss/turkce/sozcukte-anlam/test-3.js"></script>
+<script src="/questions/kpss/turkce/sozcukte-anlam/test-4.js"></script>
+<script src="/questions/kpss/turkce/sozel-mantik/test-1.js"></script>
+<script src="/questions/kpss/turkce/sozel-mantik/test-2.js"></script>
+<script src="/questions/kpss/turkce/sozel-mantik/test-3.js"></script>
+<script src="/questions/kpss/turkce/sozel-mantik/test-4.js"></script>
+<script src="/questions/kpss/turkce/yazim-kurallari/test-1.js"></script>
+<script src="/questions/kpss/turkce/yazim-kurallari/test-2.js"></script>
+<script src="/questions/kpss/turkce/yazim-kurallari/test-3.js"></script>
+<script src="/questions/kpss/turkce/yazim-kurallari/test-4.js"></script>
+<script src="/questions/kpss/vatandaslik/anayasal-gelismeler/test-1.js"></script>
+<script src="/questions/kpss/vatandaslik/anayasal-gelismeler/test-2.js"></script>
+<script src="/questions/kpss/vatandaslik/anayasal-gelismeler/test-3.js"></script>
+<script src="/questions/kpss/vatandaslik/anayasal-gelismeler/test-4.js"></script>
+<script src="/questions/kpss/vatandaslik/devlet-ve-demokrasi/test-1.js"></script>
+<script src="/questions/kpss/vatandaslik/devlet-ve-demokrasi/test-2.js"></script>
+<script src="/questions/kpss/vatandaslik/devlet-ve-demokrasi/test-3.js"></script>
+<script src="/questions/kpss/vatandaslik/devlet-ve-demokrasi/test-4.js"></script>
+<script src="/questions/kpss/vatandaslik/hukukun-temel-kavramlari/test-1.js"></script>
+<script src="/questions/kpss/vatandaslik/hukukun-temel-kavramlari/test-2.js"></script>
+<script src="/questions/kpss/vatandaslik/hukukun-temel-kavramlari/test-3.js"></script>
+<script src="/questions/kpss/vatandaslik/hukukun-temel-kavramlari/test-4.js"></script>
+<script src="/questions/kpss/vatandaslik/idare-hukuku/test-1.js"></script>
+<script src="/questions/kpss/vatandaslik/idare-hukuku/test-2.js"></script>
+<script src="/questions/kpss/vatandaslik/idare-hukuku/test-3.js"></script>
+<script src="/questions/kpss/vatandaslik/idare-hukuku/test-4.js"></script>
+<script src="/questions/kpss/vatandaslik/temel-hak-ve-ozgurlukler/test-1.js"></script>
+<script src="/questions/kpss/vatandaslik/temel-hak-ve-ozgurlukler/test-2.js"></script>
+<script src="/questions/kpss/vatandaslik/temel-hak-ve-ozgurlukler/test-3.js"></script>
+<script src="/questions/kpss/vatandaslik/temel-hak-ve-ozgurlukler/test-4.js"></script>
+<script src="/questions/kpss/vatandaslik/yargi/test-1.js"></script>
+<script src="/questions/kpss/vatandaslik/yargi/test-2.js"></script>
+<script src="/questions/kpss/vatandaslik/yargi/test-3.js"></script>
+<script src="/questions/kpss/vatandaslik/yargi/test-4.js"></script>
+<script src="/questions/kpss/vatandaslik/yasama/test-1.js"></script>
+<script src="/questions/kpss/vatandaslik/yasama/test-2.js"></script>
+<script src="/questions/kpss/vatandaslik/yasama/test-3.js"></script>
+<script src="/questions/kpss/vatandaslik/yasama/test-4.js"></script>
+<script src="/questions/kpss/vatandaslik/yurutme/test-1.js"></script>
+<script src="/questions/kpss/vatandaslik/yurutme/test-2.js"></script>
+<script src="/questions/kpss/vatandaslik/yurutme/test-3.js"></script>
+<script src="/questions/kpss/vatandaslik/yurutme/test-4.js"></script>
+<!-- KPSS BANK MODULES END -->
 <!-- ARCHITECTURE BOUNDARY: workspace state schema -->
 <script src="/workspace-schema.js"></script>
 <!-- ARCHITECTURE BOUNDARY: catalog data -->
 <script src="/catalog.js"></script>
+<script src="/questions/kpss/branch-exams.js"></script>
 <!-- ARCHITECTURE BOUNDARY: route engine + workspace validation -->
 <script>
 (function(root){
@@ -2056,10 +2330,10 @@ function validateBackup(data){
    if(!topicIds.has(id))continue;
    w.topicState[id]={status:int(t.status??0,0,2,'konu durumu'),url:safeUrl(text(t.url||'',2000)),position:int(t.position||0,0,100000,'kaynak dakikası'),note:text(t.note||'',4000),updated:typeof t.updated==='number'?t.updated:0};
   }
-  w.plan=array(old.plan).map(p=>({id:ident(p.id),date:checkedDate(p.date),subjectId:sub(p.subjectId),topicId:ident(p.topicId),title:text(p.title,180),minutes:int(p.minutes,1,1440,'oturum süresi'),done:!!p.done,...(['review','route'].includes(p.kind)?{kind:p.kind}:{}),...(p.sourceMistakeId?{sourceMistakeId:ident(p.sourceMistakeId)}:{}),...(p.sourceTeacherQuestionId?{sourceTeacherQuestionId:ident(p.sourceTeacherQuestionId)}:{}),...(p.sourceAssessmentId?{sourceAssessmentId:ident(p.sourceAssessmentId)}:{}),...(p.source?{source:text(p.source,40)}:{}),...(Number.isFinite(p.priority)?{priority:Math.max(0,Math.min(100,Math.round(p.priority)))}:{}),...(p.reason?{reason:text(p.reason,500)}:{}),...(p.taskState&&['open','later'].includes(p.taskState)?{taskState:p.taskState}:{}),...(p.deferUntil?{deferUntil:checkedDate(p.deferUntil)}:{}),...(p.routeKey?{routeKey:text(p.routeKey,180)}:{}),...(Number.isInteger(p.targetQuestions)?{targetQuestions:int(p.targetQuestions,0,200,'soru hedefi')}:{}),...(p.taskGoal?{taskGoal:text(p.taskGoal,300)}:{}),...([1,3,7].includes(p.reviewWave)?{reviewWave:p.reviewWave}:{}),...(p.reviewBaseTaskId?{reviewBaseTaskId:ident(p.reviewBaseTaskId)}:{}),...(p.reviewBaseDate?{reviewBaseDate:checkedDate(p.reviewBaseDate)}:{}),...(p.reviewVariant==='challenge'?{reviewVariant:'challenge'}:{})}));
+  w.plan=array(old.plan).map(p=>({id:ident(p.id),date:checkedDate(p.date),subjectId:sub(p.subjectId),topicId:ident(p.topicId),title:text(p.title,180),minutes:int(p.minutes,1,1440,'oturum süresi'),done:!!p.done,...(['review','route'].includes(p.kind)?{kind:p.kind}:{}),...(p.sourceMistakeId?{sourceMistakeId:ident(p.sourceMistakeId)}:{}),...(p.sourceTeacherQuestionId?{sourceTeacherQuestionId:ident(p.sourceTeacherQuestionId)}:{}),...(p.sourceAssessmentId?{sourceAssessmentId:ident(p.sourceAssessmentId)}:{}),...(p.source?{source:text(p.source,40)}:{}),...(Number.isFinite(p.priority)?{priority:Math.max(0,Math.min(100,Math.round(p.priority)))}:{}),...(p.reason?{reason:text(p.reason,500)}:{}),...(p.taskState&&['open','later'].includes(p.taskState)?{taskState:p.taskState}:{}),...(p.deferUntil?{deferUntil:checkedDate(p.deferUntil)}:{}),...(p.routeKey?{routeKey:text(p.routeKey,180)}:{}),...(Number.isInteger(p.targetQuestions)?{targetQuestions:int(p.targetQuestions,0,200,'soru hedefi')}:{}),...(p.taskGoal?{taskGoal:text(p.taskGoal,1200)}:{}),...([1,3,7].includes(p.reviewWave)?{reviewWave:p.reviewWave}:{}),...(p.reviewBaseTaskId?{reviewBaseTaskId:ident(p.reviewBaseTaskId)}:{}),...(p.reviewBaseDate?{reviewBaseDate:checkedDate(p.reviewBaseDate)}:{}),...(p.reviewVariant==='challenge'?{reviewVariant:'challenge'}:{})}));
   w.logs=array(old.logs).map(l=>({id:ident(l.id),date:checkedDate(l.date),subjectId:sub(l.subjectId),title:text(l.title,180),minutes:int(l.minutes,0,1440,'çalışma süresi'),questions:int(l.questions,0,5000,'soru sayısı'),note:text(l.note||'',2000),sessionId:l.sessionId?ident(l.sessionId):'',...(['stuck','ok','strong'].includes(l.outcome)?{outcome:l.outcome}:{}),...(['concept','process','speed','attention','strategy'].includes(l.difficulty)?{difficulty:l.difficulty}:{}),...(Number.isInteger(l.correct)?{correct:int(l.correct,0,5000,'doğru sayısı')}:{}),...(Number.isInteger(l.wrong)?{wrong:int(l.wrong,0,5000,'yanlış sayısı')}:{}),...(Number.isFinite(l.created)?{created:Math.max(0,l.created)}:{}),...(Number.isFinite(l.updated)?{updated:Math.max(0,l.updated)}:{})}));
   for(const l of w.logs){if((Number.isInteger(l.correct)||Number.isInteger(l.wrong))&&((l.correct||0)+(l.wrong||0)>l.questions))throw Error('Çalışma günlüğünde doğru + yanlış, toplam soru sayısını aşıyor.');}
-  w.assessments=Array.isArray(old.assessments)?old.assessments.slice(-200).map(a=>{
+  w.assessments=Array.isArray(old.assessments)?old.assessments.slice(-240).map(a=>{
    const subjectId=sub(a.subjectId),topicId=a.topicId?ident(a.topicId):'';
    if(topicId){const t=topic(w,topicId);if(!topicIds.has(topicId)||!t||t.subjectId!==subjectId)throw Error('Mini deneme konu bağlantısı geçersiz.');}
    const total=int(a.total,1,200,'mini deneme soru sayısı'),correct=int(a.correct,0,total,'mini deneme doğru'),wrong=int(a.wrong,0,total,'mini deneme yanlış');
@@ -2074,9 +2348,24 @@ function validateBackup(data){
    }):[];
    if(skillBreakdown.length&&skillBreakdown.reduce((n,x)=>n+x.total,0)!==total)throw Error('Mini deneme alt konu toplamı soru sayısıyla eşleşmiyor.');
    const weakSkills=Array.isArray(a.weakSkills)?a.weakSkills.slice(0,8).map(x=>text(x,80)).filter(Boolean):[];
+   const sectionId=a.sectionId?ident(a.sectionId):String(a.miniId||'').startsWith('section:')?ident(String(a.miniId).slice(8)):'';
+   const topicBreakdown=Array.isArray(a.topicBreakdown)?a.topicBreakdown.slice(0,120).map(x=>{
+    if(!x||typeof x!=='object'||Array.isArray(x))throw Error('Bölüm denemesi konu kaydı geçersiz.');
+    const id=ident(x.topicId),t=topic(w,id),count=int(x.total,1,total,'bölüm denemesi konu toplamı'),c=int(x.correct,0,count,'bölüm denemesi konu doğru'),r=int(x.wrong,0,count,'bölüm denemesi konu yanlış'),b=int(x.blank,0,count,'bölüm denemesi konu boş');
+    if(!topicIds.has(id)||!t||t.subjectId!==subjectId||c+r+b!==count)throw Error('Bölüm denemesi konu dağılımı geçersiz.');
+    return {topicId:id,title:text(x.title||t.title,180),total:count,correct:c,wrong:r,blank:b,accuracy:c/count};
+   }):[];
+   if(topicBreakdown.length&&(new Set(topicBreakdown.map(x=>x.topicId)).size!==topicBreakdown.length||topicBreakdown.reduce((n,x)=>n+x.total,0)!==total||topicBreakdown.reduce((n,x)=>n+x.correct,0)!==correct||topicBreakdown.reduce((n,x)=>n+x.wrong,0)!==wrong))throw Error('Bölüm denemesi konu toplamları sonuçla eşleşmiyor.');
+   const questionEvidence=Array.isArray(a.questionEvidence)&&root.RotaQuestionBank?.cleanEvidence?root.RotaQuestionBank.cleanEvidence(a.questionEvidence):[];
+   if(Array.isArray(a.questionEvidence)&&a.questionEvidence.length){
+    if(questionEvidence.length!==total||new Set(questionEvidence.map(x=>x.questionId)).size!==total)throw Error('Soru kanıtı sayısı veya kimliği geçersiz.');
+    for(let i=0;i<questionEvidence.length;i++){const q=questionEvidence[i],t=topic(w,q.topicId);if(q.subjectId!==subjectId||!topicIds.has(q.topicId)||!t||t.subjectId!==subjectId||(topicId&&q.topicId!==topicId)||(answers.length&&q.picked!==answers[i]))throw Error('Soru kanıtı konu veya cevap bağlantısı geçersiz.');}
+    if(questionEvidence.filter(x=>x.status==='correct').length!==correct||questionEvidence.filter(x=>x.status==='wrong').length!==wrong)throw Error('Soru kanıtı sonuçla eşleşmiyor.');
+   }
+   const penalty=sectionId?([0,3,4].includes(a.penalty)?a.penalty:4):null;
    const rd=a.routeDecision&&typeof a.routeDecision==='object'&&!Array.isArray(a.routeDecision)?a.routeDecision:null;
    const routeDecision=rd&&['repair','ease','steady','progress'].includes(rd.mode)?{mode:rd.mode,label:text(rd.label||'',80),note:text(rd.note||'',500),confidence:int(Number.isInteger(rd.confidence)?rd.confidence:0,0,100,'mini rota güveni'),evidence:Array.isArray(rd.evidence)?rd.evidence.slice(0,8).map(x=>text(x,120)).filter(Boolean):[]}:null;
-   return {id:ident(a.id),miniId:text(a.miniId,120),version:Number.isInteger(a.version)?int(a.version,1,1000,'mini deneme sürümü'):1,date:checkedDate(a.date),subjectId,topicId,title:text(a.title,180),total,correct,wrong,blank:total-correct-wrong,minutes:int(a.minutes||1,1,1440,'mini deneme süresi'),answers,skillBreakdown,weakSkills,...(routeDecision?{routeDecision}:{}),created:Number.isFinite(a.created)?Math.max(0,a.created):0};
+   return {id:ident(a.id),miniId:text(a.miniId,120),version:Number.isInteger(a.version)?int(a.version,1,1000,'mini deneme sürümü'):1,date:checkedDate(a.date),subjectId,topicId,title:text(a.title,180),total,correct,wrong,blank:total-correct-wrong,minutes:int(a.minutes||1,1,1440,'mini deneme süresi'),answers,skillBreakdown,weakSkills,...(sectionId?{sectionId,penalty,net:correct-(penalty?wrong/penalty:0)}:{}),...(topicBreakdown.length?{topicBreakdown}:{}),...(questionEvidence.length?{questionEvidence}:{}),...(routeDecision?{routeDecision}:{}),created:Number.isFinite(a.created)?Math.max(0,a.created):0};
   }):[];
   for(const p of w.plan){if(p.sourceAssessmentId){const a=w.assessments.find(a=>a.id===p.sourceAssessmentId);if(!a||p.source!=='mini_repair'||a.subjectId!==p.subjectId||a.topicId!==p.topicId)throw Error('Mini onarım görevinin deneme sonucu bağlantısı geçersiz.');}}
   w.exams=array(old.exams).map(x=>{if(!C.TYPES[x.type]||C.TYPES[x.type].exam!==e)throw Error('Yedekte diğer sınava ait deneme var.');const parts=array(x.parts).map(p=>({label:text(p.label,100),total:p.total,correct:p.correct,wrong:p.wrong}));if(!parts.length||parts.length>20)throw Error('Geçersiz deneme testleri.');calcNet(parts,x.penalty);return {id:ident(x.id),type:x.type,name:text(x.name,120),date:checkedDate(x.date),parts,penalty:x.penalty,note:text(x.note||'',2000)};});
@@ -3060,7 +3349,7 @@ function routeTaskGoal(subjectId,topicId='',fallbackTitle=''){
   else if(interventionMode==='ease')text+=' · Karar geri testi: yalnızca görev hacmini küçültmek geçmişte yeterli olmadı. Bu kez süre, dikkat veya yöntem sürtünmesini ayrıca ele al.';
   else if(interventionMode==='progress')text+=' · Karar geri testi: önceki seviye artışlarında performans geriledi. Zorluğu geri çek ve bir güçlü doğrulama daha almadan yeniden artırma.';
  }else if(policy.action==='repeat')text+=' · Karar geri testi: bu müdahalenin çekirdek yaklaşımı geçmişte çoğunlukla işe yaradı; yöntemi koru, yalnız küçük varyasyon ekle.';
- return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label,adaptiveMode:adaptive.mode,adaptiveLabel:adaptive.label};
+ return {questions:q,text:text.slice(0,1200),minutes,methodKey:method.key,methodLabel:method.label,adaptiveMode:adaptive.mode,adaptiveLabel:adaptive.label};
 }
 function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
  const method=routeStudyMethod(subjectId,topicId,fallbackTitle),base=routeQuestionTarget(subjectId,topicId,fallbackTitle),adaptive=routeAppliedDecision(subjectId,topicId),progressReady=adaptive.mode==='progress';let mult=mode==='checkpoint'?0.9:mode==='mistake'?0.65:mode==='challenge'?0.78:mode==='long'?0.7:0.55;if(['spaced','long'].includes(mode)&&progressReady)mult*=.85;let q=Math.max(5,Math.min(18,Math.round(base*mult)));
@@ -3085,7 +3374,7 @@ function routeReviewGoal(subjectId,topicId='',fallbackTitle='',mode='spaced'){
  if(mode==='challenge')text='Seviye yoklama: '+text+' · Son bölümde 2 daha seçici veya karma soru çöz; amaç daha çok soru değil, bilgiyi farklı biçimde kullanabildiğini görmek.';
  if(['spaced','long'].includes(mode)&&progressReady)text='Kısa tut: amaç yükü büyütmek değil kalıcılığı yoklamak. '+text;
  if(adaptive.skillWeakness?.primary)text+=' · Mini denemede açık kalan “'+adaptive.skillWeakness.primary.skill+'” alt başlığından 2 doğrulama sorusu çöz.';
- return {questions:q,text,minutes,methodKey:method.key,methodLabel:method.label};
+ return {questions:q,text:text.slice(0,1200),minutes,methodKey:method.key,methodLabel:method.label};
 }
 function routeProfileSignal(subjectId){
  routeEnsure();const p=w().profile||{},level=Number.isInteger(p.subjectLevels?.[subjectId])?p.subjectLevels[subjectId]:2,base=[24,16,7,-3][level]??7,goal=routeGoalPressure(),goalBoost=level<=1?goal:level===2?Math.round(goal/2):0;
@@ -3143,7 +3432,8 @@ function routeAssessmentWeakSkillSignal(subjectId,topicId=''){
  });
  const list=[...skills.values()].map(function(x){const accuracy=x.total?x.correct/x.total:0,missed=x.wrong+x.blank;return {...x,accuracy,missed,weightedMissRate:x.weight?x.weightedMiss/x.weight:0};}).sort(function(a,b){return b.weightedMissRate-a.weightedMissRate||b.missed-a.missed||a.skill.localeCompare(b.skill,'tr');});
  const weak=list.filter(function(x){return x.missed>0&&(x.accuracy<.75||x.weightedMissRate>=.34);}).slice(0,3);
- return {known:list.length>0,attempts:attempts.length,skills:list,weak,primary:weak[0]||null};
+ const questionSignals=globalThis.RotaQuestionBank?.signals?.(attempts,{subjectId,topicId,since})||{byType:[],byObjective:[],bySubtopic:[],wrongQuestions:[]};
+ return {known:list.length>0,attempts:attempts.length,skills:list,weak,primary:weak[0]||null,questionSignals};
 }
 function routePracticeSignal(subjectId,topicId='',sinceDate=''){
  const since=sinceDate||R.dayAdd(today(),-21),planMap=topicId?new Map(w().plan.map(function(p){return [p.id,p];})):null,logOrder=new Map(w().logs.map(function(l,i){return [l.id,i];})),logSamples=w().logs.filter(function(l){if(l.subjectId!==subjectId||!l.sessionId||l.date<since||!Number.isInteger(l.correct)||!Number.isInteger(l.wrong)||l.correct+l.wrong<5)return false;if(!topicId)return true;const p=planMap.get(l.sessionId);return !!p&&p.topicId===topicId;}),assessmentSamples=routeAssessmentSamples(subjectId,topicId).filter(function(a){return a.date>=since&&a.correct+a.wrong>=5;}),xs=logSamples.concat(assessmentSamples).sort(function(a,b){return b.date.localeCompare(a.date)||((b.updated||b.created||0)-(a.updated||a.created||0))||((logOrder.get(b.id)||0)-(logOrder.get(a.id)||0));}).slice(0,6);
@@ -3889,10 +4179,13 @@ function routeDecisionTraceForCandidate(candidate,capacityOverride){
  const repeatedMistakes=openMistakes.length>1?openMistakes.length:0;
  let behavior={};try{const b=routeBehaviorSignal(subjectId,topicId);behavior={lowCompliance:!!(b?.known&&Number(b.completion)<.6),recoveryActive:routeRecoverySignal(space).active===true,evidence:b?.known&&Number.isFinite(b.completion)?'Yakın görev tamamlama oranı %'+Math.round(b.completion*100):''};}catch{behavior={recoveryActive:routeRecoverySignal(space).active===true};}
  const assessmentRisk=candidate.source==='exam'||candidate.source==='mini_repair'||!!candidate.sourceAssessmentId;
+ const evidenceSince=R.dayAdd(today(),-21),questionSignals=assessmentRisk?globalThis.RotaQuestionBank?.signals?.((space.assessments||[]).filter(function(a){return a.subjectId===subjectId&&a.date>=evidenceSince&&(!topicId||a.topicId===topicId||(a.topicBreakdown||[]).some(function(x){return x.topicId===topicId;}));}),{subjectId,topicId,since:evidenceSince}):null;
+ const objective=(questionSignals?.byObjective||[]).filter(function(x){return x.wrong+x.blank>0;}).sort(function(a,b){return (b.wrong+b.blank)-(a.wrong+a.blank);})[0];
+ const assessmentEvidence=assessmentRisk?(objective?'Soru kanıtı: '+(objective.title||objective.key)+' · '+(objective.wrong+objective.blank)+' yanlış/boş.':'Son güvenilir ölçüm bu görev için risk sinyali verdi.'):'';
  const reviewWave=Number(candidate.reviewWave)||0;
  const requested=Math.max(0,Number(candidate.minutes)||0),assigned=Math.max(0,Number(capacityOverride?.assignedMinutes??candidate.minutes)||0),dailyLimit=Math.max(0,Number(capacityOverride?.dailyLimit)||0);
  const mode=student.state==='repair'?'repair':student.state==='progress'?'progress':student.state==='ease'?'ease':'steady';
- return contracts.decisionTraceFromSignals({mode,score:Number(candidate.priority)||0,confidence:Number(student.confidence)||0,assessment:{risk:assessmentRisk,evidence:assessmentRisk?'Son güvenilir ölçüm bu görev için risk sinyali verdi.':''},mistakes:{open:openMistakes.length,repeated:repeatedMistakes},review:{due3:reviewWave===3,due7:reviewWave===7,wave:reviewWave},mastery,trend:{direction:student.trend?.direction||'',samples:Number(student.trend?.samples)||0,belowPersonalNorm:student.personalNorm?.direction==='below'},profilePriority:candidate.source==='priority'||candidate.source==='profile',behavior,capacity:{requestedMinutes:requested,assignedMinutes:assigned,dailyLimit,constrained:requested>assigned&&requested>0}});
+ return contracts.decisionTraceFromSignals({mode,score:Number(candidate.priority)||0,confidence:Number(student.confidence)||0,assessment:{risk:assessmentRisk,evidence:assessmentEvidence},mistakes:{open:openMistakes.length,repeated:repeatedMistakes},review:{due3:reviewWave===3,due7:reviewWave===7,wave:reviewWave},mastery,trend:{direction:student.trend?.direction||'',samples:Number(student.trend?.samples)||0,belowPersonalNorm:student.personalNorm?.direction==='below'},profilePriority:candidate.source==='priority'||candidate.source==='profile',behavior,capacity:{requestedMinutes:requested,assignedMinutes:assigned,dailyLimit,constrained:requested>assigned&&requested>0}});
 }
 function routeBuildCandidates(){
  const space=w(),weak=routeExamWeakness(),recovery=routeRecoverySignal(space),seenTopics=new Set(),seenKeys=new Set(),out=[],miniRepairSignals=routeMiniRepairSignals(),miniRepairByTopic=new Map(miniRepairSignals.map(function(signal){return [signal.assessment.topicId,signal];}));
@@ -4497,20 +4790,34 @@ function miniRecommendationContext(def){
  return {topicId,topicStarted,openTopic,recentTopicWork,subjectDaysSince,stage,stageDaysSince};
 }
 const MINI_SKILL_MAP=Object.freeze({"kpss-problemler-01":["Yüzde","Oran-orantı","Yaş problemleri","Havuz problemleri","Hız problemleri","Kâr-zarar","Karışım","İşçi-havuz","Yüzde değişim","Denklem kurma"],"yks-paragraf-01":["Ana düşünce","Çıkarım","Ana düşünce","Yorum","Çıkarım","Ana düşünce","Ana düşünce","Anlam ilişkisi","Çıkarım","Bakış açısı"],"kpss-tarih-01":["Kronoloji","Kronoloji","Eğitim inkılapları","Hukuk inkılapları","Kültür inkılapları","Toplumsal inkılaplar","Ekonomi ve millîlik","Cumhuriyetçilik"],"kpss-cografya-01":["Enlem","Boylam","Yerel saat","Yarım küre","Göreceli konum","Boylam ve yerel saat","Orta kuşak","Matematik konum"],"tyt-biyoloji-hucre-01":["Ortak hücresel yapılar","Mitokondri","Hücre zarı","Bitki-hayvan farkları","Çekirdek","Lizozom","Kloroplast","Ribozom"],"ayt-edebiyat-tanzimat-01":["Şinasi – eser","Namık Kemal – eser","Recaizade Mahmut Ekrem – eser","Abdülhak Hamit Tarhan – eser","Samipaşazade Sezai – eser","Ahmet Mithat Efendi – eser","Tanzimat I özellikleri","Tanzimat II sanatçıları"],"ydt-grammar-01":["Present perfect","Conditionals","Passive voice","Relative clauses","Preposition / bağlaç","Modals","Gerund / infinitive","Past perfect"],"ydt-vocab-01":["Bağlamdan anlam","Kaynak koruma söz varlığı","Koruma fiilleri","Kapsam bildiren sıfat","Sağlık söz varlığı","Değişim ve istikrar","Bağlamdan sıfat","Fiil-edat kalıbı"],"ydt-reading-01":["Ana fikir","Çıkarım","Yazarın amacı","Çıkarım","Ana fikir","Gerekçe","Ana fikir","Çıkarım"],"kpss-vatandaslik-01":["Hukuk kuralının yaptırımı","Emredici hukuk kuralı","Tamamlayıcı hukuk kuralı","Özel hukuk","Kamu hukuku","Cebri icra","Hukuki olay","Hukuki işlem"],"tyt-matematik-temel-01":["Tek-çift","Ardışık sayılar","Çarpanlar ve en küçük toplam","Tek-çift","Negatif sayılarda sıralama","Ardışık tek sayılar","Tek-çift","Kalanlı bölme","Ardışık sayılar","Sabit toplamda en büyük çarpım"],"tyt-fizik-hareket-01":["Ortalama sürat","Yer değiştirme","Newton II","Net kuvvet","Etki-tepki","Sürtünme","Ağırlık","İvme"],"ayt-matematik-fonksiyon-01":["Fonksiyon değeri","Bileşke","Ters fonksiyon","Bire birlik","Tanım kümesi","Fonksiyonel eşitlik","Grafik dönüşümü","Doğrusal fonksiyon"],"tyt-kimya-atom-01":["Atom numarası","Nötr atom","İzotop","Periyot","Grup özellikleri","İyon oluşumu","Kütle numarası","Periyodik eğilim"],"ayt-fizik-vektor-01":["Vektör büyüklüğü","Zıt vektörler","Dik vektör bileşkesi","Birim vektör","Skaler çarpım","Vektör bileşenleri","Vektör farkı","Vektör toplama"],"ayt-biyoloji-sinir-01":["Nöron yapısı","Miyelin","Sinaps","Merkezî sinir sistemi","Refleks","Sempatik sistem","Parasempatik sistem","Duyu nöronu"],"ayt-tarih1-ilkcag-01":["Sümerler ve yazı","Babil ve hukuk","Hitit tarihçiliği","Fenike alfabesi","Roma hukuku","Mısır ve Nil","Pers yönetimi","Kral Yolu"],"ayt-kimya-modern-atom-01":["Kuantum sayıları","p alt kabuğu","Pauli ilkesi","Hund kuralı","Orbital dolma sırası","Değerlik elektronu","Orbital kavramı","d orbitalleri"],"ayt-cografya1-dogal-01":["Akarsu taşıma","Karstlaşma","Denizellik","Muson sistemi","Delta oluşumu","Fiziksel çözülme","Yer altı suları","Orografik yağış"],"ayt-felsefe-tarih-01":["Sokrates","Platon","Aristoteles","Descartes","Locke","Hume","Kant","Comte"],"kpss-turkce-paragraf-01":["Ana düşünce","Çıkarım","Başlık","Paragraf akışı","Yardımcı düşünce","Ana düşünce","Yazarın tutumu","Paragraf tamamlama"],"tyt-tarih-zaman-01":["Olay-olgu","Yüzyıl hesaplama","Birinci el kaynak","Kronoloji","Takvim bilgisi","Neden-sonuç","Dönemlendirme","Yüzyıl-dönem"],"tyt-cografya-harita-01":["Ölçek-uzaklık","Büyük ölçek","İzohips aralığı","Eğim","Yer şekli okuma","Ölçek bulma","Ölçek-alan ilişkisi","İzohips-yükselti"],"ayt-geometri-ucgen-01":["Üçgen eşitsizliği","Açıortay","Benzerlik-alan","Pisagor","Üçgen alanı","Çokgende köşegen","Dış açı","Dik üçgende kenarortay"]});
-function miniQuestionSkill(def,index){return def.questions?.[index]?.skill||MINI_SKILL_MAP[def.id]?.[index]||def.topicTitle||'Genel';}
-function miniExamDefinition(id){const def=ROTA_ALL_MINI_EXAMS.find(function(x){return x.id===id;})||null;return def&&window.RotaMiniCatalog?window.RotaMiniCatalog.normalize(def):def;}
-const KPSS_PROFESSIONAL_HISTORY_TESTS=Object.freeze([
- ...(Array.isArray(window.RotaKpssHistory01?.tests)?window.RotaKpssHistory01.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory02?.tests)?window.RotaKpssHistory02.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory03?.tests)?window.RotaKpssHistory03.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory04?.tests)?window.RotaKpssHistory04.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory05?.tests)?window.RotaKpssHistory05.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory06?.tests)?window.RotaKpssHistory06.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory07?.tests)?window.RotaKpssHistory07.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory08?.tests)?window.RotaKpssHistory08.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory09?.tests)?window.RotaKpssHistory09.tests:[]),
- ...(Array.isArray(window.RotaKpssHistory10?.tests)?window.RotaKpssHistory10.tests:[])
+function miniQuestionSkill(def,index){return globalThis.RotaQuestionBank?.SKILL_LABELS?.[def.questions?.[index]?.skill]||def.questions?.[index]?.skill||MINI_SKILL_MAP[def.id]?.[index]||def.topicTitle||'Genel';}
+function miniExamDefinition(id){const def=ROTA_ALL_MINI_EXAMS.find(function(x){return x.id===id;})||KPSS_ARCHIVED_TOPIC_TESTS.find(function(x){return x.id===id;})||null;return def&&window.RotaMiniCatalog?window.RotaMiniCatalog.normalize(def):def;}
+const KPSS_BANK_TOPIC_TESTS=Object.freeze((window.RotaQuestionBank?.allTests?.()||window.RotaQuestionBank?.topicTests?.()||[]).map(function(def){return {...def,surface:'topic'};}));
+const KPSS_MANAGED_TOPIC_KEYS=new Set(KPSS_BANK_TOPIC_TESTS.map(x=>x.subjectId+'|'+x.topicId));
+function miniCanServe(def){
+ if(!def)return false;
+ if(def.bankSchema)return !!window.RotaQuestionBank?.getTest?.(def.id);
+ const topicId=def.topicId||window.RotaCatalog?.subjects?.find(s=>s.id===def.subjectId)?.topics?.find(t=>t.title===def.topicTitle)?.id||'';
+ return def.exam!=='kpss'||!KPSS_MANAGED_TOPIC_KEYS.has(def.subjectId+'|'+topicId);
+}
+const KPSS_ARCHIVED_HISTORY_TESTS=Object.freeze([
+ ...(window.RotaKpssHistory01?.tests||[]),
+ ...(window.RotaKpssHistory02?.tests||[]),
+ ...(window.RotaKpssHistory03?.tests||[]),
+ ...(window.RotaKpssHistory04?.tests||[]),
+ ...(window.RotaKpssHistory05?.tests||[]),
+ ...(window.RotaKpssHistory06?.tests||[]),
+ ...(window.RotaKpssHistory07?.tests||[]),
+ ...(window.RotaKpssHistory08?.tests||[]),
+ ...(window.RotaKpssHistory09?.tests||[]),
+ ...(window.RotaKpssHistory10?.tests||[])
 ].map(function(def){return {...def,surface:'topic'};}));
+const KPSS_ARCHIVED_TOPIC_TESTS=Object.freeze([...KPSS_ARCHIVED_HISTORY_TESTS,...(window.RotaKpssPractice?.topicSets||[])]);
+// Compatibility boundary: all six subjects now use the approved topic bank.
+const KPSS_PROFESSIONAL_HISTORY_TESTS=Object.freeze([
+ ...KPSS_ARCHIVED_HISTORY_TESTS.filter(x=>!KPSS_MANAGED_TOPIC_KEYS.has(x.subjectId+'|'+x.topicId)),
+ ...KPSS_BANK_TOPIC_TESTS
+]);
 const KPSS_PROFESSIONAL_HISTORY_TOPIC_KEYS=new Set(KPSS_PROFESSIONAL_HISTORY_TESTS.map(x=>x.subjectId+'|'+x.topicId));
 const KPSS_SEED_TOPIC_TESTS=[...(window.RotaKpssPractice?.topicSets||[])];
 const ROTA_ALL_MINI_EXAMS=Object.freeze([
@@ -4518,14 +4825,14 @@ const ROTA_ALL_MINI_EXAMS=Object.freeze([
  ...KPSS_SEED_TOPIC_TESTS.filter(x=>!KPSS_PROFESSIONAL_HISTORY_TOPIC_KEYS.has(x.subjectId+'|'+(x.topicId||''))),
  ...KPSS_PROFESSIONAL_HISTORY_TESTS
 ]);
-function topicStudyTests(topicId){return KPSS_PROFESSIONAL_HISTORY_TESTS.filter(function(def){return def.topicId===topicId;});}
+function topicStudyTests(topicId){return KPSS_PROFESSIONAL_HISTORY_TESTS.filter(function(def){return def.topicId===topicId&&miniCanServe(def);});}
 function topicStudyTestsHtml(topicId,status){
  const tests=topicStudyTests(topicId);if(!tests.length)return '';
  return '<div class="row wrap mt" data-topic-tests="'+esc(topicId)+'"><span class="tiny muted"><strong>Konu testleri:</strong></span>'+tests.map(function(def,index){const last=latestMiniResult(def.id),label='Test '+(def.setNo||index+1)+(last?' · '+last.correct+'/'+last.total:'');return btn(label,'start-mini-exam',last?'ghost sm':'primary sm','data-id="'+def.id+'"');}).join('')+(status===2?'<span class="tiny muted">Konu tamamlandı.</span>':'<span class="tiny muted">Konuyu bitirmeden de çözebilirsin.</span>')+'</div>';
 }
-function miniCatalogInfo(def){return window.RotaMiniCatalog?.describe(def,ROTA_ALL_MINI_EXAMS)||{setNo:1,targetSets:4,availableCount:1,missingSets:[2,3,4],nextSetNo:2};}
-function miniCatalogCoverage(minis){const ids=[...new Set((minis||[]).map(x=>x.subjectId))];return window.RotaMiniCatalog?.coverage(ROTA_ALL_MINI_EXAMS,{exam:state.activeExam,subjectIds:ids})||null;}
-function miniTopicId(def){return R.allTopics(w(),state.activeExam).find(function(t){return t.subjectId===def.subjectId&&t.title===def.topicTitle;})?.id||'';}
+function miniCatalogInfo(def){return window.RotaMiniCatalog?.describe(def,ROTA_ALL_MINI_EXAMS.filter(miniCanServe))||{setNo:1,targetSets:4,availableCount:1,missingSets:[2,3,4],nextSetNo:2};}
+function miniCatalogCoverage(minis){const ids=[...new Set((minis||[]).map(x=>x.subjectId))];return window.RotaMiniCatalog?.coverage(ROTA_ALL_MINI_EXAMS.filter(miniCanServe),{exam:state.activeExam,subjectIds:ids})||null;}
+function miniTopicId(def){return R.allTopics(w(),state.activeExam).find(function(t){return t.subjectId===def.subjectId&&(def.topicId?t.id===def.topicId:t.title===def.topicTitle);})?.id||'';}
 function scoreMiniExam(def,answers){let correct=0,wrong=0,blank=0;const details=[];def.questions.forEach(function(q,i){const picked=Number.isInteger(answers[i])?answers[i]:-1,status=picked<0?'blank':picked===q.answer?'correct':'wrong';if(status==='correct')correct++;else if(status==='wrong')wrong++;else blank++;details.push({question:q,index:i,picked,status});});return {total:def.questions.length,correct,wrong,blank,accuracy:def.questions.length?correct/def.questions.length:0,details};}
 function miniSkillBreakdown(def,score){
  const grouped=new Map();
@@ -4538,8 +4845,10 @@ function latestMiniResult(miniId){return [...(w().assessments||[])].filter(funct
 function miniAttemptById(id){return (w().assessments||[]).find(function(a){return a.id===id;})||null;}
 function openMiniAttemptResult(id){
  const result=miniAttemptById(id);if(!result)return;
- const def=miniExamDefinition(result.miniId),savedVersion=result.version||1,currentVersion=def?.version||null;
- if(def&&Array.isArray(result.answers)&&result.answers.length===def.questions.length&&savedVersion===currentVersion){openMiniResult(def,result,scoreMiniExam(def,result.answers));return;}
+ const sectionId=result.sectionId||(String(result.miniId||'').startsWith('section:')?String(result.miniId).slice(8):'');
+ const def=sectionId?sectionAttemptDefinition(result,sectionId):miniExamDefinition(result.miniId),savedVersion=result.version||1,currentVersion=def?.version||null;
+ const evidenceMatches=!result.questionEvidence?.length||(result.questionEvidence.length===def?.questions.length&&result.questionEvidence.every((q,i)=>q.questionId===def.questions[i].id&&q.answer===def.questions[i].answer));
+ if(def&&Array.isArray(result.answers)&&result.answers.length===def.questions.length&&savedVersion===currentVersion&&evidenceMatches){if(sectionId)openSectionResult(def,result,scoreSectionExam(def,result.answers));else openMiniResult(def,result,scoreMiniExam(def,result.answers));return;}
  const archivedDecision=result.routeDecision?'<div class="mini-route-decision"><span class="route-adaptive-pill mode-'+esc(result.routeDecision.mode)+'">'+esc(result.routeDecision.label||'Rota kararı')+'</span><div><strong>Kaydedilmiş Rota kararı</strong><p>'+esc(result.routeDecision.note||'Bu sonuç işlendiğinde rota kararı kaydedildi.')+'</p></div></div>':'';
  const archivedWeak=Array.isArray(result.weakSkills)&&result.weakSkills.length?'<div class="notice mb"><strong>Kaydedilmiş alt konu sinyali:</strong> '+result.weakSkills.map(esc).join(' · ')+'</div>':'';
  const versionText=currentVersion?'Kaydedilen set v'+savedVersion+' · güncel set v'+currentVersion:'Kaydedilen set v'+savedVersion+' · güncel soru seti artık katalogda yok';
@@ -4578,13 +4887,22 @@ function miniProgressSection(minis){
  if(!groups.length)return '<section class="card mini-progress-block"><div class="card-head"><div><h3>Mini gelişim grafikleri</h3><p class="muted tiny">Aynı mini denemeyi farklı günlerde en az iki kez çözdüğünde gelişim çizgin burada oluşur.</p></div><span class="pill plain">GÜN BAZLI</span></div><div class="notice">Aynı gün yapılan tekrarlar grafiği şişirmez; o günün en son sonucu kullanılır.</div></section>';
  return '<section class="card mini-progress-block"><div class="card-head"><div><h3>Mini gelişim grafikleri</h3><p class="muted tiny">Aynı setin farklı günlerdeki ölçümleri karşılaştırılır; tam sınav netlerinden ayrıdır.</p></div><span class="pill plain">GÜN BAZLI</span></div><div class="mini-progress-grid">'+groups.map(function(g){const cls=g.delta>0?'up':g.delta<0?'down':'';return '<article class="mini-progress-item"><div><strong>'+esc(g.def.title)+'</strong><p>'+g.attempts.length+' farklı gün · ilk %'+Math.round(g.firstRate*100)+' → son %'+Math.round(g.lastRate*100)+'</p><span class="mini-progress-delta '+cls+'">'+(g.delta>0?'+':'')+g.delta+' puan</span></div>'+miniProgressSvg(g.attempts)+'</article>';}).join('')+'</div></section>';
 }
-function openMiniExam(id){const def=miniExamDefinition(id);if(!def||def.exam!==state.activeExam)return;ui.formContext={kind:'mini-exam',miniId:id,startedAt:Date.now()};openModal(def.title,`<form id="mini-exam-form"><div class="mini-exam-intro"><span class="pill plain">${esc(def.level)}</span><span>${def.questions.length} soru</span><span>${def.minutes} dk önerilen</span></div><p class="muted small">Sorular Çalışma Rotası için özgün hazırlanmıştır. Boş bırakabilirsin; sonuç konu pratiği olarak kişisel rota motoruna eklenir.</p><div class="mini-question-list">${def.questions.map(function(q,i){return '<fieldset class="mini-question"><legend><span>'+(i+1)+'</span>'+esc(q.text)+'</legend><div>'+q.options.map(function(opt,j){return '<label><input type="radio" name="mini-q-'+i+'" value="'+j+'"><span><b>'+String.fromCharCode(65+j)+'</b>'+esc(opt)+'</span></label>';}).join('')+'</div></fieldset>';}).join('')}</div><div class="form-error" role="alert"></div><div class="button-row">${btn('Vazgeç','close-modal','ghost')}<button class="btn primary" type="submit">Denemeyi bitir ${icon('check')}</button></div></form>`);}
+function openMiniExam(id){const def=miniExamDefinition(id);if(!def||def.exam!==state.activeExam)return;if(!miniCanServe(def)){toast('Bu konu testi şu anda içerik kontrolü bekliyor.',true);return;}ui.formContext={kind:'mini-exam',miniId:id,startedAt:Date.now()};openModal(def.title,`<form id="mini-exam-form"${def.bankSchema?' data-question-bank-test':''}><div class="mini-exam-intro"><span class="pill plain">${esc(def.level)}</span><span>${def.questions.length} soru</span><span>${def.minutes} dk önerilen</span></div><p class="muted small">Sorular Çalışma Rotası için özgün hazırlanmıştır. Boş bırakabilirsin; sonuç konu pratiği olarak kişisel rota motoruna eklenir.</p><div class="mini-question-list">${def.questions.map(function(q,i){return '<fieldset class="mini-question"><legend><span>'+(i+1)+'</span>'+esc(q.text).replace(/\n/g,'<br>')+'</legend><div>'+q.options.map(function(opt,j){return '<label><input type="radio" name="mini-q-'+i+'" value="'+j+'"><span><b>'+String.fromCharCode(65+j)+'</b>'+esc(opt)+'</span></label>';}).join('')+'</div></fieldset>';}).join('')}</div><div class="form-error" role="alert"></div><div class="button-row">${btn('Vazgeç','close-modal','ghost')}<button class="btn primary" type="submit">Denemeyi bitir ${icon('check')}</button></div></form>`);}
+function miniDetailedReview(def,score){
+ if(!def.questions?.every(function(q){return q.wrongAnswerNotes&&typeof q.wrongAnswerNotes==='object';}))return '';
+ return '<div class="mini-review-list" data-question-bank-review><h3>Tüm soruların çözümleri</h3>'+score.details.map(function(x){
+  const q=x.question,letter=String.fromCharCode(65+q.answer),picked=x.picked>=0?String.fromCharCode(65+x.picked):'',notes=q.wrongAnswerNotes,status=x.status==='correct'?'Doğru':x.status==='wrong'?'Yanlış':'Boş';
+  const chosenNote=x.status==='wrong'&&notes[picked]?'<div class="notice mb"><strong>Seçtiğin '+picked+' seçeneği:</strong> '+esc(notes[picked])+'</div>':'';
+  const alternatives=q.options.map(function(option,i){const key=String.fromCharCode(65+i);return i===q.answer?'':'<li><strong>'+key+' · '+esc(option)+'</strong><br>'+esc(notes[key]||'')+'</li>';}).join('');
+  return '<article><details'+(x.status==='wrong'?' open':'')+'><summary><strong>Soru '+(x.index+1)+' · '+esc(miniQuestionSkill(def,x.index))+'</strong> · '+status+'</summary><p>'+esc(q.text).replace(/\n/g,'<br>')+'</p><small>Senin cevabın: '+(picked?picked+' · '+esc(q.options[x.picked]):'Boş')+' · Doğru: '+letter+' · '+esc(q.options[q.answer])+'</small><p><strong>Çözüm:</strong> '+esc(q.explanation)+'</p>'+chosenNote+'<p><strong>Diğer seçenekler neden yanlış?</strong></p><ul>'+alternatives+'</ul><p class="tiny muted">'+esc(q.learningObjective||'')+'</p></details></article>';
+ }).join('')+'</div>';
+}
 function openMiniResult(def,result,score){
  const topicSurface=def.surface==='topic',wrong=score.details.filter(function(x){return x.status!=='correct';}),adaptive=result.routeDecision||routeAppliedDecision(def.subjectId,result.topicId||''),breakdown=result.skillBreakdown?.length?result.skillBreakdown:miniSkillBreakdown(def,score),weakSkills=result.weakSkills?.length?result.weakSkills:miniWeakSkills(breakdown),weakHtml=weakSkills.length?'<div class="notice mb"><strong>Alt konu sinyali:</strong> '+weakSkills.map(esc).join(' · ')+'<br><span class="tiny">Bu alanlar bir sonraki rota dengelemesinde onarım kanıtı olarak kullanılır.</span></div>':'';
- openModal('Mini deneme sonucu',`<div class="mini-result-hero"><div><div class="eyebrow">${esc(def.title)}</div><h2>${score.correct} / ${score.total} doğru</h2><p>${score.wrong} yanlış · ${score.blank} boş · ${result.minutes} dk</p></div><strong>%${Math.round(score.accuracy*100)}</strong></div><div class="mini-route-decision"><span class="route-adaptive-pill mode-${esc(adaptive.mode)}">${esc(adaptive.label)}</span><div><strong>${result.routeDecision?'Rota kararı · bu sonuçtan sonra':'Rota kararı'}</strong><p>${esc(adaptive.note)}</p></div></div><div class="mini-learning-impact"><small>ROTA BU SONUÇTAN NE ÖĞRENDİ?</small><strong>${weakSkills.length?'Önce '+esc(weakSkills[0])+' açığını kapat.':'Performans sinyali güncellendi.'}</strong><p>${weakSkills.length?'Yanlış/boşların yoğunlaştığı alt alanlar bir sonraki rota dengelemesinde onarım kanıtı olarak kullanılacak.':'Belirgin alt-konu açığı görünmüyor; sonuç kalıcılık ve görev dozu kararlarında performans kanıtı olarak kalacak.'}</p></div>${weakHtml}<div class="notice mb">Bu sonuç tam KPSS/TYT neti değildir. Yalnızca <strong>${esc(subName(def.subjectId,true))} · ${esc(def.topicTitle)}</strong> pratiği olarak rota motoruna eklendi.</div>${wrong.length?'<div class="mini-review-list"><h3>Tekrar bakılacak sorular</h3>'+wrong.map(function(x){const q=x.question,chosen=x.picked>=0?q.options[x.picked]:'Boş';return '<article><div class="row between"><strong>Soru '+(x.index+1)+' · '+esc(miniQuestionSkill(def,x.index))+'</strong><span class="pill '+(x.status==='wrong'?'orange':'plain')+'">'+(x.status==='wrong'?'Yanlış':'Boş')+'</span></div><p>'+esc(q.text)+'</p><small>Senin cevabın: '+esc(chosen)+' · Doğru: '+String.fromCharCode(65+q.answer)+'</small><div>'+esc(q.explanation)+'</div></article>';}).join('')+'</div>':'<div class="notice">Tüm sorular doğru. Sonuç yine kalıcılık ve doz kararlarında performans kanıtı olarak kullanılacak.</div>'}<div class="button-row">${btn(topicSurface?'Konuya dön':'Deneme Merkezine dön','close-modal','ghost')}${btn('Rotamı gör '+icon('arrow'),'mini-go-route','primary')}</div>`);
+ openModal('Mini deneme sonucu',`<div class="mini-result-hero"><div><div class="eyebrow">${esc(def.title)}</div><h2>${score.correct} / ${score.total} doğru</h2><p>${score.wrong} yanlış · ${score.blank} boş · ${result.minutes} dk</p></div><strong>%${Math.round(score.accuracy*100)}</strong></div><div class="mini-route-decision"><span class="route-adaptive-pill mode-${esc(adaptive.mode)}">${esc(adaptive.label)}</span><div><strong>${result.routeDecision?'Rota kararı · bu sonuçtan sonra':'Rota kararı'}</strong><p>${esc(adaptive.note)}</p></div></div><div class="mini-learning-impact"><small>ROTA BU SONUÇTAN NE ÖĞRENDİ?</small><strong>${weakSkills.length?'Önce '+esc(weakSkills[0])+' açığını kapat.':'Performans sinyali güncellendi.'}</strong><p>${weakSkills.length?'Yanlış/boşların yoğunlaştığı alt alanlar bir sonraki rota dengelemesinde onarım kanıtı olarak kullanılacak.':'Belirgin alt-konu açığı görünmüyor; sonuç kalıcılık ve görev dozu kararlarında performans kanıtı olarak kalacak.'}</p></div>${weakHtml}<div class="notice mb">Bu sonuç tam KPSS/TYT neti değildir. Yalnızca <strong>${esc(subName(def.subjectId,true))} · ${esc(def.topicTitle)}</strong> pratiği olarak rota motoruna eklendi.</div>${miniDetailedReview(def,score)||(wrong.length?'<div class="mini-review-list"><h3>Tekrar bakılacak sorular</h3>'+wrong.map(function(x){const q=x.question,chosen=x.picked>=0?q.options[x.picked]:'Boş';return '<article><div class="row between"><strong>Soru '+(x.index+1)+' · '+esc(miniQuestionSkill(def,x.index))+'</strong><span class="pill '+(x.status==='wrong'?'orange':'plain')+'">'+(x.status==='wrong'?'Yanlış':'Boş')+'</span></div><p>'+esc(q.text)+'</p><small>Senin cevabın: '+esc(chosen)+' · Doğru: '+String.fromCharCode(65+q.answer)+'</small><div>'+esc(q.explanation)+'</div></article>';}).join('')+'</div>':'<div class="notice">Tüm sorular doğru. Sonuç yine kalıcılık ve doz kararlarında performans kanıtı olarak kullanılacak.</div>')}<div class="button-row">${btn(topicSurface?'Konuya dön':'Deneme Merkezine dön','close-modal','ghost')}${btn('Rotamı gör '+icon('arrow'),'mini-go-route','primary')}</div>`);
 }
 function miniRecommendation(){
- const activeSubjects=new Set(subjects().map(function(s){return s.id;})),available=ROTA_ALL_MINI_EXAMS.filter(function(def){return def.exam===state.activeExam&&activeSubjects.has(def.subjectId)&&def.surface!=='topic';});
+ const activeSubjects=new Set(subjects().map(function(s){return s.id;})),available=ROTA_ALL_MINI_EXAMS.filter(function(def){return def.exam===state.activeExam&&activeSubjects.has(def.subjectId)&&def.surface!=='topic'&&miniCanServe(def);});
  const ranked=available.map(function(def){
   const context=miniRecommendationContext(def),topicId=context.topicId,adaptive=routeAppliedDecision(def.subjectId,topicId),last=latestMiniResult(def.id),daysSince=miniDaysSince(last),attempts=miniAttemptStats(def.id),weakCount=adaptive.skillWeakness?.weak?.length||0,stats={...attempts,...context,weakCount},score=miniRecommendationScore(last,adaptive,daysSince,stats);let reason='';
   const weak=adaptive.skillWeakness?.primary?.skill;
@@ -4605,7 +4923,27 @@ function miniRecommendation(){
  const eligible=ranked.filter(function(x){return !x.last||x.daysSince>=3;}),started=eligible.filter(function(x){return x.context.topicStarted;});
  return (started.length?started[0]:eligible[0])||null;
 }
-function sectionExamDefinition(id){return window.RotaKpssPractice?.sectionExams?.find(function(x){return x.id===id;})||null;}
+function activeSectionExams(){
+ return [...(window.RotaKpssBankExams?.sectionExams||[]),...(window.RotaKpssPractice?.sectionExams||[])].filter(sectionCanServe);
+}
+function sectionCanServe(def){
+ if(!def)return false;
+ if(def.bankSchema)return window.RotaKpssBankExams?.canServe?.(def)===true;
+ return !(window.RotaKpssBankExams?.readiness||[]).some(x=>x.subjectId===def.subjectId);
+}
+function sectionExamDefinition(id){return window.RotaKpssBankExams?.sectionExams?.find(function(x){return x.id===id;})||window.RotaKpssPractice?.sectionExams?.find(function(x){return x.id===id;})||null;}
+function sectionAttemptDefinition(result,id){
+ const current=sectionExamDefinition(id);if(current&&!current.bankSchema)return current;
+ // Use the saved order even when a newer fixed form exists. Reconstruct only
+ // the saved question order for review; this object cannot pass sectionCanServe.
+ const evidence=result.questionEvidence;
+ if(!id.startsWith('kpss-bank-'+result.subjectId+'-branch-')||(result.version||1)!==1||!Array.isArray(evidence)||!evidence.length||evidence.length!==result.total||evidence.length!==result.answers?.length)return null;
+ const definitions=window.RotaQuestionBank?.allTests?.()||[],lookup=new Map(definitions.flatMap(t=>t.questions.map(q=>[q.id,{question:q,version:t.version}]))),entries=evidence.map(e=>lookup.get(e.questionId)),questions=entries.map(e=>e?.question);
+ if(new Set(evidence.map(e=>e.questionId)).size!==evidence.length||questions.some((q,i)=>!q||q.subjectId!==result.subjectId||q.topicId!==evidence[i].topicId||q.answer!==evidence[i].answer||(entries[i].version||1)!==(evidence[i].questionVersion||1)))return null;
+ const counts=new Map();questions.forEach(q=>counts.set(q.topicId,(counts.get(q.topicId)||0)+1));
+ const blueprint=[...counts].map(([topicId,count])=>[topicId,definitions.find(t=>t.topicId===topicId)?.topicTitle||topicId,count]);
+ return {id,exam:'kpss',subjectId:result.subjectId,title:result.title,version:1,penalty:result.penalty??4,bankSchema:window.RotaQuestionBank.SCHEMA,blueprint,questions};
+}
 function sectionExamLast(id){return [...(w().assessments||[])].filter(function(a){return a.sectionId===id;}).sort(function(a,b){return b.date.localeCompare(a.date)||((b.created||0)-(a.created||0));})[0]||null;}
 function scoreSectionExam(def,answers){
  let correct=0,wrong=0,blank=0;const details=[],map=new Map(),titleById=new Map((def.blueprint||[]).map(x=>[x[0],x[1]]));
@@ -4621,19 +4959,20 @@ function scoreSectionExam(def,answers){
 function sectionWeakTopics(score){return [...score.topicBreakdown].filter(x=>x.wrong+x.blank>0).sort(function(a,b){return a.accuracy-b.accuracy||(b.wrong+b.blank)-(a.wrong+a.blank);}).slice(0,4);}
 function openSectionExam(id){
  const def=sectionExamDefinition(id);if(!def||def.exam!==state.activeExam)return;
+ if(!sectionCanServe(def)){toast('Bu branş denemesi şu anda içerik kontrolü bekliyor.',true);return;}
  ui.formContext={kind:'section-exam',sectionId:id,startedAt:Date.now()};
- openModal(def.title,`<form id="section-exam-form"><div class="mini-exam-intro"><span class="pill plain">${esc(def.eyebrow)}</span><span>${def.questions.length} soru</span><span>${def.minutes} dk önerilen</span></div><p class="muted small">Sorular Çalışma Rotası için özgün hazırlanmıştır. Bu, tam 120 soruluk KPSS değil; yalnızca <strong>${esc(subName(def.subjectId,false))}</strong> bölüm denemesidir. Konu dağılımı geçmiş sınav eğilimlerini yaklaşıklar.</p><div class="mini-question-list">${def.questions.map(function(q,i){return '<fieldset class="mini-question"><legend><span>'+(i+1)+'</span>'+esc(q.text)+'</legend><div>'+q.options.map(function(opt,j){return '<label><input type="radio" name="section-q-'+i+'" value="'+j+'"><span><b>'+String.fromCharCode(65+j)+'</b>'+esc(opt)+'</span></label>';}).join('')+'</div></fieldset>';}).join('')}</div><div class="form-error" role="alert"></div><div class="button-row">${btn('Vazgeç','close-modal','ghost')}<button class="btn primary" type="submit">Bölüm denemesini bitir ${icon('check')}</button></div></form>`);
+ openModal(def.title,`<form id="section-exam-form"${def.bankSchema?' data-question-bank-test':''}><div class="mini-exam-intro"><span class="pill plain">${esc(def.eyebrow)}</span><span>${def.questions.length} soru</span><span>${def.minutes} dk önerilen</span></div><p class="muted small">Sorular Çalışma Rotası için özgün hazırlanmıştır. Bu, tam 120 soruluk KPSS değil; yalnızca <strong>${esc(subName(def.subjectId,false))}</strong> bölüm denemesidir. Konu dağılımı çalışma amaçlı hazırlanmıştır. ${def.bankSchema?'Sorular konu bankasından seçilir; bu dersin üç branş denemesi kendi aralarında farklı sorular içerir.':''}</p><div class="mini-question-list">${def.questions.map(function(q,i){return '<fieldset class="mini-question"><legend><span>'+(i+1)+'</span>'+esc(q.text).replace(/\n/g,'<br>')+'</legend><div>'+q.options.map(function(opt,j){return '<label><input type="radio" name="section-q-'+i+'" value="'+j+'"><span><b>'+String.fromCharCode(65+j)+'</b>'+esc(opt)+'</span></label>';}).join('')+'</div></fieldset>';}).join('')}</div><div class="form-error" role="alert"></div><div class="button-row">${btn('Vazgeç','close-modal','ghost')}<button class="btn primary" type="submit">Bölüm denemesini bitir ${icon('check')}</button></div></form>`);
 }
 function openSectionResult(def,result,score){
  const weak=sectionWeakTopics(score),wrong=score.details.filter(x=>x.status!=='correct'),adaptive=result.routeDecision||routeAppliedDecision(def.subjectId,'');
- openModal('Bölüm denemesi sonucu',`<div class="mini-result-hero"><div><div class="eyebrow">${esc(def.title)}</div><h2>${score.correct} / ${score.total} doğru</h2><p>${score.wrong} yanlış · ${score.blank} boş · ${result.minutes} dk</p></div><strong>${format(score.net,2)} net</strong></div><div class="mini-route-decision"><span class="route-adaptive-pill mode-${esc(adaptive.mode)}">${esc(adaptive.label)}</span><div><strong>Rota kararı · bölüm kanıtı işlendi</strong><p>${esc(adaptive.note)}</p></div></div>${weak.length?'<div class="notice mb"><strong>Önce bakılacak konular:</strong> '+weak.map(x=>esc(x.title)+' · '+x.correct+'/'+x.total).join(' · ')+'<br><span class="tiny">Bu konu kırılımları Rota Motoru tarafından ilgili konu kanıtına eklenir.</span></div>':'<div class="notice mb">Belirgin konu açığı görünmüyor. Sonuç yine ders ve konu performans kanıtında tutulur.</div>'}<div class="notice mb">Bu sonuç tam KPSS GY–GK neti değildir; yalnızca <strong>${esc(subName(def.subjectId,false))}</strong> bölüm denemesidir.</div>${wrong.length?'<div class="mini-review-list"><h3>Yanlış / boş sorular</h3>'+wrong.slice(0,12).map(function(x){const q=x.question,chosen=x.picked>=0?q.options[x.picked]:'Boş',topic=score.topicBreakdown.find(t=>t.topicId===q.topicId);return '<article><div class="row between"><strong>Soru '+(x.index+1)+' · '+esc(topic?.title||q.topicId)+'</strong><span class="pill '+(x.status==='wrong'?'orange':'plain')+'">'+(x.status==='wrong'?'Yanlış':'Boş')+'</span></div><p>'+esc(q.text)+'</p><small>Senin cevabın: '+esc(chosen)+' · Doğru: '+String.fromCharCode(65+q.answer)+'</small><div>'+esc(q.explanation)+'</div></article>';}).join('')+'</div>':'<div class="notice">Tüm sorular doğru. Bu bölüm sonucu güçlü performans kanıtı olarak kaydedildi.</div>'}<div class="button-row">${btn('Deneme Merkezine dön','close-modal','ghost')}${btn('Rotamı gör '+icon('arrow'),'mini-go-route','primary')}</div>`);
+ openModal('Bölüm denemesi sonucu',`<div class="mini-result-hero"><div><div class="eyebrow">${esc(def.title)}</div><h2>${score.correct} / ${score.total} doğru</h2><p>${score.wrong} yanlış · ${score.blank} boş · ${result.minutes} dk</p></div><strong>${format(score.net,2)} net</strong></div><div class="mini-route-decision"><span class="route-adaptive-pill mode-${esc(adaptive.mode)}">${esc(adaptive.label)}</span><div><strong>Rota kararı · bölüm kanıtı işlendi</strong><p>${esc(adaptive.note)}</p></div></div>${weak.length?'<div class="notice mb"><strong>Önce bakılacak konular:</strong> '+weak.map(x=>esc(x.title)+' · '+x.correct+'/'+x.total).join(' · ')+'<br><span class="tiny">Bu konu kırılımları Rota Motoru tarafından ilgili konu kanıtına eklenir.</span></div>':'<div class="notice mb">Belirgin konu açığı görünmüyor. Sonuç yine ders ve konu performans kanıtında tutulur.</div>'}<div class="notice mb">Bu sonuç tam KPSS GY–GK neti değildir; yalnızca <strong>${esc(subName(def.subjectId,false))}</strong> bölüm denemesidir.</div>${miniDetailedReview(def,score)||(wrong.length?'<div class="mini-review-list"><h3>Yanlış / boş sorular</h3>'+wrong.slice(0,12).map(function(x){const q=x.question,chosen=x.picked>=0?q.options[x.picked]:'Boş',topic=score.topicBreakdown.find(t=>t.topicId===q.topicId);return '<article><div class="row between"><strong>Soru '+(x.index+1)+' · '+esc(topic?.title||q.topicId)+'</strong><span class="pill '+(x.status==='wrong'?'orange':'plain')+'">'+(x.status==='wrong'?'Yanlış':'Boş')+'</span></div><p>'+esc(q.text)+'</p><small>Senin cevabın: '+esc(chosen)+' · Doğru: '+String.fromCharCode(65+q.answer)+'</small><div>'+esc(q.explanation)+'</div></article>';}).join('')+'</div>':'<div class="notice">Tüm sorular doğru. Bu bölüm sonucu güçlü performans kanıtı olarak kaydedildi.</div>')}<div class="button-row">${btn('Deneme Merkezine dön','close-modal','ghost')}${btn('Rotamı gör '+icon('arrow'),'mini-go-route','primary')}</div>`);
 }
 
 function denemeCenterSection(){
- const activeSubjects=new Set(subjects().map(function(s){return s.id;})),minis=ROTA_ALL_MINI_EXAMS.filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId)&&x.surface!=='topic';}),sectionExams=(window.RotaKpssPractice?.sectionExams||[]).filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId);}),resources=OFFICIAL_EXAM_RESOURCES[state.activeExam]||[],results=[...(w().assessments||[])].filter(function(a){return !a.sectionId;}).sort(function(a,b){return b.date.localeCompare(a.date)||b.created-a.created;}).slice(0,8),rec=miniRecommendation(),weakness=miniWeaknessOverview(minis),progress=miniProgressSection(minis),coverage=miniCatalogCoverage(minis);
+ const activeSubjects=new Set(subjects().map(function(s){return s.id;})),minis=ROTA_ALL_MINI_EXAMS.filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId)&&x.surface!=='topic'&&miniCanServe(x);}),sectionExams=activeSectionExams().filter(function(x){return x.exam===state.activeExam&&activeSubjects.has(x.subjectId);}),resources=OFFICIAL_EXAM_RESOURCES[state.activeExam]||[],results=[...(w().assessments||[])].sort(function(a,b){return b.date.localeCompare(a.date)||b.created-a.created;}).slice(0,8),rec=miniRecommendation(),weakness=miniWeaknessOverview(minis),progress=miniProgressSection(minis),coverage=miniCatalogCoverage(minis);
  const recHtml=rec?'<article class="mini-recommend"><div><div class="eyebrow">ROTA’NIN ÖNERİSİ</div><h3>'+esc(rec.def.title)+'</h3><p>'+esc(rec.reason)+'</p><div class="row wrap"><span class="route-adaptive-pill mode-'+esc(rec.adaptive.mode)+'">'+esc(rec.adaptive.label)+'</span>'+(rec.context?.openTopic?'<span class="pill plain">AKTİF KONU</span>':'')+'<span class="tiny muted">'+rec.def.questions.length+' soru · '+rec.def.minutes+' dk'+(rec.last?' · son: '+rec.last.correct+'/'+rec.last.total:' · ilk ölçüm')+'</span></div></div>'+btn('Önerilen denemeyi çöz '+icon('arrow'),'start-mini-exam','primary','data-id="'+rec.def.id+'"')+'</article>':'<div class="notice">Son mini ölçümlerin çok yakın tarihte. Rota aynı denemeyi sık sık önermek yerine en az 3 gün yeni çalışma kanıtı birikmesini bekliyor; istersen aşağıdaki mini setlerden birini manuel çözebilirsin.</div>';
- const sectionHtml=sectionExams.length?'<div class="mini-section-head"><div><span class="eyebrow">BÖLÜM DENEMELERİ</span><h3>Dersin gerçek soru sayısıyla çöz.</h3></div><span class="tiny muted">Özgün · konu dağılımı etiketli</span></div><div class="mini-exam-grid">'+sectionExams.map(function(def){const last=sectionExamLast(def.id);return '<article class="card mini-exam-card"><div class="row between"><span class="pill plain">'+esc(def.eyebrow)+'</span><span class="tiny muted">'+def.questions.length+' soru · '+def.minutes+' dk</span></div><h3>'+esc(def.title)+'</h3><p>'+esc(subName(def.subjectId,false))+' · '+def.blueprint.length+' konu · 4 yanlış 1 doğru</p><div class="mini-last">'+(last?dateLabel(last.date)+' · '+last.correct+'/'+last.total+' doğru · '+format(last.net,2)+' net':'Henüz çözülmedi')+'</div>'+btn(last?'Yeniden çöz':'Başla','start-section-exam','primary sm','data-id="'+def.id+'"')+'</article>';}).join('')+'</div><div class="notice"><strong>Dağılım notu:</strong> '+esc(window.RotaKpssPractice?.BASIS||'Konu dağılımı yaklaşık çalışma planıdır.')+'</div>':'';
- return '<section class="exam-center" data-premium-surface="exams"><div class="exam-center-head"><div><div class="eyebrow">DENEME MERKEZİ · ROTA İLE BAĞLI</div><h2>Çöz. Ölç. Rota ne öğrendiğini göstersin.</h2><p>Mini denemeler tam sınav netinin yerine geçmez; konu performansını ölçer ve gerektiğinde bir sonraki onarım görevini şekillendirir.</p></div><span class="pill plain">ÖZGÜN + RESMÎ KAYNAK</span></div>'+recHtml+sectionHtml+'<div class="mini-section-head"><div><span class="eyebrow">KISA ÖLÇÜMLER</span><h3>Rota Mini denemeleri</h3></div><span class="tiny muted">'+minis.length+' uygun mini set</span></div>'+(coverage?'<div class="notice mini-catalog-coverage"><strong>İçerik derinliği iskeleti:</strong> '+coverage.topics+' konuda '+coverage.sets+' özgün set var. Hedef konu başına '+coverage.targetSetsPerTopic+' set; '+coverage.missingSetSlots+' yeni set yuvası hazır. Resmî kaynaklar bu özgün set sayısına dahil edilmez.</div>':'')+'<div class="mini-exam-grid">'+minis.map(function(def){const last=latestMiniResult(def.id),catalog=miniCatalogInfo(def);return '<article class="card mini-exam-card"><div class="row between"><span class="pill plain">'+esc(def.eyebrow)+'</span><span class="tiny muted">Set '+catalog.setNo+' / '+catalog.targetSets+' · '+def.minutes+' dk</span></div><h3>'+esc(def.title)+'</h3><p>'+esc(subName(def.subjectId,true))+' · '+esc(def.topicTitle)+' · '+def.questions.length+' soru</p><div class="mini-last">'+esc(miniResultSummary(last))+'</div>'+btn(last?'Tekrar çöz':'Başla','start-mini-exam','primary sm','data-id="'+def.id+'"')+'</article>';}).join('')+'</div>'+weakness+progress+'<section class="official-source-block"><div class="card-head"><div><h3>Ücretsiz resmî kaynaklar</h3><p class="muted tiny">Telifli soruları Çalışma Rotası içine kopyalamıyoruz; kaynağın kendi sayfasını açıyoruz.</p></div></div><div class="official-source-grid">'+resources.map(function(r){return '<article class="official-source"><span>'+esc(r.source)+'</span><div><strong>'+esc(r.title)+'</strong><p>'+esc(r.meta)+'</p><small>'+esc(r.note)+'</small></div><a class="btn sm ghost" href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer">Resmî kaynağı aç ↗</a></article>';}).join('')+'</div></section>'+(results.length?'<section class="mini-history"><div class="card-head"><h3>Son Rota Mini sonuçların</h3><span class="tiny muted">Tam sınav netine eklenmez</span></div>'+results.map(function(r){return '<div class="route-mini-row"><div><strong>'+esc(r.title)+'</strong><p>'+dateLabel(r.date)+' · '+esc(subName(r.subjectId,true))+(r.weakSkills?.[0]?' · açık: '+esc(r.weakSkills[0]):'')+'</p></div><span class="row">'+(r.routeDecision?'<span class="route-adaptive-pill mode-'+esc(r.routeDecision.mode)+'">'+esc(r.routeDecision.label)+'</span>':'')+'<span class="pill plain">'+r.correct+'/'+r.total+' doğru</span>'+btn('İncele','mini-result-detail','sm ghost','data-id="'+r.id+'"')+'</span></div>';}).join('')+'</section>':'')+'</section>';
+ const sectionHtml=sectionExams.length?'<div class="mini-section-head"><div><span class="eyebrow">BÖLÜM DENEMELERİ</span><h3>Dersin gerçek soru sayısıyla çöz.</h3></div><span class="tiny muted">Özgün · konu dağılımı etiketli</span></div><div class="mini-exam-grid">'+sectionExams.map(function(def){const last=sectionExamLast(def.id);return '<article class="card mini-exam-card"><div class="row between"><span class="pill plain">'+esc(def.eyebrow)+'</span><span class="tiny muted">'+def.questions.length+' soru · '+def.minutes+' dk</span></div><h3>'+esc(def.title)+'</h3><p>'+esc(subName(def.subjectId,false))+' · '+def.blueprint.length+' konu · 4 yanlış 1 doğru</p><div class="mini-last">'+(last?dateLabel(last.date)+' · '+last.correct+'/'+last.total+' doğru · '+format(last.net,2)+' net':'Henüz çözülmedi')+'</div>'+'<div class="row wrap">'+btn(last?'Yeniden çöz':'Başla','start-section-exam','primary sm','data-id="'+def.id+'"')+(last?btn('Sonucu incele','mini-result-detail','ghost sm','data-id="'+last.id+'"'):'')+'</div></article>';}).join('')+'</div><div class="notice"><strong>Dağılım notu:</strong> '+esc(window.RotaKpssBankExams?.basis||window.RotaKpssPractice?.BASIS||'Konu dağılımı yaklaşık çalışma planıdır.')+'</div>':'';
+ return '<section class="exam-center" data-premium-surface="exams"><div class="exam-center-head"><div><div class="eyebrow">DENEME MERKEZİ · ROTA İLE BAĞLI</div><h2>Çöz. Ölç. Rota ne öğrendiğini göstersin.</h2><p>Mini denemeler tam sınav netinin yerine geçmez; konu performansını ölçer ve gerektiğinde bir sonraki onarım görevini şekillendirir.</p></div><span class="pill plain">ÖZGÜN + RESMÎ KAYNAK</span></div>'+recHtml+sectionHtml+'<div class="mini-section-head"><div><span class="eyebrow">KISA ÖLÇÜMLER</span><h3>Rota Mini denemeleri</h3></div><span class="tiny muted">'+minis.length+' uygun mini set</span></div>'+(coverage?'<div class="notice mini-catalog-coverage"><strong>İçerik derinliği iskeleti:</strong> '+coverage.topics+' konuda '+coverage.sets+' özgün set var. Hedef konu başına '+coverage.targetSetsPerTopic+' set; '+coverage.missingSetSlots+' yeni set yuvası hazır. Resmî kaynaklar bu özgün set sayısına dahil edilmez.</div>':'')+'<div class="mini-exam-grid">'+minis.map(function(def){const last=latestMiniResult(def.id),catalog=miniCatalogInfo(def);return '<article class="card mini-exam-card"><div class="row between"><span class="pill plain">'+esc(def.eyebrow)+'</span><span class="tiny muted">Set '+catalog.setNo+' / '+catalog.targetSets+' · '+def.minutes+' dk</span></div><h3>'+esc(def.title)+'</h3><p>'+esc(subName(def.subjectId,true))+' · '+esc(def.topicTitle)+' · '+def.questions.length+' soru</p><div class="mini-last">'+esc(miniResultSummary(last))+'</div>'+btn(last?'Tekrar çöz':'Başla','start-mini-exam','primary sm','data-id="'+def.id+'"')+'</article>';}).join('')+'</div>'+weakness+progress+'<section class="official-source-block"><div class="card-head"><div><h3>Ücretsiz resmî kaynaklar</h3><p class="muted tiny">Telifli soruları Çalışma Rotası içine kopyalamıyoruz; kaynağın kendi sayfasını açıyoruz.</p></div></div><div class="official-source-grid">'+resources.map(function(r){return '<article class="official-source"><span>'+esc(r.source)+'</span><div><strong>'+esc(r.title)+'</strong><p>'+esc(r.meta)+'</p><small>'+esc(r.note)+'</small></div><a class="btn sm ghost" href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer">Resmî kaynağı aç ↗</a></article>';}).join('')+'</div></section>'+(results.length?'<section class="mini-history"><div class="card-head"><h3>Son Rota deneme sonuçların</h3><span class="tiny muted">Tam sınav netine eklenmez</span></div>'+results.map(function(r){return '<div class="route-mini-row"><div><strong>'+esc(r.title)+'</strong><p>'+dateLabel(r.date)+' · '+esc(subName(r.subjectId,true))+(r.weakSkills?.[0]?' · açık: '+esc(r.weakSkills[0]):'')+'</p></div><span class="row">'+(r.routeDecision?'<span class="route-adaptive-pill mode-'+esc(r.routeDecision.mode)+'">'+esc(r.routeDecision.label)+'</span>':'')+'<span class="pill plain">'+r.correct+'/'+r.total+' doğru</span>'+btn('İncele','mini-result-detail','sm ghost','data-id="'+r.id+'"')+'</span></div>';}).join('')+'</section>':'')+'</section>';
 }
 function examsPage(){if(!currentTypes().includes(ui.mockFilter))ui.mockFilter=currentTypes()[0];const xs=w().exams.filter(x=>x.type===ui.mockFilter).sort((a,b)=>a.date.localeCompare(b.date));const vals=xs.map(x=>R.calcNet(x.parts,x.penalty).net);return head('ÖLÇ → ANLA → ROTANI GÜNCELLE','Deneme Merkezi','Özgün mini denemeler, resmî ücretsiz kaynaklar ve kendi tam deneme kayıtların tek yerde.',btn(icon('plus')+' Sonuç ekle','add-exam','primary'))+denemeCenterSection()+`<div class="toolbar"><label class="field" style="min-width:230px"><span class="sr-only">Deneme türü filtresi</span><select id="mock-filter">${typeOptions(ui.mockFilter)}</select></label><span class="muted small">${xs.length} kayıt · ${C.TYPES[ui.mockFilter].label}</span></div><div class="stats">${stat('Son deneme',xs.length?format(vals.at(-1),2):'—','net','chart')}${stat('En yüksek net',xs.length?format(Math.max(...vals),2):'—','seçili türde','target')}${stat('Ortalama net',xs.length?format(vals.reduce((a,b)=>a+b,0)/xs.length,2):'—','seçili türde','chart')}${stat('Deneme sayısı',format(xs.length),C.TYPES[ui.mockFilter].label,'note')}</div>${analysisPanel(xs)}<section class="card mb"><div class="card-head"><h3>Netlerinin yolculuğu</h3><span class="pill">${C.TYPES[ui.mockFilter].label}</span></div>${seriesSvg(xs)}<p class="muted tiny">Grafik seçili türdeki ham netleri gösterir. Soru sayısı veya yanlış götürme kuralını değiştirdiğin denemeler doğrudan karşılaştırılabilir olmayabilir.</p></section><section class="card"><div class="card-head"><h3>Deneme kayıtlarım</h3><span class="tiny muted">En yeni üstte</span></div>${xs.length?`<div class="table-wrap"><table><thead><tr><th>DENEME</th><th>TARİH</th><th>DOĞRU</th><th>YANLIŞ</th><th>BOŞ</th><th>NET</th><th></th></tr></thead><tbody>${[...xs].reverse().map(x=>{const n=R.calcNet(x.parts,x.penalty);return `<tr><td><strong>${esc(x.name)}</strong><div class="subcell">${n.total} soru · ${x.penalty?x.penalty+' yanlış / 1 doğru':'Yanlış götürmez'}</div></td><td>${dateLabel(x.date)}</td><td>${n.correct}</td><td>${n.wrong}</td><td>${n.blank}</td><td class="net-val">${format(n.net,2)}</td><td><div class="row" style="gap:3px"><button class="icon-btn" data-action="exam-detail" data-id="${x.id}" aria-label="Deneme ayrıntıları">${icon('note')}</button><button class="icon-btn" data-action="edit-exam" data-id="${x.id}" aria-label="Denemeyi düzenle">${icon('settings')}</button><button class="icon-btn" data-action="delete-exam" data-id="${x.id}" aria-label="Denemeyi sil">${icon('trash')}</button></div></td></tr>`;}).join('')}</tbody></table></div>`:empty('Henüz deneme eklemedin.','İlk sonuçlarını kaydet; başlangıç noktan görünür olsun.',btn('İlk denememi ekle','add-exam','sm'))}</section>`;}
 function mistakesPage(){const ms=w().mistakes.filter(m=>ui.mistakeFilter==='all'||(ui.mistakeFilter==='resolved'?m.resolved:!m.resolved)).sort((a,b)=>a.reviewDate.localeCompare(b.reviewDate));return head('YANLIŞINI BİR ADIMA DÖNÜŞTÜR','Yanlış defterim','Neyi karıştırdığını not al. Tekrar tarihini seç, zamanı gelince geri dön.',btn(icon('plus')+' Yanlış notu ekle','add-mistake','primary'))+`<div class="toolbar"><div class="tabs">${[['open','Tekrar edilecek'],['resolved','Öğrendiklerim'],['all','Tümü']].map(([id,label])=>`<button data-action="mistake-filter" data-filter="${id}" class="${id===ui.mistakeFilter?'active':''}">${label}</button>`).join('')}</div><span class="muted tiny">${ms.length} not · Bildirim gönderilmez; tekrarlar Bugün ekranında görünür.</span></div><div class="mistake-grid">${ms.map(m=>`<article class="card mistake ${m.resolved?'resolved':''}"><div class="row between"><span class="pill plain">${esc(subName(m.subjectId,true))}</span><span class="pill ${!m.resolved&&m.reviewDate<=today()?'orange':''}">${m.resolved?'Öğrenildi':dateLabel(m.reviewDate)}</span></div><h3>${esc(m.title)}</h3>${m.examId?`<div class="note-source">${icon('link')} ${esc(w().exams.find(x=>x.id===m.examId)?.name||'Deneme')} · ${esc(m.partLabel)}</div>`:''}<span class="eyebrow" style="letter-spacing:.8px">${esc(m.cause)}</span><p>${esc(m.note||'Henüz çözüm notu eklenmedi.')}</p><div class="button-row">${!m.resolved?reviewButton(m):''}${btn(m.resolved?'Tekrara al':'Öğrendim '+icon('check'),'resolve-mistake','sm',`data-id="${m.id}"`)}${!m.resolved?btn('+3 gün','postpone-mistake','sm ghost',`data-id="${m.id}"`):''}<button class="icon-btn" data-action="edit-mistake" data-id="${m.id}" aria-label="Notu düzenle">${icon('settings')}</button><button class="icon-btn" data-action="delete-mistake" data-id="${m.id}" aria-label="Notu sil">${icon('trash')}</button></div></article>`).join('')}</div>${!ms.length?`<div class="card">${empty('Burada bir öğrenme fırsatı var.','Karıştırdığın bir konuyu veya tekrar bakacağın soruyu ekle.',btn('İlk notumu ekle','add-mistake','sm'))}</div>`:''}`;}
@@ -5006,17 +5345,21 @@ function onSubmit(event){const form=event.target;if(!(form instanceof HTMLFormEl
  }
 if(form.id==='section-exam-form'){
   const def=sectionExamDefinition(ctx?.sectionId||'');if(!def||def.exam!==state.activeExam)throw Error('Bölüm denemesi bulunamadı.');
+  if(!sectionCanServe(def))throw Error('Bu branş denemesi güncellik veya içerik kontrolü bekliyor; yeni sonuç kaydedilemedi.');
   const answers=def.questions.map(function(_q,i){const raw=String(f.get('section-q-'+i)??'');return raw===''?-1:Number(raw);});
   if(answers.some(function(v){return v<-1||v>4||!Number.isInteger(v);}))throw Error('Cevapları kontrol et.');
-  const score=scoreSectionExam(def,answers),elapsed=Math.max(1,Math.min(240,Math.round((Date.now()-(ctx?.startedAt||Date.now()))/60000))),skillBreakdown=score.topicBreakdown.map(function(x){return {skill:x.title,total:x.total,correct:x.correct,wrong:x.wrong,blank:x.blank};}),weakSkills=sectionWeakTopics(score).map(x=>x.title),result={id:R.uid(),miniId:'section:'+def.id,sectionId:def.id,version:def.version||1,date:today(),subjectId:def.subjectId,topicId:'',title:def.title,total:score.total,correct:score.correct,wrong:score.wrong,blank:score.blank,net:score.net,minutes:elapsed,answers,topicBreakdown:score.topicBreakdown,skillBreakdown,weakSkills,created:Date.now()};
+  const score=scoreSectionExam(def,answers),elapsed=Math.max(1,Math.min(240,Math.round((Date.now()-(ctx?.startedAt||Date.now()))/60000))),skillBreakdown=score.topicBreakdown.map(function(x){return {skill:x.title,total:x.total,correct:x.correct,wrong:x.wrong,blank:x.blank};}),weakSkills=sectionWeakTopics(score).map(x=>x.title),result={id:R.uid(),miniId:'section:'+def.id,sectionId:def.id,version:def.version||1,date:today(),subjectId:def.subjectId,topicId:'',title:def.title,total:score.total,correct:score.correct,wrong:score.wrong,blank:score.blank,net:score.net,penalty:def.penalty??4,minutes:elapsed,answers,topicBreakdown:score.topicBreakdown,skillBreakdown,weakSkills,created:Date.now()};
+  result.questionEvidence=window.RotaQuestionBank?.snapshot?.(def,answers)||[];
   routeEnsure();w().assessments.push(result);w().assessments=w().assessments.slice(-240);routeRebalance('KPSS bölüm denemesi sonucu ders ve konu performans kanıtına eklendi; rota ilgili konu kırılımlarıyla yeniden kontrol edildi.',true);result.routeDecision=miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,''));closeModal();save();render();openSectionResult(def,result,score);toast('Bölüm denemesi sonucu ve konu kırılımları rotana işlendi.');return;
  }
 if(form.id==='mini-exam-form'){
   const def=miniExamDefinition(ctx?.miniId||'');if(!def||def.exam!==state.activeExam)throw Error('Mini deneme bulunamadı.');
+  if(!miniCanServe(def))throw Error('Bu konu testi güncellik veya içerik kontrolü bekliyor; yeni sonuç kaydedilemedi.');
   const answers=def.questions.map(function(_q,i){const raw=String(f.get('mini-q-'+i)??'');return raw===''?-1:Number(raw);});
   if(answers.some(function(v){return v<-1||v>4||!Number.isInteger(v);}))throw Error('Cevapları kontrol et.');
   const score=scoreMiniExam(def,answers),topicId=miniTopicId(def),elapsed=Math.max(1,Math.min(180,Math.round((Date.now()-(ctx?.startedAt||Date.now()))/60000))),skillBreakdown=miniSkillBreakdown(def,score),weakSkills=miniWeakSkills(skillBreakdown),result={id:R.uid(),miniId:def.id,version:def.version||1,date:today(),subjectId:def.subjectId,topicId,title:def.title,total:score.total,correct:score.correct,wrong:score.wrong,blank:score.blank,minutes:elapsed,answers,skillBreakdown,weakSkills,created:Date.now()};
-  routeEnsure();w().assessments.push(result);w().assessments=w().assessments.slice(-200);routeRebalance('Rota Mini Deneme sonucu ders, konu ve alt-konu performansına eklendi; kalan program yeni ölçüme göre kontrol edildi.',true);result.routeDecision=miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,topicId));closeModal();save();render();openMiniResult(def,result,score);toast('Mini deneme sonucu ve alt-konu sinyalleri rotana işlendi.');return;
+  result.questionEvidence=window.RotaQuestionBank?.snapshot?.(def,answers)||[];
+  routeEnsure();w().assessments.push(result);w().assessments=w().assessments.slice(-240);routeRebalance('Rota Mini Deneme sonucu ders, konu ve alt-konu performansına eklendi; kalan program yeni ölçüme göre kontrol edildi.',true);result.routeDecision=miniRouteDecisionSnapshot(routeAppliedDecision(def.subjectId,topicId));closeModal();save();render();openMiniResult(def,result,score);toast('Mini deneme sonucu ve alt-konu sinyalleri rotana işlendi.');return;
  }
  if(form.id==='topic-form'){const title=String(f.get('title')||'').trim(),subjectId=ensureSubject(String(f.get('subjectId')));if(!title)throw Error('Konu başlığını yaz.');if(R.allTopics(w(),state.activeExam).some(t=>t.subjectId===subjectId&&t.title.toLocaleLowerCase('tr-TR')===title.toLocaleLowerCase('tr-TR')))throw Error('Bu ders altında aynı konu zaten var.');w().customTopics.push({id:'custom-'+R.uid(),title:title.slice(0,180),subjectId});closeModal();commit('Yeni konu eklendi.');return;}
  if(form.id==='source-form'){const url=String(f.get('url')||'').trim(),position=Number(f.get('position')),status=Number(f.get('status'));if(url&&!R.safeUrl(url))throw Error('Geçerli bir http veya https bağlantısı gir.');if(!Number.isInteger(position)||position<0||position>100000||![0,1,2].includes(status))throw Error('Dakika veya durum bilgisini kontrol et.');w().topicState[ctx.topicId]={status,url:R.safeUrl(url),position,note:String(f.get('note')||'').slice(0,4000),updated:Date.now()};closeModal();commit('Kaynağın ve kaldığın yer kaydedildi.');return;}

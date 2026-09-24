@@ -250,6 +250,31 @@ html[data-cr-color-mode="dark"] body.pnx-program-day-ready .pnx-activity-cell.le
 @media(max-width:760px){
   body.pnx-program-day-ready .content{
     padding:14px 12px 104px!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow-x:clip!important;
+  }
+  body.pnx-program-day-ready .pnx-program-week-strip,
+  body.pnx-program-day-ready .pnx-program-workspace,
+  body.pnx-program-day-ready .pnx-program-main,
+  body.pnx-program-day-ready .week-wrap,
+  body.pnx-program-day-ready .week-grid{
+    min-width:0!important;
+    max-width:100%!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+  }
+  body.pnx-program-day-ready .pnx-week-arrow{
+    min-width:0!important;
+    width:38px!important;
+    max-width:38px!important;
+    padding:0!important;
+  }
+  body.pnx-program-day-ready .pnx-program-days{
+    min-width:0!important;
+    max-width:100%!important;
+    width:100%!important;
+    box-sizing:border-box!important;
   }
   body.pnx-program-day-ready .page-head{
     align-items:flex-start!important;

@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import fs from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
 
 const PORT=Number(process.env.WEB_BETA_SHARE_PORT||8912);
 const BASE='http://127.0.0.1:'+PORT;
+const OUT=path.resolve('work/production-evidence/web-beta');
+fs.mkdirSync(OUT,{recursive:true});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let child,serverLog='';
 

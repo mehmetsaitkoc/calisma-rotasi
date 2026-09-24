@@ -149,16 +149,11 @@ try {
   assert.deepEqual(await page.locator('[data-internal-question-library] .academy-mini-stats strong').allTextContents(), ['64', '256', '3072'], 'Internal topic/test/question counts must survive the KPSS boundary');
   assert.equal(await page.locator('[data-series-card],#turkish-series-select').count(), 0, 'Internal library must not expose an external teacher chooser');
 
-  const pricingButton = page.locator('[data-action="paid-pricing"]').first();
-  assert.ok(await pricingButton.count(), 'Configured KPSS shell must expose pricing navigation');
-  await pricingButton.evaluate(node => node.click());
-  await page.locator('.pricing-page').waitFor({ state: 'visible' });
-  await page.waitForFunction(() => {
-    const copy = (document.querySelector('.pricing-page')?.innerText || '').toLocaleUpperCase('tr-TR');
-    return !/\\bYKS\\b|\\bTYT\\b|\\bAYT\\b|\\bYDT\\b/.test(copy);
-  });
-  const pricingCopy = (await page.locator('.pricing-page').innerText()).toLocaleUpperCase('tr-TR');
-  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(pricingCopy), 'Pricing must be KPSS-only');
+  assert.equal(
+    await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),
+    0,
+    'Public Web Beta must not expose unfinished pricing or membership navigation'
+  );
 
   const visibleCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(visibleCopy), 'Visible product UI must remain KPSS-only');

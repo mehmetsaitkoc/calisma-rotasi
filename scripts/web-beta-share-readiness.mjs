@@ -91,7 +91,7 @@ try{
   assert.ok(await heroStart.isVisible(),'Hero CTA must be visible');
 
   // Web Beta information must honestly describe local-only storage.
-  await page.locator('[data-account-action="open"]').evaluate(el=>el.click());
+  await page.getByRole('button',{name:/Beta bilgisi/}).click();
   await page.getByText('Ücretsiz Web Beta',{exact:true}).waitFor({state:'visible'});
   const modalText=((await page.locator('.modal,.dialog,.modal-card,[role="dialog"]').last().textContent().catch(()=>''))||'') + ' ' + ((await page.locator('body').innerText())||'');
   assert.match(modalText,/tarayıcıda|yerel/i);

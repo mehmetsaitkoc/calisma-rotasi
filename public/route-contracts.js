@@ -57,8 +57,8 @@ function validateEntitlement(value){
 
 const MODE_COPY=Object.freeze({
   repair:{label:'ONARIM',short:'Önce açığı kapat, sonra yeni yük ekle.',action:'Yanlış veya eksik kanıtı düzelt.'},
-  steady:{label:'DENGELİ',short:'Mevcut tempoyu koru ve yeni kanıt toplamaya devam et.',action:'Planlanan dozu sürdür.'},
-  progress:{label:'GELİŞİM',short:'Son veriler güçlü; kontrollü biçimde zorlaş.',action:'Dozu küçük adımlarla artır.'},
+  steady:{label:'DENGE',short:'Mevcut tempoyu koru ve yeni kanıt toplamaya devam et.',action:'Planlanan dozu sürdür.'},
+  progress:{label:'İLERLEME',short:'Son veriler güçlü; kontrollü biçimde zorlaş.',action:'Dozu küçük adımlarla artır.'},
   ease:{label:'SÜRDÜRÜLEBİLİR',short:'Yükü küçült, istikrarı koru.',action:'Tamamlanabilir doza dön.'},
   collect:{label:'VERİ TOPLUYOR',short:'Keskin karar için henüz yeterli gerçek veri yok.',action:'Yeni gerçek çalışma verisi topla.'},
   retention:{label:'KALICILIK',short:'Konu biliniyor; şimdi hatırlamayı sağlamlaştır.',action:'Kısa geri çağırma ve doğrulama yap.'}
@@ -106,12 +106,14 @@ function normalizeReasonCodes(codes){
   return out;
 }
 function decisionTrace(raw={}){
+  raw=raw&&typeof raw==='object'?raw:{};
+  const bounded=(value,max)=>Number.isFinite(Number(value))?Math.max(0,Math.min(max,Number(value))):0;
   const reasonCodes=normalizeReasonCodes(raw.reasonCodes);
-  const confidence=Math.max(0,Math.min(100,Number(raw.confidence)||0));
+  const confidence=bounded(raw.confidence,100);
   const evidence=Array.isArray(raw.evidence)?raw.evidence.slice(0,8).map(x=>studentText(x,180)).filter(Boolean):[];
   const cap=raw.capacity&&typeof raw.capacity==='object'?raw.capacity:{};
-  const requestedMinutes=Math.max(0,Number(cap.requestedMinutes)||0),assignedMinutes=Math.max(0,Number(cap.assignedMinutes)||0),dailyLimit=Math.max(0,Number(cap.dailyLimit)||0);
-  return Object.freeze({version:1,mode:normalizeMode(raw.mode),confidence,score:Number(raw.score)||0,reasonCodes,evidence,capacity:Object.freeze({requestedMinutes,assignedMinutes,dailyLimit,constrained:cap.constrained===true||requestedMinutes>assignedMinutes&&requestedMinutes>0})});
+  const requestedMinutes=bounded(cap.requestedMinutes,1440),assignedMinutes=bounded(cap.assignedMinutes,1440),dailyLimit=bounded(cap.dailyLimit,1440);
+  return Object.freeze({version:1,mode:normalizeMode(raw.mode),confidence,score:bounded(raw.score,200),reasonCodes,evidence,capacity:Object.freeze({requestedMinutes,assignedMinutes,dailyLimit,constrained:cap.constrained===true||requestedMinutes>assignedMinutes&&requestedMinutes>0})});
 }
 function decisionTraceFromSignals(raw={}){
   raw=raw&&typeof raw==='object'?raw:{};
@@ -200,10 +202,11 @@ function learningGainOutcome(raw={}){
   raw=raw&&typeof raw==='object'?raw:{};
   const before=raw.before&&typeof raw.before==='object'?raw.before:{};
   const after=raw.after&&typeof raw.after==='object'?raw.after:{};
-  const accuracyBefore=Number(before.accuracy),accuracyAfter=Number(after.accuracy);
-  const netBefore=Number(before.net),netAfter=Number(after.net);
-  const masteryBefore=Number(before.mastery),masteryAfter=Number(after.mastery);
-  const completionBefore=Number(before.completion),completionAfter=Number(after.completion);
+  const measured=value=>typeof value==='number'&&Number.isFinite(value)?value:NaN;
+  const accuracyBefore=measured(before.accuracy),accuracyAfter=measured(after.accuracy);
+  const netBefore=measured(before.net),netAfter=measured(after.net);
+  const masteryBefore=measured(before.mastery),masteryAfter=measured(after.mastery);
+  const completionBefore=measured(before.completion),completionAfter=measured(after.completion);
   const deltas=Object.freeze({
     accuracy:Number.isFinite(accuracyBefore)&&Number.isFinite(accuracyAfter)?accuracyAfter-accuracyBefore:null,
     net:Number.isFinite(netBefore)&&Number.isFinite(netAfter)?netAfter-netBefore:null,
@@ -218,7 +221,7 @@ function learningGainOutcome(raw={}){
   if(deltas.mastery!==null){weighted+=deltas.mastery*.20;weight+=.20;}
   if(deltas.completion!==null){weighted+=deltas.completion*100*.05;weight+=.05;}
   const gainScore=weight?Math.round(weighted/weight):0;
-  const status=!minimumEvidence?'insufficient':confounded?'confounded':gainScore>=5?'helpful':gainScore<=-5?'harmful':'neutral';
+  const status=!minimumEvidence||!weight?'insufficient':confounded?'confounded':gainScore>=5?'helpful':gainScore<=-5?'harmful':'neutral';
   return Object.freeze({
     version:1,
     decisionId:collapse(raw.decisionId||'',120),

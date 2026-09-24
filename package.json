@@ -29,7 +29,7 @@
     "student-recovery:test": "node scripts/student-recovery.test.mjs",
     "personal-sources:test": "node scripts/personal-source-compat.test.mjs",
     "android:instrumentation": "cd android && ./gradlew --no-daemon --console=plain :app:connectedDebugAndroidTest",
-    "accounts:browser": "node scripts/account-client-browser.test.mjs && node scripts/account-actions-browser.test.mjs",
+    "accounts:browser": "node scripts/account-client-browser.test.mjs && node scripts/account-actions-browser.test.mjs && node scripts/teacher-visible-browser.test.mjs",
     "onboarding:browser": "node scripts/onboarding-resume-browser.test.mjs"
   },
   "engines": {

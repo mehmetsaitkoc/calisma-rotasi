@@ -832,22 +832,9 @@
     }
   }
 
-  function removeTeacherUi() {
-    const teacherSurface = document.querySelector('.teacher-page,[data-premium-surface="teacher"]');
-    if (teacherSurface) {
-      const today = document.querySelector('[data-action="nav"][data-view="today"]');
-      if (today) {
-        today.click();
-        return;
-      }
-      teacherSurface.remove();
-    }
-
-    document.querySelectorAll('[data-view="teacher"]').forEach((node) => {
-      const wrapper = node.closest('.nav-item,.side-link,.sidebar-item,li');
-      if (wrapper && /rota\s*hoca/i.test(text(wrapper))) wrapper.remove();
-      else node.remove();
-    });
+  function removeRetiredTeacherCards() {
+    // The photographed dashboard keeps its composition; Rota Hoca remains
+    // available in navigation and on its own authenticated learning page.
     document.querySelectorAll('.pnx3-teacher-card,.pnx-teacher-card').forEach((node) => node.remove());
   }
 
@@ -856,7 +843,7 @@
     if (!root) return;
 
     document.body.classList.add(BODY_CLASS, TODAY_CLASS, DASH_CLASS);
-    removeTeacherUi();
+    removeRetiredTeacherCards();
     polishHeading(header);
     ensureTopbar(header);
     ensureHeaderArt(header);
@@ -935,7 +922,7 @@
     // Observe core renders, not the mutations produced by this compositor itself.
     observer.disconnect();
     try {
-      removeTeacherUi();
+      removeRetiredTeacherCards();
       const shell = document.querySelector('.app-shell');
       const header = document.querySelector('.route-v1-head[data-premium-surface="today"]');
       document.body.classList.toggle(BODY_CLASS, !!shell);

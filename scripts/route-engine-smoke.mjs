@@ -57,7 +57,7 @@ for(const marker of [
   'report-trend-bars',
   'report-evidence-badge',
   "featureEnabled('advanced_teacher_insights')",
-  "fetch('/api/entitlements'",
+  "window.RotaAccount.request('/api/entitlements'",
   'validateEntitlement',
   'Gelişmiş devamlar Plus',
   'routeRenderDecisionCache',
@@ -488,8 +488,8 @@ assert.ok(!html.includes("function showActivated("),'Visual checkout must not gr
 {
   const src=between('function routeProgressHoldFromSignals','function routeStudentOverview');
   let studentState='steady',recoveryActive=false,previous=null;
-  const routeSubjectAdaptiveState=()=>({mode:'progress',label:'GELİŞİM MODU',note:'raw',confidence:90,evidence:['yüksek doğruluk'],repairScore:0,progressScore:6});
-  const routeStudentModel=()=>({state:studentState,label:studentState==='progress'?'GELİŞİM DOĞRULANIYOR':'DENGELİ İLERLEME',nextAction:'dozu koru',confidence:88,performance:82,learningNeed:12,openMistakes:0,retention:90,execution:90,trend:{known:false},personalNorm:{known:false}});
+  const routeSubjectAdaptiveState=()=>({mode:'progress',label:'İLERLEME',note:'raw',confidence:90,evidence:['yüksek doğruluk'],repairScore:0,progressScore:6});
+  const routeStudentModel=()=>({state:studentState,label:studentState==='progress'?'İLERLEME':'DENGE',nextAction:'dozu koru',confidence:88,performance:82,learningNeed:12,openMistakes:0,retention:90,execution:90,trend:{known:false},personalNorm:{known:false}});
   const routeRecoverySignal=()=>({active:recoveryActive});
   const routeLatestModeDecision=()=>previous;
   const routeEnsure=()=>{},w=()=>({route:{modeHistory:[]}});
@@ -499,8 +499,8 @@ assert.ok(!html.includes("function showActivated("),'Visual checkout must not gr
   const held=fn('k-ma','m1');
   assert.equal(held.rawMode,'progress');
   assert.equal(held.mode,'steady');
-  assert.equal(held.label,'DENGELİ İLERLEME');
-  assert.match(held.note,/GELİŞİM kararını henüz doğrulamadığı/i);
+  assert.equal(held.label,'DENGE');
+  assert.match(held.note,/İLERLEME kararını henüz doğrulamadığı/i);
   assert.ok(held.evidence.some(x=>/kalibre Öğrenci Modeli/i.test(x)));
   studentState='progress';
   assert.equal(fn('k-ma','m1').mode,'progress');
@@ -516,8 +516,8 @@ assert.ok(!html.includes("function showActivated("),'Visual checkout must not gr
   const routeSubjectGap=()=>({known:false,gap:0});
   const routeStudyMethod=()=>({key:'quant',label:'SORU + YANLIŞ ANALİZİ'});
   const routeAppliedDecision=()=>studentState==='progress'&&!recoveryActive
-    ?{mode:'progress',rawMode:'progress',label:'GELİŞİM MODU',calibration:{},skillWeakness:{primary:null}}
-    :{mode:'steady',rawMode:'progress',label:'DENGELİ TEMPO',calibration:{},skillWeakness:{primary:null}};
+    ?{mode:'progress',rawMode:'progress',label:'İLERLEME',calibration:{},skillWeakness:{primary:null}}
+    :{mode:'steady',rawMode:'progress',label:'DENGE',calibration:{},skillWeakness:{primary:null}};
   const routeRecoverySignal=()=>({active:recoveryActive});
   const routeEffectiveDifficulty=()=>({known:false});
   const routeMaxTaskMinutes=()=>120;
@@ -538,7 +538,7 @@ assert.ok(!html.includes("function showActivated("),'Visual checkout must not gr
   const unverifiedGoal=api.routeTaskGoal('k-ma','t1','x');
   assert.equal(unverifiedQuestions,16,'Raw adaptive progress must not add questions before Student Model progression is corroborated');
   assert.equal(unverifiedGoal.minutes,35,'Raw adaptive progress must not add minutes before Student Model progression is corroborated');
-  assert.match(unverifiedGoal.text,/doğrulanmış GELİŞİM kararı oluşmadan/i);
+  assert.match(unverifiedGoal.text,/doğrulanmış İLERLEME kararı oluşmadan/i);
   studentState='progress';
   const normalQuestions=api.routeQuestionTarget('k-ma','t1','x');
   const normalGoal=api.routeTaskGoal('k-ma','t1','x');
@@ -1663,20 +1663,20 @@ for(const marker of [
   assert.equal(x.label,'VERİ TOPLUYOR');
   assert.equal(x.rawMode,'repair');
 
-  x=fn(adaptive('steady','DENGELİ TEMPO'),{state:'repair',label:'ONARIM ÖNCELİĞİ',nextAction:'Yanlışı onar',confidence:80},{active:false});
+  x=fn(adaptive('steady','DENGE'),{state:'repair',label:'ONARIM ÖNCELİĞİ',nextAction:'Yanlışı onar',confidence:80},{active:false});
   assert.equal(x.mode,'repair','Student Model repair must override a raw steady signal');
 
-  x=fn(adaptive('steady','DENGELİ TEMPO'),{state:'sustainable',label:'UYGULANABİLİR DOZ',nextAction:'Dozu küçült',confidence:75},{active:false});
+  x=fn(adaptive('steady','DENGE'),{state:'sustainable',label:'UYGULANABİLİR DOZ',nextAction:'Dozu küçült',confidence:75},{active:false});
   assert.equal(x.mode,'ease','Student Model sustainable state must apply the smaller dose');
 
   x=fn(adaptive('ease','SÜRDÜRÜLEBİLİR MOD'),{state:'retention',label:'KALICILIK AÇIĞI',nextAction:'Tekrarları tamamla',confidence:88},{active:false});
   assert.equal(x.mode,'steady','Retention takes precedence over generic dose easing');
   assert.equal(x.label,'KALICILIK AÇIĞI');
 
-  x=fn(adaptive('steady','DENGELİ TEMPO'),{state:'progress',label:'GELİŞİM DOĞRULANIYOR',nextAction:'Küçük seviye yoklaması',confidence:90},{active:false});
+  x=fn(adaptive('steady','DENGE'),{state:'progress',label:'İLERLEME',nextAction:'Küçük seviye yoklaması',confidence:90},{active:false});
   assert.equal(x.mode,'progress','Corroborated Student Model progress may apply even when the raw adaptive score is only steady');
 
-  x=fn(adaptive('progress','GELİŞİM MODU'),{state:'progress',label:'GELİŞİM DOĞRULANIYOR',nextAction:'Küçük seviye yoklaması',confidence:90},{active:true});
+  x=fn(adaptive('progress','İLERLEME'),{state:'progress',label:'İLERLEME',nextAction:'Küçük seviye yoklaması',confidence:90},{active:true});
   assert.equal(x.mode,'steady','Recovery must still block progression load increases');
   assert.equal(x.label,'TOPARLANMA MODU');
 }
@@ -1685,14 +1685,14 @@ for(const marker of [
 {
   const src=between('function routeProgressHoldFromSignals','function routeLatestModeDecision');
   const fn=new Function(src+';return routeAppliedDecisionFromSignals;')();
-  const adaptive={mode:'steady',label:'DENGELİ TEMPO',note:'raw',evidence:[],confidence:90};
-  const mild={state:'steady',label:'DENGELİ İLERLEME',nextAction:'dozu koru',confidence:88,performance:73,learningNeed:24,openMistakes:0,retention:82,execution:90,trend:{known:true,direction:'flat'},personalNorm:{known:true,direction:'flat',confidence:70}};
+  const adaptive={mode:'steady',label:'DENGE',note:'raw',evidence:[],confidence:90};
+  const mild={state:'steady',label:'DENGE',nextAction:'dozu koru',confidence:88,performance:73,learningNeed:24,openMistakes:0,retention:82,execution:90,trend:{known:true,direction:'flat'},personalNorm:{known:true,direction:'flat',confidence:70}};
   const previous={mode:'progress',hysteresisHeld:false};
 
   const held=fn(adaptive,mild,{active:false},previous);
   assert.equal(held.mode,'progress','One mild dip after progress should receive a one-day hysteresis buffer');
   assert.equal(held.hysteresisHeld,true);
-  assert.equal(held.label,'GELİŞİM KORUNUYOR');
+  assert.equal(held.label,'İLERLEME KORUNUYOR');
 
   const second=fn(adaptive,mild,{active:false},{mode:'progress',hysteresisHeld:true});
   assert.equal(second.mode,'steady','Hysteresis may not preserve progress for a second unconfirmed day');
@@ -1706,7 +1706,7 @@ for(const marker of [
   assert.equal(fn(adaptive,mistake,{active:false},previous).mode,'steady','An open mistake must cancel progress hysteresis');
 
   const recovered={...mild,state:'progress',performance:81};
-  const renewed=fn({mode:'progress',label:'GELİŞİM MODU',note:'raw',evidence:[]},recovered,{active:false},{mode:'progress',hysteresisHeld:true});
+  const renewed=fn({mode:'progress',label:'İLERLEME',note:'raw',evidence:[]},recovered,{active:false},{mode:'progress',hysteresisHeld:true});
   assert.equal(renewed.mode,'progress');
   assert.equal(renewed.hysteresisHeld,false,'Fresh corroborated progress resets the hysteresis buffer');
 }
@@ -1926,7 +1926,7 @@ for(const marker of [
   )(
     ()=>[{id:'s1'},{id:'s2'},{id:'s3'}],defs,{activeExam:'kpss'},
     def=>({topicId:'',topicStarted:def.id!=='untouched-repair',openTopic:false,recentTopicWork:false,subjectDaysSince:999,stageDaysSince:999}),
-    id=>id==='s1'||id==='s3'?{mode:'repair',label:'ONARIM MODU',repairScore:5,skillWeakness:{weak:[]}}:{mode:'steady',label:'DENGELİ TEMPO',repairScore:0,skillWeakness:{weak:[]}},
+    id=>id==='s1'||id==='s3'?{mode:'repair',label:'ONARIM MODU',repairScore:5,skillWeakness:{weak:[]}}:{mode:'steady',label:'DENGE',repairScore:0,skillWeakness:{weak:[]}},
     id=>id==='repair-mini'?{miniId:id,total:10,correct:3,date:'2026-09-18'}:null,
     last=>last?repairDays:999,
     ()=>({attempts7:0,attempts14:0}),
@@ -2275,7 +2275,7 @@ for(const marker of [
   "performance.challenge",
   'Zorlandıysan en çok nerede?',
   'Sinyal güveni',
-  'const waves=needsRepair?[1,3,7]:[3,7]',
+  'const waves=needsRepair?(learningConfirmed?[1,3,7]:[1,3]):[3,7]',
   'routeHeavyLimit',
   'routeIsQuantitativeHeavy',
   'routeQuantitativeDailyLimit',

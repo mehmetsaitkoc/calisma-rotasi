@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 
-const VERSION=2;
+const VERSION=3;
 const CONTRACTS=root.RotaContracts||(typeof require==='function'?require('./route-contracts.js'):null);
 function text(value,max=700){
   return CONTRACTS?.studentText?CONTRACTS.studentText(value,max):String(value??'').replace(/\s+/g,' ').trim().slice(0,max);
@@ -125,6 +125,19 @@ function build(raw){
       reasons:list(examRisk.reasons,5).map(x=>text(x,180)).filter(Boolean)
     }:null,
     mastery:safeMastery(envelope.mastery),
+    activeTask:envelope.activeTask&&typeof envelope.activeTask==='object'?{
+      subject:text(envelope.activeTask.subject,120),topic:text(envelope.activeTask.topic,180),
+      title:text(envelope.activeTask.title,180),minutes:number(envelope.activeTask.minutes),
+      targetQuestions:number(envelope.activeTask.targetQuestions),reason:text(envelope.activeTask.reason,500),
+      state:text(envelope.activeTask.state,40)
+    }:null,
+    recovery:envelope.recovery&&typeof envelope.recovery==='object'?{
+      status:text(envelope.recovery.status,80),label:text(envelope.recovery.label,180),
+      eligible:bool(envelope.recovery.eligible),reason:text(envelope.recovery.reason,600),
+      nextAction:text(envelope.recovery.nextAction,500),
+      accuracy:number(envelope.recovery.accuracy),evidenceCount:number(envelope.recovery.evidenceCount),
+      weakSkills:list(envelope.recovery.weakSkills,6).map(x=>text(x,180)).filter(Boolean)
+    }:null,
     recentExams:list(envelope.recentExams,3).map(x=>({date:text(x?.date,20),type:text(x?.type,40),name:text(x?.name,160),net:number(x?.net)})),
     recentMistakes:list(envelope.recentMistakes,6).map(x=>({subject:text(x?.subject,120),topic:text(x?.topic,180),cause:text(x?.cause,180),reviewDate:text(x?.reviewDate,20)})),
     recentLogs:list(envelope.recentLogs,8).map(x=>({date:text(x?.date,20),subject:text(x?.subject,120),minutes:number(x?.minutes),questions:number(x?.questions),title:text(x?.title,180),outcome:text(x?.outcome,40),difficulty:text(x?.difficulty,40),correct:number(x?.correct),wrong:number(x?.wrong)})),

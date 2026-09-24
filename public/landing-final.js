@@ -76,7 +76,7 @@
     links.append(home,how,features,plans,comments,faq);
 
     const actions = el('div','v6-nav-actions');
-    const workspace = button('Giriş Yap','paid-start','v6-outline-btn');
+    const workspace = button('Giriş Yap',null,'v6-outline-btn',{accountAction:'login'});
     const start = button('Ücretsiz Başla →','paid-start','v6-gradient-btn');
     actions.append(workspace,start);
 

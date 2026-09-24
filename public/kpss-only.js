@@ -134,7 +134,7 @@
         if (!stage.startsWith('KPSS')) card.remove();
       });
       const kpssSubjects = (window.RotaCatalog?.subjects || []).filter((subject) => subject.exam === PRIMARY_EXAM);
-      const summary = document.querySelector('.academy-summary');
+      const summary = document.querySelector('.academy-summary:not([data-internal-question-library])');
       const stats = summary?.querySelectorAll('.academy-mini-stats > div') || [];
       if (stats[0]) {
         setText(stats[0].querySelector('strong'), String(kpssSubjects.length));

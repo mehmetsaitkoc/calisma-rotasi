@@ -91,7 +91,7 @@ for(const phrase of ['Beta paket tasarımı','Fiyatlar test amaçlıdır','Örne
 assert.ok(!html.includes('rota-plus:visual-demo'),'Premium UI must not trust sessionStorage as an entitlement authority');
 assert.ok(!html.includes('data-action="paid-tier"'),'Premium UI must not expose a self-service tier switch');
 assert.ok(!html.includes('Plus görünümünü dene'),'Pricing UI must not visually grant Plus before account/payment entitlement exists');
-assert.ok(html.includes("fetch('/api/entitlements'"),'Premium UI must load its entitlement from the server boundary');
+assert.ok(html.includes("window.RotaAccount.request('/api/entitlements'"),'Premium UI must load its entitlement from the server boundary');
 assert.ok(html.includes("featureEnabled('advanced_teacher_insights')"),'Advanced teacher continuations must obey the central feature policy');
 assert.ok(html.includes('window.RotaKpssPractice?.topicSets'),'KPSS topic practices must extend the existing mini catalog without replacing it');
 assert.ok(html.includes('topicBreakdown'),'Section exam results must preserve topic-level evidence for the route engine');
@@ -107,5 +107,5 @@ for(const phrase of ['RAPOR + TREND + ANALİZ','Zaman içindeki desenini de gör
   assert.ok(html.includes(phrase),'Plus value proposition must match implemented premium capabilities: '+phrase);
 }
 
-assert.ok(!html.includes("['teacher','Rota Hoca','spark']"),'Rota Hoca must not remain in the primary KPSS navigation');
+assert.ok(html.includes("['teacher','Rota Hoca','mic']"),'Rota Hoca must be reachable in the primary KPSS navigation');
 console.log('Premium UI contract passed: living UI + server-sourced Free/Plus gates + polished user copy + honest empty report states');

@@ -95,10 +95,10 @@ assert.ok(
   'V3 must use the approved mountain/highlights/quote visual direction'
 );
 assert.ok(
-  js.includes('removeTeacherUi()') &&
+  !js.includes('function removeTeacherUi') &&
   js.includes('Bu Hafta Öne Çıkan Konular') &&
   !js.includes('function ensureTeacherCard'),
-  'Approved KPSS dashboard must remove Rota Hoca and expose the real-plan highlights card'
+  'Approved dashboard preserves the real-plan highlights and keeps the restored Rota Hoca reachable'
 );
 assert.ok(
   js.includes('startPreviewTimer(root, hero)') &&

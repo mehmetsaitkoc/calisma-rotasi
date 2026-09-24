@@ -208,7 +208,7 @@ try{
   assert.ok(await page.locator('.pnx3-goals-card').isVisible(),'Today must expose the KPSS goals card');
   assert.ok(await page.locator('.pnx3-highlights-card').isVisible(),'Today must expose the KPSS highlights card');
   assert.ok(await page.locator('.pnx3-highlights-list > button').count(),'Weekly highlights must be populated from the real route plan');
-  assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must be removed');
+  assert.ok(await page.locator('.sidebar [data-view="teacher"]').isVisible(),'Rota Hoca navigation must be visible');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(),'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(),'Today must expose the daily quote card');
   assert.equal(await page.locator('.pnx3-quote-card .pnx3-quote-kicker').count(),1,'Daily quote must have one kicker layer');
@@ -224,6 +224,11 @@ try{
   await page.locator('.route-list').evaluate(el=>{el.scrollTop=0;});
   await page.evaluate(()=>window.scrollTo(0,0));
   await page.screenshot({path:OUT+'/today-1512.png',fullPage:false});
+  await navigateDesktop(page,'teacher');
+  assert.ok(await page.locator('.content [data-account-action="login"]').isVisible(),'Guest Rota Hoca must expose a visible login action');
+  await noOverflow(page,'Rota Hoca desktop');
+  await page.screenshot({path:OUT+'/rota-hoca-1512.png',fullPage:false});
+  await navigateDesktop(page,'today');
 
   // Initial screen, phone to desktop: check real populated data, not a static mockup.
   for(const width of [320,375,390,430,768,1024,1512]){

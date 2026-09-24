@@ -4,7 +4,7 @@ const SYNC=root.RotaAccountSync, ACTIVE='calisma-rotasi:account-active:v1';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const escape=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let adapter,user=null,csrf='',nativeToken='',cache=null,cacheStamp=null,epoch=0,busy=false,timer=0,status='guest',problem='',conflict=null,guest=null,localOnly=false;
+let adapter,user=null,csrf='',nativeToken='',cache=null,cacheStamp=null,epoch=0,busy=false,timer=0,status='guest',problem='',conflict=null,guest=null,localOnly=root.RotaWebBeta===true;
 let resolveReady;const ready=new Promise(resolve=>{resolveReady=resolve;});
 function read(key){try{return JSON.parse(localStorage.getItem(key)||'null');}catch{return null;}}
 function write(key,value){localStorage.setItem(key,JSON.stringify(value));}
@@ -150,13 +150,13 @@ function localOnlyPanel(){
  adapter.modal('Ücretsiz Web Beta',`<p class="dialog-desc">Çalışma Rotası'nı hemen kullanabilirsin. Bu beta sürümünde çalışmaların bu tarayıcıda yerel olarak saklanır; hesap ve cihazlar arası eşitleme kalıcı sunucu depolaması açıldığında etkinleşecek.</p><div class="notice mt"><strong>Önemli:</strong> Tarayıcı verilerini temizlersen yerel kayıtların silinebilir. Cihaz değiştirmeden veya verileri temizlemeden önce yedek indir.</div><div class="button-row mt"><button class="btn primary" data-account-action="backup">Cihaz yedeğini indir</button><a class="btn ghost" href="/privacy.html" target="_blank" rel="noopener">Gizlilik</a></div>`);
 }
 function accountPanel(){
- if(localOnly&&!user)return localOnlyPanel();
+ if((localOnly||root.RotaWebBeta===true)&&!user){localOnly=true;return localOnlyPanel();}
  if(!user)return loginPanel('login');
  const labels={synced:'Hesabınla eşitlendi',syncing:'Eşitleniyor',pending:'Eşitleme bekliyor',offline:'Çevrimdışı kayıt',conflict:'Çakışma kontrolü gerekiyor',expired:'Yeniden giriş gerekli','storage-error':'Cihaz kaydı yapılamadı'};
  adapter.modal('Hesabım',`<p><strong>${escape(user.name)}</strong><br>${escape(user.email)}</p><p role="status" class="notice mt">${escape(labels[status]||status)}${problem?'<br>'+escape(problem):''}</p><div class="button-row mt">${status==='expired'?'<button class="btn primary" data-account-action="login">Tekrar giriş yap</button>':'<button class="btn primary" data-account-action="sync">Şimdi eşitle</button><button class="btn ghost" data-account-action="refresh">Oturumu yenile</button>'}${!user.emailVerified?'<button class="btn ghost" data-account-action="verify">E-postamı doğrula</button>':''}<button class="btn ghost" data-account-action="backup">Cihaz yedeğini indir</button><button class="btn ghost" data-account-action="export">Hesap verilerimi indir</button></div>${guest?'<div class="notice mt">Bu cihazdaki eski yerel çalışman henüz bu hesaba aktarılmadı.<button class="btn ghost mt" data-account-action="import">Eski çalışmamı hesabıma aktar</button></div>':''}${conflict?'<button class="btn primary mt" data-account-action="conflicts">Değişen kayıtları karşılaştır</button>':''}<div class="button-row mt"><button class="btn ghost" data-account-action="logout">Çıkış yap</button><button class="btn danger" data-account-action="delete-prompt">Hesabımı sil</button></div><p class="form-error" role="alert" id="account-error"></p>`);
 }
 function loginPanel(mode='login'){
- if(localOnly)return localOnlyPanel();
+ if(localOnly||root.RotaWebBeta===true){localOnly=true;return localOnlyPanel();}
  const register=mode==='register';
  adapter.modal(register?'Hesap oluştur':'Hesabına giriş yap',`<form id="account-form" data-mode="${mode}">${register?'<label class="field">Adın<input name="name" maxlength="60" autocomplete="name" required></label>':''}<label class="field mt">E-posta<input name="email" type="email" maxlength="254" autocomplete="email" required></label><label class="field mt">Parola<input name="password" type="password" minlength="12" maxlength="128" autocomplete="${register?'new-password':'current-password'}" required></label>${!register?`<p class="mt"><a href="${escape(publicAccountUrl('account-action.html','recovery'))}"${root.RotaNative?.isNative?' target="_blank" rel="noopener"':''}>Şifremi unuttum</a></p>`:''}<p class="muted small mt">Çalışmaların yalnız kendi hesabında saklanır. Eski yerel kayıtlar iznin olmadan hesaba aktarılmaz.</p>${register?`<p class="muted small mt"><a href="${escape(publicAccountUrl('privacy.html'))}" target="_blank" rel="noopener">Gizlilik ve veri kullanımı</a></p>`:''}<div class="form-error" role="alert" id="account-error"></div><div class="button-row"><button class="btn primary" type="submit">${register?'Hesap oluştur':'Giriş yap'}</button><button class="btn ghost" type="button" data-account-action="${register?'login':'register'}">${register?'Hesabım var':'Hesap oluştur'}</button></div></form>`);
 }
@@ -172,7 +172,7 @@ function assignPath(data,path,value,deleted){
  else if(deleted)delete node[last];else node[last]=clone(value);
 }
 async function action(name){
- if(localOnly&&(name==='login'||name==='register'||name==='open'))return localOnlyPanel();
+ if((localOnly||root.RotaWebBeta===true)&&(name==='login'||name==='register'||name==='open')){localOnly=true;return localOnlyPanel();}
  if(name==='login'||name==='register')return loginPanel(name);
  if(name==='open')return accountPanel();
  if(name==='backup')return downloadLocal();
@@ -215,5 +215,5 @@ document.addEventListener('submit',event=>{
 root.addEventListener('online',()=>{if(user)void flush();else if(adapter&&!localOnly)void boot();});
 root.addEventListener('pagehide',()=>{if(user&&cache)try{persist();}catch{}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user)void flush();});
-root.RotaAccount=Object.freeze({request,json,changed,flush,ready,open:accountPanel,login:loginPanel,get user(){return user?{...user}:null;},get status(){return status;},get available(){return !localOnly;},bind(value){if(adapter)throw Error('Hesap bağlantısı zaten kurulu.');adapter=value;void boot();}});
+root.RotaAccount=Object.freeze({request,json,changed,flush,ready,open:accountPanel,login:loginPanel,get user(){return user?{...user}:null;},get status(){return status;},get available(){return !(localOnly||root.RotaWebBeta===true);},bind(value){if(adapter)throw Error('Hesap bağlantısı zaten kurulu.');adapter=value;void boot();}});
 })(window);

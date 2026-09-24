@@ -76,6 +76,7 @@ try{
   await page.locator('.v6-main-cta').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
   assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must not exist in Web Beta');
+  assert.equal(await page.locator('.preview-bar').count(),0,'Web Beta must not expose the development preview strip');
   const onboardingCopy=(await page.locator('body').innerText())||'';
   assert.ok(!/Rota Hoca|\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b|149\s*₺/i.test(onboardingCopy),'Onboarding must not leak retired product or unfinished pricing copy');
   assert.equal(await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),0,'Onboarding must stay free of unfinished billing surfaces');

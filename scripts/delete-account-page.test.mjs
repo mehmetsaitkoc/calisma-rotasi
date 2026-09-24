@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const script=fs.readFileSync(new URL('../public/delete-account.js',import.meta.url),'utf8'),html=fs.readFileSync(new URL('../public/delete-account.html',import.meta.url),'utf8'),privacy=fs.readFileSync(new URL('../public/privacy.html',import.meta.url),'utf8');
+assert.ok(html.includes('id="delete-account-form"'));assert.ok(privacy.includes('mehmetsaitkoc113@gmail.com'));assert.ok(html.includes('mehmetsaitkoc113@gmail.com'));assert.ok(html.includes('/privacy.html'));
+const handlers={},nodes={},calls=[],storage={'calisma-rotasi:account:v1:student-a':'A','calisma-rotasi:v1:account:student-a:rota-hoca:v1':'A history','calisma-rotasi:account:v1:student-b':'B','guest':'guest','calisma-rotasi:account-active:v1':JSON.stringify({id:'student-a'})};
+Object.defineProperties(storage,{getItem:{value:key=>storage[key]??null},removeItem:{value:key=>delete storage[key]}});
+function node(id){return nodes[id]??=({hidden:false,textContent:'',disabled:false,addEventListener(type,handler){handlers[id+':'+type]=handler;},querySelector(){return node(id+'-button');},reset(){this.didReset=true;}});}
+let data={password:'fixture-password-long',confirmation:'wrong'},deleteSuccess=false;
+const context={console,JSON,URL:{createObjectURL:()=> 'blob:fixture',revokeObjectURL(){}},Blob,AbortSignal,setTimeout:()=>0,localStorage:storage,FormData:class{get(key){return data[key];}},document:{getElementById:node,createElement:()=>({click(){}})},fetch:async(path,options)=>{calls.push({path,options});let status=200,body={};if(path==='/api/auth/me')body={user:{id:'student-a',name:'<img onerror=attack>',email:'a@example.test'},csrfToken:'csrf-a'};else if(path==='/api/account'){status=deleteSuccess?200:401;body=deleteSuccess?{ok:true}:{error:'Şifre yanlış.'};}else if(path==='/api/account/export')body={user:{id:'student-a'},data:{workspace:{}}};return {ok:status===200,status,json:async()=>body};}};
+vm.runInNewContext(script,context);await new Promise(resolve=>setImmediate(resolve));
+assert.equal(nodes['account-name'].textContent,'<img onerror=attack> · a@example.test','Account identity is assigned as text, not injected HTML');assert.equal(nodes['delete-panel'].hidden,false);
+const event={preventDefault(){},currentTarget:node('delete-account-form')};await handlers['delete-account-form:submit'](event);assert.equal(calls.filter(x=>x.path==='/api/account').length,0,'Literal confirmation is required before any delete request');
+data.confirmation='SİL';await handlers['delete-account-form:submit'](event);assert.equal(storage.guest,'guest');assert.equal(storage['calisma-rotasi:account:v1:student-a'],'A','A failed reauthentication does not clear local data');
+const attempted=calls.at(-1);assert.equal(attempted.options.headers['X-Rota-Account-Id'],'student-a');assert.equal(attempted.options.headers['X-CSRF-Token'],'csrf-a');assert.equal(attempted.options.credentials,'include');
+deleteSuccess=true;await handlers['delete-account-form:submit'](event);assert.equal(storage['calisma-rotasi:account:v1:student-a'],undefined);assert.equal(storage['calisma-rotasi:v1:account:student-a:rota-hoca:v1'],undefined);assert.equal(storage['calisma-rotasi:account:v1:student-b'],'B');assert.equal(storage.guest,'guest');assert.equal(nodes['delete-panel'].hidden,true);assert.ok(nodes.status.textContent.includes('silindi'));
+assert.ok(!Object.values(storage).join('').includes('fixture-password-long'));
+console.log('Standalone deletion page passed: login-bound identity, explicit confirmation, password failure preservation, CSRF/account binding, own-cache cleanup and contact/privacy links');

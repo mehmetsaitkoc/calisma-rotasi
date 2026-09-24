@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const PORT=Number(process.env.SERVER_CONTRACT_PORT||8897);
 const BASE='http://127.0.0.1:'+PORT;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'rota-server-contract-'));
+let sessionToken='';
 
 async function waitServer(){
   for(let i=0;i<80;i++){
@@ -13,14 +18,14 @@ async function waitServer(){
   throw new Error('Server contract fixture did not become ready.');
 }
 async function jsonPost(path,body,headers={'content-type':'application/json'}){
-  const r=await fetch(BASE+path,{method:'POST',headers,body:typeof body==='string'?body:JSON.stringify(body)});
+  const r=await fetch(BASE+path,{method:'POST',headers:{...(sessionToken?{authorization:'Bearer '+sessionToken}:{}),...headers},body:typeof body==='string'?body:JSON.stringify(body)});
   let data={};try{data=await r.json();}catch{}
   return {status:r.status,data};
 }
 
 const server=spawn(process.execPath,['server.mjs'],{
   cwd:process.cwd(),
-  env:{...process.env,PORT:String(PORT),HOST:'127.0.0.1',OPENAI_API_KEY:'',RENDER:'true'},
+  env:{...process.env,PORT:String(PORT),HOST:'127.0.0.1',OPENAI_API_KEY:'',RENDER:'true',NODE_ENV:'test',ROTA_DB_PATH:path.join(temporary,'runtime.sqlite'),ROTA_APP_ORIGIN:BASE},
   stdio:['ignore','pipe','pipe']
 });
 let log='';
@@ -29,10 +34,16 @@ server.stderr.on('data',d=>{log+=d;});
 
 try{
   await waitServer();
+  const anonymous=await jsonPost('/api/teacher',{question:'Anonymous fixture'});
+  assert.equal(anonymous.status,401,'Teacher requests require an authenticated account before provider or fallback work');
+  const registration=await jsonPost('/api/auth/register',{email:'runtime@example.test',password:'Runtime-fixture-123!',name:'Runtime test',sessionTransport:'bearer'});
+  assert.equal(registration.status,201);
+  sessionToken=registration.data.sessionToken;
 
   const landingResponse=await fetch(BASE+'/');
   const landingHtml=await landingResponse.text();
   assert.equal(landingResponse.status,200,'Landing page must remain servable');
+  for(const route of ['/privacy.html','/delete-account.html','/delete-account.js'])assert.equal((await fetch(BASE+route)).status,200,'Published account links must resolve: '+route);
   assert.match(landingHtml,/landing-final\.css/,'Landing page must load the final landing CSS layer');
   assert.match(landingHtml,/landing-final\.js/,'Landing page must load the final landing DOM layer');
   const premiumCss=await fetch(BASE+'/landing-final.css');
@@ -55,7 +66,7 @@ try{
   assert.equal(health.teacherPolicy.rateLimitPerMinute,20);
   assert.equal(health.teacherPolicy.maxBodyBytes,7*1024*1024,'Health must expose the actual request body ceiling');
   assert.equal(health.teacherPolicy.maxOutputTokens,1400);
-  assert.equal(health.teacherPolicy.contextSchemaVersion,2,'Health must expose the teacher context schema version');
+  assert.equal(health.teacherPolicy.contextSchemaVersion,3,'Health must expose the teacher context schema version');
   assert.ok(!Object.hasOwn(health,'apiKey'),'Health must never expose an API key');
   assert.ok(!JSON.stringify(health).includes('sk-'),'Health must not leak key-like secrets');
 
@@ -79,7 +90,7 @@ try{
 
   const boundedContext=await jsonPost('/api/teacher',{question:'Bağlamı kontrol et.',studentContext:{contextVersion:2,unknownSecret:'PRIVATE-CONTEXT-LEAK',todayPlan:Array.from({length:20},(_,i)=>({title:'Görev '+i,reason:'x'.repeat(1200)})),recentLogs:Array.from({length:20},(_,i)=>({title:'Log '+i,note:'PRIVATE-NOTE-'+i}))}});
   assert.equal(boundedContext.status,200,'Bounded teacher context must remain accepted in unavailable mode');
-  assert.equal(boundedContext.data.meta?.contextVersion,2);
+  assert.equal(boundedContext.data.meta?.contextVersion,3);
   assert.ok(!JSON.stringify(boundedContext.data).includes('PRIVATE-CONTEXT-LEAK'),'Unknown top-level teacher context must not leak into responses');
   assert.ok(!JSON.stringify(boundedContext.data).includes('PRIVATE-NOTE-'),'Nested free-form context must not be echoed into unavailable responses');
 
@@ -113,7 +124,7 @@ try{
 
   const invalidJson=await jsonPost('/api/teacher','{bad json');
   assert.equal(invalidJson.status,400);
-  assert.match(invalidJson.data.error||'',/Geçersiz JSON/i);
+  assert.match(invalidJson.data.error||'',/JSON/i);
 
   const oversizedBody=JSON.stringify({question:'x'.repeat(7*1024*1024+1024)});
   const oversized=await jsonPost('/api/teacher',oversizedBody);
@@ -140,5 +151,6 @@ try{
   server.kill('SIGTERM');
   await sleep(100);
   if(server.exitCode===null)server.kill('SIGKILL');
+  fs.rmSync(temporary,{recursive:true,force:true});
   if(process.exitCode)console.error(log);
 }

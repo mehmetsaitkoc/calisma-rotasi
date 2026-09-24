@@ -27,6 +27,8 @@ jobs:
       - run: npm ci
       - name: Contracts, route engine and question bank
         run: npm test
+      - name: Build static Web Beta
+        run: npm run web:static
       - name: Account, security, recovery and native contracts
         run: |
           npm run accounts:test
@@ -37,6 +39,7 @@ jobs:
       - name: Sequential isolated browser scenarios
         run: |
           node scripts/web-beta-browser.test.mjs
+          node scripts/web-static-browser.test.mjs
           node scripts/recovery-browser.test.mjs
           node scripts/web-beta-share-readiness.mjs
           npm run accounts:browser

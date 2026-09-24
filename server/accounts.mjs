@@ -35,7 +35,9 @@ function createLocalOnlyAccounts(env=process.env){
 }
 
 export function createAccounts(env=process.env){
-  if(env.ROTA_ACCOUNTS_MODE==='local-only')return createLocalOnlyAccounts(env);
+  const requestedMode=env.ROTA_ACCOUNTS_MODE||'';
+  const renderWithoutDurableDb=env.RENDER==='true'&&!env.ROTA_DB_PATH;
+  if(requestedMode==='local-only'||(requestedMode!=='persistent'&&renderWithoutDurableDb))return createLocalOnlyAccounts(env);
   const production=env.RENDER==='true'||env.NODE_ENV==='production',store=openStore(env),db=store.db;
   const allowed=new Set((env.ROTA_ALLOWED_ORIGINS||'').split(',').map(x=>x.trim()).filter(Boolean));
   const primary=env.ROTA_APP_ORIGIN||env.RENDER_EXTERNAL_URL||'';

@@ -66,14 +66,11 @@
     const how = anchor('Nasıl Çalışır?');
     const features = anchor('Özellikler');
     const plans = anchor('Ücretsiz Beta');
-    const comments = anchor('Yorumlar');
-    const faq = anchor('SSS');
+    home.addEventListener('click',()=>welcome.scrollIntoView({behavior:'smooth',block:'start'}));
     how.addEventListener('click',()=>welcome.querySelector('.v6-feature-strip')?.scrollIntoView({behavior:'smooth',block:'center'}));
     features.addEventListener('click',()=>welcome.querySelector('.v6-dashboard')?.scrollIntoView({behavior:'smooth',block:'center'}));
-    comments.addEventListener('click',()=>welcome.querySelector('.v6-trust')?.scrollIntoView({behavior:'smooth',block:'center'}));
-    faq.addEventListener('click',()=>welcome.querySelector('.v6-trust')?.scrollIntoView({behavior:'smooth',block:'center'}));
     plans.addEventListener('click',()=>welcome.querySelector('.v6-prep-grid')?.scrollIntoView({behavior:'smooth',block:'center'}));
-    links.append(home,how,features,plans,comments,faq);
+    links.append(home,how,features,plans);
 
     const actions = el('div','v6-nav-actions');
     const workspace = button('Web Beta',null,'v6-outline-btn',{accountAction:'open'});
@@ -109,8 +106,8 @@
     start.addEventListener('click',()=>document.querySelector('.v6-prep-card.kpss')?.click());
     const video = el('button','v6-video-btn');
     video.type='button';
-    const play = el('span','v6-play'); play.append(icon('play'));
-    video.append(play,el('strong','', '1 Dakikada Keşfet'));
+    const play = el('span','v6-play'); play.append(icon('chart'));
+    video.append(play,el('strong','', 'Örnek Paneli Gör'));
     video.addEventListener('click',()=>document.querySelector('.v6-dashboard')?.scrollIntoView({behavior:'smooth',block:'center'}));
     actions.append(start,video);
 
@@ -119,7 +116,7 @@
       ['user','Kişiye Özel Plan',true],
       ['chart','Akıllı Analiz',true],
       ['refresh','Sürekli Takip',true],
-      ['star','Gerçek Sonuç',false]
+      ['refresh','3 + 7 Gün Tekrar',false]
     ].forEach(([ic,t,proof])=>{
       const item=el('span','v6-feature-item'+(proof?' premium-proof-item':'')); item.append(icon(ic),el('b','',t)); features.append(item);
     });
@@ -296,7 +293,7 @@
     const cards=el('div','v6-prep-grid');
     cards.classList.add('kpss-only-grid');
     cards.append(
-      prepCard('kpss','KPSS Rotanı Kur','Lisans GY–GK için kişisel planını\\noluştur ve çalıştıkça rotanı geliştir.','kpss')
+      prepCard('kpss','KPSS Rotanı Kur','Lisans GY–GK için kişisel planını oluştur ve çalıştıkça rotanı geliştir.','kpss')
     );
     lower.append(cards,trust());
 

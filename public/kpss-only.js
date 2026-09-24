@@ -37,11 +37,11 @@
     if (redirecting) return;
     redirecting = true;
     try {
-      let card = document.querySelector('[data-action="choose-exam"][data-exam="kpss"]');
+      let card = document.querySelector('.v6-prep-card[data-action="choose-exam"][data-exam="kpss"]');
       if (!card) {
         const select = document.querySelector('[data-action="select"]');
         if (select) select.click();
-        card = document.querySelector('[data-action="choose-exam"][data-exam="kpss"]');
+        card = document.querySelector('.v6-prep-card[data-action="choose-exam"][data-exam="kpss"]');
       }
       if (card) card.click();
     } finally {

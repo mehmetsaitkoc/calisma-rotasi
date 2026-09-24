@@ -732,6 +732,15 @@ try {
   await assertCleanRender(page, 'post onboarding today');
   await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
+
+  // Public beta scope must stay consistently KPSS-only, including secondary settings.
+  await navigate(page,'settings');
+  const settingsCopy=((await page.locator('#app').innerText())||'').trim();
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/i.test(settingsCopy),'Settings must not leak retired YKS-family product copy');
+  assert.ok(!/Rota Hoca/i.test(settingsCopy),'Settings must not expose retired Rota Hoca');
+  assert.match(settingsCopy,/KPSS/i,'Settings must identify the active KPSS scope');
+  await navigate(page,'today');
+
   const workspaceV3 = await appState(page);
   assert.equal(workspaceV3.value.workspaces.kpss.schemaVersion,3,'Fresh onboarding must use workspace schema v3');
   assert.match(workspaceV3.value.workspaces.kpss.sync?.workspaceId||'',/^ws-kpss-[A-Za-z0-9-]{8,}$/,'Workspace must expose a stable sync-ready identity');

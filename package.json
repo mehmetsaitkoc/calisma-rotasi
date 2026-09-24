@@ -32,7 +32,8 @@
     "personal-sources:test": "node scripts/personal-source-compat.test.mjs",
     "android:instrumentation": "cd android && ./gradlew --no-daemon --console=plain :app:connectedDebugAndroidTest",
     "accounts:browser": "node scripts/account-client-browser.test.mjs && node scripts/account-actions-browser.test.mjs",
-    "onboarding:browser": "node scripts/onboarding-resume-browser.test.mjs"
+    "onboarding:browser": "node scripts/onboarding-resume-browser.test.mjs",
+    "factory:test": "node scripts/local-business-factory.test.mjs"
   },
   "engines": {
     "node": ">=24.21.0 <25"

@@ -60,6 +60,11 @@ try{
   assert.equal(landingResponse.headers.get('x-frame-options'),'SAMEORIGIN');
   assert.equal(landingResponse.headers.get('referrer-policy'),'no-referrer');
   assert.match(landingResponse.headers.get('permissions-policy')||'',/camera=\(\)/);
+  const csp=landingResponse.headers.get('content-security-policy')||'';
+  assert.match(csp,/object-src 'none'/);
+  assert.match(csp,/base-uri 'self'/);
+  assert.match(csp,/form-action 'self'/);
+  assert.match(csp,/frame-ancestors 'self'/);
   const html=await landingResponse.text();
 
   const bundleTags=[...html.matchAll(/<script\b[^>]*\bsrc=["'](\/runtime\/kpss-bundle\/([a-z0-9-]+)\.js)["'][^>]*>/gi)];

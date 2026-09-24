@@ -350,7 +350,7 @@ WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE_BUNDLED.replace(
   '$1$2'
 );
 const WEB_BETA_FLAG=accounts.mode==='local-only'?'<script>window.RotaWebBeta=true</script>':'';
-const WEB_PUBLIC_META='<meta name="theme-color" content="#071225"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta property="og:title" content="Çalışma Rotası · Sana Özel KPSS Rotası"><meta property="og:description" content="Hedefine, seviyene ve çalışma performansına göre değişen kişisel KPSS çalışma rotası."><meta property="og:type" content="website">';
+const WEB_PUBLIC_META='<meta name="theme-color" content="#071225"><link rel="icon" href="/favicon.svg" type="image/svg+xml">';
 const SOCIAL_ORIGIN=(()=>{
   const candidate=process.env.ROTA_APP_ORIGIN||process.env.RENDER_EXTERNAL_URL||'';
   try{

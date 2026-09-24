@@ -63,6 +63,11 @@ try{
   const ent=await (await fetch(BASE+'/api/entitlements')).json();
   assert.equal(ent.accountRequired,false);
 
+  const compressed=await fetch(BASE+'/app-premium-next.css',{headers:{'accept-encoding':'gzip'}});
+  assert.equal(compressed.status,200);
+  assert.equal(compressed.headers.get('content-encoding'),'gzip','Static text assets should be compressed for mobile delivery');
+  assert.match(compressed.headers.get('cache-control')||'',/max-age=300/);
+
   console.log('Web beta mode passed: Render starts without ephemeral accounts, core web stays available, account APIs fail honestly.');
 } finally {
   await stop();

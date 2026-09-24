@@ -65,6 +65,7 @@ try{
   browser=await chromium.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},locale:'tr-TR',timezoneId:'Europe/Istanbul'});
   const page=await context.newPage();
+  await page.clock.install({time:new Date('2026-09-24T09:00:00+03:00')});
   const pageErrors=[],consoleErrors=[];
   page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)));
   page.on('console',m=>{if(m.type()==='error'&&!/favicon/i.test(m.text()))consoleErrors.push(m.text());});
@@ -103,9 +104,36 @@ try{
   await noOverflow(page,'390px onboarding');
   await page.screenshot({path:'work/production-evidence/web-beta-onboarding-390.png',fullPage:true});
 
+  // Finish the real KPSS onboarding to audit the first authenticated-looking product surface.
+  await page.locator('#setup-wizard-form button[type="submit"]').click();
+  await page.locator('#setup-wizard-form [name="targetScore"][value="85"]').evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));});
+  await page.locator('#setup-wizard-form [name="targetNet"]').fill('82');
+  await page.locator('#setup-wizard-form [name="dailyMinutes"][value="240"]').evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));});
+  await page.locator('#setup-wizard-form button[type="submit"]').click();
+  await page.locator('#setup-wizard-form [name="currentNetApprox"][value="50"]').evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));});
+  await page.locator('#setup-wizard-form [name="studyHabit"][value="yes"]').evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));});
+  await page.locator('#setup-wizard-form button[type="submit"]').click();
+  await page.locator('[data-action="summary-build"]').click();
+  await page.locator('.route-building-card').waitFor({state:'visible'});
+  await page.clock.fastForward(5000);
+  await page.locator('.app-shell').waitFor({state:'visible'});
+  await page.locator('.route-task').first().waitFor({state:'visible'});
+  await noOverflow(page,'390px Today');
+
+  const todayCopy=((await page.locator('body').innerText())||'');
+  assert.ok(!/Rota Hoca/i.test(todayCopy),'Today must not mention retired Rota Hoca');
+  assert.ok(!/\\bYKS\\b|\\bTYT\\b|\\bAYT\\b|\\bYDT\\b/i.test(todayCopy),'Today must stay KPSS-only');
+  assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Teacher navigation must be absent');
+  assert.equal(await page.locator('[data-action="paid-membership"]').count(),0,'Inactive membership controls must be absent in Web Beta');
+  assert.equal(await page.locator('.sidebar-plus').count(),0,'Inactive Plus promo must be absent in Web Beta');
+  assert.equal(await page.locator('.topbar-upgrade').count(),0,'Inactive Plus topbar CTA must be absent in Web Beta');
+  assert.equal(await page.locator('[data-view="monthly-report"]').count(),0,'Unavailable monthly-report upsell must be absent in Web Beta');
+  assert.match(((await page.locator('[data-account-status]').innerText())||''),/Web Beta|Yerel kayıt/i,'Account status must explain local-only beta storage');
+  await page.screenshot({path:'work/production-evidence/web-beta-today-390.png',fullPage:true});
+
   assert.deepEqual(pageErrors,[],'Page errors:\n'+pageErrors.join('\n'));
   assert.deepEqual(consoleErrors,[],'Console errors:\n'+consoleErrors.join('\n'));
-  console.log('Web beta share readiness passed: mobile landing + honest local storage + clean KPSS onboarding + no retired Rota Hoca.');
+  console.log('Web beta share readiness passed: landing + onboarding + Today + local-only storage + KPSS-only/no-dead-sales surfaces.');
 } finally {
   if(browser)await browser.close();
   await stop();

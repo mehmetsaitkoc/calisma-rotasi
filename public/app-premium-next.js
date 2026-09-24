@@ -832,6 +832,15 @@
     }
   }
 
+  function removeWebBetaUnavailableUi() {
+    if (!window.RotaWebBeta) return;
+    document.querySelectorAll('.sidebar-plus,[data-action="paid-membership"],.topbar-upgrade,[data-view="monthly-report"]').forEach((node) => {
+      const wrapper = node.closest('.nav-item,.sidebar-plus');
+      if (wrapper) wrapper.remove();
+      else node.remove();
+    });
+  }
+
   function removeTeacherUi() {
     const teacherSurface = document.querySelector('.teacher-page,[data-premium-surface="teacher"]');
     if (teacherSurface) {
@@ -935,6 +944,7 @@
     observer.disconnect();
     try {
       removeTeacherUi();
+      removeWebBetaUnavailableUi();
       const shell = document.querySelector('.app-shell');
       const header = document.querySelector('.route-v1-head[data-premium-surface="today"]');
       document.body.classList.toggle(BODY_CLASS, !!shell);

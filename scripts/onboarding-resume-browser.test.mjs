@@ -12,7 +12,7 @@ try{
  for(let i=0;i<100;i++){try{if((await fetch(BASE+'/api/health')).ok)break;}catch{}if(i===99)throw Error(output);await new Promise(r=>setTimeout(r,100));}
  browser=await chromium.launch({headless:true});const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(BASE,{waitUntil:'networkidle'});await page.evaluate(()=>RotaAccount.ready);
- await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();await page.locator('#setup-wizard-form [type=submit]').click();
+ await page.locator('.v6-main-cta[data-action="choose-exam"][data-exam="kpss"]').click();await page.locator('#setup-wizard-form [type=submit]').click();
  await page.reload({waitUntil:'networkidle'});await page.evaluate(()=>RotaAccount.ready);assert.equal(await page.locator('[name=targetNet]').count(),1,'Refresh resumes the goals stage');
  for(const [name,value] of [['targetScore','85'],['dailyMinutes','240']])await page.locator(`[name="${name}"][value="${value}"]`).evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));});
  await page.locator('[name=targetNet]').fill('82');await page.locator('#setup-wizard-form [type=submit]').click();

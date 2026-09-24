@@ -9,6 +9,8 @@ services:
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      - key: ROTA_ACCOUNTS_MODE
+        value: local-only
       - key: OPENAI_API_KEY
         sync: false
       - key: ROTA_AI_PROFILE

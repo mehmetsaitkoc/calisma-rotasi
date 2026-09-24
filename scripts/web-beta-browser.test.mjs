@@ -48,7 +48,10 @@ try{
 
   await page.goto(BASE+'/?fresh=1',{waitUntil:'domcontentloaded'});
   await page.locator('.welcome.premium-landing-final').waitFor({state:'visible'});
-  const resources=await page.evaluate(()=>performance.getEntriesByType('resource').map(entry=>entry.name));
+  const resourceStats=await page.evaluate(()=>performance.getEntriesByType('resource').map(entry=>({name:entry.name,transferSize:entry.transferSize||0,encodedBodySize:entry.encodedBodySize||0,decodedBodySize:entry.decodedBodySize||0})));
+  const resources=resourceStats.map(entry=>entry.name);
+  const totals=resourceStats.reduce((sum,entry)=>({transfer:sum.transfer+entry.transferSize,encoded:sum.encoded+entry.encodedBodySize,decoded:sum.decoded+entry.decodedBodySize}),{transfer:0,encoded:0,decoded:0});
+  console.log('Web Beta landing resource bytes:',JSON.stringify(totals));
   const individualQuestionRequests=resources.filter(url=>/\/questions\/kpss\/.+\/test-[1-4]\.js(?:\?|$)/.test(url));
   const bundleRequests=resources.filter(url=>/\/runtime\/kpss-bundle\/[a-z0-9-]+\.js(?:\?|$)/.test(url));
   assert.equal(individualQuestionRequests.length,0,'First landing load must not request individual KPSS test modules');

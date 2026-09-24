@@ -8,7 +8,34 @@ import { failure,readJson,digest,email,password,name,validateData,revision,mutat
 const scrypt=promisify(derive),COOKIE='rota_session',TTL=7*24*60*60*1000;
 const token=()=>randomBytes(32).toString('base64url');
 const publicUser=u=>({id:u.id,email:u.email,name:u.name,emailVerified:!!u.verified});
+function createLocalOnlyAccounts(env=process.env){
+  const features={accounts:false,emailVerification:false,passwordRecovery:false,mode:'local-only'};
+  const primary=env.ROTA_APP_ORIGIN||env.RENDER_EXTERNAL_URL||'';
+  function json(res,status,value){const bytes=Buffer.from(JSON.stringify(value));res.writeHead(status,{'content-type':'application/json; charset=utf-8','cache-control':'no-store','content-length':bytes.length});res.end(bytes);}
+  function permitted(req){
+    const origin=req.headers.origin;
+    if(!origin)return true;
+    if(!primary)return env.NODE_ENV!=='production'&&env.RENDER!=='true';
+    return origin===primary;
+  }
+  function cors(req,res){
+    if(req.headers.origin&&permitted(req)){res.setHeader('Access-Control-Allow-Origin',req.headers.origin);res.setHeader('Vary','Origin');}
+    if(req.method!=='OPTIONS')return false;
+    if(req.headers.origin&&!permitted(req)){json(res,403,{code:'ORIGIN_REJECTED',error:'Kaynak kabul edilmiyor.'});return true;}
+    res.writeHead(204,{'Access-Control-Allow-Methods':'GET,POST,PUT,DELETE,OPTIONS','Access-Control-Allow-Headers':'Authorization,Content-Type,X-CSRF-Token,X-Rota-Account-Id,Idempotency-Key','Access-Control-Max-Age':'600'});res.end();return true;
+  }
+  async function route(req,res){
+    const pathname=new URL(req.url,'http://localhost').pathname;
+    if(!pathname.startsWith('/api/auth/')&&!['/api/workspace','/api/account/export','/api/account'].includes(pathname))return false;
+    json(res,503,{code:'ACCOUNTS_UNAVAILABLE',error:'Web Beta şu anda bu tarayıcıda yerel kayıtla çalışıyor. Hesap ve cihazlar arası eşitleme kalıcı sunucu depolaması açıldığında etkinleştirilecek.',features});
+    return true;
+  }
+  const unavailable=()=>{throw failure(503,'ACCOUNTS_UNAVAILABLE','Web Beta hesabı ve bulut eşitlemesi henüz etkin değil. Çalışmaların bu cihazda tutulur.');};
+  return {available:false,mode:'local-only',features,route,cors,requireSession:unavailable,authenticate:()=>null,origin:unavailable,withAi:unavailable,close:()=>{},store:null,production:env.RENDER==='true'||env.NODE_ENV==='production'};
+}
+
 export function createAccounts(env=process.env){
+  if(env.ROTA_ACCOUNTS_MODE==='local-only')return createLocalOnlyAccounts(env);
   const production=env.RENDER==='true'||env.NODE_ENV==='production',store=openStore(env),db=store.db;
   const allowed=new Set((env.ROTA_ALLOWED_ORIGINS||'').split(',').map(x=>x.trim()).filter(Boolean));
   const primary=env.ROTA_APP_ORIGIN||env.RENDER_EXTERNAL_URL||'';

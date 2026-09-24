@@ -190,6 +190,8 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   if (expectView === 'plan') {
     await page.getByRole('heading', { name: 'Programım' }).waitFor({ state: 'visible' });
     assert.ok((await page.locator('.route-plan-card').count()) > 0, 'Rest-day onboarding must reveal the generated weekly route instead of an empty Today screen');
+    await page.locator('body.pnx-program-day-ready').waitFor({ state: 'attached' });
+    await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
   } else {
     await page.locator('.route-task').first().waitFor({ state: 'visible' });
     await page.locator('[data-premium-surface="today"]').waitFor({ state: 'visible' });

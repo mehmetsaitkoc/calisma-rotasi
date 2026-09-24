@@ -2,7 +2,7 @@
 'use strict';
 let user=null,csrf='';
 const status=document.getElementById('status');
-if(window.RotaWebBeta){
+if(globalThis.RotaWebBeta){
  document.getElementById('login-panel').hidden=true;
  document.getElementById('delete-panel').hidden=true;
  status.textContent='Web Beta şu anda hesap oluşturmuyor. Sunucuda silinecek bir hesabın yok; yerel çalışma kayıtlarını silmek için tarayıcının bu siteye ait verilerini temizle.';

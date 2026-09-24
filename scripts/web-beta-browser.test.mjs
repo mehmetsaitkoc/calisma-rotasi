@@ -76,9 +76,10 @@ try{
   assert.deepEqual(bankStats,{tests:256,questions:3072,branchExams:18,branchReadiness:6,sectionBlueprints:18},'Bundled web runtime must preserve the complete question bank and branch-exam registry');
 
   const visible=((await page.locator('body').innerText())||'');
-  assert.ok(!/Rota Hoca/i.test(await page.title()),'Browser title must not mention retired Rota Hoca');
+  assert.equal(await page.title(),'Çalışma Rotası · KPSS Web Beta','Public browser title must be the KPSS Web Beta title');
   const metaDescription=await page.locator('meta[name="description"]').getAttribute('content');
   assert.match(metaDescription||'',/KPSS/i,'Public meta description must be KPSS-specific');
+  assert.ok(!/YKS|TYT|AYT|YDT|Rota Hoca/i.test(metaDescription||''),'Public meta description must not leak retired product scope');
   assert.equal(await page.locator('link[rel="icon"][href="/favicon.svg"]').count(),1,'Public beta must expose the branded favicon');
   assert.equal(await page.locator('meta[name="theme-color"][content="#071225"]').count(),1,'Public beta must expose the branded browser theme color');
   assert.match((await page.locator('meta[property="og:title"]').getAttribute('content'))||'',/Çalışma Rotası/i,'Public beta must expose share metadata');

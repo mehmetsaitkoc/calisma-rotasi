@@ -70,7 +70,7 @@ try{
   assert.ok(visible.includes('Ücretsiz Web Beta'),'Landing must identify the current public beta honestly');
   assert.match(visible,/Çalışmaların bu tarayıcıda saklanır/i,'Mobile landing must disclose local-only storage before onboarding');
   assert.match(visible,/Safari\/Chrome/i,'Instagram-bound beta must recommend a stable browser for local persistence');
-  assert.equal(await page.locator('[data-exam="kpss"]').count(),1,'Landing must keep exactly one real KPSS product entry');
+  assert.equal(await page.locator('.v6-prep-card[data-exam="kpss"]').count(),1,'Landing must keep exactly one real KPSS product entry');
   assert.equal(await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),0,'Web Beta must not expose unfinished monetization controls');
 
   await page.getByRole('button',{name:/Beta bilgisi/}).click();

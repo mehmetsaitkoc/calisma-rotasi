@@ -130,6 +130,11 @@ async function logout(){
 }
 async function boot(){
  if(adapter.isPreview?.()){setStatus('guest');resolveReady();return;}
+ if(root.RotaWebBeta){
+  localOnly=true;rememberUser(null);
+  setStatus('local-only','Web Beta: çalışmaların bu tarayıcıda saklanır. Cihaz değiştirmeden önce yedek indir.');
+  resolveReady();return;
+ }
  try{
   await root.RotaNative?.ready;
   if(root.RotaNative?.isNative)nativeToken=await root.RotaNative.secureSession.get()||'';

@@ -148,7 +148,7 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await premiumWelcome.waitFor({ state: 'visible' });
   assert.equal(await page.locator('.premium-proof-item').count(), 3, 'Premium landing must render the three product-value signals');
   await page.locator('.premium-trust-strip').waitFor({ state: 'visible' });
-  await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
+  await page.locator('.v6-prep-card[data-action="choose-exam"][data-exam="kpss"]').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
 
   // Stage 1 · welcome
@@ -1299,7 +1299,7 @@ try {
   await desktopPage.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
   await desktopPage.locator('.welcome.premium-landing-final').waitFor({ state: 'visible' });
   assert.equal(await desktopPage.locator('[data-exam="yks"]').count(), 0, 'KPSS-only landing must not expose a YKS product control');
-  assert.equal(await desktopPage.locator('[data-exam="kpss"]').count(), 1, 'KPSS-only landing must keep one KPSS entry point');
+  assert.equal(await desktopPage.locator('.v6-prep-card[data-exam="kpss"]').count(), 1, 'KPSS-only landing must keep one KPSS entry point');
   await desktopPage.locator('.v6-main-cta').click();
   await desktopPage.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
   let desktopSnapshot = await appState(desktopPage);

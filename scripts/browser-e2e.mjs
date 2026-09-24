@@ -741,20 +741,11 @@ try {
   assert.match(settingsCopy,/KPSS/i,'Settings must identify the active KPSS scope');
   assert.equal(await page.locator('[data-action="paid-sample"]').count(),0,'Public beta must not expose the fake sample-panel entry');
 
-  const webBeta=await page.evaluate(()=>window.RotaWebBeta===true);
-  const pricingEntry=page.locator('[data-action="paid-pricing"]').first();
-  if(webBeta){
-    assert.equal(await pricingEntry.count(),0,'Web Beta must not expose inactive pricing controls');
-    assert.equal(await page.locator('[data-action="paid-membership"]').count(),0,'Web Beta must not expose inactive membership controls');
-  }else{
-    assert.ok(await pricingEntry.count(),'Pricing information must remain reachable outside Web Beta');
-    await pricingEntry.evaluate(node=>node.click());
-    await page.getByRole('heading',{name:/Ücretsiz başla/i}).waitFor({state:'visible'});
-    const pricingCopy=((await page.locator('#app').innerText())||'').trim();
-    assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/i.test(pricingCopy),'Pricing must stay KPSS-only');
-    assert.ok(!/Rota Hoca/i.test(pricingCopy),'Pricing must not advertise retired Rota Hoca');
-    await navigate(page,'today');
-  }
+  assert.equal(
+    await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-action="paid-membership"],[data-view="membership"]').count(),
+    0,
+    'Public Web Beta must not expose unfinished pricing or membership controls'
+  );
 
   const workspaceV3 = await appState(page);
   assert.equal(workspaceV3.value.workspaces.kpss.schemaVersion,3,'Fresh onboarding must use workspace schema v3');

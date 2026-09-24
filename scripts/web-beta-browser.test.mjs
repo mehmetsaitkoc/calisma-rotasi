@@ -138,7 +138,8 @@ try{
   });
   assert.equal(activeExam,'kpss','Public CTA must activate the KPSS workspace');
   assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must not exist in Web Beta');
-  assert.equal(await page.locator('.preview-bar').count(),0,'Web Beta must not expose the development preview strip');
+  assert.equal(await page.locator('#preview-bar').count(),1,'Core preview host must remain mounted for safe rerenders');
+  assert.equal(await page.locator('#preview-bar').isVisible(),false,'Web Beta must keep the development preview strip hidden');
   const onboardingCopy=(await page.locator('body').innerText())||'';
   assert.ok(!/Rota Hoca|\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b|149\s*₺/i.test(onboardingCopy),'Onboarding must not leak retired product or unfinished pricing copy');
   assert.equal(await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),0,'Onboarding must stay free of unfinished billing surfaces');

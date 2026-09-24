@@ -55,6 +55,9 @@ try{
   assert.equal(new Set(bundleRequests).size,6,'First landing load must use six subject bundles');
 
   const visible=((await page.locator('body').innerText())||'');
+  assert.ok(!/Rota Hoca/i.test(await page.title()),'Browser title must not mention retired Rota Hoca');
+  const metaDescription=await page.locator('meta[name="description"]').getAttribute('content');
+  assert.match(metaDescription||'',/KPSS/i,'Public meta description must be KPSS-specific');
   for(const retired of ['Rota Hoca','Yorumlar','SSS','1 Dakikada Keşfet','Gerçek Sonuç']){
     assert.equal(visible.includes(retired),false,'Public Web Beta must not expose retired/dead copy: '+retired);
   }
@@ -73,6 +76,8 @@ try{
   await page.locator('.v6-main-cta').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
   assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must not exist in Web Beta');
+  const onboardingCopy=(await page.locator('body').innerText())||'';
+  assert.ok(!/Rota Hoca|\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b|149\s*₺/i.test(onboardingCopy),'Onboarding must not leak retired product or unfinished pricing copy');
   assert.equal(await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),0,'Onboarding must stay free of unfinished billing surfaces');
 
   assert.deepEqual(errors,[],'Web Beta page errors:\n'+errors.join('\n'));

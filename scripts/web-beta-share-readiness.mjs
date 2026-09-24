@@ -146,16 +146,10 @@ try{
     const dock=page.locator('.mobile-dock');
     assert.ok(await dock.isVisible(),width+'px Today must keep the bottom navigation visible');
     const dockBox=await dock.boundingBox();
-    if(!(dockBox&&dockBox.left>=-1&&dockBox.right<=width+1)){
-      const dockDebug=await dock.evaluate(el=>{
-        const style=getComputedStyle(el),rect=el.getBoundingClientRect();
-        return {rect:{left:rect.left,right:rect.right,width:rect.width},style:{position:style.position,left:style.left,right:style.right,width:style.width,maxWidth:style.maxWidth,marginLeft:style.marginLeft,marginRight:style.marginRight,boxSizing:style.boxSizing,transform:style.transform,paddingLeft:style.paddingLeft,paddingRight:style.paddingRight}};
-      });
-      throw new Error(width+'px bottom navigation must stay inside the viewport: '+JSON.stringify(dockDebug));
-    }
+    assert.ok(dockBox&&dockBox.x>=-1&&dockBox.x+dockBox.width<=width+1,width+'px bottom navigation must stay inside the viewport');
     const firstTask=page.locator('.route-task').first();
     const taskBox=await firstTask.boundingBox();
-    assert.ok(taskBox&&taskBox.left>=-1&&taskBox.right<=width+1,width+'px route task must stay inside the viewport');
+    assert.ok(taskBox&&taskBox.x>=-1&&taskBox.x+taskBox.width<=width+1,width+'px route task must stay inside the viewport');
     await page.screenshot({path:path.join(OUT,'today-'+width+'.png'),fullPage:false});
   }
   await page.setViewportSize({width:390,height:844});

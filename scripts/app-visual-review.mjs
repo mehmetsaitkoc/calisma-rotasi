@@ -55,16 +55,16 @@ async function assertReferenceHero(page,label,{mobile=false}={}){
   if(mobile){
     assert.ok(geometry.hero.height<=330,label+': mobile hero must stay compact');
     assert.ok(geometry.titleScroll<=geometry.titleClient+2,label+': mobile hero title must not overflow');
-    assert.ok(geometry.beforeBackground.includes('kpss-hero-mountain.svg'),label+': mobile hero must use the responsive mountain artwork');
+    assert.ok(geometry.beforeBackground.includes('rota-journey-v8.webp'),label+': mobile hero must use the text-free responsive mountain artwork');
     assert.ok(geometry.date&&geometry.dateDisplay!=='none',label+': mobile date card must remain visible');
     assert.ok(geometry.date.left>=geometry.hero.left-1&&geometry.date.right<=geometry.hero.right+1,label+': mobile date card must stay inside hero');
   }else{
-    assert.ok(geometry.hero.height>=270,label+': desktop hero must keep the reference footprint');
-    assert.ok(geometry.beforeBackground.includes('hero-reference-composite.webp'),label+': desktop hero must restore the approved photographic mountain composition');
+    assert.ok(geometry.hero.height>=200&&geometry.hero.height<=250,label+': desktop hero must keep the reference footprint');
+    assert.ok(geometry.beforeBackground.includes('rota-journey-v8.webp'),label+': desktop hero must use the crisp text-free mountain composition');
     assert.ok(!geometry.beforeFilter.includes('blur('),label+': desktop hero must not use CSS blur');
     assert.notEqual(geometry.titleOpacity,'0',label+': desktop hero title must remain live and crisp');
     const ratio=geometry.hero.width/geometry.hero.height;
-    assert.ok(ratio>3.7&&ratio<4.15,label+': desktop hero aspect ratio must track the supplied reference');
+    assert.ok(ratio>4&&ratio<6.5,label+': desktop hero must preserve a compact panoramic composition');
   }
 }
 async function navigateDesktop(page,view){
@@ -221,8 +221,28 @@ try{
   assert.ok(await page.locator('.cr-theme-toggle-app').isVisible(),'Today top bar must expose day/night mode');
   await noOverflow(page,'Today 1512');
   await assertReferenceHero(page,'Today 1512');
+  await page.locator('.route-list').evaluate(el=>{el.scrollTop=0;});
+  await page.evaluate(()=>window.scrollTo(0,0));
   await page.screenshot({path:OUT+'/today-1512.png',fullPage:false});
 
+  // Initial screen, phone to desktop: check real populated data, not a static mockup.
+  for(const width of [320,375,390,430,768,1024,1512]){
+    await page.setViewportSize({width,height:width>900?982:844});
+    await page.clock.fastForward(150);
+    await page.evaluate(()=>window.scrollTo(0,0));
+    await noOverflow(page,'Today '+width);
+    const action=page.locator('.pnx3-plan .route-task:not(.is-done) .check-btn').first();
+    const box=await action.boundingBox();
+    assert.ok(box&&box.width>=44&&box.height>=44,'Task completion needs a 44px target at '+width);
+    assert.equal(await page.locator('.premium-signal[hidden]').isVisible(),false,'Hidden source evidence must remain hidden');
+    await page.screenshot({path:OUT+'/today-initial-'+width+'.png',fullPage:false});
+    if(width===390)await page.screenshot({path:OUT+'/today-full-390.png',fullPage:true});
+  }
+  await page.locator('.cr-theme-toggle-app').click();
+  await page.clock.fastForward(150);
+  await noOverflow(page,'Today dark');
+  await page.screenshot({path:OUT+'/today-dark-1512.png',fullPage:false});
+  await page.locator('.cr-theme-toggle-app').click();
   await page.setViewportSize({width:1440,height:900});
   await noOverflow(page,'Today 1440');
   await assertReferenceHero(page,'Today 1440');
@@ -273,8 +293,8 @@ try{
     });
     assert.ok(geometry.task&&geometry.main&&geometry.actions&&geometry.check,label+': mobile task geometry must be measurable');
     assert.ok(geometry.scrollWidth<=geometry.clientWidth+1,label+': mobile task row must not overflow horizontally');
-    assert.ok(geometry.actions.width<=38.5,label+': mobile completion action must stay in its fixed right column');
-    assert.ok(geometry.check.width<=35.5&&geometry.check.height<=35.5,label+': mobile completion control must remain circular-sized');
+    assert.ok(geometry.actions.width>=44&&geometry.actions.width<=44.5,label+': mobile completion action must stay in its fixed right column');
+    assert.ok(geometry.check.width>=44&&geometry.check.height>=44,label+': mobile completion control must provide a 44px touch target');
     assert.ok(geometry.check.right<=geometry.task.right+1&&geometry.check.left>=geometry.task.left-1,label+': completion control must stay inside the task row');
     assert.ok(geometry.main.right<=geometry.actions.left+1,label+': task copy must not overlap the completion control');
     assert.equal(geometry.labelDisplay,'none',label+': mobile Tamamla text must be hidden inside the icon-only completion control');
@@ -357,10 +377,7 @@ try{
 
   assert.deepEqual(errors,[],'Visual review page errors:\n'+errors.join('\n'));
   console.log(JSON.stringify({
-    screenshots:[
-      'today-1512.png','today-1440.png','program-1512.png',
-      'deneme-1512.png','ders-analizi-1512.png','today-390.png','today-360.png','program-390.png','program-360.png'
-    ],
+    screenshots:(await fs.readdir(OUT)).filter(name=>name.endsWith('.png')),
     mobileProgram:mobileFlow
   },null,2));
 }finally{

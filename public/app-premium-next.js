@@ -101,16 +101,28 @@
     if (searchCopy) searchCopy.textContent = 'KPSS\'de ne çalışmak istersin?';
 
     let profile = topbar.querySelector('.pnx-profile');
-    if (!profile) {
-      profile = document.createElement('div');
-      profile.className = 'pnx-profile';
-      topbar.append(profile);
+    if (!profile || profile.tagName !== 'BUTTON') {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'pnx-profile';
+      button.dataset.action = 'nav';
+      button.dataset.view = 'settings';
+      button.setAttribute('aria-label', 'Profil ve ayarları aç');
+      button.innerHTML =
+        '<span class="pnx-profile-avatar"></span>' +
+        '<span class="pnx-profile-copy"><strong></strong><small>Öğrenci</small></span>' +
+        '<span class="pnx-profile-chevron" aria-hidden="true">⌄</span>';
+      if (profile) profile.replaceWith(button);
+      else topbar.append(button);
+      profile = button;
     }
     const name = firstName(header);
-    profile.innerHTML =
-      '<span class="pnx-profile-avatar">' + (name.slice(0,2).toLocaleUpperCase('tr-TR') || 'R') + '</span>' +
-      '<span class="pnx-profile-copy"><strong>' + name + '</strong><small>Öğrenci</small></span>' +
-      '<span class="pnx-profile-chevron" aria-hidden="true">⌄</span>';
+    // Student names are text, never markup; keep the button stable across syncs.
+    const avatar = profile.querySelector('.pnx-profile-avatar');
+    const nameLabel = profile.querySelector('.pnx-profile-copy strong');
+    const initials = name.slice(0,2).toLocaleUpperCase('tr-TR') || 'R';
+    if (avatar && avatar.textContent !== initials) avatar.textContent = initials;
+    if (nameLabel && nameLabel.textContent !== name) nameLabel.textContent = name;
     topbar.dataset.pnxReference = '3';
   }
 
@@ -230,8 +242,10 @@
     if (!panel) return;
     const clock = panel.querySelector('[data-pnx-free-clock]');
     const toggle = panel.querySelector('[data-pnx-free-toggle]');
-    if (clock) clock.textContent = formatFreeTime(freeElapsedMs());
-    if (toggle) toggle.textContent = freeTimerState.running ? 'Duraklat' : (freeElapsedMs() > 0 ? 'Devam et' : 'Başlat');
+    const clockText = formatFreeTime(freeElapsedMs());
+    const toggleText = freeTimerState.running ? 'Duraklat' : (freeElapsedMs() > 0 ? 'Devam et' : 'Başlat');
+    if (clock && clock.textContent !== clockText) clock.textContent = clockText;
+    if (toggle && toggle.textContent !== toggleText) toggle.textContent = toggleText;
   }
 
   function ensureFreeTimerTicker() {
@@ -443,10 +457,13 @@
       seeAll.className = 'pnx-route-see-all';
       listHead.appendChild(seeAll);
     }
-    seeAll.textContent = 'Tümünü gör →';
+    const expanded = routePanel.classList.contains('pnx-expanded');
+    seeAll.textContent = expanded ? 'Daralt ↑' : 'Tümünü gör →';
+    seeAll.setAttribute('aria-expanded', String(expanded));
     seeAll.onclick = () => {
       const expanded = routePanel.classList.toggle('pnx-expanded');
       seeAll.textContent = expanded ? 'Daralt ↑' : 'Tümünü gör →';
+      seeAll.setAttribute('aria-expanded', String(expanded));
     };
   }
 
@@ -609,7 +626,7 @@
   }
 
   function formatNet(value) {
-    if (!Number.isFinite(Number(value))) return '—';
+    if (value == null || (typeof value === 'string' && !value.trim()) || !Number.isFinite(Number(value))) return '—';
     const number = Number(value);
     return (Math.round(number * 10) / 10).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' net';
   }
@@ -915,13 +932,19 @@
 
   function sync() {
     queued = false;
-    removeTeacherUi();
-    const shell = document.querySelector('.app-shell');
-    const header = document.querySelector('.route-v1-head[data-premium-surface="today"]');
-    document.body.classList.toggle(BODY_CLASS, !!shell);
-    document.body.classList.toggle(TODAY_CLASS, !!header);
-    document.body.classList.toggle(DASH_CLASS, !!header);
-    if (header) composeToday(header);
+    // Observe core renders, not the mutations produced by this compositor itself.
+    observer.disconnect();
+    try {
+      removeTeacherUi();
+      const shell = document.querySelector('.app-shell');
+      const header = document.querySelector('.route-v1-head[data-premium-surface="today"]');
+      document.body.classList.toggle(BODY_CLASS, !!shell);
+      document.body.classList.toggle(TODAY_CLASS, !!header);
+      document.body.classList.toggle(DASH_CLASS, !!header);
+      if (header) composeToday(header);
+    } finally {
+      observer.observe(document.documentElement, observationOptions);
+    }
   }
 
   function schedule() {
@@ -936,12 +959,14 @@
     schedule();
   }
 
-  new MutationObserver(schedule).observe(document.documentElement, {
+  const observationOptions = {
     childList: true,
     subtree: true,
     attributes: true,
     attributeFilter: ['class']
-  });
+  };
+  const observer = new MutationObserver(schedule);
+  observer.observe(document.documentElement, observationOptions);
 })();
 
 
@@ -1099,7 +1124,7 @@
       aside.className = 'pnx-program-aside';
 
       workspace.append(main, aside);
-      root.appendChild(workspace);
+      root.insertBefore(workspace, root.querySelector(':scope > .bottom-note'));
     } else {
       const main = workspace.querySelector('.pnx-program-main');
       if (main && !main.contains(weekWrap)) main.appendChild(weekWrap);
@@ -1223,19 +1248,24 @@
 
   function sync() {
     queued = false;
-    const root = programRoot();
-    document.body.classList.toggle(BODY_CLASS, !!root);
-    if (!root) return;
+    observer.disconnect();
+    try {
+      const root = programRoot();
+      document.body.classList.toggle(BODY_CLASS, !!root);
+      if (!root) return;
 
-    const columns = dayColumns(root);
-    if (!columns.length) return;
-    const metas = columns.map(dayMeta);
-    if (selectedIndex === null || selectedIndex >= metas.length) selectedIndex = defaultIndex(columns);
+      const columns = dayColumns(root);
+      if (!columns.length) return;
+      const metas = columns.map(dayMeta);
+      if (selectedIndex === null || selectedIndex >= metas.length) selectedIndex = defaultIndex(columns);
 
-    ensureStrip(root, metas);
-    const workspace = ensureWorkspace(root);
-    if (!workspace) return;
-    activate(root, workspace, metas, selectedIndex);
+      ensureStrip(root, metas);
+      const workspace = ensureWorkspace(root);
+      if (!workspace) return;
+      activate(root, workspace, metas, selectedIndex);
+    } finally {
+      observer.observe(document.documentElement, observationOptions);
+    }
   }
 
   function schedule() {
@@ -1263,9 +1293,10 @@
     schedule();
   }
 
-  new MutationObserver(schedule).observe(document.documentElement, {
+  const observationOptions = {
     childList:true,
     subtree:true
-  });
+  };
+  const observer = new MutationObserver(schedule);
+  observer.observe(document.documentElement, observationOptions);
 })();
-

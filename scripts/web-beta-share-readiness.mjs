@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
 
@@ -63,6 +64,8 @@ try{
   await page.goto(BASE+'/?fresh=1',{waitUntil:'domcontentloaded'});
   await page.locator('.welcome.premium-landing-final').waitFor({state:'visible'});
   await noOverflow(page,'390px landing');
+  await fs.mkdir('work/production-evidence',{recursive:true});
+  await page.screenshot({path:'work/production-evidence/web-beta-landing-390.png',fullPage:true});
 
   const copy=((await page.locator('body').innerText())||'');
   assert.match(copy,/Ücretsiz Web Beta/i);
@@ -90,6 +93,7 @@ try{
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
   assert.ok(!/Rota Hoca/i.test((await page.locator('body').innerText())||''),'Onboarding must not mention retired Rota Hoca');
   await noOverflow(page,'390px onboarding');
+  await page.screenshot({path:'work/production-evidence/web-beta-onboarding-390.png',fullPage:true});
 
   assert.deepEqual(pageErrors,[],'Page errors:\n'+pageErrors.join('\n'));
   assert.deepEqual(consoleErrors,[],'Console errors:\n'+consoleErrors.join('\n'));

@@ -183,7 +183,7 @@ try{
   assert.equal(await visibleToasts.count(),1,'Mobile Web Beta must show only the latest toast');
   const toastBox=await visibleToasts.first().boundingBox();
   const dockBox=await page.locator('.mobile-dock').boundingBox();
-  assert.ok(toastBox&&dockBox&&toastBox.bottom<=dockBox.top+2,'Toast must remain above the bottom navigation');
+  assert.ok(toastBox&&dockBox&&toastBox.y+toastBox.height<=dockBox.y+2,'Toast must remain above the bottom navigation');
   await page.evaluate(()=>document.querySelector('#toasts')?.replaceChildren());
 
   await page.screenshot({path:'work/production-evidence/web-beta-today-390.png',fullPage:true});

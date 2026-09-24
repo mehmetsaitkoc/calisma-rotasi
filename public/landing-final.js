@@ -74,7 +74,8 @@
 
     const actions = el('div','v6-nav-actions');
     const workspace = button('Web Beta',null,'v6-outline-btn',{accountAction:'open'});
-    const start = button('Ücretsiz Başla →','choose-exam','v6-gradient-btn',{exam:'kpss'});
+    const start = button('Ücretsiz Başla →',null,'v6-gradient-btn');
+    start.addEventListener('click',()=>welcome.querySelector('.v6-prep-card[data-exam="kpss"]')?.click());
     actions.append(workspace,start);
 
     nav.append(brandBtn,links,actions);
@@ -101,7 +102,8 @@
     const p = el('p','v6-hero-copytext','Çalışma Rotası, hedeflerine, seviyene ve zamanına göre sana özel çalışma planı oluşturur. Daha verimli, daha bilinçli, daha senin gibi.');
 
     const actions = el('div','v6-hero-actions');
-    const start = button('Ücretsiz Başla →','choose-exam','v6-gradient-btn v6-main-cta',{exam:'kpss'});
+    const start = button('Ücretsiz Başla →',null,'v6-gradient-btn v6-main-cta');
+    start.addEventListener('click',()=>document.querySelector('.v6-prep-card[data-exam="kpss"]')?.click());
     const video = el('button','v6-video-btn');
     video.type='button';
     const play = el('span','v6-play'); play.append(icon('chart'));
@@ -227,7 +229,8 @@
     const foot=el('div','v6-dash-foot');
     const motivational=el('div','v6-dash-mot'); motivational.append(icon('bolt'),el('div'));
     motivational.lastElementChild.append(el('strong','', 'Küçük adımlar, büyük sonuçlar.'),el('span','', 'Bugün de hedeflerine bir adım daha yaklaş.'));
-    const task=button('Bugünün görevlerine başla →','choose-exam','v6-dash-task',{exam:'kpss'});
+    const task=button('Bugünün görevlerine başla →',null,'v6-dash-task');
+    task.addEventListener('click',()=>document.querySelector('.v6-prep-card[data-exam="kpss"]')?.click());
     foot.append(motivational,task);
 
     main.append(top,head,stats,lower,foot);

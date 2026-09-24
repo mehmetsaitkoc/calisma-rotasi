@@ -373,7 +373,7 @@ const SOCIAL_META=[
   '<meta name="twitter:description" content="Çalışma programı değil, sana özel rota. KPSS için kişisel çalışma rotanı oluştur.">'
 ].filter(Boolean).join('');
 WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE_BUNDLED
-  .replace('</head>',WEB_BETA_FLAG+SOCIAL_META+'<link rel="stylesheet" href="/landing-final.css"></head>')
+  .replace('</head>',WEB_BETA_FLAG+WEB_PUBLIC_META+SOCIAL_META+'<link rel="stylesheet" href="/landing-final.css"></head>')
   .replace('</body>','<script src="/landing-final.js" defer></script></body>');
 const WEB_INDEX_BODY=Buffer.from(WEB_INDEX_SOURCE_BUNDLED,'utf8');
 const WEB_BUNDLE_CACHE=new Map(),WEB_ENCODING_CACHE=new Map();

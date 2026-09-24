@@ -53,8 +53,9 @@
 
   function topNav(welcome){
     const nav = el('nav','v6-topbar');
-    const brandBtn = button('', 'select', 'v6-brand-button');
+    const brandBtn = button('', null, 'v6-brand-button');
     brandBtn.append(brand());
+    brandBtn.addEventListener('click',()=>welcome.scrollIntoView({behavior:'smooth',block:'start'}));
 
     const links = el('div','v6-nav-links');
     const anchor = (text, cls = '') => {
@@ -255,8 +256,18 @@
     return svg;
   }
 
-  function prepCard(exam,title,desc,kind){
-    const b=button('', 'choose-exam', 'v6-prep-card '+kind, {exam});
+  function prepCard(exam,title,desc,kind,existingControl=null){
+    // Reuse the application's original exam control when available. The core app
+    // binds onboarding behavior to that live node, so replacing it with a fresh
+    // lookalike can silently detach the real product action in production mode.
+    const b=existingControl || button('', 'choose-exam', '', {exam});
+    b.type='button';
+    b.className='v6-prep-card '+kind;
+    b.dataset.action='choose-exam';
+    b.dataset.exam=exam;
+    b.hidden=false;
+    b.removeAttribute('aria-hidden');
+    b.textContent='';
     const iconWrap=el('span','v6-prep-icon'); iconWrap.append(icon('book'));
     const copy=el('span','v6-prep-copy'); copy.append(el('strong','',title),el('small','',desc));
     const arrow=el('span','v6-prep-arrow'); arrow.append(icon('arrow'));
@@ -281,6 +292,7 @@
 
   function build(welcome){
     if(welcome.dataset.pixelMatch==='1') return;
+    const originalKpssControl=welcome.querySelector('[data-action="choose-exam"][data-exam="kpss"]');
     welcome.dataset.pixelMatch='1';
     welcome.setAttribute('data-premium-surface','welcome');
     welcome.classList.add('premium-landing-final');
@@ -295,7 +307,7 @@
     const cards=el('div','v6-prep-grid');
     cards.classList.add('kpss-only-grid');
     cards.append(
-      prepCard('kpss','KPSS Rotanı Kur','Lisans GY–GK için kişisel planını oluştur ve çalıştıkça rotanı geliştir.','kpss')
+      prepCard('kpss','KPSS Rotanı Kur','Lisans GY–GK için kişisel planını oluştur ve çalıştıkça rotanı geliştir.','kpss',originalKpssControl)
     );
     lower.append(cards,trust());
 

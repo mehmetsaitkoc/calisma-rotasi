@@ -18,6 +18,8 @@
     "questions:test": "node scripts/question-bank.test.mjs && node scripts/question-bank-integration.test.mjs && node scripts/question-bank-full.test.mjs && node scripts/question-bank-math-content.test.cjs",
     "questions:audit": "node scripts/question-bank-audit.mjs",
     "questions:browser": "node scripts/question-bank-browser.test.mjs",
+    "web:static": "node scripts/web-static-build.mjs",
+    "web:static:test": "node scripts/web-static-browser.test.mjs",
     "native:bridge": "node scripts/native-build.mjs --web-bridge",
     "native:prepare": "node scripts/native-build.mjs",
     "native:sync": "node scripts/native-build.mjs && cap sync android",

@@ -54,6 +54,11 @@ try{
   const privacy=await (await fetch(BASE+'/privacy.html')).text();
   assert.ok(!/Rota Hoca/i.test(privacy),'Public privacy page must not mention retired Rota Hoca');
 
+  const sharedHtml=await (await fetch(BASE+'/')).text();
+  assert.match(sharedHtml,/property="og:title" content="Çalışma Rotası · KPSS Web Beta"/);
+  assert.match(sharedHtml,/property="og:image" content="https:\/\/beta\.example\/hero-journey-final\.webp"/);
+  assert.match(sharedHtml,/name="twitter:card" content="summary_large_image"/);
+
   browser=await chromium.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},locale:'tr-TR',timezoneId:'Europe/Istanbul'});
   const page=await context.newPage();

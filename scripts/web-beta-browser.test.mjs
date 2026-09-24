@@ -79,9 +79,18 @@ try{
   assert.match(betaModal,/tarayıcıda yerel olarak saklanır/i);
   assert.match(betaModal,/yedek/i);
   await page.locator('[data-action="close-modal"]').click();
+  assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Modal must be closed before starting onboarding');
 
   await page.locator('.v6-main-cta').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
+  const activeExam=await page.evaluate(()=>{
+    for(const [key,raw] of Object.entries(localStorage)){
+      if(!key.startsWith('calisma-rotasi:all:v5'))continue;
+      try{const value=JSON.parse(raw);if(value?.workspaces?.kpss&&value?.workspaces?.yks)return value.activeExam||null;}catch{}
+    }
+    return null;
+  });
+  assert.equal(activeExam,'kpss','Public CTA must activate the KPSS workspace');
   assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must not exist in Web Beta');
   assert.equal(await page.locator('.preview-bar').count(),0,'Web Beta must not expose the development preview strip');
   const onboardingCopy=(await page.locator('body').innerText())||'';

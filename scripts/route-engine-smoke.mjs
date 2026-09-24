@@ -1919,7 +1919,9 @@ for(const marker of [
     {id:'untouched-repair',exam:'kpss',subjectId:'s3',title:'Untouched repair'}
   ];
   let repairDays=1;
-  const fn=new Function('subjects','ROTA_ALL_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore',
+  // Ranking fixtures have no managed bank topics; use the real publication gate.
+  const miniCanServe=new Function('window','KPSS_MANAGED_TOPIC_KEYS',between('function miniCanServe','const KPSS_ARCHIVED_HISTORY_TESTS')+';return miniCanServe;')({},new Set());
+  const fn=new Function('subjects','ROTA_ALL_MINI_EXAMS','state','miniRecommendationContext','routeAppliedDecision','latestMiniResult','miniDaysSince','miniAttemptStats','miniRecommendationScore','miniCanServe',
     src+';return miniRecommendation;'
   )(
     ()=>[{id:'s1'},{id:'s2'},{id:'s3'}],defs,{activeExam:'kpss'},
@@ -1928,7 +1930,7 @@ for(const marker of [
     id=>id==='repair-mini'?{miniId:id,total:10,correct:3,date:'2026-09-18'}:null,
     last=>last?repairDays:999,
     ()=>({attempts7:0,attempts14:0}),
-    (_last,adaptive)=>adaptive.mode==='repair'?100:60
+    (_last,adaptive)=>adaptive.mode==='repair'?100:60,miniCanServe
   );
   assert.equal(fn().def.id,'fresh-mini','A recent repair mini and an untouched repair topic cannot override a studied fresh alternative');
   repairDays=4;

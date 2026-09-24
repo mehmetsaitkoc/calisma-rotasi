@@ -1,0 +1,140 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {spawn} from 'node:child_process';
+import {chromium} from 'playwright';
+
+const PORT=Number(process.env.QUESTION_BANK_E2E_PORT||8808),BASE='http://127.0.0.1:'+PORT,KEY='calisma-rotasi:all:v5';
+const server=spawn(process.execPath,['server.mjs'],{env:{...process.env,PORT:String(PORT),HOST:'127.0.0.1',RENDER:'false'},stdio:['ignore','pipe','pipe']});
+let serverLog='',browser;
+server.stdout.on('data',x=>serverLog+=x);server.stderr.on('data',x=>serverLog+=x);
+async function waitServer(){for(let i=0;i<80;i++){try{if((await fetch(BASE+'/api/health')).ok)return;}catch{}await new Promise(r=>setTimeout(r,100));}throw Error('Question bank server failed: '+serverLog);}
+const workspace=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).workspaces.kpss,KEY);
+async function navigate(page,view){await page.locator('.sidebar [data-action="nav"][data-view="'+view+'"]').first().click();}
+
+try{
+ fs.mkdirSync(new URL('../artifacts/question-bank/',import.meta.url),{recursive:true});
+ await waitServer();browser=await chromium.launch({headless:true});
+ const page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(BASE,{waitUntil:'networkidle'});
+ const seeded=await page.evaluate(key=>{
+  const state=RotaCore.fresh(),space=state.workspaces.kpss;state.activeExam='kpss';space.configured=true;space.profile.completed=true;space.profile.summaryConfirmed=true;space.settings.name='Tam Banka Kontrol';
+  const date=RotaCore.iso(),section=RotaKpssPractice.sectionExams[0],rows=new Map(),answers=section.questions.map((q,i)=>i<5?(q.answer+1)%5:i<10?-1:q.answer);
+  section.questions.forEach((q,i)=>{const status=answers[i]<0?'blank':answers[i]===q.answer?'correct':'wrong',row=rows.get(q.topicId)||{topicId:q.topicId,title:section.blueprint.find(x=>x[0]===q.topicId)[1],total:0,correct:0,wrong:0,blank:0};row.total++;row[status]++;rows.set(q.topicId,row);});
+  const sectionResult={id:'browser-old-section',miniId:'section:'+section.id,sectionId:section.id,version:section.version,date,subjectId:section.subjectId,topicId:'',title:section.title,total:30,correct:20,wrong:5,blank:5,minutes:30,answers,net:18.75,penalty:4,topicBreakdown:[...rows.values()].map(x=>({...x,accuracy:x.correct/x.total})),skillBreakdown:[],weakSkills:[],created:10};
+  const old=RotaKpssHistory01.tests[0],oldResult={id:'browser-old-mini',miniId:old.id,version:old.version,date,subjectId:old.subjectId,topicId:old.topicId,title:old.title,total:12,correct:12,wrong:0,blank:0,minutes:12,answers:old.questions.map(q=>q.answer),skillBreakdown:[],weakSkills:[],created:20};
+  space.assessments=[sectionResult,oldResult];localStorage.setItem(key,JSON.stringify(state));
+  return {section:sectionResult,oldId:oldResult.id,pilotIds:RotaQuestionBank.topicTests().filter(x=>x.topicId==='k-ta-1').map(x=>x.id)};
+ },KEY);
+ assert.equal(seeded.pilotIds.length,4,'Browser must load four approved pilot sets');
+ await page.reload({waitUntil:'networkidle'});
+ let space=await workspace(page);
+ assert.deepEqual(space.assessments.find(x=>x.id==='browser-old-section').topicBreakdown,seeded.section.topicBreakdown);
+ await navigate(page,'topics');
+ const catalog=await page.evaluate(()=>RotaCatalog.subjects.filter(s=>s.exam==='kpss').map(s=>({id:s.id,topics:s.topics})));
+ assert.equal(catalog.length,6);
+ for(const sub of catalog){
+  const card=page.locator('.subject-card[data-subject="'+sub.id+'"]');
+  if((await card.getAttribute('open'))===null)await card.locator(':scope > summary').click();
+  for(const topic of sub.topics)assert.equal(await page.locator('[data-topic-tests="'+topic.id+'"] [data-action="start-mini-exam"]').count(),4,'Four tests for '+topic.title);
+ }
+ assert.equal(await page.locator('[data-topic-tests] [data-action="start-mini-exam"]').count(),256);
+ await page.screenshot({path:new URL('../artifacts/question-bank/all-topic-tests.png',import.meta.url).pathname,fullPage:false});
+ const buttons=page.locator('[data-topic-tests="k-ta-1"] [data-action="start-mini-exam"]');
+ assert.equal(await buttons.count(),4,'The history topic must show exactly four pilot buttons');
+ assert.deepEqual(await buttons.evaluateAll(xs=>xs.map(x=>x.dataset.id)),seeded.pilotIds);
+ await buttons.nth(3).click();
+ const multiline=await page.evaluate(id=>RotaQuestionBank.getTest(id).questions.findIndex(q=>q.text.includes('\n')),seeded.pilotIds[3]);
+ assert.ok(multiline>=0,'Test 4 must exercise a multiline premise or table');
+ assert.ok(await page.locator('#mini-exam-form .mini-question').nth(multiline).locator('legend br').count()>0,'Multiline question premises must preserve their line breaks');
+ await page.locator('#modal [data-action="close-modal"]').last().click();
+ await buttons.first().click();
+ await page.locator('#mini-exam-form .mini-question').last().waitFor({state:'visible'});
+ assert.equal(await page.locator('#mini-exam-form .mini-question').count(),12);
+ fs.mkdirSync(new URL('../artifacts/question-bank/',import.meta.url),{recursive:true});
+ await page.screenshot({path:new URL('../artifacts/question-bank/pilot-open.png',import.meta.url).pathname,fullPage:false});
+ const answers=await page.evaluate(id=>RotaQuestionBank.getTest(id).questions.map((q,i)=>i===0?-1:i===1?(q.answer+1)%5:q.answer),seeded.pilotIds[0]);
+ for(let i=0;i<answers.length;i++)if(answers[i]>=0)await page.locator('#mini-exam-form input[name="mini-q-'+i+'"][value="'+answers[i]+'"]').check();
+ await page.locator('#mini-exam-form button[type="submit"]').click();
+ await page.locator('[data-question-bank-review]').waitFor({state:'visible'});
+ assert.equal(await page.locator('[data-question-bank-review] details').count(),12);
+ assert.equal(await page.locator('[data-question-bank-review] li').count(),48);
+ assert.match(await page.locator('#modal').innerText(),/10\s*\/\s*12 doğru/);
+ assert.match(await page.locator('[data-question-bank-review] details[open]').innerText(),/Seçtiğin [A-E] seçeneği/);
+ await page.locator('[data-question-bank-review] details').nth(2).locator('summary').click();
+ assert.match(await page.locator('[data-question-bank-review] details').nth(2).innerText(),/Çözüm:/,'Correct answers must also expose explanations');
+ await page.screenshot({path:new URL('../artifacts/question-bank/pilot-result.png',import.meta.url).pathname,fullPage:false});
+ space=await workspace(page);
+ const attempt=space.assessments.find(x=>x.miniId===seeded.pilotIds[0]);
+ assert.ok(attempt);assert.equal(attempt.correct,10);assert.equal(attempt.wrong,1);assert.equal(attempt.blank,1);assert.equal(attempt.questionEvidence.length,12);
+ assert.equal(attempt.questionEvidence[0].status,'blank');assert.equal(attempt.questionEvidence[1].status,'wrong');assert.equal(attempt.questionEvidence[2].status,'correct');
+ const notesBefore=space.mistakes.length;
+ await page.reload({waitUntil:'networkidle'});space=await workspace(page);
+ assert.deepEqual(space.assessments.find(x=>x.id===attempt.id).questionEvidence,attempt.questionEvidence,'Question metadata must survive actual page reload');
+ assert.deepEqual(space.assessments.find(x=>x.id==='browser-old-section').topicBreakdown,seeded.section.topicBreakdown);
+ assert.equal(space.assessments.find(x=>x.id==='browser-old-section').net,18.75);
+ assert.equal(space.mistakes.length,notesBefore,'Reload must not create duplicate mistake records');
+ assert.equal(space.assessments.length,3,'Reload must not duplicate assessments');
+ const loadError=await page.evaluate(key=>{try{RotaCore.validateBackup(JSON.parse(localStorage.getItem(key)));return '';}catch(e){return e.stack;}},KEY);
+ assert.equal(loadError,'','The saved live workspace must pass the actual boot validator');
+ assert.ok(await page.locator('.sidebar').count(),await page.locator('body').innerText());
+ await navigate(page,'exams');
+ await page.locator('[data-action="mini-result-detail"][data-id="'+attempt.id+'"]').click();
+ assert.equal(await page.locator('[data-question-bank-review] details').count(),12,'Saved pilot result remains reviewable');
+ await page.locator('#modal [data-action="close-modal"]').last().click();
+ await page.locator('[data-action="mini-result-detail"][data-id="'+seeded.oldId+'"]').click();
+ assert.match(await page.locator('#modal').innerText(),/12\s*\/\s*12 doğru/,'Archived mini IDs must still resolve after pilot replacement');
+ assert.ok(!(await page.locator('#modal').innerText()).includes('güncel soru seti artık katalogda yok'));
+ await page.locator('#modal [data-action="close-modal"]').last().click();
+ const papers=await page.evaluate(()=>RotaKpssBankExams.sectionExams.map(e=>({id:e.id,title:e.title,total:e.questions.length,subjectId:e.subjectId,answers:e.questions.map((q,i)=>i===0?-1:i===1?(q.answer+1)%5:q.answer)})));
+ assert.equal(papers.length,18);
+ assert.equal(await page.locator('[data-action="start-section-exam"]').count(),18);
+ assert.ok(papers.every(p=>!p.title.includes('undefined')),'Every branch has the actual subject name');
+ await page.screenshot({path:new URL('../artifacts/question-bank/branch-exams.png',import.meta.url).pathname,fullPage:false});
+ for(const paper of papers){
+  await page.locator('[data-action="start-section-exam"][data-id="'+paper.id+'"]').click();
+  assert.equal(await page.locator('#section-exam-form .mini-question').count(),paper.total);
+  await page.locator('#section-exam-form').evaluate((form,answers)=>answers.forEach((a,i)=>{if(a>=0){const radio=form.querySelector('[name="section-q-'+i+'"][value="'+a+'"]');radio.checked=true;radio.dispatchEvent(new Event('change',{bubbles:true}));}}),paper.answers);
+  await page.locator('#section-exam-form button[type="submit"]').click();
+  await page.locator('[data-question-bank-review]').waitFor({state:'visible'});
+  assert.equal(await page.locator('[data-question-bank-review] details').count(),paper.total,'All branch solutions, including questions beyond12: '+paper.id);
+  assert.equal(await page.locator('[data-question-bank-review] li').count(),paper.total*4);
+  const saved=(await workspace(page)).assessments.find(a=>a.sectionId===paper.id);
+  assert.equal(saved.total,paper.total);assert.equal(saved.correct,paper.total-2);assert.equal(saved.wrong,1);assert.equal(saved.blank,1);assert.equal(saved.net,paper.total-2.25);
+  assert.equal(saved.questionEvidence.length,paper.total);assert.deepEqual(saved.answers,paper.answers);
+  assert.equal(saved.topicBreakdown.reduce((n,t)=>n+t.total,0),paper.total);
+  if(paper.subjectId==='k-ma'&&paper.id.endsWith('-1'))await page.screenshot({path:new URL('../artifacts/question-bank/math-branch-result.png',import.meta.url).pathname,fullPage:false});
+  await page.locator('#modal [data-action="close-modal"]').last().click();
+ }
+ const beforeReload=(await workspace(page)).assessments;
+ await page.reload({waitUntil:'networkidle'});
+ assert.deepEqual((await workspace(page)).assessments,beforeReload,'Every new branch result and old attempt survives reload');
+ assert.equal(beforeReload.length,21);
+ const validation=await page.evaluate(key=>{try{RotaCore.validateBackup(JSON.parse(localStorage.getItem(key)));return '';}catch(e){return e.stack;}},KEY);
+ assert.equal(validation,'');
+ await navigate(page,'exams');
+ for(const paper of papers){
+  const saved=beforeReload.find(a=>a.sectionId===paper.id);
+  await page.locator('[data-action="mini-result-detail"][data-id="'+saved.id+'"]').first().click();
+  assert.equal(await page.locator('[data-question-bank-review] details').count(),paper.total,'Saved branch result reopens after reload: '+paper.id);
+  assert.ok(!(await page.locator('#modal').innerText()).includes('güncel soru seti artık katalogda yok'));
+  await page.locator('#modal [data-action="close-modal"]').last().click();
+ }
+ await navigate(page,'topics');
+ const responsive=await browser.newPage({viewport:{width:390,height:844}});
+ await responsive.goto(BASE,{waitUntil:'networkidle'});
+ await responsive.evaluate(({key,data})=>localStorage.setItem(key,data),{key:KEY,data:await page.evaluate(key=>localStorage.getItem(key),KEY)});
+ await responsive.reload({waitUntil:'networkidle'});
+ assert.ok(await responsive.locator('body').evaluate(el=>el.scrollWidth<=window.innerWidth+2),'Mobile view must not overflow horizontally');
+ await responsive.screenshot({path:new URL('../artifacts/question-bank/mobile.png',import.meta.url).pathname,fullPage:false});
+ await responsive.locator('[data-action="nav"][data-view="topics"]').first().evaluate(button=>button.click());
+ const mobileMath=responsive.locator('.subject-card[data-subject="k-ma"]');
+ if((await mobileMath.getAttribute('open'))===null)await mobileMath.locator(':scope > summary').click();
+ await responsive.locator('[data-topic-tests="k-ma-9"] [data-action="start-mini-exam"]').nth(3).click();
+ assert.equal(await responsive.locator('#mini-exam-form .mini-question').count(),12);
+ assert.ok(await responsive.locator('#mini-exam-form').evaluate(el=>el.scrollWidth<=el.clientWidth+2),'Mobile question stems/options must fit the modal');
+ await responsive.screenshot({path:new URL('../artifacts/question-bank/mobile-question.png',import.meta.url).pathname,fullPage:false});
+ await responsive.close();
+ assert.deepEqual(errors,[],'No browser runtime errors are allowed');
+ console.log('Question bank browser passed: 256topic test buttons,18branch solve/review flows,360branch answers,1440distractor rationales,mobile,metadata reload and archived attempts');
+}finally{await browser?.close();server.kill('SIGTERM');}

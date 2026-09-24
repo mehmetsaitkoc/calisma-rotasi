@@ -1,0 +1,2107 @@
+{
+  "reviewer": "codex-editorial-independent-math-review",
+  "reviewedOn": "2026-09-23",
+  "scope": "Matematik 1–17, 816 soru: yalnız boşluk düzenleme; matematiksel işaret, rakam, cevap indeksi ve seçenek sırası korunmuştur.",
+  "questions": 114,
+  "changedFields": 188,
+  "changedFiles": 47,
+  "updates": [
+    {
+      "id": "kpss-ma-16-t1-q03",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Orta noktanın x’i(2+8)/2=5, y’si(6+4)/2=5’tir. İki koordinatın ortalaması ayrı alınır.",
+          "after": "Orta noktanın x’i (2+8)/2=5, y’si (6+4)/2=5’tir. İki koordinatın ortalaması ayrı alınır."
+        }
+      ],
+      "beforeFingerprint": "c0482544",
+      "afterFingerprint": "e7f5ba8e"
+    },
+    {
+      "id": "kpss-ma-16-t1-q06",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "(−4,−7) yerine (4,7) bulunur. x eksenine göre yansımada x aynı kalır, y işareti değişir. (4,−7) noktası(4,7)’ye gider.",
+          "after": "(−4,−7) yerine (4,7) bulunur. x eksenine göre yansımada x aynı kalır, y işareti değişir. (4,−7) noktası (4,7)’ye gider."
+        },
+        {
+          "field": "wrongAnswerNotes.B",
+          "before": "(−4,7) yerine (4,7) bulunur. x eksenine göre yansımada x aynı kalır, y işareti değişir. (4,−7) noktası(4,7)’ye gider.",
+          "after": "(−4,7) yerine (4,7) bulunur. x eksenine göre yansımada x aynı kalır, y işareti değişir. (4,−7) noktası (4,7)’ye gider."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "(7,4) yerine (4,7) bulunur. x eksenine göre yansımada x aynı kalır, y işareti değişir. (4,−7) noktası(4,7)’ye gider.",
+          "after": "(7,4) yerine (4,7) bulunur. x eksenine göre yansımada x aynı kalır, y işareti değişir. (4,−7) noktası (4,7)’ye gider."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "(−7,4) yerine (4,7) bulunur. x eksenine göre yansımada x aynı kalır, y işareti değişir. (4,−7) noktası(4,7)’ye gider.",
+          "after": "(−7,4) yerine (4,7) bulunur. x eksenine göre yansımada x aynı kalır, y işareti değişir. (4,−7) noktası (4,7)’ye gider."
+        }
+      ],
+      "beforeFingerprint": "f7ee08e6",
+      "afterFingerprint": "ba8400d6"
+    },
+    {
+      "id": "kpss-ma-16-t1-q08",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "(6,0) yerine (0,4) bulunur. y ekseni üzerinde x=0’dır. 3y=12’den y=4 bulunur; kesim noktası(0,4)’tür.",
+          "after": "(6,0) yerine (0,4) bulunur. y ekseni üzerinde x=0’dır. 3y=12’den y=4 bulunur; kesim noktası (0,4)’tür."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "(0,6) yerine (0,4) bulunur. y ekseni üzerinde x=0’dır. 3y=12’den y=4 bulunur; kesim noktası(0,4)’tür.",
+          "after": "(0,6) yerine (0,4) bulunur. y ekseni üzerinde x=0’dır. 3y=12’den y=4 bulunur; kesim noktası (0,4)’tür."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "(4,0) yerine (0,4) bulunur. y ekseni üzerinde x=0’dır. 3y=12’den y=4 bulunur; kesim noktası(0,4)’tür.",
+          "after": "(4,0) yerine (0,4) bulunur. y ekseni üzerinde x=0’dır. 3y=12’den y=4 bulunur; kesim noktası (0,4)’tür."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "(0,12) yerine (0,4) bulunur. y ekseni üzerinde x=0’dır. 3y=12’den y=4 bulunur; kesim noktası(0,4)’tür.",
+          "after": "(0,12) yerine (0,4) bulunur. y ekseni üzerinde x=0’dır. 3y=12’den y=4 bulunur; kesim noktası (0,4)’tür."
+        }
+      ],
+      "beforeFingerprint": "f0b7259d",
+      "afterFingerprint": "b1e330fb"
+    },
+    {
+      "id": "kpss-ma-16-t1-q11",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "(1+xB)/2=3’ten xB=5; (-4+yB)/2=2’den yB=8 bulunur. Diğer uç(5,8)’dir.",
+          "after": "(1+xB)/2=3’ten xB=5; (-4+yB)/2=2’den yB=8 bulunur. Diğer uç (5,8)’dir."
+        }
+      ],
+      "beforeFingerprint": "d6fe08a7",
+      "afterFingerprint": "ba19feb3"
+    },
+    {
+      "id": "kpss-ma-16-t2-q02",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "y=3 yerine x=3 bulunur. y eksenine paralel doğruda x sabittir. Verilen noktanın x’i3 olduğundan doğru x=3’tür; eğimi tanımsızdır.",
+          "after": "y=3 yerine x=3 bulunur. y eksenine paralel doğruda x sabittir. Verilen noktanın x’i 3 olduğundan doğru x=3’tür; eğimi tanımsızdır."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "x=−2 yerine x=3 bulunur. y eksenine paralel doğruda x sabittir. Verilen noktanın x’i3 olduğundan doğru x=3’tür; eğimi tanımsızdır.",
+          "after": "x=−2 yerine x=3 bulunur. y eksenine paralel doğruda x sabittir. Verilen noktanın x’i 3 olduğundan doğru x=3’tür; eğimi tanımsızdır."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "y=−2 yerine x=3 bulunur. y eksenine paralel doğruda x sabittir. Verilen noktanın x’i3 olduğundan doğru x=3’tür; eğimi tanımsızdır.",
+          "after": "y=−2 yerine x=3 bulunur. y eksenine paralel doğruda x sabittir. Verilen noktanın x’i 3 olduğundan doğru x=3’tür; eğimi tanımsızdır."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "y=3x yerine x=3 bulunur. y eksenine paralel doğruda x sabittir. Verilen noktanın x’i3 olduğundan doğru x=3’tür; eğimi tanımsızdır.",
+          "after": "y=3x yerine x=3 bulunur. y eksenine paralel doğruda x sabittir. Verilen noktanın x’i 3 olduğundan doğru x=3’tür; eğimi tanımsızdır."
+        }
+      ],
+      "beforeFingerprint": "9d11287b",
+      "afterFingerprint": "5b1594e3"
+    },
+    {
+      "id": "kpss-ma-16-t2-q04",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "3/2 yerine −3/2 bulunur. Düşey olmayan dik doğruların eğimleri çarpımı−1’dir. (2/3)m=−1’den m=−3/2 bulunur.",
+          "after": "3/2 yerine −3/2 bulunur. Düşey olmayan dik doğruların eğimleri çarpımı −1’dir. (2/3)m=−1’den m=−3/2 bulunur."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "−2/3 yerine −3/2 bulunur. Düşey olmayan dik doğruların eğimleri çarpımı−1’dir. (2/3)m=−1’den m=−3/2 bulunur.",
+          "after": "−2/3 yerine −3/2 bulunur. Düşey olmayan dik doğruların eğimleri çarpımı −1’dir. (2/3)m=−1’den m=−3/2 bulunur."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "2/3 yerine −3/2 bulunur. Düşey olmayan dik doğruların eğimleri çarpımı−1’dir. (2/3)m=−1’den m=−3/2 bulunur.",
+          "after": "2/3 yerine −3/2 bulunur. Düşey olmayan dik doğruların eğimleri çarpımı −1’dir. (2/3)m=−1’den m=−3/2 bulunur."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "1/3 yerine −3/2 bulunur. Düşey olmayan dik doğruların eğimleri çarpımı−1’dir. (2/3)m=−1’den m=−3/2 bulunur.",
+          "after": "1/3 yerine −3/2 bulunur. Düşey olmayan dik doğruların eğimleri çarpımı −1’dir. (2/3)m=−1’den m=−3/2 bulunur."
+        }
+      ],
+      "beforeFingerprint": "dc109be5",
+      "afterFingerprint": "adc210ff"
+    },
+    {
+      "id": "kpss-ma-16-t2-q10",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar(12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz.",
+          "after": "P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar (12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz."
+        },
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "(6,3) yerine (4,2) bulunur. P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar(12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz.",
+          "after": "(6,3) yerine (4,2) bulunur. P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar (12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz."
+        },
+        {
+          "field": "wrongAnswerNotes.B",
+          "before": "(8,4) yerine (4,2) bulunur. P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar(12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz.",
+          "after": "(8,4) yerine (4,2) bulunur. P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar (12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "(3,6) yerine (4,2) bulunur. P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar(12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz.",
+          "after": "(3,6) yerine (4,2) bulunur. P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar (12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "(2,4) yerine (4,2) bulunur. P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar(12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz.",
+          "after": "(2,4) yerine (4,2) bulunur. P, A’dan B’ye yolun 1/3’ündedir. Koordinatlar (12/3,6/3)=(4,2) olur; 1/2 oranıyla karıştırılmaz."
+        }
+      ],
+      "beforeFingerprint": "2980e4fa",
+      "afterFingerprint": "c773468e"
+    },
+    {
+      "id": "kpss-ma-16-t3-q02",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Bir doğru x eksenini(8,0), y eksenini(0,4)’te kesiyor. Eğimi kaçtır?",
+          "after": "Bir doğru x eksenini (8,0), y eksenini (0,4)’te kesiyor. Eğimi kaçtır?"
+        },
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "1/2 yerine −1/2 bulunur. Eğim(4−0)/(0−8)=4/(−8)=−1/2’dir. Soldan sağa azalması da negatif eğimle tutarlıdır.",
+          "after": "1/2 yerine −1/2 bulunur. Eğim (4−0)/(0−8)=4/(−8)=−1/2’dir. Soldan sağa azalması da negatif eğimle tutarlıdır."
+        },
+        {
+          "field": "wrongAnswerNotes.B",
+          "before": "−2 yerine −1/2 bulunur. Eğim(4−0)/(0−8)=4/(−8)=−1/2’dir. Soldan sağa azalması da negatif eğimle tutarlıdır.",
+          "after": "−2 yerine −1/2 bulunur. Eğim (4−0)/(0−8)=4/(−8)=−1/2’dir. Soldan sağa azalması da negatif eğimle tutarlıdır."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "2 yerine −1/2 bulunur. Eğim(4−0)/(0−8)=4/(−8)=−1/2’dir. Soldan sağa azalması da negatif eğimle tutarlıdır.",
+          "after": "2 yerine −1/2 bulunur. Eğim (4−0)/(0−8)=4/(−8)=−1/2’dir. Soldan sağa azalması da negatif eğimle tutarlıdır."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "4 yerine −1/2 bulunur. Eğim(4−0)/(0−8)=4/(−8)=−1/2’dir. Soldan sağa azalması da negatif eğimle tutarlıdır.",
+          "after": "4 yerine −1/2 bulunur. Eğim (4−0)/(0−8)=4/(−8)=−1/2’dir. Soldan sağa azalması da negatif eğimle tutarlıdır."
+        }
+      ],
+      "beforeFingerprint": "eda86aba",
+      "afterFingerprint": "59dd6f78"
+    },
+    {
+      "id": "kpss-ma-16-t3-q03",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Diklik için(−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir.",
+          "after": "Diklik için (−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir."
+        },
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "−1/2 yerine 1/2 bulunur. Diklik için(−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir.",
+          "after": "−1/2 yerine 1/2 bulunur. Diklik için (−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "2 yerine 1/2 bulunur. Diklik için(−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir.",
+          "after": "2 yerine 1/2 bulunur. Diklik için (−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "−2 yerine 1/2 bulunur. Diklik için(−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir.",
+          "after": "−2 yerine 1/2 bulunur. Diklik için (−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "1 yerine 1/2 bulunur. Diklik için(−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir.",
+          "after": "1 yerine 1/2 bulunur. Diklik için (−2)k=−1 olmalıdır. Buradan k=1/2 bulunur; yalnız işaret değiştirmek yeterli değildir."
+        }
+      ],
+      "beforeFingerprint": "eb35df85",
+      "afterFingerprint": "77cff7ff"
+    },
+    {
+      "id": "kpss-ma-16-t3-q05",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.B",
+          "before": "y=2 yerine x=2 bulunur. AB’nin orta noktası(2,0), AB yataydır. Orta dikme düşey x=2 doğrusudur; bu doğrudaki her nokta iki uca eş uzaklıktadır.",
+          "after": "y=2 yerine x=2 bulunur. AB’nin orta noktası (2,0), AB yataydır. Orta dikme düşey x=2 doğrusudur; bu doğrudaki her nokta iki uca eş uzaklıktadır."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "x=4 yerine x=2 bulunur. AB’nin orta noktası(2,0), AB yataydır. Orta dikme düşey x=2 doğrusudur; bu doğrudaki her nokta iki uca eş uzaklıktadır.",
+          "after": "x=4 yerine x=2 bulunur. AB’nin orta noktası (2,0), AB yataydır. Orta dikme düşey x=2 doğrusudur; bu doğrudaki her nokta iki uca eş uzaklıktadır."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "y=0 yerine x=2 bulunur. AB’nin orta noktası(2,0), AB yataydır. Orta dikme düşey x=2 doğrusudur; bu doğrudaki her nokta iki uca eş uzaklıktadır.",
+          "after": "y=0 yerine x=2 bulunur. AB’nin orta noktası (2,0), AB yataydır. Orta dikme düşey x=2 doğrusudur; bu doğrudaki her nokta iki uca eş uzaklıktadır."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "x=−2 yerine x=2 bulunur. AB’nin orta noktası(2,0), AB yataydır. Orta dikme düşey x=2 doğrusudur; bu doğrudaki her nokta iki uca eş uzaklıktadır.",
+          "after": "x=−2 yerine x=2 bulunur. AB’nin orta noktası (2,0), AB yataydır. Orta dikme düşey x=2 doğrusudur; bu doğrudaki her nokta iki uca eş uzaklıktadır."
+        }
+      ],
+      "beforeFingerprint": "cc62bbdb",
+      "afterFingerprint": "cd063c0b"
+    },
+    {
+      "id": "kpss-ma-16-t3-q07",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "AB eğimi(6−2)/(3−1)=2’dir. BC’de(k−6)/(5−3)=2 olmalı; k−6=4, k=10 bulunur.",
+          "after": "AB eğimi (6−2)/(3−1)=2’dir. BC’de (k−6)/(5−3)=2 olmalı; k−6=4, k=10 bulunur."
+        }
+      ],
+      "beforeFingerprint": "4463fd8c",
+      "afterFingerprint": "d8074822"
+    },
+    {
+      "id": "kpss-ma-16-t4-q01",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "x eksenine uzaklık |y|=4, y eksenine uzaklık |x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta(−7,4)’tür.",
+          "after": "x eksenine uzaklık |y|=4, y eksenine uzaklık |x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta (−7,4)’tür."
+        },
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "(−4,7) yerine (−7,4) bulunur. x eksenine uzaklık|y|=4, y eksenine uzaklık|x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta(−7,4)’tür.",
+          "after": "(−4,7) yerine (−7,4) bulunur. x eksenine uzaklık |y|=4, y eksenine uzaklık |x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta (−7,4)’tür."
+        },
+        {
+          "field": "wrongAnswerNotes.B",
+          "before": "(7,−4) yerine (−7,4) bulunur. x eksenine uzaklık|y|=4, y eksenine uzaklık|x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta(−7,4)’tür.",
+          "after": "(7,−4) yerine (−7,4) bulunur. x eksenine uzaklık |y|=4, y eksenine uzaklık |x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta (−7,4)’tür."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "(4,−7) yerine (−7,4) bulunur. x eksenine uzaklık|y|=4, y eksenine uzaklık|x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta(−7,4)’tür.",
+          "after": "(4,−7) yerine (−7,4) bulunur. x eksenine uzaklık |y|=4, y eksenine uzaklık |x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta (−7,4)’tür."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "(−7,−4) yerine (−7,4) bulunur. x eksenine uzaklık|y|=4, y eksenine uzaklık|x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta(−7,4)’tür.",
+          "after": "(−7,−4) yerine (−7,4) bulunur. x eksenine uzaklık |y|=4, y eksenine uzaklık |x|=7’dir. II. bölge x<0, y>0 verdiğinden nokta (−7,4)’tür."
+        }
+      ],
+      "beforeFingerprint": "34b0a1d0",
+      "afterFingerprint": "fd4bdb86"
+    },
+    {
+      "id": "kpss-ma-16-t4-q03",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Taban 6, yükseklik|k−1|’dir. 6|k−1|/2=12’den|k−1|=4. k>1 olduğu için k=5’tir.",
+          "after": "Taban 6, yükseklik |k−1|’dir. 6|k−1|/2=12’den |k−1|=4. k>1 olduğu için k=5’tir."
+        }
+      ],
+      "beforeFingerprint": "2c5c37c2",
+      "afterFingerprint": "92729c34"
+    },
+    {
+      "id": "kpss-ma-16-t4-q05",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta(3,10)’dur.",
+          "after": "Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta (3,10)’dur."
+        },
+        {
+          "field": "wrongAnswerNotes.B",
+          "before": "(3,6) yerine (3,10) bulunur. Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta(3,10)’dur.",
+          "after": "(3,6) yerine (3,10) bulunur. Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta (3,10)’dur."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "(−3,10) yerine (3,10) bulunur. Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta(3,10)’dur.",
+          "after": "(−3,10) yerine (3,10) bulunur. Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta (3,10)’dur."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "(3,2) yerine (3,10) bulunur. Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta(3,10)’dur.",
+          "after": "(3,2) yerine (3,10) bulunur. Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta (3,10)’dur."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "(5,4) yerine (3,10) bulunur. Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta(3,10)’dur.",
+          "after": "(5,4) yerine (3,10) bulunur. Yatay yansıma x’i değiştirmez.−2 ile yeni y’nin ortalaması 4 olmalıdır: (−2+y)/2=4, y=10. Nokta (3,10)’dur."
+        }
+      ],
+      "beforeFingerprint": "42823126",
+      "afterFingerprint": "576bc7f4"
+    },
+    {
+      "id": "kpss-ma-16-t4-q06",
+      "topicId": "k-ma-16",
+      "changes": [
+        {
+          "field": "text",
+          "before": "y=2x−1’e dik ve(4,3)’ten geçen doğru x eksenini hangi apsiste keser?",
+          "after": "y=2x−1’e dik ve (4,3)’ten geçen doğru x eksenini hangi apsiste keser?"
+        },
+        {
+          "field": "explanation",
+          "before": "Dik doğrunun eğimi−1/2’dir. y−3=−(x−4)/2’den y=−x/2+5. y=0 için x=10 olur.",
+          "after": "Dik doğrunun eğimi −1/2’dir. y−3=−(x−4)/2’den y=−x/2+5. y=0 için x=10 olur."
+        }
+      ],
+      "beforeFingerprint": "c361a768",
+      "afterFingerprint": "2577c46e"
+    },
+    {
+      "id": "kpss-ma-04-t1-q05",
+      "topicId": "k-ma-4",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "72=2³·3²’dir. Bir bölen 2’nin 0–3 ve 3’ün 0–2 üslerini seçer. Adet(3+1)(2+1)=12’dir.",
+          "after": "72=2³·3²’dir. Bir bölen 2’nin 0–3 ve 3’ün 0–2 üslerini seçer. Adet (3+1)(2+1)=12’dir."
+        }
+      ],
+      "beforeFingerprint": "7a31eda3",
+      "afterFingerprint": "18d1a22f"
+    },
+    {
+      "id": "kpss-ma-04-t1-q06",
+      "topicId": "k-ma-4",
+      "changes": [
+        {
+          "field": "options.0",
+          "before": "9 ve15",
+          "after": "9 ve 15"
+        },
+        {
+          "field": "options.1",
+          "before": "8 ve15",
+          "after": "8 ve 15"
+        },
+        {
+          "field": "options.2",
+          "before": "14 ve21",
+          "after": "14 ve 21"
+        },
+        {
+          "field": "options.3",
+          "before": "22 ve33",
+          "after": "22 ve 33"
+        },
+        {
+          "field": "options.4",
+          "before": "25 ve35",
+          "after": "25 ve 35"
+        }
+      ],
+      "beforeFingerprint": "69ab6301",
+      "afterFingerprint": "170380f9"
+    },
+    {
+      "id": "kpss-ma-04-t1-q09",
+      "topicId": "k-ma-4",
+      "changes": [
+        {
+          "field": "text",
+          "before": "İki pozitif tam sayının EBOB’u6, EKOK’u90’dır. Sayılardan biri 18 ise diğeri kaçtır?",
+          "after": "İki pozitif tam sayının EBOB’u 6, EKOK’u 90’dır. Sayılardan biri 18 ise diğeri kaçtır?"
+        }
+      ],
+      "beforeFingerprint": "8e85f80e",
+      "afterFingerprint": "ac0e2d72"
+    },
+    {
+      "id": "kpss-ma-04-t2-q11",
+      "topicId": "k-ma-4",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Bölen sayısı(a+1)(2+1)=18’dir. 3(a+1)=18’den a+1=6 ve a=5 bulunur.",
+          "after": "Bölen sayısı (a+1)(2+1)=18’dir. 3(a+1)=18’den a+1=6 ve a=5 bulunur."
+        }
+      ],
+      "beforeFingerprint": "562aaa5a",
+      "afterFingerprint": "cc5c1126"
+    },
+    {
+      "id": "kpss-ma-04-t3-q01",
+      "topicId": "k-ma-4",
+      "changes": [
+        {
+          "field": "text",
+          "before": "p ve q asal sayıları için p+q=35 koşulunu sağlayan kaç sıralı(p, q) çifti vardır?",
+          "after": "p ve q asal sayıları için p+q=35 koşulunu sağlayan kaç sıralı (p, q) çifti vardır?"
+        }
+      ],
+      "beforeFingerprint": "74899baa",
+      "afterFingerprint": "e8d4a5b8"
+    },
+    {
+      "id": "kpss-ma-04-t3-q08",
+      "topicId": "k-ma-4",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Asal çarpanlara ayrımda bölen sayısının tek olması için her(üs+1) tek, yani her üs çift olmalıdır. Bu, sayının tam kare olmasıdır.",
+          "after": "Asal çarpanlara ayrımda bölen sayısının tek olması için her (üs+1) tek, yani her üs çift olmalıdır. Bu, sayının tam kare olmasıdır."
+        }
+      ],
+      "beforeFingerprint": "4d6e07e1",
+      "afterFingerprint": "04118f6d"
+    },
+    {
+      "id": "kpss-ma-04-t3-q12",
+      "topicId": "k-ma-4",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "(a+1)(b+1)=12 için(a, b)=(1,5),(2,3),(3,2),(5,1) olabilir. Sayılar 486,108,72,96’dır; en küçüğü 72’dir.",
+          "after": "(a+1)(b+1)=12 için (a, b)=(1,5),(2,3),(3,2),(5,1) olabilir. Sayılar 486,108,72,96’dır; en küçüğü 72’dir."
+        }
+      ],
+      "beforeFingerprint": "1ec19d14",
+      "afterFingerprint": "d948e166"
+    },
+    {
+      "id": "kpss-ma-03-t1-q11",
+      "topicId": "k-ma-3",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Dönüşümlü toplam(5+7)−(A+2)=10−A’dır. Rakam A için bu fark 1 ile 10 arasındadır; 11’in katı olamaz, uygun rakam yoktur.",
+          "after": "Dönüşümlü toplam (5+7)−(A+2)=10−A’dır. Rakam A için bu fark 1 ile 10 arasındadır; 11’in katı olamaz, uygun rakam yoktur."
+        }
+      ],
+      "beforeFingerprint": "57e889d7",
+      "afterFingerprint": "5c7d644d"
+    },
+    {
+      "id": "kpss-ma-03-t3-q06",
+      "topicId": "k-ma-3",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "11 kuralı 8−(A+B) için 0 veya−11 olmasını gerektirir. A=B+2 ile A+B=2B+2 çift olduğundan 19 olamaz; 8 için B=3, A=5. Sayı 5533’tür.",
+          "after": "11 kuralı 8−(A+B) için 0 veya −11 olmasını gerektirir. A=B+2 ile A+B=2B+2 çift olduğundan 19 olamaz; 8 için B=3, A=5. Sayı 5533’tür."
+        }
+      ],
+      "beforeFingerprint": "aa40eae0",
+      "afterFingerprint": "ada17228"
+    },
+    {
+      "id": "kpss-ma-03-t4-q05",
+      "topicId": "k-ma-3",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "4 ve 6’nın EKOK’u12’dir; ortak katlar 12’ye bölünür. 12 sayısı diğer dört iddiaya karşı örnektir.",
+          "after": "4 ve 6’nın EKOK’u 12’dir; ortak katlar 12’ye bölünür. 12 sayısı diğer dört iddiaya karşı örnektir."
+        }
+      ],
+      "beforeFingerprint": "f4eb70b4",
+      "afterFingerprint": "cbc04698"
+    },
+    {
+      "id": "kpss-ma-15-t4-q01",
+      "topicId": "k-ma-15",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "4/25 yerine 2/5 bulunur. Yay uzunluğu(θ/360)·2πr’dir. Ortak açı ve sabitler sadeleşir; oran 4/10=2/5 olur.",
+          "after": "4/25 yerine 2/5 bulunur. Yay uzunluğu (θ/360)·2πr’dir. Ortak açı ve sabitler sadeleşir; oran 4/10=2/5 olur."
+        },
+        {
+          "field": "wrongAnswerNotes.B",
+          "before": "1/5 yerine 2/5 bulunur. Yay uzunluğu(θ/360)·2πr’dir. Ortak açı ve sabitler sadeleşir; oran 4/10=2/5 olur.",
+          "after": "1/5 yerine 2/5 bulunur. Yay uzunluğu (θ/360)·2πr’dir. Ortak açı ve sabitler sadeleşir; oran 4/10=2/5 olur."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "4/5 yerine 2/5 bulunur. Yay uzunluğu(θ/360)·2πr’dir. Ortak açı ve sabitler sadeleşir; oran 4/10=2/5 olur.",
+          "after": "4/5 yerine 2/5 bulunur. Yay uzunluğu (θ/360)·2πr’dir. Ortak açı ve sabitler sadeleşir; oran 4/10=2/5 olur."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "5/2 yerine 2/5 bulunur. Yay uzunluğu(θ/360)·2πr’dir. Ortak açı ve sabitler sadeleşir; oran 4/10=2/5 olur.",
+          "after": "5/2 yerine 2/5 bulunur. Yay uzunluğu (θ/360)·2πr’dir. Ortak açı ve sabitler sadeleşir; oran 4/10=2/5 olur."
+        }
+      ],
+      "beforeFingerprint": "7c02e3bc",
+      "afterFingerprint": "842b3dca"
+    },
+    {
+      "id": "kpss-ma-14-t1-q05",
+      "topicId": "k-ma-14",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "n kenarlı çokgende iç açılar toplamı(n−2)·180°’dir. Beşgen için 3·180=540° olur.",
+          "after": "n kenarlı çokgende iç açılar toplamı (n−2)·180°’dir. Beşgen için 3·180=540° olur."
+        }
+      ],
+      "beforeFingerprint": "743e6189",
+      "afterFingerprint": "8c12279b"
+    },
+    {
+      "id": "kpss-ma-14-t1-q06",
+      "topicId": "k-ma-14",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Yamuk alanı(tabanların toplamı)·yükseklik/2’dir. (6+10)·5/2=40 cm² bulunur.",
+          "after": "Yamuk alanı (tabanların toplamı)·yükseklik/2’dir. (6+10)·5/2=40 cm² bulunur."
+        }
+      ],
+      "beforeFingerprint": "506e08e1",
+      "afterFingerprint": "6eee1ca7"
+    },
+    {
+      "id": "kpss-ma-14-t2-q10",
+      "topicId": "k-ma-14",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Kenar çarpanı 1,20 ise alan çarpanı 1,20²=1,44’tür. Yeni alan eski alanın%144’ü, artış%44’tür.",
+          "after": "Kenar çarpanı 1,20 ise alan çarpanı 1,20²=1,44’tür. Yeni alan eski alanın %144’ü, artış %44’tür."
+        }
+      ],
+      "beforeFingerprint": "da8d255a",
+      "afterFingerprint": "f4a023ea"
+    },
+    {
+      "id": "kpss-ma-14-t3-q08",
+      "topicId": "k-ma-14",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Taban farkının yarısı 6 cm’dir. Yükseklik √(10²−6²)=8 cm. Alan(8+20)·8/2=112 cm² olur.",
+          "after": "Taban farkının yarısı 6 cm’dir. Yükseklik √(10²−6²)=8 cm. Alan (8+20)·8/2=112 cm² olur."
+        }
+      ],
+      "beforeFingerprint": "42af7b60",
+      "afterFingerprint": "f1db4a86"
+    },
+    {
+      "id": "kpss-ma-14-t4-q02",
+      "topicId": "k-ma-14",
+      "changes": [
+        {
+          "field": "options.4",
+          "before": "Bir açısı60°’dir.",
+          "after": "Bir açısı 60°’dir."
+        }
+      ],
+      "beforeFingerprint": "dcb7a409",
+      "afterFingerprint": "224075c1"
+    },
+    {
+      "id": "kpss-ma-06-t1-q02",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Her iki taraf−2’ye bölündüğünde eşitsizlik yön değiştirir. Sonuç x≤−4’tür; eşitlik korunur.",
+          "after": "Her iki taraf −2’ye bölündüğünde eşitsizlik yön değiştirir. Sonuç x≤−4’tür; eşitlik korunur."
+        }
+      ],
+      "beforeFingerprint": "b20f333d",
+      "afterFingerprint": "90fdce8b"
+    },
+    {
+      "id": "kpss-ma-06-t1-q04",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Uygun tam sayılar−2,−1,0,1,2,3,4’tür. Alt sınır−3 alınmaz, üst sınır 4 alınır; toplam 7 sayı vardır.",
+          "after": "Uygun tam sayılar −2,−1,0,1,2,3,4’tür. Alt sınır −3 alınmaz, üst sınır 4 alınır; toplam 7 sayı vardır."
+        }
+      ],
+      "beforeFingerprint": "ac8fe2e9",
+      "afterFingerprint": "9edfc9f5"
+    },
+    {
+      "id": "kpss-ma-06-t1-q05",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "x−2=5 veya x−2=−5 olur. Çözümler 7 ve−3, toplamları 4’tür.",
+          "after": "x−2=5 veya x−2=−5 olur. Çözümler 7 ve −3, toplamları 4’tür."
+        }
+      ],
+      "beforeFingerprint": "79f9924a",
+      "afterFingerprint": "62f4f738"
+    },
+    {
+      "id": "kpss-ma-06-t1-q10",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Mutlak değer 4’ten büyükse içi 4’ten büyük veya−4’ten küçüktür. x+1>4 ya da x+1<−4; x>3 veya x<−5 olur.",
+          "after": "Mutlak değer 4’ten büyükse içi 4’ten büyük veya −4’ten küçüktür. x+1>4 ya da x+1<−4; x>3 veya x<−5 olur."
+        }
+      ],
+      "beforeFingerprint": "a6d17410",
+      "afterFingerprint": "b7da3c02"
+    },
+    {
+      "id": "kpss-ma-06-t2-q05",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Koşul |2x−3|<5’tir.−5<2x−3<5 eşitsizliği−1<x<4 verir. Uygun 0,1,2,3 sayılarının toplamı 6’dır.",
+          "after": "Koşul |2x−3|<5’tir.−5<2x−3<5 eşitsizliği −1<x<4 verir. Uygun 0,1,2,3 sayılarının toplamı 6’dır."
+        }
+      ],
+      "beforeFingerprint": "3a2fed94",
+      "afterFingerprint": "705d85bc"
+    },
+    {
+      "id": "kpss-ma-06-t2-q06",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "x²<16, |x|<4 ile eşdeğerdir. Bu nedenle hem−4’ten büyük hem 4’ten küçük olmalıdır; yalnız bir sınır yeterli değildir.",
+          "after": "x²<16, |x|<4 ile eşdeğerdir. Bu nedenle hem −4’ten büyük hem 4’ten küçük olmalıdır; yalnız bir sınır yeterli değildir."
+        }
+      ],
+      "beforeFingerprint": "a1b02495",
+      "afterFingerprint": "6648934f"
+    },
+    {
+      "id": "kpss-ma-06-t2-q08",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Örneğin daha negatif a’nın mutlak değeri daha büyük, tersinin mutlak değeri daha küçüktür. Cebirsel fark( b−a)/(ab)>0 olduğundan 1/a>1/b’dir.",
+          "after": "Örneğin daha negatif a’nın mutlak değeri daha büyük, tersinin mutlak değeri daha küçüktür. Cebirsel fark (b−a)/(ab)>0 olduğundan 1/a>1/b’dir."
+        }
+      ],
+      "beforeFingerprint": "2ac0ba3a",
+      "afterFingerprint": "863721ca"
+    },
+    {
+      "id": "kpss-ma-06-t2-q11",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "text",
+          "before": "|x|<5 ve|x|≥2 koşullarını sağlayan kaç tam sayı x vardır?",
+          "after": "|x|<5 ve |x|≥2 koşullarını sağlayan kaç tam sayı x vardır?"
+        },
+        {
+          "field": "explanation",
+          "before": "2≤|x|<5 olduğundan x=−4,−3,−2,2,3,4 alınır. Sıfır ve±1 dışarıda; ±5 de üst sınır nedeniyle dışarıdadır.",
+          "after": "2≤|x|<5 olduğundan x=−4,−3,−2,2,3,4 alınır. Sıfır ve ±1 dışarıda; ±5 de üst sınır nedeniyle dışarıdadır."
+        }
+      ],
+      "beforeFingerprint": "389113a7",
+      "afterFingerprint": "ee8720d9"
+    },
+    {
+      "id": "kpss-ma-06-t3-q01",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Pozitif 3 ile çarpınca−3≤x−2<6, ardından 2 ekleyince−1≤x<8 olur. En küçük tam sayı−1’dir.",
+          "after": "Pozitif 3 ile çarpınca −3≤x−2<6, ardından 2 ekleyince −1≤x<8 olur. En küçük tam sayı −1’dir."
+        }
+      ],
+      "beforeFingerprint": "941a5288",
+      "afterFingerprint": "a16a0e2a"
+    },
+    {
+      "id": "kpss-ma-06-t3-q02",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Bir noktaya 1 ve 9’dan eşit uzaklıkta olan tek sayı orta nokta(1+9)/2=5’tir; kareleri eşitleyerek de x=5 bulunur.",
+          "after": "Bir noktaya 1 ve 9’dan eşit uzaklıkta olan tek sayı orta nokta (1+9)/2=5’tir; kareleri eşitleyerek de x=5 bulunur."
+        }
+      ],
+      "beforeFingerprint": "c420eb87",
+      "afterFingerprint": "28305789"
+    },
+    {
+      "id": "kpss-ma-06-t3-q03",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Kökler−3 ve 2’dir. Aralarında bir çarpan negatif, diğeri pozitiftir; çarpım negatiftir. Köklerde sıfır olduğundan uçlar alınmaz.",
+          "after": "Kökler −3 ve 2’dir. Aralarında bir çarpan negatif, diğeri pozitiftir; çarpım negatiftir. Köklerde sıfır olduğundan uçlar alınmaz."
+        }
+      ],
+      "beforeFingerprint": "3ddeaa1e",
+      "afterFingerprint": "2dc4ff4c"
+    },
+    {
+      "id": "kpss-ma-06-t3-q05",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Aralık 0’ı içerdiğinden en küçük kare 0’dır. Mutlak değeri en büyük uç−3 olduğundan en büyük kare 9’dur.",
+          "after": "Aralık 0’ı içerdiğinden en küçük kare 0’dır. Mutlak değeri en büyük uç −3 olduğundan en büyük kare 9’dur."
+        }
+      ],
+      "beforeFingerprint": "8fe97796",
+      "afterFingerprint": "dd665dd2"
+    },
+    {
+      "id": "kpss-ma-06-t3-q06",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "−2 ile 4 arasındaki her noktanın iki uca uzaklık toplamı 6’dır. Çözümler−2≤x≤4 aralığı; uçlar dahil 7 tam sayıdır.",
+          "after": "−2 ile 4 arasındaki her noktanın iki uca uzaklık toplamı 6’dır. Çözümler −2≤x≤4 aralığı; uçlar dahil 7 tam sayıdır."
+        }
+      ],
+      "beforeFingerprint": "8bc05976",
+      "afterFingerprint": "648152c4"
+    },
+    {
+      "id": "kpss-ma-06-t3-q09",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "a’nın en küçük tam değeri−3, b’nin en büyük tam değeri 4’tür. Negatif çarpımı en küçük yapmak için bunlar seçilir: −3·4=−12.",
+          "after": "a’nın en küçük tam değeri −3, b’nin en büyük tam değeri 4’tür. Negatif çarpımı en küçük yapmak için bunlar seçilir: −3·4=−12."
+        }
+      ],
+      "beforeFingerprint": "37b1863a",
+      "afterFingerprint": "0bbe5ec2"
+    },
+    {
+      "id": "kpss-ma-06-t3-q11",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Pay ve paydanın aynı işaretli olması gerekir. Kritik noktalar−2 ve 1’dir; dış aralıklarda işaretler aynı olur.−2 tanımsız,1 sıfırdır.",
+          "after": "Pay ve paydanın aynı işaretli olması gerekir. Kritik noktalar −2 ve 1’dir; dış aralıklarda işaretler aynı olur.−2 tanımsız,1 sıfırdır."
+        }
+      ],
+      "beforeFingerprint": "7130803c",
+      "afterFingerprint": "48ecf80c"
+    },
+    {
+      "id": "kpss-ma-06-t3-q12",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "text",
+          "before": "x tam sayı ve|3x−2|≤10’dur. 2x+5’in en büyük değeri kaçtır?",
+          "after": "x tam sayı ve |3x−2|≤10’dur. 2x+5’in en büyük değeri kaçtır?"
+        },
+        {
+          "field": "explanation",
+          "before": "−10≤3x−2≤10’dan−8/3≤x≤4 olur. En büyük tam sayı 4’tür. Artan hedef 2x+5,4 için 13 verir.",
+          "after": "−10≤3x−2≤10’dan −8/3≤x≤4 olur. En büyük tam sayı 4’tür. Artan hedef 2x+5,4 için 13 verir."
+        }
+      ],
+      "beforeFingerprint": "a309456d",
+      "afterFingerprint": "e369f617"
+    },
+    {
+      "id": "kpss-ma-06-t4-q02",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "İç değer |x−2|−3=±1 olduğundan |x−2|=4 veya 2’dir. Çözümler−2,6,0,4 olmak üzere dört farklı sayıdır.",
+          "after": "İç değer |x−2|−3=±1 olduğundan |x−2|=4 veya 2’dir. Çözümler −2,6,0,4 olmak üzere dört farklı sayıdır."
+        }
+      ],
+      "beforeFingerprint": "fe611902",
+      "afterFingerprint": "e6dbd828"
+    },
+    {
+      "id": "kpss-ma-06-t4-q03",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "text",
+          "before": "x gerçek sayısı için−x²+6x+1 ifadesinin en büyük değeri kaçtır?",
+          "after": "x gerçek sayısı için −x²+6x+1 ifadesinin en büyük değeri kaçtır?"
+        },
+        {
+          "field": "explanation",
+          "before": "İfade−(x−3)²+10 biçimindedir. Kare negatif olamaz, bu yüzden değer en çok 10’dur; x=3’te sağlanır.",
+          "after": "İfade −(x−3)²+10 biçimindedir. Kare negatif olamaz, bu yüzden değer en çok 10’dur; x=3’te sağlanır."
+        }
+      ],
+      "beforeFingerprint": "e1697da8",
+      "afterFingerprint": "55ab2332"
+    },
+    {
+      "id": "kpss-ma-06-t4-q04",
+      "topicId": "k-ma-6",
+      "changes": [
+        {
+          "field": "text",
+          "before": "|x−1|≤4 ve|x+2|<3 koşullarını birlikte sağlayan kaç tam sayı x vardır?",
+          "after": "|x−1|≤4 ve |x+2|<3 koşullarını birlikte sağlayan kaç tam sayı x vardır?"
+        },
+        {
+          "field": "explanation",
+          "before": "İlk aralık−3≤x≤5, ikinci−5<x<1’dir. Ortak aralık−3≤x<1; −3,−2,−1,0 olmak üzere 4 tam sayı verir.",
+          "after": "İlk aralık −3≤x≤5, ikinci −5<x<1’dir. Ortak aralık −3≤x<1; −3,−2,−1,0 olmak üzere 4 tam sayı verir."
+        }
+      ],
+      "beforeFingerprint": "dccf44e9",
+      "afterFingerprint": "a6d7dcb1"
+    },
+    {
+      "id": "kpss-ma-17-t1-q10",
+      "topicId": "k-ma-17",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "12π yerine 36π bulunur. Küre hacmi(4/3)πr³’tür. (4/3)π·27=36π cm³ olarak bulunur.",
+          "after": "12π yerine 36π bulunur. Küre hacmi (4/3)πr³’tür. (4/3)π·27=36π cm³ olarak bulunur."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "18π yerine 36π bulunur. Küre hacmi(4/3)πr³’tür. (4/3)π·27=36π cm³ olarak bulunur.",
+          "after": "18π yerine 36π bulunur. Küre hacmi (4/3)πr³’tür. (4/3)π·27=36π cm³ olarak bulunur."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "27π yerine 36π bulunur. Küre hacmi(4/3)πr³’tür. (4/3)π·27=36π cm³ olarak bulunur.",
+          "after": "27π yerine 36π bulunur. Küre hacmi (4/3)πr³’tür. (4/3)π·27=36π cm³ olarak bulunur."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "108π yerine 36π bulunur. Küre hacmi(4/3)πr³’tür. (4/3)π·27=36π cm³ olarak bulunur.",
+          "after": "108π yerine 36π bulunur. Küre hacmi (4/3)πr³’tür. (4/3)π·27=36π cm³ olarak bulunur."
+        }
+      ],
+      "beforeFingerprint": "78e5eabd",
+      "afterFingerprint": "93b1e895"
+    },
+    {
+      "id": "kpss-ma-17-t3-q04",
+      "topicId": "k-ma-17",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Yarıçap 6 cm’dir. Hacim(4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz.",
+          "after": "Yarıçap 6 cm’dir. Hacim (4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz."
+        },
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "144π yerine 288π bulunur. Yarıçap 6 cm’dir. Hacim(4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz.",
+          "after": "144π yerine 288π bulunur. Yarıçap 6 cm’dir. Hacim (4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz."
+        },
+        {
+          "field": "wrongAnswerNotes.B",
+          "before": "216π yerine 288π bulunur. Yarıçap 6 cm’dir. Hacim(4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz.",
+          "after": "216π yerine 288π bulunur. Yarıçap 6 cm’dir. Hacim (4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "576π yerine 288π bulunur. Yarıçap 6 cm’dir. Hacim(4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz.",
+          "after": "576π yerine 288π bulunur. Yarıçap 6 cm’dir. Hacim (4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "2304π yerine 288π bulunur. Yarıçap 6 cm’dir. Hacim(4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz.",
+          "after": "2304π yerine 288π bulunur. Yarıçap 6 cm’dir. Hacim (4/3)π·6³=(4/3)π·216=288π cm³ olur; 12 doğrudan r yerine konmaz."
+        }
+      ],
+      "beforeFingerprint": "17657cfe",
+      "afterFingerprint": "f510e5ea"
+    },
+    {
+      "id": "kpss-ma-10-t2-q08",
+      "topicId": "k-ma-10",
+      "changes": [
+        {
+          "field": "text",
+          "before": "E evrensel kümesinde(A∪B)′ hangi kümeye eşittir?",
+          "after": "E evrensel kümesinde (A∪B)′ hangi kümeye eşittir?"
+        }
+      ],
+      "beforeFingerprint": "548aa30d",
+      "afterFingerprint": "df3c5591"
+    },
+    {
+      "id": "kpss-ma-10-t3-q01",
+      "topicId": "k-ma-10",
+      "changes": [
+        {
+          "field": "text",
+          "before": "A={1,2,3,4}, B={3,4,5}, C={2,4,6} ise(A∪B)\\C hangisidir?",
+          "after": "A={1,2,3,4}, B={3,4,5}, C={2,4,6} ise (A∪B)\\C hangisidir?"
+        },
+        {
+          "field": "explanation",
+          "before": "Önce A∪B={1,2,3,4,5} bulunur. C’deki 2 ve 4 çıkarılır; 6 birleşimde zaten yoktur. Sonuç{1,3,5}’tir.",
+          "after": "Önce A∪B={1,2,3,4,5} bulunur. C’deki 2 ve 4 çıkarılır; 6 birleşimde zaten yoktur. Sonuç {1,3,5}’tir."
+        }
+      ],
+      "beforeFingerprint": "dd0c9b5e",
+      "afterFingerprint": "7040cce4"
+    },
+    {
+      "id": "kpss-ma-10-t3-q08",
+      "topicId": "k-ma-10",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "İlk bileşen ve ikinci bileşen her iki kümede de bulunmalıdır. A∩B={2} olduğundan tek ortak sıralı ikili(2,2)’dir.",
+          "after": "İlk bileşen ve ikinci bileşen her iki kümede de bulunmalıdır. A∩B={2} olduğundan tek ortak sıralı ikili (2,2)’dir."
+        }
+      ],
+      "beforeFingerprint": "3233b210",
+      "afterFingerprint": "f8fa8624"
+    },
+    {
+      "id": "kpss-ma-10-t4-q06",
+      "topicId": "k-ma-10",
+      "changes": [
+        {
+          "field": "text",
+          "before": "s(A∩B)=3 ve s(C)=4 ise(A×C)∩(B×C) kaç elemanlıdır?",
+          "after": "s(A∩B)=3 ve s(C)=4 ise (A×C)∩(B×C) kaç elemanlıdır?"
+        },
+        {
+          "field": "explanation",
+          "before": "İlk bileşen A ve B’de ortak, ikinci bileşen C’de olmalıdır. Kesişim(A∩B)×C olduğundan 3·4=12 eleman vardır.",
+          "after": "İlk bileşen A ve B’de ortak, ikinci bileşen C’de olmalıdır. Kesişim (A∩B)×C olduğundan 3·4=12 eleman vardır."
+        }
+      ],
+      "beforeFingerprint": "3960ed65",
+      "afterFingerprint": "d2c6d8f9"
+    },
+    {
+      "id": "kpss-ma-11-t1-q10",
+      "topicId": "k-ma-11",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Hiç tura gelmemesi üç atışın da yazı olmasıdır; olasılığı(1/2)³=1/8. En az bir tura 1−1/8=7/8’dir.",
+          "after": "Hiç tura gelmemesi üç atışın da yazı olmasıdır; olasılığı (1/2)³=1/8. En az bir tura 1−1/8=7/8’dir."
+        }
+      ],
+      "beforeFingerprint": "c8098929",
+      "afterFingerprint": "e27e7c13"
+    },
+    {
+      "id": "kpss-ma-11-t2-q03",
+      "topicId": "k-ma-11",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Toplam 5 için(1,4),(2,3),(3,2),(4,1) uygun dört sıralı sonuç vardır. 36 eş olasılıklı sonuçta 4/36=1/9’dur.",
+          "after": "Toplam 5 için (1,4),(2,3),(3,2),(4,1) uygun dört sıralı sonuç vardır. 36 eş olasılıklı sonuçta 4/36=1/9’dur."
+        }
+      ],
+      "beforeFingerprint": "3ffb5932",
+      "afterFingerprint": "d576ddf6"
+    },
+    {
+      "id": "kpss-ma-11-t2-q05",
+      "topicId": "k-ma-11",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Top geri konduğu için her çekilişte beyaz olasılığı 2/5’tir. Bağımsız iki beyaz için(2/5)²=4/25 bulunur.",
+          "after": "Top geri konduğu için her çekilişte beyaz olasılığı 2/5’tir. Bağımsız iki beyaz için (2/5)²=4/25 bulunur."
+        }
+      ],
+      "beforeFingerprint": "6a584c17",
+      "afterFingerprint": "3f9dc301"
+    },
+    {
+      "id": "kpss-ma-08-t1-q08",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Sol taraf 3x−6’dır. 3x−6=2x+9 eşitliği x=15 verir; parantez içindeki−2 de 3 ile çarpılır.",
+          "after": "Sol taraf 3x−6’dır. 3x−6=2x+9 eşitliği x=15 verir; parantez içindeki −2 de 3 ile çarpılır."
+        }
+      ],
+      "beforeFingerprint": "b18f2e65",
+      "afterFingerprint": "401e4285"
+    },
+    {
+      "id": "kpss-ma-08-t1-q12",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "commonMistake",
+          "before": "20 başlangıç toplamı olsaydı kırmızı 8,mavi 12; eklemeden sonra oran 18/12=3/2 olurdu.",
+          "after": "20 başlangıç toplamı olsaydı kırmızı 8, mavi 12; eklemeden sonra oran 18/12=3/2 olurdu."
+        },
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "20 başlangıç toplamı olsaydı kırmızı 8,mavi 12; eklemeden sonra oran 18/12=3/2 olurdu.",
+          "after": "20 başlangıç toplamı olsaydı kırmızı 8, mavi 12; eklemeden sonra oran 18/12=3/2 olurdu."
+        }
+      ],
+      "beforeFingerprint": "dcaa8004",
+      "afterFingerprint": "0fbec3f4"
+    },
+    {
+      "id": "kpss-ma-08-t2-q06",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Ters orantıda ab sabittir. a3 katına çıktığında çarpımın aynı kalması için b3’e bölünmelidir.",
+          "after": "Ters orantıda ab sabittir. a 3 katına çıktığında çarpımın aynı kalması için b 3’e bölünmelidir."
+        }
+      ],
+      "beforeFingerprint": "6781b07b",
+      "afterFingerprint": "4208ed01"
+    },
+    {
+      "id": "kpss-ma-08-t2-q12",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "commonMistake",
+          "before": "Toplam 48 için kadın20,erkek28 olur; altışar ayrılınca 14/22=7/11 çıkar.",
+          "after": "Toplam 48 için kadın 20, erkek 28 olur; altışar ayrılınca 14/22=7/11 çıkar."
+        },
+        {
+          "field": "wrongAnswerNotes.A",
+          "before": "Toplam 48 için kadın20,erkek28 olur; altışar ayrılınca 14/22=7/11 çıkar.",
+          "after": "Toplam 48 için kadın 20, erkek 28 olur; altışar ayrılınca 14/22=7/11 çıkar."
+        },
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "84 için kadın35,erkek49; son oran 29/43’tür ve 2/3’e eşit değildir.",
+          "after": "84 için kadın 35, erkek 49; son oran 29/43’tür ve 2/3’e eşit değildir."
+        }
+      ],
+      "beforeFingerprint": "35aa98e4",
+      "afterFingerprint": "99def51e"
+    },
+    {
+      "id": "kpss-ma-08-t3-q04",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "text",
+          "before": "x>0 ve(x+2)/(x+8)=1/2 olduğuna göre x kaçtır?",
+          "after": "x>0 ve (x+2)/(x+8)=1/2 olduğuna göre x kaçtır?"
+        }
+      ],
+      "beforeFingerprint": "7208e92a",
+      "afterFingerprint": "474f320e"
+    },
+    {
+      "id": "kpss-ma-08-t3-q08",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Ortak b15 alınırsa a: b: c=6: 15: 20 olur. Fark 14k=42’den k=3; a=6·3=18’dir.",
+          "after": "Ortak b 15 alınırsa a: b: c=6: 15: 20 olur. Fark 14k=42’den k=3; a=6·3=18’dir."
+        }
+      ],
+      "beforeFingerprint": "8c1c62ca",
+      "afterFingerprint": "4b6acdae"
+    },
+    {
+      "id": "kpss-ma-08-t3-q11",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.C",
+          "before": "48 için ilk kutular18,30 olur; aktarım sonrası26,22 eşit değildir.",
+          "after": "48 için ilk kutular 18,30 olur; aktarım sonrası 26,22 eşit değildir."
+        },
+        {
+          "field": "wrongAnswerNotes.D",
+          "before": "72 için kutular27,45 olur; son değerler35,37 eşit değildir.",
+          "after": "72 için kutular 27,45 olur; son değerler 35,37 eşit değildir."
+        },
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "80 için kutular30,50 olur; son değerler38 ve42’dir; aktarım farkı 16 kapatır.",
+          "after": "80 için kutular 30,50 olur; son değerler 38 ve 42’dir; aktarım farkı 16 kapatır."
+        }
+      ],
+      "beforeFingerprint": "5d8faf15",
+      "afterFingerprint": "77e43fd1"
+    },
+    {
+      "id": "kpss-ma-08-t4-q02",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Q, a ve b ile doğru, c ile ters orantılıdır. a2 katına, b3 katına, c4 katına çıkarsa Q kaç katına çıkar?",
+          "after": "Q, a ve b ile doğru, c ile ters orantılıdır. a 2 katına, b 3 katına, c 4 katına çıkarsa Q kaç katına çıkar?"
+        }
+      ],
+      "beforeFingerprint": "39b7b957",
+      "afterFingerprint": "0d36db3b"
+    },
+    {
+      "id": "kpss-ma-08-t4-q05",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "x²−5x−14=(x−7)(x+2)=0 olur. Kökler 7 ve−2’dir; pozitiflik şartı yalnız 7’yi bırakır.",
+          "after": "x²−5x−14=(x−7)(x+2)=0 olur. Kökler 7 ve −2’dir; pozitiflik şartı yalnız 7’yi bırakır."
+        }
+      ],
+      "beforeFingerprint": "85ebf39d",
+      "afterFingerprint": "3f163ef9"
+    },
+    {
+      "id": "kpss-ma-08-t4-q08",
+      "topicId": "k-ma-8",
+      "changes": [
+        {
+          "field": "wrongAnswerNotes.E",
+          "before": "35 için A−B=10 alınsa bile ikinci oran sağlanmaz; B=25 iken40≠3·20 olur.",
+          "after": "35 için A−B=10 alınsa bile ikinci oran sağlanmaz; B=25 iken 40≠3·20 olur."
+        }
+      ],
+      "beforeFingerprint": "b7600500",
+      "afterFingerprint": "1fab915a"
+    },
+    {
+      "id": "kpss-ma-09-t1-q01",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "250 soruluk bir paketin%20’si çözüldü. Kaç soru çözülmüştür?",
+          "after": "250 soruluk bir paketin %20’si çözüldü. Kaç soru çözülmüştür?"
+        }
+      ],
+      "beforeFingerprint": "86ceb4f2",
+      "afterFingerprint": "857c7cfa"
+    },
+    {
+      "id": "kpss-ma-09-t1-q07",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Bir kursun öğrenci sayısı%25 artarak 150 oluyor. Başlangıçta kaç öğrenci vardı?",
+          "after": "Bir kursun öğrenci sayısı %25 artarak 150 oluyor. Başlangıçta kaç öğrenci vardı?"
+        },
+        {
+          "field": "explanation",
+          "before": "Başlangıç x ise yeni sayı 1,25x=150’dir. x=150/1,25=120 bulunur; 150’nin%25’ini çıkarmak başlangıca dönmez.",
+          "after": "Başlangıç x ise yeni sayı 1,25x=150’dir. x=150/1,25=120 bulunur; 150’nin %25’ini çıkarmak başlangıca dönmez."
+        }
+      ],
+      "beforeFingerprint": "73aa9ddf",
+      "afterFingerprint": "6fb8b2dd"
+    },
+    {
+      "id": "kpss-ma-09-t1-q08",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "20 kg%30 tuzlu çözeltiye 10 kg saf su ekleniyor. Son karışımın tuz yüzdesi kaçtır?",
+          "after": "20 kg %30 tuzlu çözeltiye 10 kg saf su ekleniyor. Son karışımın tuz yüzdesi kaçtır?"
+        }
+      ],
+      "beforeFingerprint": "6db57ca5",
+      "afterFingerprint": "ed8ee1ad"
+    },
+    {
+      "id": "kpss-ma-09-t1-q12",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Bir ürüne önce%20 zam, yeni fiyatına sonra%20 indirim uygulanıyor. Başlangıç fiyatına göre sonuç nedir?",
+          "after": "Bir ürüne önce %20 zam, yeni fiyatına sonra %20 indirim uygulanıyor. Başlangıç fiyatına göre sonuç nedir?"
+        },
+        {
+          "field": "explanation",
+          "before": "Fiyat çarpanı 1,20·0,80=0,96’dır. Son fiyat başlangıcın%96’sı olduğundan net değişim%4 azalmadır.",
+          "after": "Fiyat çarpanı 1,20·0,80=0,96’dır. Son fiyat başlangıcın %96’sı olduğundan net değişim %4 azalmadır."
+        }
+      ],
+      "beforeFingerprint": "5fe35641",
+      "afterFingerprint": "6608174f"
+    },
+    {
+      "id": "kpss-ma-09-t2-q02",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Maliyeti 100 TL olan ürün 150 TL etiketleniyor. Etiket üzerinden%20 indirimle satılırsa kâr kaç TL olur?",
+          "after": "Maliyeti 100 TL olan ürün 150 TL etiketleniyor. Etiket üzerinden %20 indirimle satılırsa kâr kaç TL olur?"
+        }
+      ],
+      "beforeFingerprint": "422ccfcd",
+      "afterFingerprint": "ffb12e9b"
+    },
+    {
+      "id": "kpss-ma-09-t2-q06",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "10 kg%20 ve 30 kg%40 tuzlu karışım birleştiriliyor. Yeni karışımın tuz yüzdesi kaçtır?",
+          "after": "10 kg %20 ve 30 kg %40 tuzlu karışım birleştiriliyor. Yeni karışımın tuz yüzdesi kaçtır?"
+        }
+      ],
+      "beforeFingerprint": "2ef9cb10",
+      "afterFingerprint": "c40c4732"
+    },
+    {
+      "id": "kpss-ma-09-t2-q08",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "40 kişilik bir grubun%60’ı kadındır. 8 kadın ayrılınca kalan grubun yüzde kaçı kadındır?",
+          "after": "40 kişilik bir grubun %60’ı kadındır. 8 kadın ayrılınca kalan grubun yüzde kaçı kadındır?"
+        },
+        {
+          "field": "explanation",
+          "before": "Başlangıçta 24 kadın vardır. 8 ayrılınca 16 kadın ve toplam 32 kişi kalır. 16/32=1/2 olduğundan kalanların%50’si kadındır.",
+          "after": "Başlangıçta 24 kadın vardır. 8 ayrılınca 16 kadın ve toplam 32 kişi kalır. 16/32=1/2 olduğundan kalanların %50’si kadındır."
+        }
+      ],
+      "beforeFingerprint": "9903b25a",
+      "afterFingerprint": "84eba488"
+    },
+    {
+      "id": "kpss-ma-09-t3-q03",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "A bir işi 10, B15 günde bitiriyor. Birlikte 3 gün çalıştıktan sonra B ayrılıyor. A kalan işi kaç günde bitirir?",
+          "after": "A bir işi 10, B 15 günde bitiriyor. Birlikte 3 gün çalıştıktan sonra B ayrılıyor. A kalan işi kaç günde bitirir?"
+        },
+        {
+          "field": "explanation",
+          "before": "Birlikte günlük 1/10+1/15=1/6 iş yaparlar. 3 günde işin yarısı biter. A kalan 1/2’yi(1/2)/(1/10)=5 günde bitirir.",
+          "after": "Birlikte günlük 1/10+1/15=1/6 iş yaparlar. 3 günde işin yarısı biter. A kalan 1/2’yi (1/2)/(1/10)=5 günde bitirir."
+        }
+      ],
+      "beforeFingerprint": "5ed61c2a",
+      "afterFingerprint": "d9f8c4f4"
+    },
+    {
+      "id": "kpss-ma-09-t3-q04",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "40 kg%15 tuzlu çözeltiden yalnız su buharlaşıyor. Derişim%20 olunca kaç kg su buharlaşmıştır?",
+          "after": "40 kg %15 tuzlu çözeltiden yalnız su buharlaşıyor. Derişim %20 olunca kaç kg su buharlaşmıştır?"
+        }
+      ],
+      "beforeFingerprint": "8b056e5b",
+      "afterFingerprint": "ba80f3a7"
+    },
+    {
+      "id": "kpss-ma-09-t3-q06",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Bir ürün%15 zararla 255 TL’ye satılıyor. Maliyet kaç TL’dir?",
+          "after": "Bir ürün %15 zararla 255 TL’ye satılıyor. Maliyet kaç TL’dir?"
+        },
+        {
+          "field": "explanation",
+          "before": "Satış maliyetin%85’idir. 0,85M=255 denklemi M=255/0,85=300 TL verir.",
+          "after": "Satış maliyetin %85’idir. 0,85M=255 denklemi M=255/0,85=300 TL verir."
+        }
+      ],
+      "beforeFingerprint": "32795d7d",
+      "afterFingerprint": "263342a3"
+    },
+    {
+      "id": "kpss-ma-09-t3-q10",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Yol d ise d/50−d/75=1’dir. Ortak payda 150 ile(3d−2d)/150=1; d=150 km olur.",
+          "after": "Yol d ise d/50−d/75=1’dir. Ortak payda 150 ile (3d−2d)/150=1; d=150 km olur."
+        }
+      ],
+      "beforeFingerprint": "78b8bbe1",
+      "afterFingerprint": "f5f970d7"
+    },
+    {
+      "id": "kpss-ma-09-t4-q01",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "A musluğu havuzu 6, B musluğu 12 saatte dolduruyor. A2 saat açık kaldıktan sonra B de açılıyor. Havuzun dolması başlangıçtan itibaren kaç saat sürer?",
+          "after": "A musluğu havuzu 6, B musluğu 12 saatte dolduruyor. A 2 saat açık kaldıktan sonra B de açılıyor. Havuzun dolması başlangıçtan itibaren kaç saat sürer?"
+        }
+      ],
+      "beforeFingerprint": "c5c6c2bd",
+      "afterFingerprint": "dc6fc74d"
+    },
+    {
+      "id": "kpss-ma-09-t4-q02",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "30 kg%40 tuzlu homojen karışımın 10 kg’ı alınıp yerine 10 kg saf su ekleniyor. Son tuz yüzdesi kaçtır?",
+          "after": "30 kg %40 tuzlu homojen karışımın 10 kg’ı alınıp yerine 10 kg saf su ekleniyor. Son tuz yüzdesi kaçtır?"
+        }
+      ],
+      "beforeFingerprint": "3a650790",
+      "afterFingerprint": "4e10dfa8"
+    },
+    {
+      "id": "kpss-ma-09-t4-q03",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Bir ürün maliyetinin%60 fazlasına etiketleniyor. Etiket üzerinden%25 indirimle satılırsa maliyete göre kâr yüzdesi kaçtır?",
+          "after": "Bir ürün maliyetinin %60 fazlasına etiketleniyor. Etiket üzerinden %25 indirimle satılırsa maliyete göre kâr yüzdesi kaçtır?"
+        },
+        {
+          "field": "explanation",
+          "before": "Maliyet 100 alınırsa etiket 160, indirimli satış 160·0,75=120 olur. Kâr20, maliyete oranı%20’dir.",
+          "after": "Maliyet 100 alınırsa etiket 160, indirimli satış 160·0,75=120 olur. Kâr20, maliyete oranı %20’dir."
+        }
+      ],
+      "beforeFingerprint": "2caa1d0c",
+      "afterFingerprint": "75a1bc54"
+    },
+    {
+      "id": "kpss-ma-09-t4-q05",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "A’nın maaşı B’ninkinden%25 fazladır. B’nin maaşı A’nın maaşından yüzde kaç azdır?",
+          "after": "A’nın maaşı B’ninkinden %25 fazladır. B’nin maaşı A’nın maaşından yüzde kaç azdır?"
+        }
+      ],
+      "beforeFingerprint": "461b7542",
+      "afterFingerprint": "7d30ac28"
+    },
+    {
+      "id": "kpss-ma-09-t4-q10",
+      "topicId": "k-ma-9",
+      "changes": [
+        {
+          "field": "text",
+          "before": "40 kg%25 tuzlu karışımdan 10 kg alınıp yerine 10 kg su ekleniyor. Aynı işlem bir kez daha yapılıyor. Son karışımda kaç kg tuz kalır?",
+          "after": "40 kg %25 tuzlu karışımdan 10 kg alınıp yerine 10 kg su ekleniyor. Aynı işlem bir kez daha yapılıyor. Son karışımda kaç kg tuz kalır?"
+        }
+      ],
+      "beforeFingerprint": "cbcea9af",
+      "afterFingerprint": "3c49601f"
+    },
+    {
+      "id": "kpss-ma-05-t1-q04",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Paydalar 60 yapılırsa değerler−50,−30,−40,−45,−48 bölü 60’tır. En negatif olan−50/60=−5/6 en küçüktür.",
+          "after": "Paydalar 60 yapılırsa değerler −50,−30,−40,−45,−48 bölü 60’tır. En negatif olan −50/60=−5/6 en küçüktür."
+        }
+      ],
+      "beforeFingerprint": "620b5776",
+      "afterFingerprint": "779874e6"
+    },
+    {
+      "id": "kpss-ma-05-t1-q07",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Bir depodaki suyun 3/8’i45 litredir. Depodaki suyun tamamı kaç litredir?",
+          "after": "Bir depodaki suyun 3/8’i 45 litredir. Depodaki suyun tamamı kaç litredir?"
+        }
+      ],
+      "beforeFingerprint": "99041a94",
+      "afterFingerprint": "e96dd7b2"
+    },
+    {
+      "id": "kpss-ma-05-t1-q10",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Payda 6’dan 18’e3 katına çıkmıştır. Aynı değeri korumak için pay da 3 katına çıkar: x=5·3=15.",
+          "after": "Payda 6’dan 18’e 3 katına çıkmıştır. Aynı değeri korumak için pay da 3 katına çıkar: x=5·3=15."
+        }
+      ],
+      "beforeFingerprint": "20ad8d10",
+      "afterFingerprint": "12e71338"
+    },
+    {
+      "id": "kpss-ma-05-t2-q01",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Pay ve paydanın EBOB’u42’dir. 84/42=2 ve 126/42=3 olduğundan sade biçim 2/3 olur.",
+          "after": "Pay ve paydanın EBOB’u 42’dir. 84/42=2 ve 126/42=3 olduğundan sade biçim 2/3 olur."
+        }
+      ],
+      "beforeFingerprint": "e1f786f2",
+      "afterFingerprint": "1c992b76"
+    },
+    {
+      "id": "kpss-ma-05-t2-q11",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "text",
+          "before": "x/(x+2)=3/5 olduğuna göre(x+1)/(x+3) ifadesinin değeri kaçtır?",
+          "after": "x/(x+2)=3/5 olduğuna göre (x+1)/(x+3) ifadesinin değeri kaçtır?"
+        },
+        {
+          "field": "explanation",
+          "before": "5x=3x+6 eşitliğinden x=3 bulunur. Hedef kesirde yerine yazınca(3+1)/(3+3)=4/6=2/3 elde edilir; iki payda da sıfır değildir.",
+          "after": "5x=3x+6 eşitliğinden x=3 bulunur. Hedef kesirde yerine yazınca (3+1)/(3+3)=4/6=2/3 elde edilir; iki payda da sıfır değildir."
+        }
+      ],
+      "beforeFingerprint": "2f83b7d1",
+      "afterFingerprint": "f04687b3"
+    },
+    {
+      "id": "kpss-ma-05-t3-q01",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "text",
+          "before": "Sayı doğrusunda−2/3 ile 5/6 noktalarının tam ortasındaki sayı kaçtır?",
+          "after": "Sayı doğrusunda −2/3 ile 5/6 noktalarının tam ortasındaki sayı kaçtır?"
+        },
+        {
+          "field": "explanation",
+          "before": "Orta nokta iki sayının aritmetik ortalamasıdır. Toplam−4/6+5/6=1/6; yarısı 1/12 olur.",
+          "after": "Orta nokta iki sayının aritmetik ortalamasıdır. Toplam −4/6+5/6=1/6; yarısı 1/12 olur."
+        }
+      ],
+      "beforeFingerprint": "deaeabe6",
+      "afterFingerprint": "11a62db4"
+    },
+    {
+      "id": "kpss-ma-05-t3-q03",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Toplamaya göre ters 2/5, çarpmaya göre ters−5/2’dir. 4/10−25/10=−21/10 bulunur.",
+          "after": "Toplamaya göre ters 2/5, çarpmaya göre ters −5/2’dir. 4/10−25/10=−21/10 bulunur."
+        }
+      ],
+      "beforeFingerprint": "7d26c385",
+      "afterFingerprint": "af873333"
+    },
+    {
+      "id": "kpss-ma-05-t3-q04",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "1/a+1/b=(a+b)/(ab) olduğundan(a+b)/6=5’tir. Buradan a+b=30 elde edilir.",
+          "after": "1/a+1/b=(a+b)/(ab) olduğundan (a+b)/6=5’tir. Buradan a+b=30 elde edilir."
+        }
+      ],
+      "beforeFingerprint": "01716bd1",
+      "afterFingerprint": "cc7c9ec3"
+    },
+    {
+      "id": "kpss-ma-05-t3-q11",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Aradaki−1/3,+1/3 gibi terimler birbirini götürür. 1/2−1/6=3/6−1/6=1/3 kalır.",
+          "after": "Aradaki −1/3,+1/3 gibi terimler birbirini götürür. 1/2−1/6=3/6−1/6=1/3 kalır."
+        }
+      ],
+      "beforeFingerprint": "aee5ca32",
+      "afterFingerprint": "d52ae63e"
+    },
+    {
+      "id": "kpss-ma-05-t4-q02",
+      "topicId": "k-ma-5",
+      "changes": [
+        {
+          "field": "options.2",
+          "before": "İlk kesir1’den büyüktür.",
+          "after": "İlk kesir 1’den büyüktür."
+        }
+      ],
+      "beforeFingerprint": "2cbba0cf",
+      "afterFingerprint": "8735f185"
+    },
+    {
+      "id": "kpss-ma-02-t2-q04",
+      "topicId": "k-ma-2",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Onlar basamakları aynı olduğundan birbirini götürür. Fark(700+10A+2)−(200+10A+7)=495’tir.",
+          "after": "Onlar basamakları aynı olduğundan birbirini götürür. Fark (700+10A+2)−(200+10A+7)=495’tir."
+        }
+      ],
+      "beforeFingerprint": "660b899f",
+      "afterFingerprint": "08361941"
+    },
+    {
+      "id": "kpss-ma-02-t2-q11",
+      "topicId": "k-ma-2",
+      "changes": [
+        {
+          "field": "text",
+          "before": "AB iki basamaklı sayıdır. A0B ile AB 0 sayılarının farkı A0B−AB 0=−45 olduğuna göre B kaçtır?",
+          "after": "AB iki basamaklı sayıdır. A0B ile AB0 sayılarının farkı A0B−AB0=−45 olduğuna göre B kaçtır?"
+        },
+        {
+          "field": "explanation",
+          "before": "A0B=100A+B ve AB 0=100A+10B’dir. Fark−9B=−45’ten B=5 bulunur; A bu farkı etkilemez.",
+          "after": "A0B=100A+B ve AB0=100A+10B’dir. Fark −9B=−45’ten B=5 bulunur; A bu farkı etkilemez."
+        }
+      ],
+      "beforeFingerprint": "8cf77d44",
+      "afterFingerprint": "fe225016"
+    },
+    {
+      "id": "kpss-ma-02-t4-q06",
+      "topicId": "k-ma-2",
+      "changes": [
+        {
+          "field": "text",
+          "before": "İki basamaklı AB sayısının 4 katı, üç basamaklı BA 0 sayısına eşittir. Buna göre uygun kaç AB sayısı vardır?",
+          "after": "İki basamaklı AB sayısının 4 katı, üç basamaklı BA0 sayısına eşittir. Buna göre uygun kaç AB sayısı vardır?"
+        }
+      ],
+      "beforeFingerprint": "26a87ec6",
+      "afterFingerprint": "c4873c6e"
+    },
+    {
+      "id": "kpss-ma-12-t3-q04",
+      "topicId": "k-ma-12",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Eş aralıklı sırada iki konumun orta noktası(3+11)/2=7’dir. 7. kutu her iki konumdan 4 adım uzaktadır.",
+          "after": "Eş aralıklı sırada iki konumun orta noktası (3+11)/2=7’dir. 7. kutu her iki konumdan 4 adım uzaktadır."
+        }
+      ],
+      "beforeFingerprint": "cc5da84b",
+      "afterFingerprint": "66548b85"
+    },
+    {
+      "id": "kpss-ma-12-t3-q07",
+      "topicId": "k-ma-12",
+      "changes": [
+        {
+          "field": "text",
+          "before": "A grubunda 40 kişiden%25’i, B grubunda 30 kişiden%40’ı bir etkinliğe katılıyor. Hangi ifade doğrudur?",
+          "after": "A grubunda 40 kişiden %25’i, B grubunda 30 kişiden %40’ı bir etkinliğe katılıyor. Hangi ifade doğrudur?"
+        },
+        {
+          "field": "options.0",
+          "before": "A’dan2 kişi daha fazla katılır.",
+          "after": "A’dan 2 kişi daha fazla katılır."
+        },
+        {
+          "field": "options.1",
+          "before": "B’den2 kişi daha fazla katılır.",
+          "after": "B’den 2 kişi daha fazla katılır."
+        },
+        {
+          "field": "options.3",
+          "before": "B’den15 kişi daha fazla katılır.",
+          "after": "B’den 15 kişi daha fazla katılır."
+        },
+        {
+          "field": "options.4",
+          "before": "A’dan10 kişi daha fazla katılır.",
+          "after": "A’dan 10 kişi daha fazla katılır."
+        }
+      ],
+      "beforeFingerprint": "e72387a6",
+      "afterFingerprint": "3acb8604"
+    },
+    {
+      "id": "kpss-ma-12-t4-q02",
+      "topicId": "k-ma-12",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "A(B(n))=2n−6+1=2n−5; B(A(n))=2n+1−3=2n−2’dir. Fark−3 olup n’den bağımsızdır.",
+          "after": "A(B(n))=2n−6+1=2n−5; B(A(n))=2n+1−3=2n−2’dir. Fark −3 olup n’den bağımsızdır."
+        }
+      ],
+      "beforeFingerprint": "d7d808d1",
+      "afterFingerprint": "fd97c9c5"
+    },
+    {
+      "id": "kpss-ma-12-t4-q11",
+      "topicId": "k-ma-12",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "c=a+10 ise 2a+b=14 olur. a<b<a+10 şartlarıyla a=2,3,4 mümkündür; b=10,8,6’dır. En büyük b10’dur; a=1, b=12, c=11 sıralamayı bozar.",
+          "after": "c=a+10 ise 2a+b=14 olur. a<b<a+10 şartlarıyla a=2,3,4 mümkündür; b=10,8,6’dır. En büyük b 10’dur; a=1, b=12, c=11 sıralamayı bozar."
+        }
+      ],
+      "beforeFingerprint": "005286e0",
+      "afterFingerprint": "e3595d46"
+    },
+    {
+      "id": "kpss-ma-01-t3-q06",
+      "topicId": "k-ma-1",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "x³−x=x(x−1)(x+1) olur. x=−2 için−8<−2 ve x²=4>0 sağlanır. −1,0,1’de eşitlik,2’de ters eşitsizlik vardır.",
+          "after": "x³−x=x(x−1)(x+1) olur. x=−2 için −8<−2 ve x²=4>0 sağlanır. −1,0,1’de eşitlik,2’de ters eşitsizlik vardır."
+        }
+      ],
+      "beforeFingerprint": "a0f96222",
+      "afterFingerprint": "06df8ac2"
+    },
+    {
+      "id": "kpss-ma-01-t4-q02",
+      "topicId": "k-ma-1",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "n(n+1)<0 yalnız−1<n<0 aralığında sağlanır. Bu açık aralıkta tam sayı yoktur; −1 ve 0 çarpımı sıfır yapar.",
+          "after": "n(n+1)<0 yalnız −1<n<0 aralığında sağlanır. Bu açık aralıkta tam sayı yoktur; −1 ve 0 çarpımı sıfır yapar."
+        }
+      ],
+      "beforeFingerprint": "635494e2",
+      "afterFingerprint": "30c5a59c"
+    },
+    {
+      "id": "kpss-ma-01-t4-q03",
+      "topicId": "k-ma-1",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "İlk 40 terim 20 adet(tek−sonraki çift) çiftidir; her çift−1 verir. Toplam−20+41=21 olur.",
+          "after": "İlk 40 terim 20 adet (tek−sonraki çift) çiftidir; her çift −1 verir. Toplam −20+41=21 olur."
+        }
+      ],
+      "beforeFingerprint": "b6323fd2",
+      "afterFingerprint": "5bced8be"
+    },
+    {
+      "id": "kpss-ma-01-t4-q05",
+      "topicId": "k-ma-1",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Bir ekleyince(x+1)(y+1)=24 olur. İki çarpan da en az 2’dir. Çiftler(2,12),(3,8),(4,6) ve tersleri toplam 6 çözümdür.",
+          "after": "Bir ekleyince (x+1)(y+1)=24 olur. İki çarpan da en az 2’dir. Çiftler (2,12),(3,8),(4,6) ve tersleri toplam 6 çözümdür."
+        }
+      ],
+      "beforeFingerprint": "281d056d",
+      "afterFingerprint": "bc0b5cd7"
+    },
+    {
+      "id": "kpss-ma-01-t4-q06",
+      "topicId": "k-ma-1",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "İfade 5a+2b−12’dir. a=0 seçildiğinde b+c=12; c≤9 nedeniyle en küçük b=3, c=9 olur. Sonuç−6’dır; a≥1 daha küçük sonuç vermez.",
+          "after": "İfade 5a+2b−12’dir. a=0 seçildiğinde b+c=12; c≤9 nedeniyle en küçük b=3, c=9 olur. Sonuç −6’dır; a≥1 daha küçük sonuç vermez."
+        }
+      ],
+      "beforeFingerprint": "ad708c52",
+      "afterFingerprint": "0798bb18"
+    },
+    {
+      "id": "kpss-ma-01-t4-q12",
+      "topicId": "k-ma-1",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Düzenleyip 6 ekleyelim: (a−3)(b−2)=7. Pozitif çözümler(4,9) ve(10,3) olup toplamları 13’tür. Negatif çarpan çiftleri a veya b’yi pozitiflikten çıkarır.",
+          "after": "Düzenleyip 6 ekleyelim: (a−3)(b−2)=7. Pozitif çözümler (4,9) ve (10,3) olup toplamları 13’tür. Negatif çarpan çiftleri a veya b’yi pozitiflikten çıkarır."
+        }
+      ],
+      "beforeFingerprint": "51c57871",
+      "afterFingerprint": "c3957273"
+    },
+    {
+      "id": "kpss-ma-07-t1-q11",
+      "topicId": "k-ma-7",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Önce(2³)⁴=2¹² alınır. 2¹²/2⁸=2⁴=16 bulunur; kuvvetin kuvvetinde üsler toplanmaz.",
+          "after": "Önce (2³)⁴=2¹² alınır. 2¹²/2⁸=2⁴=16 bulunur; kuvvetin kuvvetinde üsler toplanmaz."
+        }
+      ],
+      "beforeFingerprint": "8763e0a7",
+      "afterFingerprint": "71334bb5"
+    },
+    {
+      "id": "kpss-ma-07-t2-q10",
+      "topicId": "k-ma-7",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "√(x²)=|x| ve x<0 olduğundan |x|=−x’tir. İfade−x−x=−2x olur; karekökün sonucu negatife dönüştürülemez.",
+          "after": "√(x²)=|x| ve x<0 olduğundan |x|=−x’tir. İfade −x−x=−2x olur; karekökün sonucu negatife dönüştürülemez."
+        }
+      ],
+      "beforeFingerprint": "2230f739",
+      "afterFingerprint": "aa6463b3"
+    },
+    {
+      "id": "kpss-ma-07-t2-q12",
+      "topicId": "k-ma-7",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "İfade(a+b)(a−b)=a²−b² biçimindedir. Köklerin kareleri 7 ve 3 olduğundan sonuç 7−3=4’tür.",
+          "after": "İfade (a+b)(a−b)=a²−b² biçimindedir. Köklerin kareleri 7 ve 3 olduğundan sonuç 7−3=4’tür."
+        }
+      ],
+      "beforeFingerprint": "ef6842d5",
+      "afterFingerprint": "97fd53d7"
+    },
+    {
+      "id": "kpss-ma-07-t3-q07",
+      "topicId": "k-ma-7",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Payda eşleniği √3+1 ile çarpılır. Payda 3−1=2, pay √3+1 olur; sonuç(√3+1)/2’dir.",
+          "after": "Payda eşleniği √3+1 ile çarpılır. Payda 3−1=2, pay √3+1 olur; sonuç (√3+1)/2’dir."
+        }
+      ],
+      "beforeFingerprint": "a5be66ac",
+      "afterFingerprint": "3bbfe7d0"
+    },
+    {
+      "id": "kpss-ma-07-t3-q10",
+      "topicId": "k-ma-7",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "5ⁿ ortak alınırsa(5−1)5ⁿ=500, yani 5ⁿ=125=5³ olur. Bu nedenle n=3’tür.",
+          "after": "5ⁿ ortak alınırsa (5−1)5ⁿ=500, yani 5ⁿ=125=5³ olur. Bu nedenle n=3’tür."
+        }
+      ],
+      "beforeFingerprint": "b4e84214",
+      "afterFingerprint": "af5bfb46"
+    },
+    {
+      "id": "kpss-ma-07-t3-q11",
+      "topicId": "k-ma-7",
+      "changes": [
+        {
+          "field": "explanation",
+          "before": "Kökler |x−1| ve|x−4|’tür. Aralık gereği ilk x−1, ikinci 4−x olur. Toplam 3’tür.",
+          "after": "Kökler |x−1| ve |x−4|’tür. Aralık gereği ilk x−1, ikinci 4−x olur. Toplam 3’tür."
+        }
+      ],
+      "beforeFingerprint": "c3224457",
+      "afterFingerprint": "b33bc3b9"
+    }
+  ],
+  "files": [
+    {
+      "path": "public/questions/kpss/matematik/analitik-geometri/test-1.js",
+      "beforeSha256": "ac0e1f3981780b8fcfd8d3bb0e0068b835a8b1e9eeae254eb7960f92d4baf4a3",
+      "sha256": "ad44b474e613921b8eeffa9fcebb413c1e6a94326371dd7b897d29fe600a751c"
+    },
+    {
+      "path": "public/questions/kpss/matematik/analitik-geometri/test-2.js",
+      "beforeSha256": "f1e928c7bc8bde91b8263b8bf1bfd0208294c3d5a9283a31a806bad39cea3b04",
+      "sha256": "abe89ebfbd7ecaa75791ef83cc81b38189500e35c37a2ad6edc204a84441a26c"
+    },
+    {
+      "path": "public/questions/kpss/matematik/analitik-geometri/test-3.js",
+      "beforeSha256": "45c8cd330d68d5f94b3ccf68098af05c9798b5819f892154b2c114f6f54e4a92",
+      "sha256": "d692da0802af84110d647d87da46ba1232144d874cf28bd69d5753be3b93baf6"
+    },
+    {
+      "path": "public/questions/kpss/matematik/analitik-geometri/test-4.js",
+      "beforeSha256": "f78fccbb283d90cce9f0d2224b5e9ad71d024ed2e2170497619807bf46617438",
+      "sha256": "f34aea2980b596e4809d2c58a77f4adcc21f0b806e23c74df04a00a394e3be48"
+    },
+    {
+      "path": "public/questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-1.js",
+      "beforeSha256": "f03b5f4d15cbabd980bac0a81be7629ad370ce7ad6a079cdeba5fd76e0d47fc8",
+      "sha256": "4805dfe87f55e63cf4bcd59ca535dcfbf071d378f077bc53efa3c1d236d204c9"
+    },
+    {
+      "path": "public/questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-2.js",
+      "beforeSha256": "0334877ddf427d4a0be0c086164b091b31fffb2495a801462dde1860aa2400ba",
+      "sha256": "77131c046b9f14507fb38d6c8d97a0fcb087d70a87cb2f698d4fe954a58f19ad"
+    },
+    {
+      "path": "public/questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-3.js",
+      "beforeSha256": "f735bd95947920ed31c45d96ed09af89e22b0a664e3c677aaba5f776f449dbb1",
+      "sha256": "6de798ebc72771fb38a336b2c63cd2befe5c7dfc54656e8f87498c5e0e50deaa"
+    },
+    {
+      "path": "public/questions/kpss/matematik/bolme-ve-bolunebilme/test-1.js",
+      "beforeSha256": "19bb81207ed9b3e48d0647b8ae030e42b51d6f545f109965e04c0e81ebf6591e",
+      "sha256": "84633fc10fb9d522f813209e8494ade13be2a468c90bbae4cdba47f0ae5744b8"
+    },
+    {
+      "path": "public/questions/kpss/matematik/bolme-ve-bolunebilme/test-3.js",
+      "beforeSha256": "6014ec6da420794fb3e4ba36b3c06d45ac9788f9c46fed4bba372dcca0b2efed",
+      "sha256": "a8d0c4e48b6c23c2f14c658b0e48f68c480d2ee37317a1bfb60f144a173ef08a"
+    },
+    {
+      "path": "public/questions/kpss/matematik/bolme-ve-bolunebilme/test-4.js",
+      "beforeSha256": "d121d9cdc0a71a8b4b5f775d752d58abb545795d8f27b73c4b51e1ddfd50f326",
+      "sha256": "40d73bd127b634a979ea0c1158e854e1d592545b69f4dd9ebcc4bb09efb1f817"
+    },
+    {
+      "path": "public/questions/kpss/matematik/cember-ve-daire/test-4.js",
+      "beforeSha256": "56f31096688b54e7f884d80296d2d4b367cb960ee73cc3f983fe06dc4e5e51bd",
+      "sha256": "07838d664e6335dc0143990a12284bb26ac1cc70409760af04d32329f34d9d97"
+    },
+    {
+      "path": "public/questions/kpss/matematik/dortgenler-ve-cokgenler/test-1.js",
+      "beforeSha256": "a5a239452db4ec41cf1b4d941173273fa9bc6606143c8d2418e090ae1d4447c4",
+      "sha256": "12462984aae975dae1b4a4258f06d99edc211bf13bae094bb23cd29e761f381e"
+    },
+    {
+      "path": "public/questions/kpss/matematik/dortgenler-ve-cokgenler/test-2.js",
+      "beforeSha256": "fa43fb42c7056c5efbb8018cf659096b651f584ea81ae38758c418232d37f969",
+      "sha256": "58a818f9d9a05ff7d283920b3c3b1e1938a2fc622a05a66e5e600681dbffefc0"
+    },
+    {
+      "path": "public/questions/kpss/matematik/dortgenler-ve-cokgenler/test-3.js",
+      "beforeSha256": "df05d0b3331c61cfe102e849d309d7eaaa71d9e047f1ed09ef27da95b7ef8613",
+      "sha256": "fe77b2c3983925c50e586ae68ec526a5742d57cb2927891a6a02cfe7006d1b01"
+    },
+    {
+      "path": "public/questions/kpss/matematik/dortgenler-ve-cokgenler/test-4.js",
+      "beforeSha256": "e311bb89719afb1a2d9251216742c1c3e90465b0184e7c306106a1e5b5a86588",
+      "sha256": "734d931ce76ca1e91498a9dfe92818b26d90d230513f17ee817c2a3ba5553c43"
+    },
+    {
+      "path": "public/questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-1.js",
+      "beforeSha256": "096aadfbf86d7604547f08c0b7d5e479a4c4fc7220b03b39f416ee780dfcb594",
+      "sha256": "87ed7d4d8e8137c9a956893759ce195d0b36f5fbd9765cb7a83d2b46fe2f7a24"
+    },
+    {
+      "path": "public/questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-2.js",
+      "beforeSha256": "42623c7db26c37ded65cff6a61d8d77277bdffcec2b1117b7d73d5175efdccab",
+      "sha256": "b3c0aee929245e4c6f4381f268b72226ed4a96a3df29efec9fbd4ac57d3ceec9"
+    },
+    {
+      "path": "public/questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-3.js",
+      "beforeSha256": "ed9fe3c562752c84acdc8f2118af4d6793636409601a54a3bb994a78f2f61613",
+      "sha256": "471ce20c338bd57174ed974abe9eb6602fac80605428009b534bf1ee6e637063"
+    },
+    {
+      "path": "public/questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-4.js",
+      "beforeSha256": "4d57c772df8d286be3a4abfa2afe4325b96374da858fa6285736776a59e9f012",
+      "sha256": "28698dd9259325d62412f006e4a6aa5c85290205d67615a01d4a87ba1860f8ba"
+    },
+    {
+      "path": "public/questions/kpss/matematik/kati-cisimler/test-1.js",
+      "beforeSha256": "b2d63f84be584ae1f2fa935564eed6eb033b9bff2004fed2cf0e0579494c41ba",
+      "sha256": "dc5870ce31f0a6162517efec68b429e7a018cec16d8c009b7699cbb8d66c793e"
+    },
+    {
+      "path": "public/questions/kpss/matematik/kati-cisimler/test-3.js",
+      "beforeSha256": "1a35f0f0b0ec496f20c57c2de5c91f71061acfd2597ce9a4d7cb39b695523acf",
+      "sha256": "aefa1ba89802b402e1ab359e9fff2c06b86a8f25df5292bbc1d73d3052b31c5d"
+    },
+    {
+      "path": "public/questions/kpss/matematik/kumeler/test-2.js",
+      "beforeSha256": "661ca30f51bcacb31baeaa63cf0962a1d261c225c95ee2cc31e676e1c0c406a4",
+      "sha256": "4a8c4ffc205feb779fae2f7a6ec8c19c4d63fd63d36c01bc320ca3d94ff6d2d7"
+    },
+    {
+      "path": "public/questions/kpss/matematik/kumeler/test-3.js",
+      "beforeSha256": "7c1ba3daa12054012c40850f76bedc7e55d9ac27ba8f12da4bc6797dc9cfbc6a",
+      "sha256": "5f50a4504dc1f67317f843a1613fbf05d3ee6a9bf3ee06849d396f992a5725a8"
+    },
+    {
+      "path": "public/questions/kpss/matematik/kumeler/test-4.js",
+      "beforeSha256": "48b19896fe42ddf6670c24723b00a994203c31399a8f7d8502a2204b70b35fca",
+      "sha256": "34ae42443648d91cfc267b4778c1b7171b7ee79fc3bd11e241b05c7290ee577b"
+    },
+    {
+      "path": "public/questions/kpss/matematik/olasilik-ve-kombinasyon/test-1.js",
+      "beforeSha256": "a01c6b5d2bac23d0f8f5906091adecb1aa7d3a755dced1095b65a85355df5e32",
+      "sha256": "880d2883323940c4fb5e7d926c94988da0efbc172152cd29b4b8b921df7280c3"
+    },
+    {
+      "path": "public/questions/kpss/matematik/olasilik-ve-kombinasyon/test-2.js",
+      "beforeSha256": "f1ce28d697745b75ce59d1db2f5b5a585ee119bde1edccba61d855e983970eb2",
+      "sha256": "5002a865f18c25d0d413cbbc665f4b157d58b600da6a81bea6069507b0c35e16"
+    },
+    {
+      "path": "public/questions/kpss/matematik/oran-oranti-ve-denklemler/test-1.js",
+      "beforeSha256": "6d85754a95ad4a8f57524f0d0fa702473b0e59a6195719541b9d35a805eea205",
+      "sha256": "8c42a9c7ca20518a9362a006a003af056aa367308f2b945bc33e543968169028"
+    },
+    {
+      "path": "public/questions/kpss/matematik/oran-oranti-ve-denklemler/test-2.js",
+      "beforeSha256": "e204863154b6bc97667c589b5ceb72e9f6fbc4e2b0f9ae0e839f39e4be746045",
+      "sha256": "91af7e37e84d0a8a36214470bbbb4b190a2406500beef4afb58a71ed10177cf5"
+    },
+    {
+      "path": "public/questions/kpss/matematik/oran-oranti-ve-denklemler/test-3.js",
+      "beforeSha256": "8ff8ee0ab8ead5dae06ad83e5bf9128b3fd0b249b023b1656e50d1c579b5a8cd",
+      "sha256": "5fddd1963487798bb163d63bedbccdb54e2eaff4447422479aae5482c669ab9a"
+    },
+    {
+      "path": "public/questions/kpss/matematik/oran-oranti-ve-denklemler/test-4.js",
+      "beforeSha256": "e0c2ae0e72c00267845ed41a04fed861aaf3c1e92fe48564d29b2e586a041c87",
+      "sha256": "273c27f05ff9084da537c4bae1af44ea97c7d9b6c14b4b217016b3648a915506"
+    },
+    {
+      "path": "public/questions/kpss/matematik/problemler/test-1.js",
+      "beforeSha256": "55a91cec6b623a4586cc123e23349b1d339bc0fe3c60ba40449e89c2e1549fe8",
+      "sha256": "da1465ccfcad18ac77e0178711b30be2b3a8b513a6e93eaed9743577e63c58a9"
+    },
+    {
+      "path": "public/questions/kpss/matematik/problemler/test-2.js",
+      "beforeSha256": "1a6e814cd6cf27d7ce67e5be046f33d171e814044c7f8ef9d700ec9b57af7041",
+      "sha256": "643067eb0e315e605d4920ab580c02ea4de4c6f11a484218e5ce14c4b4ca7524"
+    },
+    {
+      "path": "public/questions/kpss/matematik/problemler/test-3.js",
+      "beforeSha256": "99b77192f5ab52d2ed3f71be5f06172c7e2273bc250f94a2da970967ee562a65",
+      "sha256": "1933473581e832541a12e290225e83c255195b669e2ff91fb7a26266c8a98803"
+    },
+    {
+      "path": "public/questions/kpss/matematik/problemler/test-4.js",
+      "beforeSha256": "bb8ec41010493146a7caad44b7220e38cd9ae7ccdc9d8288f53b62fa42bd97a8",
+      "sha256": "990d0a620ee242c5d3bd8d4c05cbf284df4aeb85555d946367e9f39e74aabdcb"
+    },
+    {
+      "path": "public/questions/kpss/matematik/rasyonel-sayilar/test-1.js",
+      "beforeSha256": "70a2053b7dc8f68c0056df1eaefe0996b418fa11ea152b295701731e43337d7f",
+      "sha256": "ce20c8858b45c9603c68fcb70c3e5416ebed903da7f5ac4aec3151da1aaf8ab9"
+    },
+    {
+      "path": "public/questions/kpss/matematik/rasyonel-sayilar/test-2.js",
+      "beforeSha256": "9cb24d4d1ab985cc02914efde7e9a308ac35c523c195b59421c5adec021519f7",
+      "sha256": "3a5a57c674b99ff330c9735b0042c94c5b31c0a7e2eb9e3e906523a6099425f1"
+    },
+    {
+      "path": "public/questions/kpss/matematik/rasyonel-sayilar/test-3.js",
+      "beforeSha256": "e707b0a91579f0b60fe1e3aae32ace40564b11567df101ee0f73d75ddd76a2b3",
+      "sha256": "62d2beb3033d31a0ceb50cb7fad4f3a67d642302a2e23ca07d7ddc389da7ef6c"
+    },
+    {
+      "path": "public/questions/kpss/matematik/rasyonel-sayilar/test-4.js",
+      "beforeSha256": "a82e7964665bdcceac5385eb571e448c252a1a3a682e87e9c5b2a018d089fa81",
+      "sha256": "7fddf7cc3994613e13e3f4907c97d5d54c4c2bfc848f37424e8ffda99dbf935e"
+    },
+    {
+      "path": "public/questions/kpss/matematik/sayi-basamaklari/test-2.js",
+      "beforeSha256": "46e27a05b6ba746c6887f088a4589fe3f87e210433919261f26988043645ddb6",
+      "sha256": "abcfeb8f19e3c052d2c9250901ffe641ec53d2f915004dd4dcc5198a354d3785"
+    },
+    {
+      "path": "public/questions/kpss/matematik/sayi-basamaklari/test-4.js",
+      "beforeSha256": "5d01cb6b93ae8c3dea0bf9934d7ce161d67017417d9bc6eceeea4ac66608b29a",
+      "sha256": "56eadb0d4abf777caa4f42e77bc29a57a98011d36c12cb831e578f82ef5091c5"
+    },
+    {
+      "path": "public/questions/kpss/matematik/sayisal-mantik/test-3.js",
+      "beforeSha256": "c552eeef583b542bbecbe9dec7d5db6363334d28941a2629eb6cb8cb454a1ded",
+      "sha256": "1db074642030f103523c6043bae902124c8802c0d18258e85c1e44f33629da5d"
+    },
+    {
+      "path": "public/questions/kpss/matematik/sayisal-mantik/test-4.js",
+      "beforeSha256": "3d7bc09f5586f3b862e0f4e9e0958cc7d4efb484ae90d8fb8940b17112d5c6dc",
+      "sha256": "45567978f622933eb36104c058bd41cc979f533808d2cfdb7e456cc201c99419"
+    },
+    {
+      "path": "public/questions/kpss/matematik/temel-kavramlar/test-3.js",
+      "beforeSha256": "88b388a10430a88c530f67360ab1bf8353e458ff77abd73bb9c7a06d772a1dd7",
+      "sha256": "47c7f98684f7b59828ffa1c2a4edeb1209d5001b401ff12693a7ca1550123e6f"
+    },
+    {
+      "path": "public/questions/kpss/matematik/temel-kavramlar/test-4.js",
+      "beforeSha256": "4863ab23c1fbb1f87e55c2bc066bb00391693cd44c8c8721ac3b438eb0e0674b",
+      "sha256": "f630597905538fe7426f6b287722b4260d684fa01ad0c513237c8b78757638d3"
+    },
+    {
+      "path": "public/questions/kpss/matematik/uslu-ve-koklu-sayilar/test-1.js",
+      "beforeSha256": "d9529477f27129ac43cce531c00a4cca50bd70a0540f529a2e423acb93aeafa8",
+      "sha256": "b2fcce08204862232fe07d857335e5d2b734061c77fb53a5de2e591e530f3ff2"
+    },
+    {
+      "path": "public/questions/kpss/matematik/uslu-ve-koklu-sayilar/test-2.js",
+      "beforeSha256": "9f4b67e177a7cf5ffeb8151d135e47fcd89277f942ddef03dab7e2088c64614e",
+      "sha256": "4cda1ca1df3bf323e2ecbeb2cc9b893573d3b6bb6130932e017e783f00b468d6"
+    },
+    {
+      "path": "public/questions/kpss/matematik/uslu-ve-koklu-sayilar/test-3.js",
+      "beforeSha256": "7b70514b49328a66dc6e79d5ee14d34fdac37a13b4ff8ee9044d51ad9e17646e",
+      "sha256": "1e01fecd69bbfa200709a2fe1b9d417cb0567bde7082dfbcd71b3efd162b59a2"
+    }
+  ],
+  "validation": {
+    "whitespaceOnly": true,
+    "answerAndOptionOrderUnchanged": true,
+    "approved": 816,
+    "rejected": 0,
+    "duplicates": [],
+    "testIssues": []
+  }
+}

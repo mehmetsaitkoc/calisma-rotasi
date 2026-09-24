@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+const dir=new URL('../public/questions/kpss/',import.meta.url);
+await import('../public/catalog.js');
+await import('../public/question-bank.js');
+await import('../public/questions/kpss/blueprints.js');
+export const files=fs.readdirSync(dir,{recursive:true}).filter(f=>/\/test-[1-4]\.js$/.test(f)).sort();
+for(const file of files)await import(new URL(file,dir));
+export const bank=globalThis.RotaQuestionBank;
+export const catalog=globalThis.RotaCatalog;
+export const blueprints=globalThis.RotaAssessmentBlueprints;

@@ -1,0 +1,509 @@
+{
+  "checkedOn": "2026-09-24",
+  "files": 48,
+  "questions": 576,
+  "topicCounts": {
+    "k-co-1": 48,
+    "k-co-10": 48,
+    "k-co-11": 48,
+    "k-co-12": 48,
+    "k-co-2": 48,
+    "k-co-3": 48,
+    "k-co-4": 48,
+    "k-co-5": 48,
+    "k-co-6": 48,
+    "k-co-7": 48,
+    "k-co-8": 48,
+    "k-co-9": 48
+  },
+  "structuralErrors": [],
+  "independentEditorialReview": "approved",
+  "tests": [
+    {
+      "topicId": "k-co-12",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-12",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-12",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-12",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-1",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-1",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-1",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-1",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-6",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-6",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-6",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-6",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-3",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-3",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-3",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-3",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-8",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-8",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-8",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-8",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-5",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-5",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-5",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-5",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-9",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-9",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-9",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-9",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-7",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-7",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-7",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-7",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-4",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-4",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-4",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-4",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-11",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-11",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-11",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-11",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-10",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-10",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-10",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-10",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    },
+    {
+      "topicId": "k-co-2",
+      "test": 1,
+      "questions": 12,
+      "difficulties": {
+        "easy": 6,
+        "medium": 5,
+        "hard": 1
+      }
+    },
+    {
+      "topicId": "k-co-2",
+      "test": 2,
+      "questions": 12,
+      "difficulties": {
+        "easy": 3,
+        "medium": 7,
+        "hard": 2
+      }
+    },
+    {
+      "topicId": "k-co-2",
+      "test": 3,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 7,
+        "hard": 4
+      }
+    },
+    {
+      "topicId": "k-co-2",
+      "test": 4,
+      "questions": 12,
+      "difficulties": {
+        "easy": 1,
+        "medium": 5,
+        "hard": 6
+      }
+    }
+  ],
+  "approvedQuestions": 576,
+  "reviewReports": [
+    "question-bank-geography-independent-review-1-7.md",
+    "question-bank-geography-independent-review-8-12.md"
+  ],
+  "note": "İlk yazarın yapısal raporu, tamamlanan bağımsız yapay zekâ inceleme durumuyla güncellendi. Nihai denetim scripts/question-bank-audit.mjs ile yeniden üretilebilir."
+}

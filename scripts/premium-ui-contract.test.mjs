@@ -44,7 +44,7 @@ for(const marker of [
   'start-section-exam',
   'section-exam-form',
   'Bölüm denemesi sonucu',
-  'Konu dağılımı geçmiş sınav eğilimlerini yaklaşıklar.',
+  'Konu dağılımı çalışma amaçlı hazırlanmıştır.',
   'Neden bugün?',
   'ROTA PLUS REPORTS V1',
   'report-premium-hero',

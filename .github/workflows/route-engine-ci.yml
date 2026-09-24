@@ -177,6 +177,17 @@ jobs:
       - name: Run real browser learning-loop E2E
         run: node scripts/browser-e2e.mjs
 
+      - name: Verify question bank solve, review and reload
+        run: npm run questions:browser
+
+      - name: Upload question bank browser review
+        uses: actions/upload-artifact@v4
+        with:
+          name: question-bank-${{ github.sha }}
+          path: artifacts/question-bank/*.png
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Capture 1512px landing visual review
         run: node scripts/landing-visual-review.mjs
 

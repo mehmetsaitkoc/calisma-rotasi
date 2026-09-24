@@ -41,13 +41,16 @@ try{
   const journey=page.locator('.v6-journey');
   const dashboard=page.locator('.v6-dashboard');
   const chips=page.locator('.v6-pillar-chip');
-  const examCards=page.locator('[data-action="choose-exam"]');
+  const examCards=page.locator('.v6-prep-card[data-action="choose-exam"][data-exam="kpss"]');
+  const startActions=page.locator('[data-action="choose-exam"]');
   const examArt=page.locator('.v6-prep-art');
 
   await Promise.all([title.waitFor(),journey.waitFor(),dashboard.waitFor()]);
   assert.equal(await chips.count(),4,'Journey must render four separate milestone chips');
-  assert.equal(await examCards.count(),1,'Landing must render one KPSS product entry point');
-  assert.equal(await examCards.first().getAttribute('data-exam'),'kpss','The only landing product entry must be KPSS');
+  assert.equal(await examCards.count(),1,'Landing must render one KPSS product card');
+  assert.equal(await examCards.first().getAttribute('data-exam'),'kpss','The only landing product card must be KPSS');
+  assert.ok(await startActions.count()>=1,'Landing must expose at least one real KPSS start action');
+  for(let i=0;i<await startActions.count();i++) assert.equal(await startActions.nth(i).getAttribute('data-exam'),'kpss','Every landing start action must target KPSS');
   assert.equal(await examArt.count(),1,'KPSS card must render its architectural artwork');
   assert.equal(await page.locator('[data-exam="yks"]').count(),0,'YKS must not remain selectable on the landing');
   assert.equal(await page.getByText(/\\bYKS\\b/).count(),0,'Landing must not display YKS copy');

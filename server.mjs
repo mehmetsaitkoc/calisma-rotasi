@@ -338,8 +338,9 @@ let WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE.replace(WEB_QUESTION_TAG,(tag,src,
 if(WEB_QUESTION_FILES.size!==6||[...WEB_QUESTION_FILES.values()].reduce((n,x)=>n+x.length,0)!==256){
   throw Error('Web KPSS soru bankası bundle haritası beklenen 6 ders / 256 test ile eşleşmiyor.');
 }
+const WEB_BETA_FLAG=accounts.mode==='local-only'?'<script>window.RotaWebBeta=true</script>':'';
 WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE_BUNDLED
-  .replace('</head>','<link rel="stylesheet" href="/landing-final.css"></head>')
+  .replace('</head>',WEB_BETA_FLAG+'<link rel="stylesheet" href="/landing-final.css"></head>')
   .replace('</body>','<script src="/landing-final.js" defer></script></body>');
 const WEB_INDEX_BODY=Buffer.from(WEB_INDEX_SOURCE_BUNDLED,'utf8');
 const WEB_BUNDLE_CACHE=new Map(),WEB_ENCODING_CACHE=new Map();

@@ -34,8 +34,8 @@ function card(item) {
           '<span>' + (item.verified ? "doğrulanmış veri" : "demo içerik") + "</span>" +
         "</div>" +
         '<div class="hub-card__actions">' +
-          '<a href="/business-demo.html?business=' + encodeURIComponent(item.slug) + '">Demo Aç</a>' +
-          '<a href="/business-demo.html?business=' + encodeURIComponent(item.slug) + '#offers">Hizmet Yapısını Gör</a>' +
+          '<a href="./business-demo.html?business=' + encodeURIComponent(item.slug) + '">Demo Aç</a>' +
+          '<a href="./business-demo.html?business=' + encodeURIComponent(item.slug) + '#offers">Hizmet Yapısını Gör</a>' +
         "</div>" +
       "</div>" +
     "</article>"

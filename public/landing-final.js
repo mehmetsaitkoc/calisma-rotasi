@@ -65,19 +65,19 @@
     const home = anchor('Ana Sayfa','active');
     const how = anchor('Nasıl Çalışır?');
     const features = anchor('Özellikler');
-    const plans = anchor('Planlar');
-    plans.dataset.action='paid-pricing';
+    const plans = anchor('Ücretsiz Beta');
     const comments = anchor('Yorumlar');
     const faq = anchor('SSS');
     how.addEventListener('click',()=>welcome.querySelector('.v6-feature-strip')?.scrollIntoView({behavior:'smooth',block:'center'}));
     features.addEventListener('click',()=>welcome.querySelector('.v6-dashboard')?.scrollIntoView({behavior:'smooth',block:'center'}));
     comments.addEventListener('click',()=>welcome.querySelector('.v6-trust')?.scrollIntoView({behavior:'smooth',block:'center'}));
     faq.addEventListener('click',()=>welcome.querySelector('.v6-trust')?.scrollIntoView({behavior:'smooth',block:'center'}));
+    plans.addEventListener('click',()=>welcome.querySelector('.v6-prep-grid')?.scrollIntoView({behavior:'smooth',block:'center'}));
     links.append(home,how,features,plans,comments,faq);
 
     const actions = el('div','v6-nav-actions');
     const workspace = button('Giriş Yap',null,'v6-outline-btn',{accountAction:'login'});
-    const start = button('Ücretsiz Başla →','paid-start','v6-gradient-btn');
+    const start = button('Ücretsiz Başla →','choose-exam','v6-gradient-btn',{exam:'kpss'});
     actions.append(workspace,start);
 
     nav.append(brandBtn,links,actions);
@@ -87,7 +87,7 @@
   function heroCopy(){
     const copy = el('section','v6-hero-copy');
     const badge = el('div','v6-hero-badge');
-    badge.append(el('i'),el('span','', 'Senin hedefin. Bizim rotamız.'));
+    badge.append(el('i'),el('span','', 'Ücretsiz Web Beta · Sana özel KPSS rotası'));
 
     const h1 = el('h1');
     h1.append(document.createTextNode('Kişisel Çalışma'));
@@ -104,7 +104,7 @@
     const p = el('p','v6-hero-copytext','Çalışma Rotası, hedeflerine, seviyene ve zamanına göre sana özel çalışma planı oluşturur. Daha verimli, daha bilinçli, daha senin gibi.');
 
     const actions = el('div','v6-hero-actions');
-    const start = button('Ücretsiz Başla →','paid-start','v6-gradient-btn v6-main-cta');
+    const start = button('Ücretsiz Başla →','choose-exam','v6-gradient-btn v6-main-cta',{exam:'kpss'});
     const video = el('button','v6-video-btn');
     video.type='button';
     const play = el('span','v6-play'); play.append(icon('play'));
@@ -229,7 +229,7 @@
     const foot=el('div','v6-dash-foot');
     const motivational=el('div','v6-dash-mot'); motivational.append(icon('bolt'),el('div'));
     motivational.lastElementChild.append(el('strong','', 'Küçük adımlar, büyük sonuçlar.'),el('span','', 'Bugün de hedeflerine bir adım daha yaklaş.'));
-    const task=el('button','v6-dash-task','Bugünün görevlerine başla →');task.type='button';task.dataset.action='paid-start';
+    const task=el('button','v6-dash-task','Bugünün görevlerine başla →');task.type='button';task.dataset.action='choose-exam';task.dataset.exam='kpss';
     foot.append(motivational,task);
 
     main.append(top,head,stats,lower,foot);

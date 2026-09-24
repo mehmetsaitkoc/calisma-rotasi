@@ -70,8 +70,13 @@ try{
   page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)));
   page.on('console',m=>{if(m.type()==='error'&&!/favicon/i.test(m.text()))consoleErrors.push(m.text());});
 
-  await page.goto(BASE+'/?fresh=1',{waitUntil:'domcontentloaded'});
+  await page.goto(BASE+'/',{waitUntil:'domcontentloaded'});
   await page.locator('.welcome.premium-landing-final').waitFor({state:'visible'});
+  const betaRuntime=await page.evaluate(()=>({href:location.href,webBeta:window.RotaWebBeta===true,accountAvailable:window.RotaAccount?.available,status:window.RotaAccount?.status}));
+  assert.equal(new URL(betaRuntime.href).searchParams.has('fresh'),false,'Share-readiness must exercise the real public root URL');
+  assert.equal(betaRuntime.webBeta,true,'Share-readiness must run with Web Beta mode enabled');
+  assert.equal(betaRuntime.accountAvailable,false,'Share-readiness must keep account/sync unavailable');
+  assert.equal(betaRuntime.status,'local-only','Share-readiness must verify local-only persistence mode');
   const landingWidths=[1512,1440,1280,1024,768,430,390,375,360,320];
   for(const width of landingWidths){
     await page.setViewportSize({width,height:width>=768?900:844});

@@ -2,6 +2,12 @@
 'use strict';
 let user=null,csrf='';
 const status=document.getElementById('status');
+if(window.RotaWebBeta){
+ document.getElementById('login-panel').hidden=true;
+ document.getElementById('delete-panel').hidden=true;
+ status.textContent='Web Beta şu anda hesap oluşturmuyor. Sunucuda silinecek bir hesabın yok; yerel çalışma kayıtlarını silmek için tarayıcının bu siteye ait verilerini temizle.';
+ return;
+}
 async function request(path,method='GET',data){
  const headers={'Content-Type':'application/json'};
  if(user){headers['X-Rota-Account-Id']=user.id;if(method!=='GET')headers['X-CSRF-Token']=csrf;}

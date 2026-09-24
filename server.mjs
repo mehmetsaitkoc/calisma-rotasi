@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brotliCompressSync, gzipSync, constants as ZLIB } from 'node:zlib';
+import { createHash } from 'node:crypto';
 import { createAccounts } from './server/accounts.mjs';
 import { readJson as validatedJson,failure } from './server/validation.mjs';
 
@@ -376,7 +377,7 @@ WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE_BUNDLED
   .replace('</head>',WEB_BETA_FLAG+WEB_PUBLIC_META+SOCIAL_META+'<link rel="stylesheet" href="/landing-final.css"></head>')
   .replace('</body>','<script src="/landing-final.js" defer></script></body>');
 const WEB_INDEX_BODY=Buffer.from(WEB_INDEX_SOURCE_BUNDLED,'utf8');
-const WEB_BUNDLE_CACHE=new Map(),WEB_ENCODING_CACHE=new Map();
+const WEB_BUNDLE_CACHE=new Map(),WEB_ENCODING_CACHE=new Map(),WEB_ETAG_CACHE=new Map();
 
 async function webBundle(subject){
   if(WEB_BUNDLE_CACHE.has(subject))return WEB_BUNDLE_CACHE.get(subject);
@@ -387,18 +388,44 @@ async function webBundle(subject){
   }));
   const body=Buffer.from(parts.join(''),'utf8');WEB_BUNDLE_CACHE.set(subject,body);return body;
 }
+function encodingQuality(header,name){
+  let wildcard=null;
+  for(const rawPart of String(header||'').toLowerCase().split(',')){
+    const [token,...params]=rawPart.trim().split(';');if(!token)continue;
+    let q=1;
+    for(const param of params){
+      const match=/^\s*q\s*=\s*(0(?:\.\d+)?|1(?:\.0+)?)\s*$/.exec(param);
+      if(match){q=Number(match[1]);break;}
+    }
+    if(token===name)return q;
+    if(token==='*')wildcard=q;
+  }
+  return wildcard??0;
+}
 function encodedAsset(req,key,raw){
-  const accepted=String(req.headers['accept-encoding']||'').toLowerCase();
-  const encoding=/\bbr\b/.test(accepted)?'br':/\bgzip\b/.test(accepted)?'gzip':'identity';
+  const accepted=String(req.headers['accept-encoding']||'');
+  const br=encodingQuality(accepted,'br'),gzip=encodingQuality(accepted,'gzip');
+  const encoding=br>0&&br>=gzip?'br':gzip>0?'gzip':'identity';
   const cacheKey=key+':'+encoding;if(WEB_ENCODING_CACHE.has(cacheKey))return {encoding,body:WEB_ENCODING_CACHE.get(cacheKey)};
   let body=raw;
   if(encoding==='br')body=brotliCompressSync(raw,{params:{[ZLIB.BROTLI_PARAM_QUALITY]:4}});
   else if(encoding==='gzip')body=gzipSync(raw,{level:5});
   WEB_ENCODING_CACHE.set(cacheKey,body);return {encoding,body};
 }
-function sendEncoded(req,res,{key,raw,type,cache='public, max-age=300, must-revalidate',etag='"'+key+'"'}){
-  if(req.headers['if-none-match']===etag){res.writeHead(304,{'etag':etag,'cache-control':cache,'vary':'Accept-Encoding'});return res.end();}
-  const out=encodedAsset(req,key,raw),headers={'content-type':type,'content-length':out.body.length,'cache-control':cache,'etag':etag,'vary':'Accept-Encoding'};
+function contentEtag(key,raw){
+  if(WEB_ETAG_CACHE.has(key))return WEB_ETAG_CACHE.get(key);
+  const etag='W/"'+createHash('sha256').update(raw).digest('base64url').slice(0,24)+'"';
+  WEB_ETAG_CACHE.set(key,etag);
+  return etag;
+}
+function etagMatches(header,etag){
+  const value=String(header||'').trim();
+  return value==='*'||value.split(',').some(part=>part.trim()===etag);
+}
+function sendEncoded(req,res,{key,raw,type,cache='public, max-age=300, stale-while-revalidate=86400',etag=null}){
+  const resolvedEtag=etag||contentEtag(key,raw);
+  if(etagMatches(req.headers['if-none-match'],resolvedEtag)){res.writeHead(304,{'etag':resolvedEtag,'cache-control':cache,'vary':'Accept-Encoding'});return res.end();}
+  const out=encodedAsset(req,key,raw),headers={'content-type':type,'content-length':out.body.length,'cache-control':cache,'etag':resolvedEtag,'vary':'Accept-Encoding'};
   if(out.encoding!=='identity')headers['content-encoding']=out.encoding;
   res.writeHead(200,headers);res.end(out.body);
 }
@@ -416,18 +443,19 @@ async function serve(req,res){
   const file=path.normalize(path.join(PUBLIC,p));
   const relative=path.relative(PUBLIC,file);
   if(relative==='..'||relative.startsWith('..'+path.sep)||path.isAbsolute(relative)) return json(res,403,{error:'Yasak yol.'});
-  let real,st;
-  try{real=await fs.promises.realpath(file);const rel=path.relative(PUBLIC,real);if(rel==='..'||rel.startsWith('..'+path.sep)||path.isAbsolute(rel))return json(res,403,{error:'Yasak yol.'});st=await fs.promises.stat(real);}
+  let real,st,assetPath;
+  try{real=await fs.promises.realpath(file);assetPath=path.relative(PUBLIC,real);if(assetPath==='..'||assetPath.startsWith('..'+path.sep)||path.isAbsolute(assetPath))return json(res,403,{error:'Yasak yol.'});st=await fs.promises.stat(real);}
   catch{return json(res,404,{error:'Bulunamadı.'});}
   if(!st.isFile())return json(res,404,{error:'Bulunamadı.'});
+  const staticKey='static-'+assetPath.split(path.sep).join('/')+'-'+st.size+'-'+Math.floor(st.mtimeMs);
   const etag='W/"'+st.size.toString(16)+'-'+Math.floor(st.mtimeMs).toString(16)+'"';
-  const cache='public, max-age=300, must-revalidate',type=mime(real);
+  const cache='public, max-age=300, stale-while-revalidate=86400',type=mime(real);
   const compressible=/^(?:text\/|application\/(?:json|javascript))/.test(type)||type.startsWith('image/svg+xml');
   if(compressible&&st.size<=2*1024*1024){
     const raw=await fs.promises.readFile(real);
-    return sendEncoded(req,res,{key:'static-'+st.size+'-'+Math.floor(st.mtimeMs),raw,type,cache,etag});
+    return sendEncoded(req,res,{key:staticKey,raw,type,cache});
   }
-  if(req.headers['if-none-match']===etag){res.writeHead(304,{'etag':etag,'cache-control':cache});return res.end();}
+  if(etagMatches(req.headers['if-none-match'],etag)){res.writeHead(304,{'etag':etag,'cache-control':cache});return res.end();}
   res.writeHead(200,{'content-type':type,'content-length':st.size,'cache-control':cache,'etag':etag});
   const stream=fs.createReadStream(real);stream.on('error',()=>res.destroy());stream.pipe(res);
 }

@@ -110,6 +110,7 @@
     video.append(play,el('strong','', 'Örnek Paneli Gör'));
     video.addEventListener('click',()=>document.querySelector('.v6-dashboard')?.scrollIntoView({behavior:'smooth',block:'center'}));
     actions.append(start,video);
+    const betaNote = el('p','v6-beta-note','Web Beta · Çalışmaların bu tarayıcıda saklanır.');
 
     const features = el('div','v6-feature-strip');
     [
@@ -121,7 +122,7 @@
       const item=el('span','v6-feature-item'+(proof?' premium-proof-item':'')); item.append(icon(ic),el('b','',t)); features.append(item);
     });
 
-    copy.append(badge,h1,slogan,p,actions,features);
+    copy.append(badge,h1,slogan,p,actions,betaNote,features);
     return copy;
   }
 

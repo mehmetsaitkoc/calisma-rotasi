@@ -1,0 +1,23 @@
+{
+  "appId": "app.rotasi.development",
+  "appName": "Çalışma Rotası",
+  "webDir": "native-web",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost",
+    "cleartext": false,
+    "errorPath": "native-unavailable.html"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false,
+    "minWebViewVersion": 116,
+    "loggingBehavior": "none"
+  },
+  "plugins": {
+    "Keyboard": {
+      "resizeOnFullScreen": true
+    }
+  },
+  "loggingBehavior": "none"
+}

@@ -77,7 +77,7 @@ function applySeo(item) {
   createMeta("og:type", "website", true);
   createMeta("og:image", item.heroImage, true);
   createMeta("twitter:card", "summary_large_image");
-  const canonical = window.location.origin + "/business-demo.html?business=" + encodeURIComponent(item.slug);
+  const canonical = new URL("./business-demo.html?business=" + encodeURIComponent(item.slug), window.location.href).href;
   setCanonical(canonical);
   createMeta("og:url", canonical, true);
 
@@ -468,7 +468,7 @@ function footer(item) {
           '<div class="factory-footer__brand">' + escapeHtml(item.name) + "</div>" +
           '<div>Local Business Website Factory • ' + (item.verified ? "Doğrulanmış işletme verisi" : "Satış demosu") + "</div>" +
         "</div>" +
-        '<div><a href="/website-factory.html">Tüm demo modellerini gör</a></div>' +
+        '<div><a href="./website-factory.html">Tüm demo modellerini gör</a></div>' +
       "</div>" +
     "</footer>"
   );

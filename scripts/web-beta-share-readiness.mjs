@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import fs from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
 
@@ -73,7 +72,7 @@ try{
   await page.goto(BASE+'/?fresh=1',{waitUntil:'domcontentloaded'});
   await page.locator('.welcome.premium-landing-final').waitFor({state:'visible'});
   await noOverflow(page,'390px landing');
-  await fs.mkdir('work/production-evidence',{recursive:true});
+  await fs.promises.mkdir('work/production-evidence',{recursive:true});
   await page.screenshot({path:'work/production-evidence/web-beta-landing-390.png',fullPage:true});
 
   const copy=((await page.locator('body').innerText())||'');

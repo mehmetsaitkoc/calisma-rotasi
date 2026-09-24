@@ -186,12 +186,12 @@
     const main=el('div','v6-dash-main');
     const top=el('div','v6-dash-top');
     const search=el('div','v6-search','Ders, konu veya hedef ara...');
-    const profile=el('div','v6-profile'); profile.append(el('span','v6-avatar','MS'),el('div','v6-profile-text'));
-    profile.lastElementChild.append(el('strong','', 'Mehmet Sait'),el('small','', 'KPSS Lisans Adayı'));
+    const profile=el('div','v6-profile'); profile.append(el('span','v6-avatar','KA'),el('div','v6-profile-text'));
+    profile.lastElementChild.append(el('strong','', 'KPSS Adayı'),el('small','', 'Lisans · GY–GK'));
     top.append(search,profile);
 
     const hello=el('div','v6-hello');
-    hello.append(el('div','', 'Merhaba, Mehmet Sait 👋'),el('small','', 'Bugün hedeflerine bir adım daha yaklaş.'));
+    hello.append(el('div','', 'Merhaba, KPSS Adayı 👋'),el('small','', 'Bugün hedeflerine bir adım daha yaklaş.'));
     const quote=el('div','v6-dash-quote','Disiplin, hayalleri gerçeğe dönüştürür.');
 
     const head=el('div','v6-dash-head'); head.append(hello,quote);

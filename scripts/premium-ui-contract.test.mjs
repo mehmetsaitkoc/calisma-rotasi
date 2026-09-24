@@ -107,5 +107,5 @@ for(const phrase of ['RAPOR + TREND + ANALİZ','Zaman içindeki desenini de gör
   assert.ok(html.includes(phrase),'Plus value proposition must match implemented premium capabilities: '+phrase);
 }
 
-assert.ok(html.includes("['teacher','Rota Hoca','mic']"),'Legacy teacher markup may remain for migration compatibility; presentation layer must retire it.');
+assert.ok(!html.includes("['teacher','Rota Hoca','mic']"),'Primary KPSS navigation must not expose retired Rota Hoca');
 console.log('Premium UI contract passed: living UI + server-sourced Free/Plus gates + polished user copy + honest empty report states');

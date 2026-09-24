@@ -37,6 +37,8 @@ try{
   assert.equal(health.ok,true);
   assert.deepEqual(health.accounts,{available:false,mode:'local-only'});
   assert.equal(health.entitlement.accountRequired,false);
+  assert.equal(health.aiConfigured,false);
+  assert.equal(health.ttsConfigured,false);
 
   const auth=await fetch(BASE+'/api/auth/me');
   assert.equal(auth.status,503);
@@ -62,6 +64,9 @@ try{
 
   const ent=await (await fetch(BASE+'/api/entitlements')).json();
   assert.equal(ent.accountRequired,false);
+  assert.equal(ent.purchaseEnabled,false);
+  assert.equal(ent.features.teacher_basic,false);
+  assert.equal(ent.features.advanced_teacher_insights,false);
 
   const compressed=await fetch(BASE+'/app-premium-next.css',{headers:{'accept-encoding':'gzip'}});
   assert.equal(compressed.status,200);

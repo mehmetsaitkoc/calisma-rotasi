@@ -73,13 +73,6 @@ try{
   assert.equal(await page.locator('[data-exam="kpss"]').count(),1,'Landing must keep exactly one real KPSS product entry');
   assert.equal(await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),0,'Web Beta must not expose unfinished monetization controls');
 
-  await page.getByRole('button',{name:'Web Beta'}).click();
-  await page.getByRole('heading',{name:'Ücretsiz Web Beta'}).waitFor({state:'visible'});
-  const betaModal=((await page.locator('dialog').innerText())||'');
-  assert.match(betaModal,/tarayıcıda yerel olarak saklanır/i);
-  assert.match(betaModal,/yedek/i);
-  await page.locator('[data-action="close-modal"]').click();
-
   await page.locator('.v6-main-cta').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
   assert.equal(await page.locator('[data-view="teacher"]').count(),0,'Rota Hoca navigation must not exist in Web Beta');

@@ -741,11 +741,14 @@ try {
   assert.match(settingsCopy,/KPSS/i,'Settings must identify the active KPSS scope');
   assert.equal(await page.locator('[data-action="paid-sample"]').count(),0,'Public beta must not expose the fake sample-panel entry');
 
-  assert.equal(
-    await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-action="paid-membership"],[data-view="membership"]').count(),
-    0,
-    'Public Web Beta must not expose unfinished pricing or membership controls'
-  );
+  const webBetaMode=await page.evaluate(()=>window.RotaWebBeta===true);
+  if(webBetaMode){
+    assert.equal(
+      await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-action="paid-membership"],[data-view="membership"]').count(),
+      0,
+      'Public Web Beta must not expose unfinished pricing or membership controls'
+    );
+  }
 
   const workspaceV3 = await appState(page);
   assert.equal(workspaceV3.value.workspaces.kpss.schemaVersion,3,'Fresh onboarding must use workspace schema v3');

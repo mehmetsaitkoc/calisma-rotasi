@@ -37,6 +37,9 @@ const TEACHER_MAX_OUTPUT_TOKENS = 1400;
 const RATE_BUCKET_PRUNE_AT = 2048;
 const buckets = new Map();
 const accounts = createAccounts();
+// Rota Hoca is retired from the public Web Beta. Even if an old Render secret still exists,
+// local-only beta must never send AI/TTS provider traffic.
+if(accounts.available===false)runtimeApiKey='';
 
 const PROFILE_MODELS = {
   best:['gpt-6-astra','gpt-5.6-sol','gpt-5.6-terra','gpt-5.6-luna'],

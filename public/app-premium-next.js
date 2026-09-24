@@ -834,7 +834,8 @@
 
   function removeWebBetaUnavailableUi() {
     if (!window.RotaWebBeta) return;
-    document.querySelectorAll('.sidebar-plus,[data-action="paid-membership"],.topbar-upgrade,[data-view="monthly-report"]').forEach((node) => {
+    document.documentElement.style.setProperty('--preview-h','0px');
+    document.querySelectorAll('.preview-bar,.sidebar-plus,[data-action="paid-membership"],.topbar-upgrade,[data-view="monthly-report"]').forEach((node) => {
       const wrapper = node.closest('.nav-item,.sidebar-plus');
       if (wrapper) wrapper.remove();
       else node.remove();

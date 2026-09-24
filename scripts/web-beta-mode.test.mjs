@@ -16,7 +16,7 @@ async function start(){
       NODE_ENV:'production',
       ROTA_ACCOUNTS_MODE:'local-only',
       ROTA_APP_ORIGIN:'https://beta.example',
-      OPENAI_API_KEY:''
+      OPENAI_API_KEY:'stale-secret-must-not-enable-ai'
     },
     stdio:['ignore','pipe','pipe']
   });
@@ -37,6 +37,8 @@ try{
   assert.equal(health.ok,true);
   assert.deepEqual(health.accounts,{available:false,mode:'local-only'});
   assert.equal(health.entitlement.accountRequired,false);
+  assert.equal(health.aiConfigured,false,'Local-only Web Beta must ignore stale AI secrets');
+  assert.equal(health.ttsConfigured,false,'Local-only Web Beta must keep TTS disabled');
   assert.equal(health.aiConfigured,false);
   assert.equal(health.ttsConfigured,false);
 

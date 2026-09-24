@@ -9,3 +9,4 @@ node_modules/
 *.jks
 *.keystore
 keystore.properties
+\n/dist-web-beta/\n

@@ -340,6 +340,12 @@ let WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE.replace(WEB_QUESTION_TAG,(tag,src,
 if(WEB_QUESTION_FILES.size!==6||[...WEB_QUESTION_FILES.values()].reduce((n,x)=>n+x.length,0)!==256){
   throw Error('Web KPSS soru bankası bundle haritası beklenen 6 ders / 256 test ile eşleşmiyor.');
 }
+// Rota Hoca is retired from the public Web Beta. Keep legacy source code for
+// migration/review compatibility, but do not ship its embedded ~139 KB portrait.
+WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE_BUNDLED.replace(
+  /(<img class="rota-teacher-photo" src=")data:image\/jpeg;base64,[^"]+(")/g,
+  '$1$2'
+);
 const WEB_BETA_FLAG=accounts.mode==='local-only'?'<script>window.RotaWebBeta=true</script>':'';
 const WEB_PUBLIC_META='<meta name="theme-color" content="#071225"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta property="og:title" content="Çalışma Rotası · Sana Özel KPSS Rotası"><meta property="og:description" content="Hedefine, seviyene ve çalışma performansına göre değişen kişisel KPSS çalışma rotası."><meta property="og:type" content="website">';
 const SOCIAL_ORIGIN=(()=>{

@@ -215,7 +215,7 @@ try{
   await page.getByText('KPSS yedeğini yükle?',{exact:true}).waitFor({state:'visible'});
   const backupModalText=((await page.locator('#modal').innerText())||'');
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b|Rota Hoca/i.test(backupModalText),'Backup confirmation must not leak retired scope');
-  await page.locator('#modal [data-action="close-modal"]').click();
+  await page.locator('#modal [aria-label="Pencereyi kapat"]').click();
 
   await backupInput.setInputFiles({name:'too-large.json',mimeType:'application/json',buffer:Buffer.alloc(2*1024*1024+1,0x20)});
   await page.getByText(/Yedek dosyası en fazla 2 MB olabilir/i).waitFor({state:'visible'});
@@ -227,7 +227,7 @@ try{
   await page.getByText('KPSS kayıtlarını sıfırla?',{exact:true}).waitFor({state:'visible'});
   const resetText=((await page.locator('#modal').innerText())||'');
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b|Rota Hoca/i.test(resetText),'Reset confirmation must stay KPSS-only');
-  await page.locator('#modal [data-action="close-modal"]').click();
+  await page.locator('#modal [aria-label="Pencereyi kapat"]').click();
 
   assert.deepEqual(pageErrors,[],'Page errors:\n'+pageErrors.join('\n'));
   assert.deepEqual(consoleErrors,[],'Console errors:\n'+consoleErrors.join('\n'));

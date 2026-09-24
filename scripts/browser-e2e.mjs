@@ -739,6 +739,15 @@ try {
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/i.test(settingsCopy),'Settings must not leak retired YKS-family product copy');
   assert.ok(!/Rota Hoca/i.test(settingsCopy),'Settings must not expose retired Rota Hoca');
   assert.match(settingsCopy,/KPSS/i,'Settings must identify the active KPSS scope');
+  assert.equal(await page.locator('[data-action="paid-sample"]').count(),0,'Public beta must not expose the fake sample-panel entry');
+
+  const pricingEntry=page.locator('[data-action="paid-pricing"]').first();
+  assert.ok(await pricingEntry.count(),'Pricing information must remain reachable when the user explores Plus');
+  await pricingEntry.evaluate(node=>node.click());
+  await page.getByRole('heading',{name:/Ücretsiz başla/i}).waitFor({state:'visible'});
+  const pricingCopy=((await page.locator('#app').innerText())||'').trim();
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/i.test(pricingCopy),'Pricing must stay KPSS-only');
+  assert.ok(!/Rota Hoca/i.test(pricingCopy),'Pricing must not advertise retired Rota Hoca');
   await navigate(page,'today');
 
   const workspaceV3 = await appState(page);

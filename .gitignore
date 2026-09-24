@@ -4,3 +4,9 @@
 node_modules/
 .DS_Store
 *.log
+/work/
+/native-web/
+*.jks
+*.keystore
+keystore.properties
+\n/dist-web-beta/\n

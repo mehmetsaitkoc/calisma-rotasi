@@ -74,6 +74,10 @@ async function navigate(page, view) {
     await sidebar.click();
   }
   await page.locator('#app').waitFor({ state: 'visible' });
+  if(view==='report'){
+    await page.getByRole('heading',{name:'Gelişimim',exact:true}).waitFor({state:'visible'});
+    await page.locator('[data-action="nav"][data-view="monthly-report"]').click();
+  }
 }
 
 function latestTaskMode(space, task) {
@@ -728,6 +732,21 @@ try {
   await assertCleanRender(page, 'post onboarding today');
   await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
+
+  // Public beta scope must stay consistently KPSS-only, including secondary settings.
+  await navigate(page,'settings');
+  const settingsCopy=((await page.locator('#app').innerText())||'').trim();
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/i.test(settingsCopy),'Settings must not leak retired YKS-family product copy');
+  assert.ok(!/Rota Hoca/i.test(settingsCopy),'Settings must not expose retired Rota Hoca');
+  assert.match(settingsCopy,/KPSS/i,'Settings must identify the active KPSS scope');
+  assert.equal(await page.locator('[data-action="paid-sample"]').count(),0,'Public beta must not expose the fake sample-panel entry');
+
+  assert.equal(
+    await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-action="paid-membership"],[data-view="membership"]').count(),
+    0,
+    'Public Web Beta must not expose unfinished pricing or membership controls'
+  );
+
   const workspaceV3 = await appState(page);
   assert.equal(workspaceV3.value.workspaces.kpss.schemaVersion,3,'Fresh onboarding must use workspace schema v3');
   assert.match(workspaceV3.value.workspaces.kpss.sync?.workspaceId||'',/^ws-kpss-[A-Za-z0-9-]{8,}$/,'Workspace must expose a stable sync-ready identity');
@@ -1052,7 +1071,7 @@ try {
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 
-  // Rota Hoca is retired from the product surface. Legacy internal data/contracts may remain,
+  // Rota Hoca is retired from the public beta surface. Legacy internal contracts may remain,
   // but students must not be able to navigate to or render the teacher workspace.
   assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Rota Hoca navigation must stay removed');
   assert.equal(await page.locator('[data-premium-surface="teacher"]').count(), 0, 'Rota Hoca surface must stay unreachable');

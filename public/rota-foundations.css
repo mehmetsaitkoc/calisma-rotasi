@@ -302,3 +302,29 @@ html[data-cr-color-mode="dark"] .btn.primary { color: #101c36 !important; }
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 }
+
+/* WEB BETA · MOBILE FEEDBACK HYGIENE */
+@media (max-width: 650px) {
+  body #toasts {
+    position: fixed !important;
+    left: 14px !important;
+    right: 14px !important;
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    z-index: 10020 !important;
+    display: grid !important;
+    gap: 8px !important;
+    pointer-events: none !important;
+  }
+  body #toasts .toast:not(:last-child) {
+    display: none !important;
+  }
+  body #toasts .toast {
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 11px 14px !important;
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+    box-shadow: 0 10px 28px rgb(15 30 64 / 22%) !important;
+  }
+}

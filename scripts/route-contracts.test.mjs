@@ -5,8 +5,8 @@ const C=globalThis.RotaContracts;
 assert.ok(C,'RotaContracts must be exported');
 
 assert.equal(C.modeCopy('repair').label,'ONARIM');
-assert.equal(C.modeCopy('steady').label,'DENGELİ');
-assert.equal(C.modeCopy('progress').label,'GELİŞİM');
+assert.equal(C.modeCopy('steady').label,'DENGE');
+assert.equal(C.modeCopy('progress').label,'İLERLEME');
 assert.equal(C.modeCopy('ease').label,'SÜRDÜRÜLEBİLİR');
 
 assert.equal(C.featureEnabled('free','core_route'),true);

@@ -1,3 +1,12 @@
+/* WEB BETA · ROTA HOCA RETIRED */
+body.app-premium-next-ready [data-view="teacher"],
+body.app-premium-next-ready .teacher-page,
+body.app-premium-next-ready [data-premium-surface="teacher"],
+body.pnx3-dashboard-ready .pnx3-teacher-card,
+body.pnx3-dashboard-ready .pnx-teacher-card{
+  display:none!important;
+}
+
 /* APP PREMIUM NEXT V1 · TODAY FOCUS + ROTA INTELLIGENCE
    Presentation-only layer. Route Engine, Student Model, entitlements and persistence stay untouched. */
 
@@ -5748,10 +5757,7 @@ body.pnx3-dashboard-ready .pnx3-quote-card strong{
   .premium-ob-laptop{left:18px;right:18px;top:35px;min-height:190px}
 }
 
-/* APP PREMIUM NEXT V4.3 · KPSS APPROVED DASHBOARD · NO ROTA HOCA */
-body.app-premium-next-ready [data-view="teacher"],
-body.app-premium-next-ready .teacher-page,
-body.app-premium-next-ready [data-premium-surface="teacher"],
+/* Retired dashboard promotions; the Rota Hoca workspace stays accessible. */
 body.pnx3-dashboard-ready .pnx3-teacher-card,
 body.pnx3-dashboard-ready .pnx-teacher-card{
   display:none!important;

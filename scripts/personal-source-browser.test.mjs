@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {spawn} from 'node:child_process';
+import {once} from 'node:events';
+import {chromium} from 'playwright';
+const port=Number(process.env.PERSONAL_SOURCE_TEST_PORT||8864),base='http://127.0.0.1:'+port,key='calisma-rotasi:all:v5',tmp=fs.mkdtempSync(path.join(os.tmpdir(),'rota-library-'));
+const server=spawn(process.execPath,['server.mjs'],{env:{...process.env,PORT:String(port),HOST:'127.0.0.1',NODE_ENV:'test',RENDER:'false',ROTA_DB_PATH:path.join(tmp,'test.sqlite'),OPENAI_API_KEY:''},stdio:['ignore','pipe','pipe']});let output='',browser;server.stdout.on('data',x=>output+=x);server.stderr.on('data',x=>output+=x);
+try{
+ for(let i=0;i<100;i++){try{if((await fetch(base+'/api/health')).ok)break;}catch{}if(server.exitCode!==null)throw Error(output);await new Promise(r=>setTimeout(r,70));}
+ browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1365,height:950}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(base,{waitUntil:'networkidle'});await page.evaluate(k=>{const s=RotaCore.fresh(),w=s.workspaces.kpss;s.activeExam='kpss';w.configured=true;w.profile.completed=true;w.profile.summaryConfirmed=true;w.settings.name='Kütüphane Testi';w.turkishPrefs={'k-tr':'removed-legacy-series'};w.courseSources={'k-tr':{playlistId:'PL123456789abc',title:'Kişisel listem',teacher:'Kendi kaydım'}};w.courseNotes={'k-tr':'Korunacak eski not'};w.courseProgress={'k-tr':{PL123456789abc:{videoId:'abcdefghijk',index:3,second:73}}};w.lessons={'k-tr-1':{activeId:'abcdefghijk',customVideos:[],positions:{abcdefghijk:73},seriesActive:{'removed-legacy-series':'abcdefghijk'},watched:['abcdefghijk'],updated:123}};RotaCore.validateBackup(s);localStorage.setItem(k,JSON.stringify(s));},key);
+ await page.reload({waitUntil:'networkidle'});await page.evaluate(()=>RotaAccount.ready);
+ await page.locator('.sidebar [data-view="academy"]').click();assert.equal(await page.locator('.academy-course').count(),6);assert.match(await page.locator('.academy-summary').innerText(),/64[\s\S]*256[\s\S]*3072/);assert.equal(await page.locator('[data-series-card],#turkish-series-select').count(),0);
+ await page.locator('[data-action="video-ac-open"][data-subject="k-tr"]').click();const topics=await page.evaluate(()=>RotaCatalog.subjects.find(s=>s.id==='k-tr').topics.length);assert.equal(await page.locator('[data-topic-card]').count(),topics);assert.equal(await page.locator('[data-action="start-mini-exam"]').count(),topics*4);
+ await page.locator('[data-action="start-mini-exam"]').first().click();assert.equal(await page.locator('#mini-exam-form .mini-question').count(),12);await page.locator('#modal [data-action="close-modal"]').last().click();
+ await page.locator('[data-personal-course-archive] summary').click();assert.equal(await page.locator('#academy-note-form textarea').inputValue(),'Korunacak eski not');await page.locator('#academy-note-form textarea').fill('Güncellenen kişisel not');await page.locator('#academy-note-form [type="submit"]').click();
+ const data=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)).workspaces.kpss,key);assert.equal(data.courseNotes['k-tr'],'Güncellenen kişisel not');assert.equal(data.courseProgress['k-tr'].PL123456789abc.second,73);assert.equal(data.turkishPrefs['k-tr'],'removed-legacy-series');
+ await page.locator('[data-action="video-open"][data-id="k-tr-1"]').click();assert.match(await page.locator('.turkish-chapters').innerText(),/Önceki sürümden kayıtlı video/);assert.equal(await page.locator('#turkish-series-select').count(),0);
+ await page.setViewportSize({width:390,height:844});for(const view of ['academy']){await page.evaluate(v=>document.querySelector('.sidebar [data-view="'+v+'"]').click(),view);const size=await page.evaluate(()=>({view:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.view+2,JSON.stringify(size));}
+ await page.locator('[data-action="video-ac-open"][data-subject="k-tr"]').click();const size=await page.evaluate(()=>({view:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.view+2,JSON.stringify(size));
+ fs.mkdirSync(new URL('../work/production-evidence/',import.meta.url),{recursive:true});await page.screenshot({path:new URL('../work/production-evidence/internal-question-library-mobile.png',import.meta.url).pathname});assert.deepEqual(errors,[]);console.log('Internal library browser passed: 6/64/256/3072, 12-question test opens, personal archive and resume preserved, 390px overflow check.');
+} catch(e){console.error(output);throw e;}finally{await browser?.close();if(server.exitCode===null){const ended=once(server,'exit');server.kill('SIGTERM');await ended;}fs.rmSync(tmp,{recursive:true,force:true});}

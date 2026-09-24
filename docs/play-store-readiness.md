@@ -1,0 +1,23 @@
+# Play listing and data-safety preparation
+
+Draft checked 2026-09-24. Not submitted to Google Play. The developer/operator is Yasin Koç; the owner-supplied privacy contact is mehmetsaitkoc113@gmail.com. The permanent application ID, signing owner, developer account and live backend retention/backup policy are unresolved. The contact is linked in both public pages. Complete them before store submission; no page in this checkout proves a published privacy URL.
+
+The repository contains `/privacy.html` and `/delete-account.html`. The latter supports browser login, export and password-confirmed deletion without installing the app. After deployment verify both URLs anonymously and perform deletion with a dedicated test account. Inside the app, account export/delete use authenticated account-scoped APIs. The operator must document deletion treatment in backups and any legally required retention, including the reason and duration. [Account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111), [User Data policy](https://support.google.com/googleplay/android-developer/answer/10144311)
+
+| Implemented data flow | Purpose / user control | Data-safety draft consideration |
+|---|---|---|
+| Email, name and account ID to first-party API; password sent over TLS and stored as scrypt hash | Registration/login; export and account deletion | Personal information and identifiers; required for account sync |
+| Study profile, plans, notes, attempts, answers and wrong-answer records to first-party API | Multi-device study workspace, revision conflict handling; local guest data imports only after confirmation | App activity / user-generated content; examine all free-text fields |
+| Optional verification/password-recovery email to configured Resend provider | User explicitly requests a single-use link; mail feature is disabled without service configuration | Email and action-link processing; disclose provider and actual retention |
+| Opaque session token | Auth; AndroidKeyStore encrypted at rest, revoke on logout/refresh | Authentication/security identifier; never put in logs or exports |
+| Optional question text, selected image and selected educational context sent to server then configured AI provider | Rota Hoca response after explicit Send; manual text alternative | Photos and user content; disclose provider processing and actual retention/region |
+| Optional text for text-to-speech sent through authenticated backend to provider | User-requested read-aloud | User content; disclose transfer before use |
+| System speech recognizer input | User starts system dictation UI; app receives text | System provider may transmit audio; app itself does not record or upload audio |
+| Optional external video link/player | User-added supplemental source, loaded after opening it | Third-party YouTube network/privacy applies; no bundled teacher directory |
+| User-requested backup file via system share sheet | User selects destination | Destination is user-chosen; app cache export is not a hidden cloud backup |
+
+This table is an implementation inventory, not a completed Play Data Safety declaration. Determine the exact collection/sharing/ephemeral-processing categories against the final provider contracts and server configuration. No advertising SDK, advertising ID or analytics SDK was introduced by the native shell. Existing infrastructure logs and their retention must still be inventoried. [Data Safety form](https://support.google.com/googleplay/android-developer/answer/10787469)
+
+The merged technical APK requests INTERNET, ACCESS_NETWORK_STATE and an app-scoped non-exported receiver permission. It does not request CAMERA, RECORD_AUDIO, READ_MEDIA_IMAGES or broad storage permission. Selected-photo access uses the system picker; do not add broad gallery access to avoid the picker. Camera capture and system dictation need physical-device cancellation/denial/provider tests before release. [Photo/video permission policy](https://support.google.com/googleplay/android-developer/answer/16558241)
+
+Store material still to finalize: verified privacy URL, deletion URL, content rating questionnaire, target audience, support contact, app access/test-account instructions, screenshots from the final build and any paid-feature/payment declarations. Do not claim guaranteed exam results or verified real-device support. Any pricing UI must match the implemented purchase flow before monetized publication. [Create and set up an app](https://support.google.com/googleplay/android-developer/answer/9859152), [Prepare a release](https://support.google.com/googleplay/android-developer/answer/9859348)

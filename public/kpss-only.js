@@ -127,6 +127,17 @@
     document.querySelectorAll('[data-exam="yks"]').forEach((node) => node.remove());
     document.querySelectorAll('[data-scope="TYT"],[data-scope="AYT"],[data-scope="YDT"]').forEach((node) => node.remove());
 
+    // Public Web Beta has no live billing. Keep unfinished monetization out of the
+    // student journey instead of advertising prices or dead checkout controls.
+    document.querySelectorAll(
+      '[data-view="membership"],[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-action="paid-tier"]'
+    ).forEach((node) => {
+      const wrapper = node.closest('.nav-item,.side-link,.sidebar-item,li');
+      if (wrapper) wrapper.remove();
+      else node.remove();
+    });
+    document.querySelectorAll('.plus-gate .gate-cta,.upgrade-price,.checkout-demo-tag,.checkout-layout').forEach((node) => node.remove());
+
     const academy = document.querySelector('.academy-grid');
     if (academy) {
       academy.querySelectorAll('.academy-course').forEach((card) => {
@@ -134,7 +145,7 @@
         if (!stage.startsWith('KPSS')) card.remove();
       });
       const kpssSubjects = (window.RotaCatalog?.subjects || []).filter((subject) => subject.exam === PRIMARY_EXAM);
-      const summary = document.querySelector('.academy-summary');
+      const summary = document.querySelector('.academy-summary:not([data-internal-question-library])');
       const stats = summary?.querySelectorAll('.academy-mini-stats > div') || [];
       if (stats[0]) {
         setText(stats[0].querySelector('strong'), String(kpssSubjects.length));

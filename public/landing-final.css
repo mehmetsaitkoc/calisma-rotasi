@@ -207,6 +207,12 @@ body:has(.welcome.premium-landing-final) .preview-bar{display:none!important}\n.
 }
 .v6-play .v6-icon{width:20px;height:20px}
 .v6-video-btn strong{font-size:15px}
+.v6-beta-note{
+  margin:10px 0 0!important;
+  color:#8192ae!important;
+  font-size:11px!important;
+  line-height:1.45!important;
+}
 .v6-feature-strip{
   display:flex;align-items:center;gap:17px;flex-wrap:wrap;
   margin-top:27px;

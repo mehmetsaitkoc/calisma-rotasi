@@ -14,7 +14,7 @@ for(const marker of [
   "scope + ':' + clientIp(req)",
   "'x-forwarded-for'",
   'function safePhoto',
-  'const TEACHER_CONTEXT_VERSION = 2',
+  'const TEACHER_CONTEXT_VERSION = 3',
   'function cleanTeacherContext',
   'function sanitizeContextValue',
   'const context = cleanTeacherContext(body.studentContext)',
@@ -32,7 +32,10 @@ for(const marker of [
 assert.ok(src.includes("Bu soru için tahmin veya demo içerik cevabı göstermiyorum."),'Unavailable fallback must be explicit');
 assert.ok(src.includes("GERÇEK AI KULLANILMADI — ders cevabı üretilmedi."),'Fallback must disclose that no real AI answer was produced');
 assert.ok(src.includes("route_signal:{importance:0"),'Fallback must not affect the route');
-assert.ok(src.includes("code:'RATE_LIMITED'"),'Rate limiting must return a machine-readable code');
+assert.ok(src.includes("'RATE_LIMITED'"),'Rate limiting must return a machine-readable code');
+assert.ok(src.includes('accounts.requireSession(req,{write:true})'),'Paid provider work must require authenticated, CSRF/origin-checked sessions');
+assert.ok(src.includes('accounts.withAi(req,res,session'),'Paid provider work must obey durable per-account/global limits');
+assert.ok(src.includes('signal:signal||AbortSignal.timeout(45000)'),'Provider calls must have an explicit abort signal');
 assert.ok(src.includes('honestUnavailableFallback:true'),'Health endpoint must expose honest fallback policy');
 assert.ok(src.includes("if(!isLocalRequest(req)) return json(res,403"),'Render must not expose runtime API-key configuration');
 assert.ok(src.includes("sınav odaklı bir KPSS öğretmenisin."),'Rota Hoca system prompt must be scoped to the KPSS-only product');

@@ -1,0 +1,4873 @@
+{
+  "reviewer": "codex-editorial-independent-geometry-review",
+  "reviewedOn": "2026-09-23",
+  "scope": "k-ma-13 through k-ma-17, all 240 questions",
+  "reviewType": "independent AI editorial review; not human or empirical calibration",
+  "completeManualRead": true,
+  "originalAnswerErrors": 0,
+  "substantiveRewrites": [
+    "kpss-ma-13-t2-q12",
+    "kpss-ma-13-t3-q09",
+    "kpss-ma-13-t3-q10",
+    "kpss-ma-13-t3-q11",
+    "kpss-ma-14-t2-q12",
+    "kpss-ma-14-t3-q09",
+    "kpss-ma-14-t3-q10",
+    "kpss-ma-15-t2-q12",
+    "kpss-ma-15-t3-q10",
+    "kpss-ma-15-t3-q11",
+    "kpss-ma-15-t4-q07",
+    "kpss-ma-15-t4-q09",
+    "kpss-ma-15-t4-q10",
+    "kpss-ma-16-t3-q09",
+    "kpss-ma-16-t3-q11",
+    "kpss-ma-17-t1-q12",
+    "kpss-ma-17-t4-q07"
+  ],
+  "optionSpecificConstraintChecks": [
+    "kpss-ma-13-t1-q01",
+    "kpss-ma-13-t1-q02",
+    "kpss-ma-13-t1-q03",
+    "kpss-ma-13-t1-q04",
+    "kpss-ma-13-t1-q05",
+    "kpss-ma-13-t1-q06",
+    "kpss-ma-13-t1-q08",
+    "kpss-ma-13-t1-q09",
+    "kpss-ma-13-t1-q10",
+    "kpss-ma-13-t2-q01",
+    "kpss-ma-13-t2-q02",
+    "kpss-ma-13-t2-q03",
+    "kpss-ma-13-t2-q04",
+    "kpss-ma-13-t2-q05",
+    "kpss-ma-13-t2-q06",
+    "kpss-ma-13-t2-q07",
+    "kpss-ma-13-t2-q09",
+    "kpss-ma-13-t2-q10",
+    "kpss-ma-13-t3-q01",
+    "kpss-ma-13-t3-q02",
+    "kpss-ma-13-t3-q03",
+    "kpss-ma-13-t3-q04",
+    "kpss-ma-13-t3-q05",
+    "kpss-ma-13-t4-q01",
+    "kpss-ma-13-t4-q03",
+    "kpss-ma-13-t4-q04",
+    "kpss-ma-13-t4-q06",
+    "kpss-ma-13-t4-q08",
+    "kpss-ma-13-t4-q09",
+    "kpss-ma-13-t4-q10",
+    "kpss-ma-13-t4-q12",
+    "kpss-ma-14-t1-q01",
+    "kpss-ma-14-t1-q02",
+    "kpss-ma-14-t1-q03",
+    "kpss-ma-14-t1-q04",
+    "kpss-ma-14-t1-q05",
+    "kpss-ma-14-t1-q06",
+    "kpss-ma-14-t1-q07",
+    "kpss-ma-14-t1-q08",
+    "kpss-ma-14-t1-q09",
+    "kpss-ma-14-t1-q10",
+    "kpss-ma-14-t1-q11",
+    "kpss-ma-14-t2-q01",
+    "kpss-ma-14-t2-q02",
+    "kpss-ma-14-t2-q03",
+    "kpss-ma-14-t2-q04",
+    "kpss-ma-14-t2-q05",
+    "kpss-ma-14-t2-q06",
+    "kpss-ma-14-t2-q07",
+    "kpss-ma-14-t2-q08",
+    "kpss-ma-14-t2-q09",
+    "kpss-ma-14-t2-q10",
+    "kpss-ma-14-t3-q01",
+    "kpss-ma-14-t3-q02",
+    "kpss-ma-14-t3-q03",
+    "kpss-ma-14-t3-q04",
+    "kpss-ma-14-t3-q05",
+    "kpss-ma-14-t3-q06",
+    "kpss-ma-14-t3-q07",
+    "kpss-ma-14-t3-q08",
+    "kpss-ma-14-t4-q01",
+    "kpss-ma-14-t4-q03",
+    "kpss-ma-14-t4-q04",
+    "kpss-ma-14-t4-q05",
+    "kpss-ma-14-t4-q06",
+    "kpss-ma-14-t4-q09",
+    "kpss-ma-14-t4-q10",
+    "kpss-ma-16-t1-q02",
+    "kpss-ma-16-t1-q03",
+    "kpss-ma-16-t1-q04",
+    "kpss-ma-16-t1-q05",
+    "kpss-ma-16-t1-q07",
+    "kpss-ma-16-t1-q11",
+    "kpss-ma-16-t2-q07",
+    "kpss-ma-16-t2-q08",
+    "kpss-ma-16-t2-q09",
+    "kpss-ma-16-t3-q06",
+    "kpss-ma-16-t3-q07",
+    "kpss-ma-16-t3-q08",
+    "kpss-ma-16-t4-q02",
+    "kpss-ma-16-t4-q03",
+    "kpss-ma-16-t4-q04",
+    "kpss-ma-16-t4-q06",
+    "kpss-ma-16-t4-q11",
+    "kpss-ma-17-t1-q01",
+    "kpss-ma-17-t1-q02",
+    "kpss-ma-17-t1-q06",
+    "kpss-ma-17-t1-q07",
+    "kpss-ma-17-t1-q08",
+    "kpss-ma-17-t1-q11",
+    "kpss-ma-17-t2-q01",
+    "kpss-ma-17-t2-q02",
+    "kpss-ma-17-t2-q04",
+    "kpss-ma-17-t2-q05",
+    "kpss-ma-17-t2-q06",
+    "kpss-ma-17-t2-q08",
+    "kpss-ma-17-t2-q09",
+    "kpss-ma-17-t2-q10",
+    "kpss-ma-17-t3-q01",
+    "kpss-ma-17-t3-q02",
+    "kpss-ma-17-t3-q05",
+    "kpss-ma-17-t3-q06",
+    "kpss-ma-17-t3-q08",
+    "kpss-ma-17-t4-q01",
+    "kpss-ma-17-t4-q02",
+    "kpss-ma-17-t4-q03",
+    "kpss-ma-17-t4-q04"
+  ],
+  "audit": {
+    "questions": 240,
+    "tests": 20,
+    "approved": 240,
+    "errors": [],
+    "warnings": [],
+    "duplicates": [],
+    "testIssues": []
+  },
+  "questions": [
+    {
+      "id": "kpss-ma-16-t1-q01",
+      "contentFingerprint": "fad54546",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "II. bölge",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t1-q02",
+      "contentFingerprint": "35e13334",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "7",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t1-q03",
+      "contentFingerprint": "e7f5ba8e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "(5,5)",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t1-q04",
+      "contentFingerprint": "2013abc3",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "2",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t1-q05",
+      "contentFingerprint": "0eef7c4c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "5",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t1-q06",
+      "contentFingerprint": "ba8400d6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "(4,7)",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t1-q07",
+      "contentFingerprint": "e3ca29a6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "5",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t1-q08",
+      "contentFingerprint": "b1e330fb",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "(0,4)",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t1-q09",
+      "contentFingerprint": "62e5d685",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "3/2",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t1-q10",
+      "contentFingerprint": "73de1ceb",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "y=4x−7",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t1-q11",
+      "contentFingerprint": "ba19feb3",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "(5,8)",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t1-q12",
+      "contentFingerprint": "9309c49f",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "2√13",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q01",
+      "contentFingerprint": "c5d94546",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "(5,−2)",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q02",
+      "contentFingerprint": "5b1594e3",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "x=3",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q03",
+      "contentFingerprint": "864dc8d8",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "0",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q04",
+      "contentFingerprint": "adc210ff",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "−3/2",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q05",
+      "contentFingerprint": "043908c2",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "y=3x−1",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q06",
+      "contentFingerprint": "5c92dfc3",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "(2,5)",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q07",
+      "contentFingerprint": "85908a59",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t2-q08",
+      "contentFingerprint": "83a2c347",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "12",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t2-q09",
+      "contentFingerprint": "03fff65e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "6",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t2-q10",
+      "contentFingerprint": "c773468e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "(4,2)",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q11",
+      "contentFingerprint": "f779b1be",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "(7,2)",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t2-q12",
+      "contentFingerprint": "14bcf515",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "(0,5)",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q01",
+      "contentFingerprint": "f8375f70",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "6",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q02",
+      "contentFingerprint": "59dd6f78",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "−1/2",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q03",
+      "contentFingerprint": "77cff7ff",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "1/2",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q04",
+      "contentFingerprint": "f67d33aa",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "(4,4)",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q05",
+      "contentFingerprint": "cd063c0b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "x=2",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q06",
+      "contentFingerprint": "cc861882",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "27",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t3-q07",
+      "contentFingerprint": "d8074822",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "10",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t3-q08",
+      "contentFingerprint": "5f7d5f2a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "1",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t3-q09",
+      "contentFingerprint": "04a388ef",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "12/11",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q10",
+      "contentFingerprint": "193896fb",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "12",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q11",
+      "contentFingerprint": "a152ae43",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "10",
+      "editorialChanges": [
+        "substantive-rewrite",
+        "distractor-notes"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t3-q12",
+      "contentFingerprint": "bfdfdc16",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "10",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t4-q01",
+      "contentFingerprint": "fd4bdb86",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "(−7,4)",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t4-q02",
+      "contentFingerprint": "b9bd0964",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "2",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t4-q03",
+      "contentFingerprint": "92729c34",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "5",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t4-q04",
+      "contentFingerprint": "3974d293",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "12",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t4-q05",
+      "contentFingerprint": "576bc7f4",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "(3,10)",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t4-q06",
+      "contentFingerprint": "2577c46e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "10",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t4-q07",
+      "contentFingerprint": "f8e928c5",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "9",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t4-q08",
+      "contentFingerprint": "5852132a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "4/5",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t4-q09",
+      "contentFingerprint": "f30f8f7d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "(−3,11)",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t4-q10",
+      "contentFingerprint": "d8be43a0",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "2√10",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-16-t4-q11",
+      "contentFingerprint": "a246335d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "7",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-16-t4-q12",
+      "contentFingerprint": "8ea7214e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "35/3",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q01",
+      "contentFingerprint": "200dddee",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "14π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q02",
+      "contentFingerprint": "c20d235c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "36π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q03",
+      "contentFingerprint": "920934f2",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "9",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q04",
+      "contentFingerprint": "133e09ac",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "D",
+      "correctValue": "4π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q05",
+      "contentFingerprint": "72e24eb3",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "D",
+      "correctValue": "72",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q06",
+      "contentFingerprint": "9d02cd58",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "25π/2",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q07",
+      "contentFingerprint": "0e024e9e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "100π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q08",
+      "contentFingerprint": "a57d397a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "24π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q09",
+      "contentFingerprint": "00d70cf7",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "45",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q10",
+      "contentFingerprint": "12cd320b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "90",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q11",
+      "contentFingerprint": "e3ccaf4c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "56π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t1-q12",
+      "contentFingerprint": "a3032817",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "24",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q01",
+      "contentFingerprint": "c3b0da17",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "14",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q02",
+      "contentFingerprint": "a6a4c98a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "60",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q03",
+      "contentFingerprint": "8f57a511",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "90",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q04",
+      "contentFingerprint": "430cf827",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "11",
+      "editorialChanges": [
+        "distractor-notes"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q05",
+      "contentFingerprint": "fd1c6d93",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "230",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q06",
+      "contentFingerprint": "6c7d323f",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "12+3π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q07",
+      "contentFingerprint": "7557c9b0",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "38",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q08",
+      "contentFingerprint": "0cb26b21",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "68",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q09",
+      "contentFingerprint": "9a26106d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "Merkeze 3 cm uzaktaki kiriş daha uzundur.",
+      "editorialChanges": [
+        "distractor-notes"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q10",
+      "contentFingerprint": "74e792e0",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "5π+10",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q11",
+      "contentFingerprint": "983c78e8",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "16π",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t2-q12",
+      "contentFingerprint": "1ee0259f",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "120/13",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q01",
+      "contentFingerprint": "11aea0e2",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "6",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q02",
+      "contentFingerprint": "2f4803d0",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "120",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q03",
+      "contentFingerprint": "8dbaccab",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "50",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q04",
+      "contentFingerprint": "99850514",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "6",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q05",
+      "contentFingerprint": "572aa1e3",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "6",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q06",
+      "contentFingerprint": "e440d268",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "290",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q07",
+      "contentFingerprint": "aa746e39",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "116",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q08",
+      "contentFingerprint": "d67ddc17",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "50",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q09",
+      "contentFingerprint": "d748567d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "18π",
+      "editorialChanges": [
+        "distractor-note",
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q10",
+      "contentFingerprint": "51c050ab",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "6",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q11",
+      "contentFingerprint": "ef6716d8",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "12π",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t3-q12",
+      "contentFingerprint": "b7bd0a37",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "24π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q01",
+      "contentFingerprint": "842b3dca",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "2/5",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q02",
+      "contentFingerprint": "7bcb27cb",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "3",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q03",
+      "contentFingerprint": "0f8cddca",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "5",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q04",
+      "contentFingerprint": "3434e58b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "4π−8",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q05",
+      "contentFingerprint": "12d9fe85",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "36π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q06",
+      "contentFingerprint": "ef74fc6c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "100",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q07",
+      "contentFingerprint": "a303729b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "64√13−128",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q08",
+      "contentFingerprint": "bba2720e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "25√3−25π/2",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q09",
+      "contentFingerprint": "52ee15c0",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "135",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite",
+        "distractor-notes"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q10",
+      "contentFingerprint": "8b6ae544",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "189π/4",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite",
+        "distractor-notes"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q11",
+      "contentFingerprint": "477f7696",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "6π−9√3",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-15-t4-q12",
+      "contentFingerprint": "c1f41aa2",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "10√2",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t1-q01",
+      "contentFingerprint": "f99fa43c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "85",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q02",
+      "contentFingerprint": "54db691c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "84",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q03",
+      "contentFingerprint": "82a40744",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "49",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q04",
+      "contentFingerprint": "11d9812a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "36",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q05",
+      "contentFingerprint": "8c12279b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "D",
+      "correctValue": "540",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q06",
+      "contentFingerprint": "6eee1ca7",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "40",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q07",
+      "contentFingerprint": "9800f365",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "17",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q08",
+      "contentFingerprint": "c0a0b405",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q09",
+      "contentFingerprint": "35f2fe5e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "80",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q10",
+      "contentFingerprint": "e039f8af",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "115",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q11",
+      "contentFingerprint": "191be56f",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "6",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t1-q12",
+      "contentFingerprint": "d441cc12",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "36",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t2-q01",
+      "contentFingerprint": "149272ab",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "10",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q02",
+      "contentFingerprint": "f0e3ebc6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q03",
+      "contentFingerprint": "64aff439",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "84",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q04",
+      "contentFingerprint": "262678eb",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "13",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q05",
+      "contentFingerprint": "12cd8b82",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "9",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q06",
+      "contentFingerprint": "ec502158",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "14",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q07",
+      "contentFingerprint": "42fc174f",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "40",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q08",
+      "contentFingerprint": "80613986",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "144",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q09",
+      "contentFingerprint": "89189037",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "63",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q10",
+      "contentFingerprint": "f4a023ea",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "44",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t2-q11",
+      "contentFingerprint": "118df188",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "64",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t2-q12",
+      "contentFingerprint": "8d46d10e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "90",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t3-q01",
+      "contentFingerprint": "59661cd6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "72",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t3-q02",
+      "contentFingerprint": "8f28324a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "15",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t3-q03",
+      "contentFingerprint": "10569cfd",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "10",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t3-q04",
+      "contentFingerprint": "0064da89",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "168",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t3-q05",
+      "contentFingerprint": "da351a70",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "52",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t3-q06",
+      "contentFingerprint": "84cf70ef",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "35",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t3-q07",
+      "contentFingerprint": "ab30fa52",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t3-q08",
+      "contentFingerprint": "f1db4a86",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "112",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t3-q09",
+      "contentFingerprint": "5f3916b1",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "6√3",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t3-q10",
+      "contentFingerprint": "f93b4923",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "80",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t3-q11",
+      "contentFingerprint": "1c3d2bcc",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "56",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t3-q12",
+      "contentFingerprint": "a964a60e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "4√13",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t4-q01",
+      "contentFingerprint": "33da21c4",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "134",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t4-q02",
+      "contentFingerprint": "224075c1",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "Bütün iç açıları 90°’dir.",
+      "editorialChanges": [
+        "distractor-notes",
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t4-q03",
+      "contentFingerprint": "1009bf08",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "54",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t4-q04",
+      "contentFingerprint": "506d02b7",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "16",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t4-q05",
+      "contentFingerprint": "39db6b68",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "50",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t4-q06",
+      "contentFingerprint": "ca679fd2",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "20",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t4-q07",
+      "contentFingerprint": "e964c85f",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "96",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t4-q08",
+      "contentFingerprint": "38588d5c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "27√3",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t4-q09",
+      "contentFingerprint": "cfe0ffe6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "96",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t4-q10",
+      "contentFingerprint": "7fdb6e84",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "64",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-14-t4-q11",
+      "contentFingerprint": "b8bfa75b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "10",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-14-t4-q12",
+      "contentFingerprint": "f3daa3c6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "21",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t1-q01",
+      "contentFingerprint": "322e412b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "D",
+      "correctValue": "64",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t1-q02",
+      "contentFingerprint": "46b11fa1",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "120",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t1-q03",
+      "contentFingerprint": "36b14639",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "90π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t1-q04",
+      "contentFingerprint": "67502547",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "24π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t1-q05",
+      "contentFingerprint": "66deb1c1",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "100π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t1-q06",
+      "contentFingerprint": "61aa5d26",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "D",
+      "correctValue": "2,5",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t1-q07",
+      "contentFingerprint": "c6140834",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "216",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t1-q08",
+      "contentFingerprint": "7e4a784d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "7",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t1-q09",
+      "contentFingerprint": "19760083",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "56π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t1-q10",
+      "contentFingerprint": "93b1e895",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "36π",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t1-q11",
+      "contentFingerprint": "72d42cc9",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "64",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t1-q12",
+      "contentFingerprint": "b986703d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "7",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t2-q01",
+      "contentFingerprint": "21962d67",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "125",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t2-q02",
+      "contentFingerprint": "1abe8936",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "76",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t2-q03",
+      "contentFingerprint": "841a9f4d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "48π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t2-q04",
+      "contentFingerprint": "813641ae",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "13",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t2-q05",
+      "contentFingerprint": "f533cfd2",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t2-q06",
+      "contentFingerprint": "d04af648",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "240",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t2-q07",
+      "contentFingerprint": "026a3153",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t2-q08",
+      "contentFingerprint": "aba148c2",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "10",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t2-q09",
+      "contentFingerprint": "8d40af0b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "20",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t2-q10",
+      "contentFingerprint": "bbea6aec",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "24",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t2-q11",
+      "contentFingerprint": "851e57f5",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "91",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t2-q12",
+      "contentFingerprint": "55b16c20",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "336",
+      "editorialChanges": [
+        "distractor-notes"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t3-q01",
+      "contentFingerprint": "05331ab6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "216",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t3-q02",
+      "contentFingerprint": "f8044941",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "2",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t3-q03",
+      "contentFingerprint": "a0207db0",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "36π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t3-q04",
+      "contentFingerprint": "f510e5ea",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "288π",
+      "editorialChanges": [
+        "Yalnız boşluk düzenlemesi; rakam, işaret, cevap ve seçenek sırası korundu."
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t3-q05",
+      "contentFingerprint": "f83cef54",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "24",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t3-q06",
+      "contentFingerprint": "1af65533",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "120",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t3-q07",
+      "contentFingerprint": "f01dc4da",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "27",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t3-q08",
+      "contentFingerprint": "2990480c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "C",
+      "correctValue": "27",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t3-q09",
+      "contentFingerprint": "6a14a5a5",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "10",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t3-q10",
+      "contentFingerprint": "84ad442d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "24π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t3-q11",
+      "contentFingerprint": "0f137475",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "192",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t3-q12",
+      "contentFingerprint": "e0019edd",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "64π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t4-q01",
+      "contentFingerprint": "2ce20673",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "D",
+      "correctValue": "150",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t4-q02",
+      "contentFingerprint": "018a55ee",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t4-q03",
+      "contentFingerprint": "275c3c9c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "135",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t4-q04",
+      "contentFingerprint": "cd9d846f",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "300",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-17-t4-q05",
+      "contentFingerprint": "5c375495",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "48",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t4-q06",
+      "contentFingerprint": "aa6d30ba",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "63π",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t4-q07",
+      "contentFingerprint": "2ea38109",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "260",
+      "editorialChanges": [
+        "substantive-rewrite",
+        "distractor-notes"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t4-q08",
+      "contentFingerprint": "e20ccd84",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "12",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t4-q09",
+      "contentFingerprint": "4ad8a3ff",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "24",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t4-q10",
+      "contentFingerprint": "aecf38fe",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "324π",
+      "editorialChanges": [
+        "distractor-note",
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t4-q11",
+      "contentFingerprint": "5e2b87ee",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "4√5",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-17-t4-q12",
+      "contentFingerprint": "9a35ef8e",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "60",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t1-q01",
+      "contentFingerprint": "4d8717da",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "D",
+      "correctValue": "65",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q02",
+      "contentFingerprint": "81de617b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "10",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q03",
+      "contentFingerprint": "00c80524",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "42",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q04",
+      "contentFingerprint": "e41e9db3",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "70",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q05",
+      "contentFingerprint": "80023976",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "9",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q06",
+      "contentFingerprint": "c7c3b695",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "E",
+      "correctValue": "93",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q07",
+      "contentFingerprint": "b62838be",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "7",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t1-q08",
+      "contentFingerprint": "66fff76d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "12",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q09",
+      "contentFingerprint": "a10da496",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "12",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q10",
+      "contentFingerprint": "3124b7da",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "16",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t1-q11",
+      "contentFingerprint": "97a727e6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "AB",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t1-q12",
+      "contentFingerprint": "6f9fd69b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "16√3",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t2-q01",
+      "contentFingerprint": "1ce682e6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "80",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q02",
+      "contentFingerprint": "3dcafc0b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "12",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q03",
+      "contentFingerprint": "768a0ec6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "B",
+      "correctValue": "54",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q04",
+      "contentFingerprint": "68e4bb49",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "36",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q05",
+      "contentFingerprint": "fa9efeac",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "54",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q06",
+      "contentFingerprint": "490fda9d",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "14",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q07",
+      "contentFingerprint": "f38183bc",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "77",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q08",
+      "contentFingerprint": "691f7f1a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "31",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t2-q09",
+      "contentFingerprint": "0462c024",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q10",
+      "contentFingerprint": "95159fb7",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "5",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t2-q11",
+      "contentFingerprint": "99b11160",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "63",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t2-q12",
+      "contentFingerprint": "4561f16a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "39",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t3-q01",
+      "contentFingerprint": "a810d110",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "C",
+      "correctValue": "8",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t3-q02",
+      "contentFingerprint": "830c6bad",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "90",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t3-q03",
+      "contentFingerprint": "ccb6e192",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "13",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t3-q04",
+      "contentFingerprint": "946769b6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "54",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t3-q05",
+      "contentFingerprint": "fcb1e9f9",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "42",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t3-q06",
+      "contentFingerprint": "157eed58",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "5,7,11",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t3-q07",
+      "contentFingerprint": "4a2e2000",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "9√3",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t3-q08",
+      "contentFingerprint": "5a669ab0",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "36/5",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t3-q09",
+      "contentFingerprint": "9c32efe6",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "21",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t3-q10",
+      "contentFingerprint": "1b252ad0",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "40/3",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t3-q11",
+      "contentFingerprint": "bf1ec435",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "12",
+      "editorialChanges": [
+        "distractor-notes",
+        "substantive-rewrite"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t3-q12",
+      "contentFingerprint": "2736be61",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "E",
+      "correctValue": "16√5",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t4-q01",
+      "contentFingerprint": "2a48369b",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "easy",
+      "correctOption": "A",
+      "correctValue": "6",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t4-q02",
+      "contentFingerprint": "bcb86668",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "6",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t4-q03",
+      "contentFingerprint": "4bddbd06",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "B",
+      "correctValue": "30",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t4-q04",
+      "contentFingerprint": "f240d063",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "E",
+      "correctValue": "70",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t4-q05",
+      "contentFingerprint": "7075eaf9",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "D",
+      "correctValue": "11",
+      "editorialChanges": [],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t4-q06",
+      "contentFingerprint": "34e455c2",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "medium",
+      "correctOption": "A",
+      "correctValue": "25",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t4-q07",
+      "contentFingerprint": "f7f2ee73",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "D",
+      "correctValue": "13/4",
+      "editorialChanges": [
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t4-q08",
+      "contentFingerprint": "1e156dfa",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "84",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t4-q09",
+      "contentFingerprint": "bd6ac40c",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "60",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t4-q10",
+      "contentFingerprint": "5a2b5651",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "A",
+      "correctValue": "15",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    },
+    {
+      "id": "kpss-ma-13-t4-q11",
+      "contentFingerprint": "ade7e23a",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "B",
+      "correctValue": "6",
+      "editorialChanges": [
+        "distractor-note",
+        "distractor-note"
+      ],
+      "numericCounterchecks": false
+    },
+    {
+      "id": "kpss-ma-13-t4-q12",
+      "contentFingerprint": "9f17bbec",
+      "checks": {
+        "singleAnswer": true,
+        "factualAccuracy": true,
+        "clearStem": true,
+        "plausibleDistractors": true,
+        "explanation": true,
+        "curriculumFit": true,
+        "originality": true
+      },
+      "status": "approved",
+      "difficulty": "hard",
+      "correctOption": "C",
+      "correctValue": "12",
+      "editorialChanges": [],
+      "numericCounterchecks": true
+    }
+  ],
+  "spacingProofreading": {
+    "reviewedOn": "2026-09-23",
+    "reviewer": "codex-editorial-independent-math-review",
+    "questions": 23,
+    "questionIds": [
+      "kpss-ma-16-t1-q03",
+      "kpss-ma-16-t1-q06",
+      "kpss-ma-16-t1-q08",
+      "kpss-ma-16-t1-q11",
+      "kpss-ma-16-t2-q02",
+      "kpss-ma-16-t2-q04",
+      "kpss-ma-16-t2-q10",
+      "kpss-ma-16-t3-q02",
+      "kpss-ma-16-t3-q03",
+      "kpss-ma-16-t3-q05",
+      "kpss-ma-16-t3-q07",
+      "kpss-ma-16-t4-q01",
+      "kpss-ma-16-t4-q03",
+      "kpss-ma-16-t4-q05",
+      "kpss-ma-16-t4-q06",
+      "kpss-ma-15-t4-q01",
+      "kpss-ma-14-t1-q05",
+      "kpss-ma-14-t1-q06",
+      "kpss-ma-14-t2-q10",
+      "kpss-ma-14-t3-q08",
+      "kpss-ma-14-t4-q02",
+      "kpss-ma-17-t1-q10",
+      "kpss-ma-17-t3-q04"
+    ],
+    "record": "question-bank-mathematics-spacing-review.json",
+    "whitespaceOnly": true,
+    "answerAndOptionOrderUnchanged": true
+  }
+}

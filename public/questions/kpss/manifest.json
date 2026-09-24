@@ -1,0 +1,939 @@
+{
+  "schema": "rota-question-bank-v1",
+  "subjects": [
+    {
+      "id": "k-tr",
+      "title": "Türkçe",
+      "topics": [
+        {
+          "id": "k-tr-1",
+          "title": "Sözcükte anlam",
+          "tests": [
+            "kpss-bank-k-tr-1-t1",
+            "kpss-bank-k-tr-1-t2",
+            "kpss-bank-k-tr-1-t3",
+            "kpss-bank-k-tr-1-t4"
+          ]
+        },
+        {
+          "id": "k-tr-2",
+          "title": "Cümlede anlam",
+          "tests": [
+            "kpss-bank-k-tr-2-t1",
+            "kpss-bank-k-tr-2-t2",
+            "kpss-bank-k-tr-2-t3",
+            "kpss-bank-k-tr-2-t4"
+          ]
+        },
+        {
+          "id": "k-tr-3",
+          "title": "Paragrafta anlam",
+          "tests": [
+            "kpss-bank-k-tr-3-t1",
+            "kpss-bank-k-tr-3-t2",
+            "kpss-bank-k-tr-3-t3",
+            "kpss-bank-k-tr-3-t4"
+          ]
+        },
+        {
+          "id": "k-tr-4",
+          "title": "Sözel mantık",
+          "tests": [
+            "kpss-bank-k-tr-4-t1",
+            "kpss-bank-k-tr-4-t2",
+            "kpss-bank-k-tr-4-t3",
+            "kpss-bank-k-tr-4-t4"
+          ]
+        },
+        {
+          "id": "k-tr-5",
+          "title": "Ses bilgisi",
+          "tests": [
+            "kpss-bank-k-tr-5-t1",
+            "kpss-bank-k-tr-5-t2",
+            "kpss-bank-k-tr-5-t3",
+            "kpss-bank-k-tr-5-t4"
+          ]
+        },
+        {
+          "id": "k-tr-6",
+          "title": "Yazım kuralları",
+          "tests": [
+            "kpss-bank-k-tr-6-t1",
+            "kpss-bank-k-tr-6-t2",
+            "kpss-bank-k-tr-6-t3",
+            "kpss-bank-k-tr-6-t4"
+          ]
+        },
+        {
+          "id": "k-tr-7",
+          "title": "Noktalama işaretleri",
+          "tests": [
+            "kpss-bank-k-tr-7-t1",
+            "kpss-bank-k-tr-7-t2",
+            "kpss-bank-k-tr-7-t3",
+            "kpss-bank-k-tr-7-t4"
+          ]
+        },
+        {
+          "id": "k-tr-8",
+          "title": "Sözcük türleri",
+          "tests": [
+            "kpss-bank-k-tr-8-t1",
+            "kpss-bank-k-tr-8-t2",
+            "kpss-bank-k-tr-8-t3",
+            "kpss-bank-k-tr-8-t4"
+          ]
+        },
+        {
+          "id": "k-tr-9",
+          "title": "Cümlenin ögeleri",
+          "tests": [
+            "kpss-bank-k-tr-9-t1",
+            "kpss-bank-k-tr-9-t2",
+            "kpss-bank-k-tr-9-t3",
+            "kpss-bank-k-tr-9-t4"
+          ]
+        },
+        {
+          "id": "k-tr-10",
+          "title": "Cümle türleri",
+          "tests": [
+            "kpss-bank-k-tr-10-t1",
+            "kpss-bank-k-tr-10-t2",
+            "kpss-bank-k-tr-10-t3",
+            "kpss-bank-k-tr-10-t4"
+          ]
+        },
+        {
+          "id": "k-tr-11",
+          "title": "Anlatım bozuklukları",
+          "tests": [
+            "kpss-bank-k-tr-11-t1",
+            "kpss-bank-k-tr-11-t2",
+            "kpss-bank-k-tr-11-t3",
+            "kpss-bank-k-tr-11-t4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k-ma",
+      "title": "Matematik ve geometri",
+      "topics": [
+        {
+          "id": "k-ma-1",
+          "title": "Temel kavramlar",
+          "tests": [
+            "kpss-bank-k-ma-1-t1",
+            "kpss-bank-k-ma-1-t2",
+            "kpss-bank-k-ma-1-t3",
+            "kpss-bank-k-ma-1-t4"
+          ]
+        },
+        {
+          "id": "k-ma-2",
+          "title": "Sayı basamakları",
+          "tests": [
+            "kpss-bank-k-ma-2-t1",
+            "kpss-bank-k-ma-2-t2",
+            "kpss-bank-k-ma-2-t3",
+            "kpss-bank-k-ma-2-t4"
+          ]
+        },
+        {
+          "id": "k-ma-3",
+          "title": "Bölme ve bölünebilme",
+          "tests": [
+            "kpss-bank-k-ma-3-t1",
+            "kpss-bank-k-ma-3-t2",
+            "kpss-bank-k-ma-3-t3",
+            "kpss-bank-k-ma-3-t4"
+          ]
+        },
+        {
+          "id": "k-ma-4",
+          "title": "Asal çarpanlar, EBOB ve EKOK",
+          "tests": [
+            "kpss-bank-k-ma-4-t1",
+            "kpss-bank-k-ma-4-t2",
+            "kpss-bank-k-ma-4-t3",
+            "kpss-bank-k-ma-4-t4"
+          ]
+        },
+        {
+          "id": "k-ma-5",
+          "title": "Rasyonel sayılar",
+          "tests": [
+            "kpss-bank-k-ma-5-t1",
+            "kpss-bank-k-ma-5-t2",
+            "kpss-bank-k-ma-5-t3",
+            "kpss-bank-k-ma-5-t4"
+          ]
+        },
+        {
+          "id": "k-ma-6",
+          "title": "Eşitsizlikler ve mutlak değer",
+          "tests": [
+            "kpss-bank-k-ma-6-t1",
+            "kpss-bank-k-ma-6-t2",
+            "kpss-bank-k-ma-6-t3",
+            "kpss-bank-k-ma-6-t4"
+          ]
+        },
+        {
+          "id": "k-ma-7",
+          "title": "Üslü ve köklü sayılar",
+          "tests": [
+            "kpss-bank-k-ma-7-t1",
+            "kpss-bank-k-ma-7-t2",
+            "kpss-bank-k-ma-7-t3",
+            "kpss-bank-k-ma-7-t4"
+          ]
+        },
+        {
+          "id": "k-ma-8",
+          "title": "Oran, orantı ve denklemler",
+          "tests": [
+            "kpss-bank-k-ma-8-t1",
+            "kpss-bank-k-ma-8-t2",
+            "kpss-bank-k-ma-8-t3",
+            "kpss-bank-k-ma-8-t4"
+          ]
+        },
+        {
+          "id": "k-ma-9",
+          "title": "Problemler",
+          "tests": [
+            "kpss-bank-k-ma-9-t1",
+            "kpss-bank-k-ma-9-t2",
+            "kpss-bank-k-ma-9-t3",
+            "kpss-bank-k-ma-9-t4"
+          ]
+        },
+        {
+          "id": "k-ma-10",
+          "title": "Kümeler",
+          "tests": [
+            "kpss-bank-k-ma-10-t1",
+            "kpss-bank-k-ma-10-t2",
+            "kpss-bank-k-ma-10-t3",
+            "kpss-bank-k-ma-10-t4"
+          ]
+        },
+        {
+          "id": "k-ma-11",
+          "title": "Olasılık ve kombinasyon",
+          "tests": [
+            "kpss-bank-k-ma-11-t1",
+            "kpss-bank-k-ma-11-t2",
+            "kpss-bank-k-ma-11-t3",
+            "kpss-bank-k-ma-11-t4"
+          ]
+        },
+        {
+          "id": "k-ma-12",
+          "title": "Sayısal mantık",
+          "tests": [
+            "kpss-bank-k-ma-12-t1",
+            "kpss-bank-k-ma-12-t2",
+            "kpss-bank-k-ma-12-t3",
+            "kpss-bank-k-ma-12-t4"
+          ]
+        },
+        {
+          "id": "k-ma-13",
+          "title": "Üçgenler",
+          "tests": [
+            "kpss-bank-k-ma-13-t1",
+            "kpss-bank-k-ma-13-t2",
+            "kpss-bank-k-ma-13-t3",
+            "kpss-bank-k-ma-13-t4"
+          ]
+        },
+        {
+          "id": "k-ma-14",
+          "title": "Dörtgenler ve çokgenler",
+          "tests": [
+            "kpss-bank-k-ma-14-t1",
+            "kpss-bank-k-ma-14-t2",
+            "kpss-bank-k-ma-14-t3",
+            "kpss-bank-k-ma-14-t4"
+          ]
+        },
+        {
+          "id": "k-ma-15",
+          "title": "Çember ve daire",
+          "tests": [
+            "kpss-bank-k-ma-15-t1",
+            "kpss-bank-k-ma-15-t2",
+            "kpss-bank-k-ma-15-t3",
+            "kpss-bank-k-ma-15-t4"
+          ]
+        },
+        {
+          "id": "k-ma-16",
+          "title": "Analitik geometri",
+          "tests": [
+            "kpss-bank-k-ma-16-t1",
+            "kpss-bank-k-ma-16-t2",
+            "kpss-bank-k-ma-16-t3",
+            "kpss-bank-k-ma-16-t4"
+          ]
+        },
+        {
+          "id": "k-ma-17",
+          "title": "Katı cisimler",
+          "tests": [
+            "kpss-bank-k-ma-17-t1",
+            "kpss-bank-k-ma-17-t2",
+            "kpss-bank-k-ma-17-t3",
+            "kpss-bank-k-ma-17-t4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k-ta",
+      "title": "Tarih",
+      "topics": [
+        {
+          "id": "k-ta-1",
+          "title": "İslamiyet öncesi Türk tarihi",
+          "tests": [
+            "kpss-bank-k-ta-1-t1",
+            "kpss-bank-k-ta-1-t2",
+            "kpss-bank-k-ta-1-t3",
+            "kpss-bank-k-ta-1-t4"
+          ]
+        },
+        {
+          "id": "k-ta-2",
+          "title": "İlk Türk İslam devletleri",
+          "tests": [
+            "kpss-bank-k-ta-2-t1",
+            "kpss-bank-k-ta-2-t2",
+            "kpss-bank-k-ta-2-t3",
+            "kpss-bank-k-ta-2-t4"
+          ]
+        },
+        {
+          "id": "k-ta-3",
+          "title": "Türkiye Selçuklu Devleti",
+          "tests": [
+            "kpss-bank-k-ta-3-t1",
+            "kpss-bank-k-ta-3-t2",
+            "kpss-bank-k-ta-3-t3",
+            "kpss-bank-k-ta-3-t4"
+          ]
+        },
+        {
+          "id": "k-ta-4",
+          "title": "Osmanlı kuruluş dönemi",
+          "tests": [
+            "kpss-bank-k-ta-4-t1",
+            "kpss-bank-k-ta-4-t2",
+            "kpss-bank-k-ta-4-t3",
+            "kpss-bank-k-ta-4-t4"
+          ]
+        },
+        {
+          "id": "k-ta-5",
+          "title": "Osmanlı yükselme dönemi",
+          "tests": [
+            "kpss-bank-k-ta-5-t1",
+            "kpss-bank-k-ta-5-t2",
+            "kpss-bank-k-ta-5-t3",
+            "kpss-bank-k-ta-5-t4"
+          ]
+        },
+        {
+          "id": "k-ta-6",
+          "title": "Osmanlı kültür ve medeniyeti",
+          "tests": [
+            "kpss-bank-k-ta-6-t1",
+            "kpss-bank-k-ta-6-t2",
+            "kpss-bank-k-ta-6-t3",
+            "kpss-bank-k-ta-6-t4"
+          ]
+        },
+        {
+          "id": "k-ta-7",
+          "title": "Osmanlı yenileşme hareketleri",
+          "tests": [
+            "kpss-bank-k-ta-7-t1",
+            "kpss-bank-k-ta-7-t2",
+            "kpss-bank-k-ta-7-t3",
+            "kpss-bank-k-ta-7-t4"
+          ]
+        },
+        {
+          "id": "k-ta-8",
+          "title": "20. yüzyılda Osmanlı Devleti",
+          "tests": [
+            "kpss-bank-k-ta-8-t1",
+            "kpss-bank-k-ta-8-t2",
+            "kpss-bank-k-ta-8-t3",
+            "kpss-bank-k-ta-8-t4"
+          ]
+        },
+        {
+          "id": "k-ta-9",
+          "title": "Millî Mücadele hazırlık dönemi",
+          "tests": [
+            "kpss-bank-k-ta-9-t1",
+            "kpss-bank-k-ta-9-t2",
+            "kpss-bank-k-ta-9-t3",
+            "kpss-bank-k-ta-9-t4"
+          ]
+        },
+        {
+          "id": "k-ta-10",
+          "title": "Kurtuluş Savaşı cepheleri",
+          "tests": [
+            "kpss-bank-k-ta-10-t1",
+            "kpss-bank-k-ta-10-t2",
+            "kpss-bank-k-ta-10-t3",
+            "kpss-bank-k-ta-10-t4"
+          ]
+        },
+        {
+          "id": "k-ta-11",
+          "title": "Atatürk ilke ve inkılapları",
+          "tests": [
+            "kpss-bank-k-ta-11-t1",
+            "kpss-bank-k-ta-11-t2",
+            "kpss-bank-k-ta-11-t3",
+            "kpss-bank-k-ta-11-t4"
+          ]
+        },
+        {
+          "id": "k-ta-12",
+          "title": "Atatürk dönemi dış politika",
+          "tests": [
+            "kpss-bank-k-ta-12-t1",
+            "kpss-bank-k-ta-12-t2",
+            "kpss-bank-k-ta-12-t3",
+            "kpss-bank-k-ta-12-t4"
+          ]
+        },
+        {
+          "id": "k-ta-13",
+          "title": "Çağdaş Türk ve dünya tarihi",
+          "tests": [
+            "kpss-bank-k-ta-13-t1",
+            "kpss-bank-k-ta-13-t2",
+            "kpss-bank-k-ta-13-t3",
+            "kpss-bank-k-ta-13-t4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k-co",
+      "title": "Coğrafya",
+      "topics": [
+        {
+          "id": "k-co-1",
+          "title": "Türkiye’nin coğrafi konumu",
+          "tests": [
+            "kpss-bank-k-co-1-t1",
+            "kpss-bank-k-co-1-t2",
+            "kpss-bank-k-co-1-t3",
+            "kpss-bank-k-co-1-t4"
+          ]
+        },
+        {
+          "id": "k-co-2",
+          "title": "Türkiye’nin yer şekilleri",
+          "tests": [
+            "kpss-bank-k-co-2-t1",
+            "kpss-bank-k-co-2-t2",
+            "kpss-bank-k-co-2-t3",
+            "kpss-bank-k-co-2-t4"
+          ]
+        },
+        {
+          "id": "k-co-3",
+          "title": "Türkiye’nin iklimi ve bitki örtüsü",
+          "tests": [
+            "kpss-bank-k-co-3-t1",
+            "kpss-bank-k-co-3-t2",
+            "kpss-bank-k-co-3-t3",
+            "kpss-bank-k-co-3-t4"
+          ]
+        },
+        {
+          "id": "k-co-4",
+          "title": "Toprak ve su varlığı",
+          "tests": [
+            "kpss-bank-k-co-4-t1",
+            "kpss-bank-k-co-4-t2",
+            "kpss-bank-k-co-4-t3",
+            "kpss-bank-k-co-4-t4"
+          ]
+        },
+        {
+          "id": "k-co-5",
+          "title": "Nüfus ve yerleşme",
+          "tests": [
+            "kpss-bank-k-co-5-t1",
+            "kpss-bank-k-co-5-t2",
+            "kpss-bank-k-co-5-t3",
+            "kpss-bank-k-co-5-t4"
+          ]
+        },
+        {
+          "id": "k-co-6",
+          "title": "Göçler",
+          "tests": [
+            "kpss-bank-k-co-6-t1",
+            "kpss-bank-k-co-6-t2",
+            "kpss-bank-k-co-6-t3",
+            "kpss-bank-k-co-6-t4"
+          ]
+        },
+        {
+          "id": "k-co-7",
+          "title": "Tarım ve hayvancılık",
+          "tests": [
+            "kpss-bank-k-co-7-t1",
+            "kpss-bank-k-co-7-t2",
+            "kpss-bank-k-co-7-t3",
+            "kpss-bank-k-co-7-t4"
+          ]
+        },
+        {
+          "id": "k-co-8",
+          "title": "Maden ve enerji kaynakları",
+          "tests": [
+            "kpss-bank-k-co-8-t1",
+            "kpss-bank-k-co-8-t2",
+            "kpss-bank-k-co-8-t3",
+            "kpss-bank-k-co-8-t4"
+          ]
+        },
+        {
+          "id": "k-co-9",
+          "title": "Sanayi",
+          "tests": [
+            "kpss-bank-k-co-9-t1",
+            "kpss-bank-k-co-9-t2",
+            "kpss-bank-k-co-9-t3",
+            "kpss-bank-k-co-9-t4"
+          ]
+        },
+        {
+          "id": "k-co-10",
+          "title": "Ulaşım ve ticaret",
+          "tests": [
+            "kpss-bank-k-co-10-t1",
+            "kpss-bank-k-co-10-t2",
+            "kpss-bank-k-co-10-t3",
+            "kpss-bank-k-co-10-t4"
+          ]
+        },
+        {
+          "id": "k-co-11",
+          "title": "Turizm",
+          "tests": [
+            "kpss-bank-k-co-11-t1",
+            "kpss-bank-k-co-11-t2",
+            "kpss-bank-k-co-11-t3",
+            "kpss-bank-k-co-11-t4"
+          ]
+        },
+        {
+          "id": "k-co-12",
+          "title": "Bölgesel kalkınma",
+          "tests": [
+            "kpss-bank-k-co-12-t1",
+            "kpss-bank-k-co-12-t2",
+            "kpss-bank-k-co-12-t3",
+            "kpss-bank-k-co-12-t4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k-va",
+      "title": "Vatandaşlık",
+      "topics": [
+        {
+          "id": "k-va-1",
+          "title": "Hukukun temel kavramları",
+          "tests": [
+            "kpss-bank-k-va-1-t1",
+            "kpss-bank-k-va-1-t2",
+            "kpss-bank-k-va-1-t3",
+            "kpss-bank-k-va-1-t4"
+          ]
+        },
+        {
+          "id": "k-va-2",
+          "title": "Devlet ve demokrasi",
+          "tests": [
+            "kpss-bank-k-va-2-t1",
+            "kpss-bank-k-va-2-t2",
+            "kpss-bank-k-va-2-t3",
+            "kpss-bank-k-va-2-t4"
+          ]
+        },
+        {
+          "id": "k-va-3",
+          "title": "Anayasal gelişmeler",
+          "tests": [
+            "kpss-bank-k-va-3-t1",
+            "kpss-bank-k-va-3-t2",
+            "kpss-bank-k-va-3-t3",
+            "kpss-bank-k-va-3-t4"
+          ]
+        },
+        {
+          "id": "k-va-4",
+          "title": "Temel hak ve özgürlükler",
+          "tests": [
+            "kpss-bank-k-va-4-t1",
+            "kpss-bank-k-va-4-t2",
+            "kpss-bank-k-va-4-t3",
+            "kpss-bank-k-va-4-t4"
+          ]
+        },
+        {
+          "id": "k-va-5",
+          "title": "Yasama",
+          "tests": [
+            "kpss-bank-k-va-5-t1",
+            "kpss-bank-k-va-5-t2",
+            "kpss-bank-k-va-5-t3",
+            "kpss-bank-k-va-5-t4"
+          ]
+        },
+        {
+          "id": "k-va-6",
+          "title": "Yürütme",
+          "tests": [
+            "kpss-bank-k-va-6-t1",
+            "kpss-bank-k-va-6-t2",
+            "kpss-bank-k-va-6-t3",
+            "kpss-bank-k-va-6-t4"
+          ]
+        },
+        {
+          "id": "k-va-7",
+          "title": "Yargı",
+          "tests": [
+            "kpss-bank-k-va-7-t1",
+            "kpss-bank-k-va-7-t2",
+            "kpss-bank-k-va-7-t3",
+            "kpss-bank-k-va-7-t4"
+          ]
+        },
+        {
+          "id": "k-va-8",
+          "title": "İdare hukuku",
+          "tests": [
+            "kpss-bank-k-va-8-t1",
+            "kpss-bank-k-va-8-t2",
+            "kpss-bank-k-va-8-t3",
+            "kpss-bank-k-va-8-t4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k-gu",
+      "title": "Güncel bilgiler",
+      "topics": [
+        {
+          "id": "k-gu-1",
+          "title": "Güncel gelişme notlarım",
+          "tests": [
+            "kpss-bank-k-gu-1-t1",
+            "kpss-bank-k-gu-1-t2",
+            "kpss-bank-k-gu-1-t3",
+            "kpss-bank-k-gu-1-t4"
+          ]
+        },
+        {
+          "id": "k-gu-2",
+          "title": "Kurum ve kuruluşlar",
+          "tests": [
+            "kpss-bank-k-gu-2-t1",
+            "kpss-bank-k-gu-2-t2",
+            "kpss-bank-k-gu-2-t3",
+            "kpss-bank-k-gu-2-t4"
+          ]
+        },
+        {
+          "id": "k-gu-3",
+          "title": "Kültür, sanat ve spor notlarım",
+          "tests": [
+            "kpss-bank-k-gu-3-t1",
+            "kpss-bank-k-gu-3-t2",
+            "kpss-bank-k-gu-3-t3",
+            "kpss-bank-k-gu-3-t4"
+          ]
+        }
+      ]
+    }
+  ],
+  "files": [
+    "questions/kpss/cografya/bolgesel-kalkinma/test-1.js",
+    "questions/kpss/cografya/bolgesel-kalkinma/test-2.js",
+    "questions/kpss/cografya/bolgesel-kalkinma/test-3.js",
+    "questions/kpss/cografya/bolgesel-kalkinma/test-4.js",
+    "questions/kpss/cografya/cografi-konum/test-1.js",
+    "questions/kpss/cografya/cografi-konum/test-2.js",
+    "questions/kpss/cografya/cografi-konum/test-3.js",
+    "questions/kpss/cografya/cografi-konum/test-4.js",
+    "questions/kpss/cografya/gocler/test-1.js",
+    "questions/kpss/cografya/gocler/test-2.js",
+    "questions/kpss/cografya/gocler/test-3.js",
+    "questions/kpss/cografya/gocler/test-4.js",
+    "questions/kpss/cografya/iklim-ve-bitki-ortusu/test-1.js",
+    "questions/kpss/cografya/iklim-ve-bitki-ortusu/test-2.js",
+    "questions/kpss/cografya/iklim-ve-bitki-ortusu/test-3.js",
+    "questions/kpss/cografya/iklim-ve-bitki-ortusu/test-4.js",
+    "questions/kpss/cografya/maden-ve-enerji/test-1.js",
+    "questions/kpss/cografya/maden-ve-enerji/test-2.js",
+    "questions/kpss/cografya/maden-ve-enerji/test-3.js",
+    "questions/kpss/cografya/maden-ve-enerji/test-4.js",
+    "questions/kpss/cografya/nufus-ve-yerlesme/test-1.js",
+    "questions/kpss/cografya/nufus-ve-yerlesme/test-2.js",
+    "questions/kpss/cografya/nufus-ve-yerlesme/test-3.js",
+    "questions/kpss/cografya/nufus-ve-yerlesme/test-4.js",
+    "questions/kpss/cografya/sanayi/test-1.js",
+    "questions/kpss/cografya/sanayi/test-2.js",
+    "questions/kpss/cografya/sanayi/test-3.js",
+    "questions/kpss/cografya/sanayi/test-4.js",
+    "questions/kpss/cografya/tarim-ve-hayvancilik/test-1.js",
+    "questions/kpss/cografya/tarim-ve-hayvancilik/test-2.js",
+    "questions/kpss/cografya/tarim-ve-hayvancilik/test-3.js",
+    "questions/kpss/cografya/tarim-ve-hayvancilik/test-4.js",
+    "questions/kpss/cografya/toprak-ve-su/test-1.js",
+    "questions/kpss/cografya/toprak-ve-su/test-2.js",
+    "questions/kpss/cografya/toprak-ve-su/test-3.js",
+    "questions/kpss/cografya/toprak-ve-su/test-4.js",
+    "questions/kpss/cografya/turizm/test-1.js",
+    "questions/kpss/cografya/turizm/test-2.js",
+    "questions/kpss/cografya/turizm/test-3.js",
+    "questions/kpss/cografya/turizm/test-4.js",
+    "questions/kpss/cografya/ulasim-ve-ticaret/test-1.js",
+    "questions/kpss/cografya/ulasim-ve-ticaret/test-2.js",
+    "questions/kpss/cografya/ulasim-ve-ticaret/test-3.js",
+    "questions/kpss/cografya/ulasim-ve-ticaret/test-4.js",
+    "questions/kpss/cografya/yer-sekilleri/test-1.js",
+    "questions/kpss/cografya/yer-sekilleri/test-2.js",
+    "questions/kpss/cografya/yer-sekilleri/test-3.js",
+    "questions/kpss/cografya/yer-sekilleri/test-4.js",
+    "questions/kpss/guncel-bilgiler/guncel-gelismeler/test-1.js",
+    "questions/kpss/guncel-bilgiler/guncel-gelismeler/test-2.js",
+    "questions/kpss/guncel-bilgiler/guncel-gelismeler/test-3.js",
+    "questions/kpss/guncel-bilgiler/guncel-gelismeler/test-4.js",
+    "questions/kpss/guncel-bilgiler/kultur-sanat-spor/test-1.js",
+    "questions/kpss/guncel-bilgiler/kultur-sanat-spor/test-2.js",
+    "questions/kpss/guncel-bilgiler/kultur-sanat-spor/test-3.js",
+    "questions/kpss/guncel-bilgiler/kultur-sanat-spor/test-4.js",
+    "questions/kpss/guncel-bilgiler/kurum-ve-kuruluslar/test-1.js",
+    "questions/kpss/guncel-bilgiler/kurum-ve-kuruluslar/test-2.js",
+    "questions/kpss/guncel-bilgiler/kurum-ve-kuruluslar/test-3.js",
+    "questions/kpss/guncel-bilgiler/kurum-ve-kuruluslar/test-4.js",
+    "questions/kpss/matematik/analitik-geometri/test-1.js",
+    "questions/kpss/matematik/analitik-geometri/test-2.js",
+    "questions/kpss/matematik/analitik-geometri/test-3.js",
+    "questions/kpss/matematik/analitik-geometri/test-4.js",
+    "questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-1.js",
+    "questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-2.js",
+    "questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-3.js",
+    "questions/kpss/matematik/asal-carpanlar-ebob-ve-ekok/test-4.js",
+    "questions/kpss/matematik/bolme-ve-bolunebilme/test-1.js",
+    "questions/kpss/matematik/bolme-ve-bolunebilme/test-2.js",
+    "questions/kpss/matematik/bolme-ve-bolunebilme/test-3.js",
+    "questions/kpss/matematik/bolme-ve-bolunebilme/test-4.js",
+    "questions/kpss/matematik/cember-ve-daire/test-1.js",
+    "questions/kpss/matematik/cember-ve-daire/test-2.js",
+    "questions/kpss/matematik/cember-ve-daire/test-3.js",
+    "questions/kpss/matematik/cember-ve-daire/test-4.js",
+    "questions/kpss/matematik/dortgenler-ve-cokgenler/test-1.js",
+    "questions/kpss/matematik/dortgenler-ve-cokgenler/test-2.js",
+    "questions/kpss/matematik/dortgenler-ve-cokgenler/test-3.js",
+    "questions/kpss/matematik/dortgenler-ve-cokgenler/test-4.js",
+    "questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-1.js",
+    "questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-2.js",
+    "questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-3.js",
+    "questions/kpss/matematik/esitsizlikler-ve-mutlak-deger/test-4.js",
+    "questions/kpss/matematik/kati-cisimler/test-1.js",
+    "questions/kpss/matematik/kati-cisimler/test-2.js",
+    "questions/kpss/matematik/kati-cisimler/test-3.js",
+    "questions/kpss/matematik/kati-cisimler/test-4.js",
+    "questions/kpss/matematik/kumeler/test-1.js",
+    "questions/kpss/matematik/kumeler/test-2.js",
+    "questions/kpss/matematik/kumeler/test-3.js",
+    "questions/kpss/matematik/kumeler/test-4.js",
+    "questions/kpss/matematik/olasilik-ve-kombinasyon/test-1.js",
+    "questions/kpss/matematik/olasilik-ve-kombinasyon/test-2.js",
+    "questions/kpss/matematik/olasilik-ve-kombinasyon/test-3.js",
+    "questions/kpss/matematik/olasilik-ve-kombinasyon/test-4.js",
+    "questions/kpss/matematik/oran-oranti-ve-denklemler/test-1.js",
+    "questions/kpss/matematik/oran-oranti-ve-denklemler/test-2.js",
+    "questions/kpss/matematik/oran-oranti-ve-denklemler/test-3.js",
+    "questions/kpss/matematik/oran-oranti-ve-denklemler/test-4.js",
+    "questions/kpss/matematik/problemler/test-1.js",
+    "questions/kpss/matematik/problemler/test-2.js",
+    "questions/kpss/matematik/problemler/test-3.js",
+    "questions/kpss/matematik/problemler/test-4.js",
+    "questions/kpss/matematik/rasyonel-sayilar/test-1.js",
+    "questions/kpss/matematik/rasyonel-sayilar/test-2.js",
+    "questions/kpss/matematik/rasyonel-sayilar/test-3.js",
+    "questions/kpss/matematik/rasyonel-sayilar/test-4.js",
+    "questions/kpss/matematik/sayi-basamaklari/test-1.js",
+    "questions/kpss/matematik/sayi-basamaklari/test-2.js",
+    "questions/kpss/matematik/sayi-basamaklari/test-3.js",
+    "questions/kpss/matematik/sayi-basamaklari/test-4.js",
+    "questions/kpss/matematik/sayisal-mantik/test-1.js",
+    "questions/kpss/matematik/sayisal-mantik/test-2.js",
+    "questions/kpss/matematik/sayisal-mantik/test-3.js",
+    "questions/kpss/matematik/sayisal-mantik/test-4.js",
+    "questions/kpss/matematik/temel-kavramlar/test-1.js",
+    "questions/kpss/matematik/temel-kavramlar/test-2.js",
+    "questions/kpss/matematik/temel-kavramlar/test-3.js",
+    "questions/kpss/matematik/temel-kavramlar/test-4.js",
+    "questions/kpss/matematik/ucgenler/test-1.js",
+    "questions/kpss/matematik/ucgenler/test-2.js",
+    "questions/kpss/matematik/ucgenler/test-3.js",
+    "questions/kpss/matematik/ucgenler/test-4.js",
+    "questions/kpss/matematik/uslu-ve-koklu-sayilar/test-1.js",
+    "questions/kpss/matematik/uslu-ve-koklu-sayilar/test-2.js",
+    "questions/kpss/matematik/uslu-ve-koklu-sayilar/test-3.js",
+    "questions/kpss/matematik/uslu-ve-koklu-sayilar/test-4.js",
+    "questions/kpss/tarih/ataturk-donemi-dis-politika/test-1.js",
+    "questions/kpss/tarih/ataturk-donemi-dis-politika/test-2.js",
+    "questions/kpss/tarih/ataturk-donemi-dis-politika/test-3.js",
+    "questions/kpss/tarih/ataturk-donemi-dis-politika/test-4.js",
+    "questions/kpss/tarih/ataturk-ilke-inkilaplari/test-1.js",
+    "questions/kpss/tarih/ataturk-ilke-inkilaplari/test-2.js",
+    "questions/kpss/tarih/ataturk-ilke-inkilaplari/test-3.js",
+    "questions/kpss/tarih/ataturk-ilke-inkilaplari/test-4.js",
+    "questions/kpss/tarih/cagdas-turk-dunya-tarihi/test-1.js",
+    "questions/kpss/tarih/cagdas-turk-dunya-tarihi/test-2.js",
+    "questions/kpss/tarih/cagdas-turk-dunya-tarihi/test-3.js",
+    "questions/kpss/tarih/cagdas-turk-dunya-tarihi/test-4.js",
+    "questions/kpss/tarih/ilk-turk-devletleri/test-1.js",
+    "questions/kpss/tarih/ilk-turk-devletleri/test-2.js",
+    "questions/kpss/tarih/ilk-turk-devletleri/test-3.js",
+    "questions/kpss/tarih/ilk-turk-devletleri/test-4.js",
+    "questions/kpss/tarih/ilk-turk-islam-devletleri/test-1.js",
+    "questions/kpss/tarih/ilk-turk-islam-devletleri/test-2.js",
+    "questions/kpss/tarih/ilk-turk-islam-devletleri/test-3.js",
+    "questions/kpss/tarih/ilk-turk-islam-devletleri/test-4.js",
+    "questions/kpss/tarih/kurtulus-savasi-cepheleri/test-1.js",
+    "questions/kpss/tarih/kurtulus-savasi-cepheleri/test-2.js",
+    "questions/kpss/tarih/kurtulus-savasi-cepheleri/test-3.js",
+    "questions/kpss/tarih/kurtulus-savasi-cepheleri/test-4.js",
+    "questions/kpss/tarih/milli-mucadele-hazirlik/test-1.js",
+    "questions/kpss/tarih/milli-mucadele-hazirlik/test-2.js",
+    "questions/kpss/tarih/milli-mucadele-hazirlik/test-3.js",
+    "questions/kpss/tarih/milli-mucadele-hazirlik/test-4.js",
+    "questions/kpss/tarih/osmanli-kultur-medeniyet/test-1.js",
+    "questions/kpss/tarih/osmanli-kultur-medeniyet/test-2.js",
+    "questions/kpss/tarih/osmanli-kultur-medeniyet/test-3.js",
+    "questions/kpss/tarih/osmanli-kultur-medeniyet/test-4.js",
+    "questions/kpss/tarih/osmanli-kurulus/test-1.js",
+    "questions/kpss/tarih/osmanli-kurulus/test-2.js",
+    "questions/kpss/tarih/osmanli-kurulus/test-3.js",
+    "questions/kpss/tarih/osmanli-kurulus/test-4.js",
+    "questions/kpss/tarih/osmanli-yenilesme/test-1.js",
+    "questions/kpss/tarih/osmanli-yenilesme/test-2.js",
+    "questions/kpss/tarih/osmanli-yenilesme/test-3.js",
+    "questions/kpss/tarih/osmanli-yenilesme/test-4.js",
+    "questions/kpss/tarih/osmanli-yukselme/test-1.js",
+    "questions/kpss/tarih/osmanli-yukselme/test-2.js",
+    "questions/kpss/tarih/osmanli-yukselme/test-3.js",
+    "questions/kpss/tarih/osmanli-yukselme/test-4.js",
+    "questions/kpss/tarih/turkiye-selcuklu-devleti/test-1.js",
+    "questions/kpss/tarih/turkiye-selcuklu-devleti/test-2.js",
+    "questions/kpss/tarih/turkiye-selcuklu-devleti/test-3.js",
+    "questions/kpss/tarih/turkiye-selcuklu-devleti/test-4.js",
+    "questions/kpss/tarih/yirminci-yuzyil-osmanli/test-1.js",
+    "questions/kpss/tarih/yirminci-yuzyil-osmanli/test-2.js",
+    "questions/kpss/tarih/yirminci-yuzyil-osmanli/test-3.js",
+    "questions/kpss/tarih/yirminci-yuzyil-osmanli/test-4.js",
+    "questions/kpss/turkce/anlatim-bozukluklari/test-1.js",
+    "questions/kpss/turkce/anlatim-bozukluklari/test-2.js",
+    "questions/kpss/turkce/anlatim-bozukluklari/test-3.js",
+    "questions/kpss/turkce/anlatim-bozukluklari/test-4.js",
+    "questions/kpss/turkce/cumle-turleri/test-1.js",
+    "questions/kpss/turkce/cumle-turleri/test-2.js",
+    "questions/kpss/turkce/cumle-turleri/test-3.js",
+    "questions/kpss/turkce/cumle-turleri/test-4.js",
+    "questions/kpss/turkce/cumlede-anlam/test-1.js",
+    "questions/kpss/turkce/cumlede-anlam/test-2.js",
+    "questions/kpss/turkce/cumlede-anlam/test-3.js",
+    "questions/kpss/turkce/cumlede-anlam/test-4.js",
+    "questions/kpss/turkce/cumlenin-ogeleri/test-1.js",
+    "questions/kpss/turkce/cumlenin-ogeleri/test-2.js",
+    "questions/kpss/turkce/cumlenin-ogeleri/test-3.js",
+    "questions/kpss/turkce/cumlenin-ogeleri/test-4.js",
+    "questions/kpss/turkce/noktalama-isaretleri/test-1.js",
+    "questions/kpss/turkce/noktalama-isaretleri/test-2.js",
+    "questions/kpss/turkce/noktalama-isaretleri/test-3.js",
+    "questions/kpss/turkce/noktalama-isaretleri/test-4.js",
+    "questions/kpss/turkce/paragrafta-anlam/test-1.js",
+    "questions/kpss/turkce/paragrafta-anlam/test-2.js",
+    "questions/kpss/turkce/paragrafta-anlam/test-3.js",
+    "questions/kpss/turkce/paragrafta-anlam/test-4.js",
+    "questions/kpss/turkce/ses-bilgisi/test-1.js",
+    "questions/kpss/turkce/ses-bilgisi/test-2.js",
+    "questions/kpss/turkce/ses-bilgisi/test-3.js",
+    "questions/kpss/turkce/ses-bilgisi/test-4.js",
+    "questions/kpss/turkce/sozcuk-turleri/test-1.js",
+    "questions/kpss/turkce/sozcuk-turleri/test-2.js",
+    "questions/kpss/turkce/sozcuk-turleri/test-3.js",
+    "questions/kpss/turkce/sozcuk-turleri/test-4.js",
+    "questions/kpss/turkce/sozcukte-anlam/test-1.js",
+    "questions/kpss/turkce/sozcukte-anlam/test-2.js",
+    "questions/kpss/turkce/sozcukte-anlam/test-3.js",
+    "questions/kpss/turkce/sozcukte-anlam/test-4.js",
+    "questions/kpss/turkce/sozel-mantik/test-1.js",
+    "questions/kpss/turkce/sozel-mantik/test-2.js",
+    "questions/kpss/turkce/sozel-mantik/test-3.js",
+    "questions/kpss/turkce/sozel-mantik/test-4.js",
+    "questions/kpss/turkce/yazim-kurallari/test-1.js",
+    "questions/kpss/turkce/yazim-kurallari/test-2.js",
+    "questions/kpss/turkce/yazim-kurallari/test-3.js",
+    "questions/kpss/turkce/yazim-kurallari/test-4.js",
+    "questions/kpss/vatandaslik/anayasal-gelismeler/test-1.js",
+    "questions/kpss/vatandaslik/anayasal-gelismeler/test-2.js",
+    "questions/kpss/vatandaslik/anayasal-gelismeler/test-3.js",
+    "questions/kpss/vatandaslik/anayasal-gelismeler/test-4.js",
+    "questions/kpss/vatandaslik/devlet-ve-demokrasi/test-1.js",
+    "questions/kpss/vatandaslik/devlet-ve-demokrasi/test-2.js",
+    "questions/kpss/vatandaslik/devlet-ve-demokrasi/test-3.js",
+    "questions/kpss/vatandaslik/devlet-ve-demokrasi/test-4.js",
+    "questions/kpss/vatandaslik/hukukun-temel-kavramlari/test-1.js",
+    "questions/kpss/vatandaslik/hukukun-temel-kavramlari/test-2.js",
+    "questions/kpss/vatandaslik/hukukun-temel-kavramlari/test-3.js",
+    "questions/kpss/vatandaslik/hukukun-temel-kavramlari/test-4.js",
+    "questions/kpss/vatandaslik/idare-hukuku/test-1.js",
+    "questions/kpss/vatandaslik/idare-hukuku/test-2.js",
+    "questions/kpss/vatandaslik/idare-hukuku/test-3.js",
+    "questions/kpss/vatandaslik/idare-hukuku/test-4.js",
+    "questions/kpss/vatandaslik/temel-hak-ve-ozgurlukler/test-1.js",
+    "questions/kpss/vatandaslik/temel-hak-ve-ozgurlukler/test-2.js",
+    "questions/kpss/vatandaslik/temel-hak-ve-ozgurlukler/test-3.js",
+    "questions/kpss/vatandaslik/temel-hak-ve-ozgurlukler/test-4.js",
+    "questions/kpss/vatandaslik/yargi/test-1.js",
+    "questions/kpss/vatandaslik/yargi/test-2.js",
+    "questions/kpss/vatandaslik/yargi/test-3.js",
+    "questions/kpss/vatandaslik/yargi/test-4.js",
+    "questions/kpss/vatandaslik/yasama/test-1.js",
+    "questions/kpss/vatandaslik/yasama/test-2.js",
+    "questions/kpss/vatandaslik/yasama/test-3.js",
+    "questions/kpss/vatandaslik/yasama/test-4.js",
+    "questions/kpss/vatandaslik/yurutme/test-1.js",
+    "questions/kpss/vatandaslik/yurutme/test-2.js",
+    "questions/kpss/vatandaslik/yurutme/test-3.js",
+    "questions/kpss/vatandaslik/yurutme/test-4.js"
+  ]
+}

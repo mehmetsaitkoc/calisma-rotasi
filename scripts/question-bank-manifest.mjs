@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import {files,bank,catalog} from './question-bank-load.mjs';
+const tests=bank.allTests(),subjects=catalog.subjects.filter(s=>s.exam==='kpss');
+const manifest={schema:bank.SCHEMA,subjects:subjects.map(s=>({id:s.id,title:s.name,topics:s.topics.map(t=>({id:t.id,title:t.title,tests:tests.filter(x=>x.topicId===t.id).map(x=>x.id)}))})),files:files.map(f=>'questions/kpss/'+f)};
+if(!process.argv.includes('--draft')&&(tests.length!==256||bank.topicTests().length!==256||manifest.subjects.some(s=>s.topics.some(t=>t.tests.length!==4))))throw Error('Expected64topics/256approved tests; manifest not written.');
+fs.writeFileSync(new URL('../public/questions/kpss/manifest.json',import.meta.url),JSON.stringify(manifest,null,2)+'\n');
+const index=new URL('../public/index.html',import.meta.url);let html=fs.readFileSync(index,'utf8');
+const tags='<!-- KPSS BANK MODULES START -->\n'+manifest.files.map(f=>'<script src="/'+f+'"></script>').join('\n')+'\n<!-- KPSS BANK MODULES END -->';
+if(html.includes('<!-- KPSS BANK MODULES START -->'))html=html.replace(/<!-- KPSS BANK MODULES START -->[\s\S]*?<!-- KPSS BANK MODULES END -->/,tags);
+else html=html.replace(/<script src="\/questions\/kpss\/tarih\/ilk-turk-devletleri\/test-1\.js"><\/script>[\s\S]*?<script src="\/questions\/kpss\/tarih\/ilk-turk-devletleri\/test-4\.js"><\/script>/,tags);
+fs.writeFileSync(index,html);console.log(`Manifest: ${subjects.length} subjects, ${tests.length} tests.`);

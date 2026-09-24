@@ -1,0 +1,2563 @@
+{
+  "reviewer": "codex-editorial-independent-geography-review-8-12",
+  "reviewedOn": "2026-09-23",
+  "scope": {
+    "subjectId": "k-co",
+    "topics": [
+      "k-co-8",
+      "k-co-9",
+      "k-co-10",
+      "k-co-11",
+      "k-co-12"
+    ],
+    "tests": 20,
+    "questions": 240
+  },
+  "method": "İlk yazardan ayrı ajan tarafından her kök, beş seçenek, cevap, çözüm ve dört yanlış seçenek notu tek tek okundu. Resmî kaynaklar kavram/yer bilgisi için kullanıldı; sayısal senaryolar özgün varsayımsal verilerdir. İnsan uzman incelemesi veya öğrenci verisiyle psikometrik kalibrasyon iddiası değildir.",
+  "curatedOptionOrContentQuestionCount": 209,
+  "substantiveRewriteQuestionCount": 69,
+  "topics": [
+    {
+      "topic": 8,
+      "questions": 48,
+      "readAndCheckedIds": [
+        "kpss-co-8-t1-q01",
+        "kpss-co-8-t1-q02",
+        "kpss-co-8-t1-q03",
+        "kpss-co-8-t1-q04",
+        "kpss-co-8-t1-q05",
+        "kpss-co-8-t1-q06",
+        "kpss-co-8-t1-q07",
+        "kpss-co-8-t1-q08",
+        "kpss-co-8-t1-q09",
+        "kpss-co-8-t1-q10",
+        "kpss-co-8-t1-q11",
+        "kpss-co-8-t1-q12",
+        "kpss-co-8-t2-q01",
+        "kpss-co-8-t2-q02",
+        "kpss-co-8-t2-q03",
+        "kpss-co-8-t2-q04",
+        "kpss-co-8-t2-q05",
+        "kpss-co-8-t2-q06",
+        "kpss-co-8-t2-q07",
+        "kpss-co-8-t2-q08",
+        "kpss-co-8-t2-q09",
+        "kpss-co-8-t2-q10",
+        "kpss-co-8-t2-q11",
+        "kpss-co-8-t2-q12",
+        "kpss-co-8-t3-q01",
+        "kpss-co-8-t3-q02",
+        "kpss-co-8-t3-q03",
+        "kpss-co-8-t3-q04",
+        "kpss-co-8-t3-q05",
+        "kpss-co-8-t3-q06",
+        "kpss-co-8-t3-q07",
+        "kpss-co-8-t3-q08",
+        "kpss-co-8-t3-q09",
+        "kpss-co-8-t3-q10",
+        "kpss-co-8-t3-q11",
+        "kpss-co-8-t3-q12",
+        "kpss-co-8-t4-q01",
+        "kpss-co-8-t4-q02",
+        "kpss-co-8-t4-q03",
+        "kpss-co-8-t4-q04",
+        "kpss-co-8-t4-q05",
+        "kpss-co-8-t4-q06",
+        "kpss-co-8-t4-q07",
+        "kpss-co-8-t4-q08",
+        "kpss-co-8-t4-q09",
+        "kpss-co-8-t4-q10",
+        "kpss-co-8-t4-q11",
+        "kpss-co-8-t4-q12"
+      ],
+      "changedIds": [
+        "kpss-co-8-t1-q06",
+        "kpss-co-8-t1-q07",
+        "kpss-co-8-t1-q08",
+        "kpss-co-8-t1-q09",
+        "kpss-co-8-t1-q10",
+        "kpss-co-8-t1-q11",
+        "kpss-co-8-t1-q12",
+        "kpss-co-8-t2-q01",
+        "kpss-co-8-t2-q02",
+        "kpss-co-8-t2-q03",
+        "kpss-co-8-t2-q04",
+        "kpss-co-8-t2-q05",
+        "kpss-co-8-t2-q06",
+        "kpss-co-8-t2-q07",
+        "kpss-co-8-t2-q08",
+        "kpss-co-8-t2-q09",
+        "kpss-co-8-t2-q10",
+        "kpss-co-8-t2-q11",
+        "kpss-co-8-t2-q12",
+        "kpss-co-8-t3-q01",
+        "kpss-co-8-t3-q02",
+        "kpss-co-8-t3-q03",
+        "kpss-co-8-t3-q04",
+        "kpss-co-8-t3-q05",
+        "kpss-co-8-t3-q06",
+        "kpss-co-8-t3-q07",
+        "kpss-co-8-t3-q09",
+        "kpss-co-8-t3-q10",
+        "kpss-co-8-t3-q11",
+        "kpss-co-8-t3-q12",
+        "kpss-co-8-t4-q01",
+        "kpss-co-8-t4-q03",
+        "kpss-co-8-t4-q04",
+        "kpss-co-8-t4-q05",
+        "kpss-co-8-t4-q06",
+        "kpss-co-8-t4-q07",
+        "kpss-co-8-t4-q08",
+        "kpss-co-8-t4-q09",
+        "kpss-co-8-t4-q10",
+        "kpss-co-8-t4-q11",
+        "kpss-co-8-t4-q12"
+      ],
+      "substantiveIds": [
+        "kpss-co-8-t1-q07",
+        "kpss-co-8-t1-q12",
+        "kpss-co-8-t2-q04",
+        "kpss-co-8-t2-q11",
+        "kpss-co-8-t2-q12",
+        "kpss-co-8-t3-q02",
+        "kpss-co-8-t3-q09",
+        "kpss-co-8-t3-q10",
+        "kpss-co-8-t3-q11",
+        "kpss-co-8-t3-q12",
+        "kpss-co-8-t4-q05",
+        "kpss-co-8-t4-q07",
+        "kpss-co-8-t4-q08",
+        "kpss-co-8-t4-q09",
+        "kpss-co-8-t4-q10",
+        "kpss-co-8-t4-q11",
+        "kpss-co-8-t4-q12"
+      ],
+      "summary": "48 kök, beş seçenek ve açıklama bağımsız okundu. İlgisiz/absürt seçenekler enerji ve maden kavramları arasındaki yakın yanılgılara dönüştürüldü. Stok-akım, tenör-geri kazanım, kapasite-enerji, yerli-yenilenebilir ayrımları korundu; tüm zor hesap/çıkarımlar çok koşullu hâle getirildi. Sayısal veriler açıkça kurgu örneklerdir.",
+      "sources": [
+        "https://enerji.gov.tr/bilgi-merkezi-enerji-gunes",
+        "https://www.enerji.gov.tr/eigm-yenilenebilir-enerji-kaynaklar-jeotermal",
+        "https://enerji.gov.tr/bilgi-merkezi-enerji-ruzgar",
+        "https://etimaden.gov.tr/uleksit",
+        "https://www.taskomuru.gov.tr/ttk/taskomuru-uretimi/"
+      ],
+      "audit": {
+        "schema": "rota-question-bank-v1",
+        "total": 48,
+        "approved": 48,
+        "needsReview": 0,
+        "rejected": 0,
+        "duplicates": [],
+        "testIssues": [],
+        "results": [
+          {
+            "id": "kpss-co-8-t1-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t1-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t2-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t3-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-8-t4-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          }
+        ]
+      }
+    },
+    {
+      "topic": 9,
+      "questions": 48,
+      "readAndCheckedIds": [
+        "kpss-co-9-t1-q01",
+        "kpss-co-9-t1-q02",
+        "kpss-co-9-t1-q03",
+        "kpss-co-9-t1-q04",
+        "kpss-co-9-t1-q05",
+        "kpss-co-9-t1-q06",
+        "kpss-co-9-t1-q07",
+        "kpss-co-9-t1-q08",
+        "kpss-co-9-t1-q09",
+        "kpss-co-9-t1-q10",
+        "kpss-co-9-t1-q11",
+        "kpss-co-9-t1-q12",
+        "kpss-co-9-t2-q01",
+        "kpss-co-9-t2-q02",
+        "kpss-co-9-t2-q03",
+        "kpss-co-9-t2-q04",
+        "kpss-co-9-t2-q05",
+        "kpss-co-9-t2-q06",
+        "kpss-co-9-t2-q07",
+        "kpss-co-9-t2-q08",
+        "kpss-co-9-t2-q09",
+        "kpss-co-9-t2-q10",
+        "kpss-co-9-t2-q11",
+        "kpss-co-9-t2-q12",
+        "kpss-co-9-t3-q01",
+        "kpss-co-9-t3-q02",
+        "kpss-co-9-t3-q03",
+        "kpss-co-9-t3-q04",
+        "kpss-co-9-t3-q05",
+        "kpss-co-9-t3-q06",
+        "kpss-co-9-t3-q07",
+        "kpss-co-9-t3-q08",
+        "kpss-co-9-t3-q09",
+        "kpss-co-9-t3-q10",
+        "kpss-co-9-t3-q11",
+        "kpss-co-9-t3-q12",
+        "kpss-co-9-t4-q01",
+        "kpss-co-9-t4-q02",
+        "kpss-co-9-t4-q03",
+        "kpss-co-9-t4-q04",
+        "kpss-co-9-t4-q05",
+        "kpss-co-9-t4-q06",
+        "kpss-co-9-t4-q07",
+        "kpss-co-9-t4-q08",
+        "kpss-co-9-t4-q09",
+        "kpss-co-9-t4-q10",
+        "kpss-co-9-t4-q11",
+        "kpss-co-9-t4-q12"
+      ],
+      "changedIds": [
+        "kpss-co-9-t1-q01",
+        "kpss-co-9-t1-q03",
+        "kpss-co-9-t1-q04",
+        "kpss-co-9-t1-q06",
+        "kpss-co-9-t1-q07",
+        "kpss-co-9-t1-q08",
+        "kpss-co-9-t1-q09",
+        "kpss-co-9-t1-q10",
+        "kpss-co-9-t1-q11",
+        "kpss-co-9-t1-q12",
+        "kpss-co-9-t2-q01",
+        "kpss-co-9-t2-q02",
+        "kpss-co-9-t2-q03",
+        "kpss-co-9-t2-q04",
+        "kpss-co-9-t2-q05",
+        "kpss-co-9-t2-q06",
+        "kpss-co-9-t2-q07",
+        "kpss-co-9-t2-q08",
+        "kpss-co-9-t2-q09",
+        "kpss-co-9-t2-q11",
+        "kpss-co-9-t2-q12",
+        "kpss-co-9-t3-q01",
+        "kpss-co-9-t3-q02",
+        "kpss-co-9-t3-q04",
+        "kpss-co-9-t3-q05",
+        "kpss-co-9-t3-q06",
+        "kpss-co-9-t3-q07",
+        "kpss-co-9-t3-q08",
+        "kpss-co-9-t3-q09",
+        "kpss-co-9-t3-q10",
+        "kpss-co-9-t3-q11",
+        "kpss-co-9-t3-q12",
+        "kpss-co-9-t4-q01",
+        "kpss-co-9-t4-q02",
+        "kpss-co-9-t4-q03",
+        "kpss-co-9-t4-q04",
+        "kpss-co-9-t4-q06",
+        "kpss-co-9-t4-q07",
+        "kpss-co-9-t4-q08",
+        "kpss-co-9-t4-q09",
+        "kpss-co-9-t4-q10",
+        "kpss-co-9-t4-q11",
+        "kpss-co-9-t4-q12"
+      ],
+      "substantiveIds": [
+        "kpss-co-9-t1-q12",
+        "kpss-co-9-t2-q11",
+        "kpss-co-9-t2-q12",
+        "kpss-co-9-t3-q09",
+        "kpss-co-9-t3-q10",
+        "kpss-co-9-t3-q11",
+        "kpss-co-9-t3-q12",
+        "kpss-co-9-t4-q06",
+        "kpss-co-9-t4-q07",
+        "kpss-co-9-t4-q08",
+        "kpss-co-9-t4-q09",
+        "kpss-co-9-t4-q10",
+        "kpss-co-9-t4-q11",
+        "kpss-co-9-t4-q12"
+      ],
+      "summary": "48 soru bütün seçenekleriyle bağımsız okundu. İlgisiz seçenekler kuruluş faktörü, verim, kapasite, katma değer ve tedarik yanılgılarına çevrildi. İşçi-saat, sağlam ürün, sabit/değişken gider, su tekrar kullanımı ve ortak afet riski gibi çok koşullu değerlendirmelerle zor maddeler güçlendirildi.",
+      "sources": [],
+      "audit": {
+        "schema": "rota-question-bank-v1",
+        "total": 48,
+        "approved": 48,
+        "needsReview": 0,
+        "rejected": 0,
+        "duplicates": [],
+        "testIssues": [],
+        "results": [
+          {
+            "id": "kpss-co-9-t1-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t1-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t2-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t3-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-9-t4-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          }
+        ]
+      }
+    },
+    {
+      "topic": 10,
+      "questions": 48,
+      "readAndCheckedIds": [
+        "kpss-co-10-t1-q01",
+        "kpss-co-10-t1-q02",
+        "kpss-co-10-t1-q03",
+        "kpss-co-10-t1-q04",
+        "kpss-co-10-t1-q05",
+        "kpss-co-10-t1-q06",
+        "kpss-co-10-t1-q07",
+        "kpss-co-10-t1-q08",
+        "kpss-co-10-t1-q09",
+        "kpss-co-10-t1-q10",
+        "kpss-co-10-t1-q11",
+        "kpss-co-10-t1-q12",
+        "kpss-co-10-t2-q01",
+        "kpss-co-10-t2-q02",
+        "kpss-co-10-t2-q03",
+        "kpss-co-10-t2-q04",
+        "kpss-co-10-t2-q05",
+        "kpss-co-10-t2-q06",
+        "kpss-co-10-t2-q07",
+        "kpss-co-10-t2-q08",
+        "kpss-co-10-t2-q09",
+        "kpss-co-10-t2-q10",
+        "kpss-co-10-t2-q11",
+        "kpss-co-10-t2-q12",
+        "kpss-co-10-t3-q01",
+        "kpss-co-10-t3-q02",
+        "kpss-co-10-t3-q03",
+        "kpss-co-10-t3-q04",
+        "kpss-co-10-t3-q05",
+        "kpss-co-10-t3-q06",
+        "kpss-co-10-t3-q07",
+        "kpss-co-10-t3-q08",
+        "kpss-co-10-t3-q09",
+        "kpss-co-10-t3-q10",
+        "kpss-co-10-t3-q11",
+        "kpss-co-10-t3-q12",
+        "kpss-co-10-t4-q01",
+        "kpss-co-10-t4-q02",
+        "kpss-co-10-t4-q03",
+        "kpss-co-10-t4-q04",
+        "kpss-co-10-t4-q05",
+        "kpss-co-10-t4-q06",
+        "kpss-co-10-t4-q07",
+        "kpss-co-10-t4-q08",
+        "kpss-co-10-t4-q09",
+        "kpss-co-10-t4-q10",
+        "kpss-co-10-t4-q11",
+        "kpss-co-10-t4-q12"
+      ],
+      "changedIds": [
+        "kpss-co-10-t1-q04",
+        "kpss-co-10-t1-q05",
+        "kpss-co-10-t1-q06",
+        "kpss-co-10-t1-q08",
+        "kpss-co-10-t1-q09",
+        "kpss-co-10-t1-q10",
+        "kpss-co-10-t1-q12",
+        "kpss-co-10-t2-q01",
+        "kpss-co-10-t2-q02",
+        "kpss-co-10-t2-q04",
+        "kpss-co-10-t2-q05",
+        "kpss-co-10-t2-q06",
+        "kpss-co-10-t2-q07",
+        "kpss-co-10-t2-q08",
+        "kpss-co-10-t2-q09",
+        "kpss-co-10-t2-q10",
+        "kpss-co-10-t2-q11",
+        "kpss-co-10-t2-q12",
+        "kpss-co-10-t3-q02",
+        "kpss-co-10-t3-q03",
+        "kpss-co-10-t3-q04",
+        "kpss-co-10-t3-q05",
+        "kpss-co-10-t3-q06",
+        "kpss-co-10-t3-q07",
+        "kpss-co-10-t3-q08",
+        "kpss-co-10-t3-q09",
+        "kpss-co-10-t3-q10",
+        "kpss-co-10-t3-q11",
+        "kpss-co-10-t3-q12",
+        "kpss-co-10-t4-q01",
+        "kpss-co-10-t4-q02",
+        "kpss-co-10-t4-q03",
+        "kpss-co-10-t4-q05",
+        "kpss-co-10-t4-q06",
+        "kpss-co-10-t4-q07",
+        "kpss-co-10-t4-q08",
+        "kpss-co-10-t4-q09",
+        "kpss-co-10-t4-q10",
+        "kpss-co-10-t4-q11",
+        "kpss-co-10-t4-q12"
+      ],
+      "substantiveIds": [
+        "kpss-co-10-t1-q12",
+        "kpss-co-10-t2-q11",
+        "kpss-co-10-t2-q12",
+        "kpss-co-10-t3-q09",
+        "kpss-co-10-t3-q10",
+        "kpss-co-10-t3-q11",
+        "kpss-co-10-t3-q12",
+        "kpss-co-10-t4-q07",
+        "kpss-co-10-t4-q09",
+        "kpss-co-10-t4-q10",
+        "kpss-co-10-t4-q11",
+        "kpss-co-10-t4-q12"
+      ],
+      "summary": "48 soru ve tüm seçenekleri okundu. Ulaşım türleri, ticaret kapsamı ve ağ bağlantıları için absürt seçenekler giderildi. Ton-km, aktarma sabit gideri, teslim süresi, araç sınırı, paralel/seri ağ kapasitesi, değer-miktar-kur ve dış ticaret göstergelerinde çok koşullu 13 madde güçlendirildi.",
+      "sources": [
+        "https://ogmmateryal.eba.gov.tr/panel/upload/etkilesimli/kitap/beceri_temelli/12/cografya/files/basic-html/page49.html"
+      ],
+      "audit": {
+        "schema": "rota-question-bank-v1",
+        "total": 48,
+        "approved": 48,
+        "needsReview": 0,
+        "rejected": 0,
+        "duplicates": [],
+        "testIssues": [],
+        "results": [
+          {
+            "id": "kpss-co-10-t1-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t1-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t2-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t3-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-10-t4-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          }
+        ]
+      }
+    },
+    {
+      "topic": 11,
+      "questions": 48,
+      "readAndCheckedIds": [
+        "kpss-co-11-t1-q01",
+        "kpss-co-11-t1-q02",
+        "kpss-co-11-t1-q03",
+        "kpss-co-11-t1-q04",
+        "kpss-co-11-t1-q05",
+        "kpss-co-11-t1-q06",
+        "kpss-co-11-t1-q07",
+        "kpss-co-11-t1-q08",
+        "kpss-co-11-t1-q09",
+        "kpss-co-11-t1-q10",
+        "kpss-co-11-t1-q11",
+        "kpss-co-11-t1-q12",
+        "kpss-co-11-t2-q01",
+        "kpss-co-11-t2-q02",
+        "kpss-co-11-t2-q03",
+        "kpss-co-11-t2-q04",
+        "kpss-co-11-t2-q05",
+        "kpss-co-11-t2-q06",
+        "kpss-co-11-t2-q07",
+        "kpss-co-11-t2-q08",
+        "kpss-co-11-t2-q09",
+        "kpss-co-11-t2-q10",
+        "kpss-co-11-t2-q11",
+        "kpss-co-11-t2-q12",
+        "kpss-co-11-t3-q01",
+        "kpss-co-11-t3-q02",
+        "kpss-co-11-t3-q03",
+        "kpss-co-11-t3-q04",
+        "kpss-co-11-t3-q05",
+        "kpss-co-11-t3-q06",
+        "kpss-co-11-t3-q07",
+        "kpss-co-11-t3-q08",
+        "kpss-co-11-t3-q09",
+        "kpss-co-11-t3-q10",
+        "kpss-co-11-t3-q11",
+        "kpss-co-11-t3-q12",
+        "kpss-co-11-t4-q01",
+        "kpss-co-11-t4-q02",
+        "kpss-co-11-t4-q03",
+        "kpss-co-11-t4-q04",
+        "kpss-co-11-t4-q05",
+        "kpss-co-11-t4-q06",
+        "kpss-co-11-t4-q07",
+        "kpss-co-11-t4-q08",
+        "kpss-co-11-t4-q09",
+        "kpss-co-11-t4-q10",
+        "kpss-co-11-t4-q11",
+        "kpss-co-11-t4-q12"
+      ],
+      "changedIds": [
+        "kpss-co-11-t1-q03",
+        "kpss-co-11-t1-q05",
+        "kpss-co-11-t1-q07",
+        "kpss-co-11-t1-q08",
+        "kpss-co-11-t1-q09",
+        "kpss-co-11-t1-q10",
+        "kpss-co-11-t1-q11",
+        "kpss-co-11-t1-q12",
+        "kpss-co-11-t2-q01",
+        "kpss-co-11-t2-q03",
+        "kpss-co-11-t2-q04",
+        "kpss-co-11-t2-q05",
+        "kpss-co-11-t2-q06",
+        "kpss-co-11-t2-q07",
+        "kpss-co-11-t2-q08",
+        "kpss-co-11-t2-q11",
+        "kpss-co-11-t2-q12",
+        "kpss-co-11-t3-q02",
+        "kpss-co-11-t3-q03",
+        "kpss-co-11-t3-q04",
+        "kpss-co-11-t3-q05",
+        "kpss-co-11-t3-q06",
+        "kpss-co-11-t3-q07",
+        "kpss-co-11-t3-q08",
+        "kpss-co-11-t3-q09",
+        "kpss-co-11-t3-q10",
+        "kpss-co-11-t3-q11",
+        "kpss-co-11-t3-q12",
+        "kpss-co-11-t4-q01",
+        "kpss-co-11-t4-q02",
+        "kpss-co-11-t4-q03",
+        "kpss-co-11-t4-q04",
+        "kpss-co-11-t4-q05",
+        "kpss-co-11-t4-q06",
+        "kpss-co-11-t4-q07",
+        "kpss-co-11-t4-q08",
+        "kpss-co-11-t4-q09",
+        "kpss-co-11-t4-q10",
+        "kpss-co-11-t4-q11",
+        "kpss-co-11-t4-q12"
+      ],
+      "substantiveIds": [
+        "kpss-co-11-t1-q12",
+        "kpss-co-11-t2-q11",
+        "kpss-co-11-t2-q12",
+        "kpss-co-11-t3-q09",
+        "kpss-co-11-t3-q10",
+        "kpss-co-11-t3-q11",
+        "kpss-co-11-t3-q12",
+        "kpss-co-11-t4-q07",
+        "kpss-co-11-t4-q08",
+        "kpss-co-11-t4-q09",
+        "kpss-co-11-t4-q10",
+        "kpss-co-11-t4-q11",
+        "kpss-co-11-t4-q12"
+      ],
+      "summary": "48 soru tüm seçenek ve gerekçeleriyle bağımsız okundu. İl-miras eşleşmeleri resmî kültür ve UNESCO kaynaklarıyla kontrol edildi. Ziyaretçi/konaklayan/geceleme, yatak-gece ağırlığı, yerel katkı ve kamu maliyeti, eşzamanlı su/atık kapasitesi ile mevsimsel yoğunluk ayrımları güçlendirildi.",
+      "sources": [
+        "https://www.kulturportali.gov.tr/turkiye/agri/gezilecekyer/shak-pasa-sarayi",
+        "https://whc.unesco.org/en/list/485",
+        "https://www.unesco.org.tr/Pages/125",
+        "https://ogmmateryal.eba.gov.tr/panel/upload/etkilesimli/kitap/kavram_calismalari/12/cografya/files/basic-html/page40.html"
+      ],
+      "audit": {
+        "schema": "rota-question-bank-v1",
+        "total": 48,
+        "approved": 48,
+        "needsReview": 0,
+        "rejected": 0,
+        "duplicates": [],
+        "testIssues": [],
+        "results": [
+          {
+            "id": "kpss-co-11-t1-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t1-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t2-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t3-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-11-t4-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          }
+        ]
+      }
+    },
+    {
+      "topic": 12,
+      "questions": 48,
+      "readAndCheckedIds": [
+        "kpss-co-12-t1-q01",
+        "kpss-co-12-t1-q02",
+        "kpss-co-12-t1-q03",
+        "kpss-co-12-t1-q04",
+        "kpss-co-12-t1-q05",
+        "kpss-co-12-t1-q06",
+        "kpss-co-12-t1-q07",
+        "kpss-co-12-t1-q08",
+        "kpss-co-12-t1-q09",
+        "kpss-co-12-t1-q10",
+        "kpss-co-12-t1-q11",
+        "kpss-co-12-t1-q12",
+        "kpss-co-12-t2-q01",
+        "kpss-co-12-t2-q02",
+        "kpss-co-12-t2-q03",
+        "kpss-co-12-t2-q04",
+        "kpss-co-12-t2-q05",
+        "kpss-co-12-t2-q06",
+        "kpss-co-12-t2-q07",
+        "kpss-co-12-t2-q08",
+        "kpss-co-12-t2-q09",
+        "kpss-co-12-t2-q10",
+        "kpss-co-12-t2-q11",
+        "kpss-co-12-t2-q12",
+        "kpss-co-12-t3-q01",
+        "kpss-co-12-t3-q02",
+        "kpss-co-12-t3-q03",
+        "kpss-co-12-t3-q04",
+        "kpss-co-12-t3-q05",
+        "kpss-co-12-t3-q06",
+        "kpss-co-12-t3-q07",
+        "kpss-co-12-t3-q08",
+        "kpss-co-12-t3-q09",
+        "kpss-co-12-t3-q10",
+        "kpss-co-12-t3-q11",
+        "kpss-co-12-t3-q12",
+        "kpss-co-12-t4-q01",
+        "kpss-co-12-t4-q02",
+        "kpss-co-12-t4-q03",
+        "kpss-co-12-t4-q04",
+        "kpss-co-12-t4-q05",
+        "kpss-co-12-t4-q06",
+        "kpss-co-12-t4-q07",
+        "kpss-co-12-t4-q08",
+        "kpss-co-12-t4-q09",
+        "kpss-co-12-t4-q10",
+        "kpss-co-12-t4-q11",
+        "kpss-co-12-t4-q12"
+      ],
+      "changedIds": [
+        "kpss-co-12-t1-q01",
+        "kpss-co-12-t1-q03",
+        "kpss-co-12-t1-q06",
+        "kpss-co-12-t1-q07",
+        "kpss-co-12-t1-q08",
+        "kpss-co-12-t1-q09",
+        "kpss-co-12-t1-q10",
+        "kpss-co-12-t1-q11",
+        "kpss-co-12-t1-q12",
+        "kpss-co-12-t2-q01",
+        "kpss-co-12-t2-q02",
+        "kpss-co-12-t2-q03",
+        "kpss-co-12-t2-q04",
+        "kpss-co-12-t2-q05",
+        "kpss-co-12-t2-q06",
+        "kpss-co-12-t2-q07",
+        "kpss-co-12-t2-q08",
+        "kpss-co-12-t2-q09",
+        "kpss-co-12-t2-q10",
+        "kpss-co-12-t2-q11",
+        "kpss-co-12-t2-q12",
+        "kpss-co-12-t3-q01",
+        "kpss-co-12-t3-q02",
+        "kpss-co-12-t3-q03",
+        "kpss-co-12-t3-q04",
+        "kpss-co-12-t3-q05",
+        "kpss-co-12-t3-q06",
+        "kpss-co-12-t3-q07",
+        "kpss-co-12-t3-q08",
+        "kpss-co-12-t3-q09",
+        "kpss-co-12-t3-q10",
+        "kpss-co-12-t3-q11",
+        "kpss-co-12-t3-q12",
+        "kpss-co-12-t4-q01",
+        "kpss-co-12-t4-q02",
+        "kpss-co-12-t4-q03",
+        "kpss-co-12-t4-q04",
+        "kpss-co-12-t4-q05",
+        "kpss-co-12-t4-q06",
+        "kpss-co-12-t4-q07",
+        "kpss-co-12-t4-q08",
+        "kpss-co-12-t4-q09",
+        "kpss-co-12-t4-q10",
+        "kpss-co-12-t4-q11",
+        "kpss-co-12-t4-q12"
+      ],
+      "substantiveIds": [
+        "kpss-co-12-t1-q09",
+        "kpss-co-12-t1-q12",
+        "kpss-co-12-t2-q11",
+        "kpss-co-12-t2-q12",
+        "kpss-co-12-t3-q09",
+        "kpss-co-12-t3-q10",
+        "kpss-co-12-t3-q12",
+        "kpss-co-12-t4-q07",
+        "kpss-co-12-t4-q08",
+        "kpss-co-12-t4-q09",
+        "kpss-co-12-t4-q10",
+        "kpss-co-12-t4-q11",
+        "kpss-co-12-t4-q12"
+      ],
+      "summary": "48 bölgesel kalkınma sorusu tüm seçenekleriyle bağımsız okundu. GAP, DAP, KOP, DOKAP çerçeveleri resmî proje kaynaklarıyla; ZBK yaklaşımı MEB çerçevesinde kontrol edildi. Katılım, kapsayıcılık, havza koordinasyonu, çıktı/sonuç, kalıcı iş, tekil hedef hane, reel kişi başı gelir ve bakım dahil bütçe/su kısıtları üzerinden seçenek ve zorluk niteliği güçlendirildi.",
+      "sources": [
+        "https://www.gap.gov.tr/sayfa/gap-hakkinda/gap-nedir/",
+        "https://kop.gov.tr/eylem-plani-2024-2028",
+        "https://www.dap.gov.tr/Dosya/FJ1R77AO_hayvancilik-altyapisinin-gelistirilmesi-proje-basvuru-rehberi.pdf",
+        "https://dokap.gov.tr/",
+        "https://ogmmateryal.eba.gov.tr/panel/upload/etkilesimli/kitap/beceri_temelli/12/cografya/files/basic-html/page25.html"
+      ],
+      "audit": {
+        "schema": "rota-question-bank-v1",
+        "total": 48,
+        "approved": 48,
+        "needsReview": 0,
+        "rejected": 0,
+        "duplicates": [],
+        "testIssues": [],
+        "results": [
+          {
+            "id": "kpss-co-12-t1-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t1-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t2-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t3-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q01",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q02",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q03",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q04",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q05",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q06",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q07",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q08",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q09",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q10",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q11",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          },
+          {
+            "id": "kpss-co-12-t4-q12",
+            "errors": [],
+            "warnings": [],
+            "status": "approved"
+          }
+        ]
+      }
+    }
+  ],
+  "calculations": {
+    "total": 66,
+    "passed": 66,
+    "checks": [
+      {
+        "id": "kpss-co-8-t1-q12",
+        "computedAnswer": "60",
+        "method": "Cevher × tenör × geri kazanma."
+      },
+      {
+        "id": "kpss-co-8-t2-q11",
+        "computedAnswer": "34",
+        "method": "İki zaman diliminde güç × süre; iç tüketim çıkarıldı."
+      },
+      {
+        "id": "kpss-co-8-t2-q12",
+        "computedAnswer": "13",
+        "method": "İlk dönem tüketimi ve ek rezervden sonra tamamlanabilen yıl sayısı."
+      },
+      {
+        "id": "kpss-co-8-t3-q08",
+        "computedAnswer": "A’nın teorik göstergesi B’nin iki katıdır.",
+        "method": "Debi × düşü iki alan için karşılaştırıldı."
+      },
+      {
+        "id": "kpss-co-8-t3-q09",
+        "computedAnswer": "Yenilenebilir 2 artar; ithal yakıtlı 18 azalır.",
+        "method": "Payların ayrı toplamlarla çarpılması; ithalat termik alt grubundan."
+      },
+      {
+        "id": "kpss-co-8-t3-q10",
+        "computedAnswer": "%77,8",
+        "method": "Geri kazanılan toplam metal / başlangıçtaki toplam metal."
+      },
+      {
+        "id": "kpss-co-8-t3-q11",
+        "computedAnswer": "B’nin üretimi A’dan %60 fazladır.",
+        "method": "Kapasite ve kullanım birlikte çarpılıp A tabanı ile oranlandı."
+      },
+      {
+        "id": "kpss-co-8-t3-q12",
+        "computedAnswer": "16000",
+        "method": "Yeni toplam kâr eksi eski zarar."
+      },
+      {
+        "id": "kpss-co-8-t4-q07",
+        "computedAnswer": "B: %63; A: %60",
+        "method": "Dönüşümden sonraki enerjinin güç × süreye oranı."
+      },
+      {
+        "id": "kpss-co-8-t4-q08",
+        "computedAnswer": "%20 azalır.",
+        "method": "Birim kullanım, faaliyet ve fosil payının çarpımı."
+      },
+      {
+        "id": "kpss-co-8-t4-q09",
+        "computedAnswer": "30",
+        "method": "Yeni eklenen güneş gücü toplam paydayı da artırır."
+      },
+      {
+        "id": "kpss-co-8-t4-q10",
+        "computedAnswer": "%81",
+        "method": "B metal üretimine eşit olmak için A’nın geri kazanma eşiği."
+      },
+      {
+        "id": "kpss-co-8-t4-q11",
+        "computedAnswer": "Güç yeterlidir; batarya enerjisi 20 MWh eksik kalır.",
+        "method": "Açık güç 20 MW, dört saat enerji 80 MWh; enerji ve güç kısıtları ayrı."
+      },
+      {
+        "id": "kpss-co-9-t1-q12",
+        "computedAnswer": "B daha yüksektir: A 1,25; B yaklaşık 1,33 ürün.",
+        "method": "Ürün / işçi-saat."
+      },
+      {
+        "id": "kpss-co-9-t2-q10",
+        "computedAnswer": "%75",
+        "method": "Gerçekleşen üretim / kapasite."
+      },
+      {
+        "id": "kpss-co-9-t2-q11",
+        "computedAnswer": "Katma değer 80; ücret sonrası kalan 30.",
+        "method": "Ara girdi çıkarıldı; ücret katma değerden sonra ayrıca ayrıldı."
+      },
+      {
+        "id": "kpss-co-9-t2-q12",
+        "computedAnswer": "B’nin toplam gideri A’dan 100 birim düşüktür.",
+        "method": "Sabit + miktar × değişken maliyet."
+      },
+      {
+        "id": "kpss-co-9-t3-q09",
+        "computedAnswer": "105’ten 96’ya düşer.",
+        "method": "Nüfus × istihdam oranı × sanayi payı."
+      },
+      {
+        "id": "kpss-co-9-t3-q10",
+        "computedAnswer": "Yaklaşık %6,7 artar.",
+        "method": "Yeni ve eski işçi-saat verimliliği oranı."
+      },
+      {
+        "id": "kpss-co-9-t3-q11",
+        "computedAnswer": "B, mamul başına 40 birim daha ucuzdur.",
+        "method": "Hammadde ve mamulün ağırlıklı taşıma giderleri."
+      },
+      {
+        "id": "kpss-co-9-t3-q12",
+        "computedAnswer": "25 kişiden 26 kişiye çıkar.",
+        "method": "Toplam işgücü-saat / kişi başına çalışma süresi."
+      },
+      {
+        "id": "kpss-co-9-t4-q07",
+        "computedAnswer": "B’nin toplamı daha yüksek; çalışan başına değerleri eşittir.",
+        "method": "Toplam ve çalışan başına katma değer ayrı hesaplandı."
+      },
+      {
+        "id": "kpss-co-9-t4-q08",
+        "computedAnswer": "8’den 10 ürüne çıkar; darboğaz kesime geçer.",
+        "method": "Seri üç aşamanın önceki/sonraki minimumu."
+      },
+      {
+        "id": "kpss-co-9-t4-q09",
+        "computedAnswer": "A",
+        "method": "Önce çevre kısıtı, sonra arıtma dahil en düşük gider."
+      },
+      {
+        "id": "kpss-co-9-t4-q10",
+        "computedAnswer": "A, 31 daha az sağlam ürün satmasına rağmen 45 daha çok kâr eder.",
+        "method": "Kusurlu ürün ayrıldı; kârlar ayrı hesaplandı."
+      },
+      {
+        "id": "kpss-co-9-t4-q11",
+        "computedAnswer": "A’nın büyümesi 5 yüzde puan daha yüksektir; farkın tümünü teşvike bağlamak için ek kanıt gerekir.",
+        "method": "Büyüme oranı farkı, nedensel atıf sınırından ayrı."
+      },
+      {
+        "id": "kpss-co-9-t4-q12",
+        "computedAnswer": "B’de: A 3 gün, B 0,3 gün.",
+        "method": "Ortak kesinti olasılığına karşı iki bağımsız kesintinin çarpımı."
+      },
+      {
+        "id": "kpss-co-10-t1-q11",
+        "computedAnswer": "30 birim açık",
+        "method": "İthalat eksi ihracat."
+      },
+      {
+        "id": "kpss-co-10-t1-q12",
+        "computedAnswer": "Değeri %20 artmış; fiziksel miktarı değişmemiştir.",
+        "method": "Ürün payından değer; fiyat etkisinden fiziksel miktar."
+      },
+      {
+        "id": "kpss-co-10-t2-q11",
+        "computedAnswer": "Karşılama %100 olur; dış ticaret dengelenir.",
+        "method": "İhracat ve ithalat ayrı değişim çarpanlarıyla."
+      },
+      {
+        "id": "kpss-co-10-t2-q12",
+        "computedAnswer": "Hacim artar, açık azalır, karşılama oranı yükselir.",
+        "method": "İki dönemin hacim, açık ve oranları."
+      },
+      {
+        "id": "kpss-co-10-t3-q09",
+        "computedAnswer": "A–C–D: 110 km",
+        "method": "Kapasite ≥15 koşuluyla bütün basit rotalar tarandı."
+      },
+      {
+        "id": "kpss-co-10-t3-q10",
+        "computedAnswer": "1520",
+        "method": "Her parçada taşınan yük × mesafe."
+      },
+      {
+        "id": "kpss-co-10-t3-q11",
+        "computedAnswer": "Hacim 232, açık 32 birim.",
+        "method": "Hacim/denge denkleminden akımlar, sonra değişim."
+      },
+      {
+        "id": "kpss-co-10-t3-q12",
+        "computedAnswer": "Tren yolcusu 30 dakika önce.",
+        "method": "Aynı başlangıç referansında bütün yol ve bağlantı süreleri."
+      },
+      {
+        "id": "kpss-co-10-t4-q07",
+        "computedAnswer": "A",
+        "method": "Zaman kısıtından sonra toplam maliyet."
+      },
+      {
+        "id": "kpss-co-10-t4-q08",
+        "computedAnswer": "Karşılama oranı aynı kalır, açık 50’den 60’a büyür.",
+        "method": "Ticaret oranı sabitken açık miktarı ayrı."
+      },
+      {
+        "id": "kpss-co-10-t4-q09",
+        "computedAnswer": "200",
+        "method": "Ayrı ve birleştirilmiş yük için iki mod da karşılaştırıldı."
+      },
+      {
+        "id": "kpss-co-10-t4-q10",
+        "computedAnswer": "Ortak çıkışı 100’den 130 araca yükseltmek",
+        "method": "Paralel kol toplamı, ortak giriş ve çıkışın minimumu."
+      },
+      {
+        "id": "kpss-co-10-t4-q11",
+        "computedAnswer": "Dolar değeri aynı kalır; TL değeri %10 artar.",
+        "method": "Miktar × dolar fiyatı × kur."
+      },
+      {
+        "id": "kpss-co-10-t4-q12",
+        "computedAnswer": "80 → 80 → 90",
+        "method": "Her yatırım sonrası liman/iç ulaşım/talep minimumu."
+      },
+      {
+        "id": "kpss-co-11-t1-q12",
+        "computedAnswer": "B’nin brüt harcaması yüksek; A’da yerelde kalan tutar daha fazladır.",
+        "method": "Brüt ve yerelde kalan gelir ayrı karşılaştırıldı."
+      },
+      {
+        "id": "kpss-co-11-t2-q10",
+        "computedAnswer": "%75",
+        "method": "Kullanılan / mevcut yatak."
+      },
+      {
+        "id": "kpss-co-11-t2-q11",
+        "computedAnswer": "3500",
+        "method": "Her grubun gecelemeleri kendi kalış süresine bölündü."
+      },
+      {
+        "id": "kpss-co-11-t2-q12",
+        "computedAnswer": "480 binden 390 bine düşer.",
+        "method": "Brüt harcama × yerel pay eksi kamu maliyeti."
+      },
+      {
+        "id": "kpss-co-11-t3-q09",
+        "computedAnswer": "Geceleme %10 azalır; gelir %12,5 artar.",
+        "method": "Kişi × kalış, sonra geceleme başına harcama."
+      },
+      {
+        "id": "kpss-co-11-t3-q10",
+        "computedAnswer": "%63,3",
+        "method": "Yatak-gece kapasitesi ile ağırlıklandırıldı."
+      },
+      {
+        "id": "kpss-co-11-t3-q11",
+        "computedAnswer": "480",
+        "method": "Ulaşım, patika kullanım payı ve kişi başına ağırlıklı atık ayrı sınırlar."
+      },
+      {
+        "id": "kpss-co-11-t4-q07",
+        "computedAnswer": "110 binden 114 bine yükselir.",
+        "method": "Günübirlik ve geceleyen grupların kişi/gece harcaması ayrı."
+      },
+      {
+        "id": "kpss-co-11-t4-q08",
+        "computedAnswer": "1150",
+        "method": "Yerleşik tasarrufundan sonra turist başına yeni su ihtiyacı."
+      },
+      {
+        "id": "kpss-co-11-t4-q09",
+        "computedAnswer": "Geceleme 1.200 artar; dönem sonucu 120 bin azalır.",
+        "method": "Geceleme ve dönem geliri/gideri ayrı değişimler."
+      },
+      {
+        "id": "kpss-co-11-t4-q10",
+        "computedAnswer": "B’nin toplamı yüksek; A’nın kişi başına katkısı yüksektir.",
+        "method": "Yerelde kalan toplam ve nüfusa bölünmüş değer."
+      },
+      {
+        "id": "kpss-co-11-t4-q11",
+        "computedAnswer": "C",
+        "method": "Kapasite ve en az iş koşulları birlikte süzüldü."
+      },
+      {
+        "id": "kpss-co-11-t4-q12",
+        "computedAnswer": "A’nın talebi 4.000 yatakla kapasiteyi aşar; B’nin 800 yataklık talebi kapasite içindedir.",
+        "method": "Yıllık geceleme / sezon gün sayısı × yoğun gün katsayısı."
+      },
+      {
+        "id": "kpss-co-12-t1-q12",
+        "computedAnswer": "A’da değişmez; B’de %30 artar.",
+        "method": "İki bölgede toplam gelir / nüfus değişimi."
+      },
+      {
+        "id": "kpss-co-12-t2-q11",
+        "computedAnswer": "B’de yaklaşık 21,4 bin; A’da 25 bin birimdir.",
+        "method": "Geçici işler çıkarıldı; bütçe kalıcı işe bölündü."
+      },
+      {
+        "id": "kpss-co-12-t2-q12",
+        "computedAnswer": "Nominal fark 50’de kalır; reel gelir A’da aynı, B’de yaklaşık %16,7 yüksek olur.",
+        "method": "Nominal fark, fiyat etkisinden arındırılan A ve B büyümesi."
+      },
+      {
+        "id": "kpss-co-12-t3-q09",
+        "computedAnswer": "60",
+        "method": "Çakışmayan mükerrer ve kapsam dışı kayıtlar çıkarıldı."
+      },
+      {
+        "id": "kpss-co-12-t3-q10",
+        "computedAnswer": "II ve III",
+        "method": "Mutlak artış, oran oranı ve A/B yönü ayrı test edildi."
+      },
+      {
+        "id": "kpss-co-12-t3-q12",
+        "computedAnswer": "Normal yılda 2 birim fazlalık; kurak yılda 8 birim açık.",
+        "method": "Tasarruflu mevcut kullanım + ekolojik + yeni proje."
+      },
+      {
+        "id": "kpss-co-12-t4-q07",
+        "computedAnswer": "1,25’ten 1,375’e çıkar; %10 artar.",
+        "method": "Göç sonrası ağırlıklar değiştirilerek birleşik kişi başı gelir."
+      },
+      {
+        "id": "kpss-co-12-t4-q08",
+        "computedAnswer": "%12,7 azalır.",
+        "method": "Nominal toplam gelir / nüfus / fiyat çarpanları."
+      },
+      {
+        "id": "kpss-co-12-t4-q09",
+        "computedAnswer": "A+B: 95 iş",
+        "method": "Bakım dahil tüm16projealtkümesi tarandı; tek optimum doğrulandı."
+      },
+      {
+        "id": "kpss-co-12-t4-q10",
+        "computedAnswer": "50",
+        "method": "40–120 arasındaki her tam hektar iki ürünün su bütçesiyle denetlendi."
+      },
+      {
+        "id": "kpss-co-12-t4-q11",
+        "computedAnswer": "20",
+        "method": "Karşılaştırma bölgesinin oransal büyümesiyle karşıolgusal istihdam."
+      },
+      {
+        "id": "kpss-co-12-t4-q12",
+        "computedAnswer": "Yalnız gelir hedefi karşılanmıştır; sosyal erişim ve su sürdürülebilirliği hedefleri karşılanmamıştır.",
+        "method": "Üç hedefin eşikleri ayrı koşullarla denetlendi."
+      }
+    ]
+  },
+  "crossReview": {
+    "reviewer": "codex-editorial-independent-source-research",
+    "questionIds": [
+      "kpss-co-12-t3-q09",
+      "kpss-co-12-t3-q10",
+      "kpss-co-12-t3-q11",
+      "kpss-co-12-t3-q12",
+      "kpss-co-12-t4-q07",
+      "kpss-co-12-t4-q08",
+      "kpss-co-12-t4-q09",
+      "kpss-co-12-t4-q10",
+      "kpss-co-12-t4-q11",
+      "kpss-co-12-t4-q12"
+    ],
+    "finding": "Son 10 karmaşık sorunun kök/5 seçenek/cevap/çözüm/4 not çapraz okumasında gerçek hata veya çift doğru bulunmadı; sayısal sonuçlar ayrıca yeniden hesaplandı."
+  },
+  "audit": {
+    "total": 240,
+    "approved": 240,
+    "rejected": 0,
+    "needsReview": 0,
+    "duplicates": [],
+    "testIssues": []
+  },
+  "wholeGeographyAudit": {
+    "total": 576,
+    "approved": 576,
+    "rejected": 0,
+    "needsReview": 0,
+    "duplicates": [],
+    "testIssues": []
+  },
+  "files": [
+    {
+      "path": "public/questions/kpss/cografya/bolgesel-kalkinma/test-1.js",
+      "sha256": "bd7c262a06e54217cc8e55447659c3871c41f7f32f7d02c69c54c986e38f7935"
+    },
+    {
+      "path": "public/questions/kpss/cografya/bolgesel-kalkinma/test-2.js",
+      "sha256": "f26944de4de93baee2a07ad34831399e2f995809f78b7910771e32df945939a0"
+    },
+    {
+      "path": "public/questions/kpss/cografya/bolgesel-kalkinma/test-3.js",
+      "sha256": "57c45231936af1b125f4348b364801527c2ef2f34bc16f5abd41339c05e29b38"
+    },
+    {
+      "path": "public/questions/kpss/cografya/bolgesel-kalkinma/test-4.js",
+      "sha256": "32e44ccf53df1c0753cee534f87f199336da77dcc5d402b0372f47b83f94f76a"
+    },
+    {
+      "path": "public/questions/kpss/cografya/maden-ve-enerji/test-1.js",
+      "sha256": "ef7ea1f16b289edec9d242d101f1fac55d9a6a81f460bca4b4522d4b65167c4e"
+    },
+    {
+      "path": "public/questions/kpss/cografya/maden-ve-enerji/test-2.js",
+      "sha256": "fc0c89184df520119beb0b7979871aec4af13b58d2350ddfe936802725f2ec50"
+    },
+    {
+      "path": "public/questions/kpss/cografya/maden-ve-enerji/test-3.js",
+      "sha256": "df4e980cd93515717d18c85ba3ee92cc2f340a4683a6b5484db37bc018d43151"
+    },
+    {
+      "path": "public/questions/kpss/cografya/maden-ve-enerji/test-4.js",
+      "sha256": "e82edaed096770dcf7538e13c4e5b634db6dbf66b86775ba0f34f74ed50dc8d3"
+    },
+    {
+      "path": "public/questions/kpss/cografya/sanayi/test-1.js",
+      "sha256": "f86767a853346bba8a8b1e96c6522674596c218734d6167424d57945a349a6c8"
+    },
+    {
+      "path": "public/questions/kpss/cografya/sanayi/test-2.js",
+      "sha256": "627ce5624b080fb24b60ad3a07efde4941c977cf11c81aeeb8f380058ad7b089"
+    },
+    {
+      "path": "public/questions/kpss/cografya/sanayi/test-3.js",
+      "sha256": "18d4a326d85e414b9d8082d3ddd56158fd573d58c814e73e5fbf24b227da03a4"
+    },
+    {
+      "path": "public/questions/kpss/cografya/sanayi/test-4.js",
+      "sha256": "98a76dce72e5180e623cbca3d4eb460c7250a37f55e16ca822aeb2f09070293e"
+    },
+    {
+      "path": "public/questions/kpss/cografya/turizm/test-1.js",
+      "sha256": "8b1a778516dd1c6e739253e76a72584f953facd8a049ab970619cc9d0e144eae"
+    },
+    {
+      "path": "public/questions/kpss/cografya/turizm/test-2.js",
+      "sha256": "a9ec96b0e31acdcea4edc525d25bfff74828f9fa0cbaf56e5985c7e49c3956c6"
+    },
+    {
+      "path": "public/questions/kpss/cografya/turizm/test-3.js",
+      "sha256": "d30678c2e6b907330292e0e1f875d13bf3cbbb6b8492a615a6ac3c7546231aa3"
+    },
+    {
+      "path": "public/questions/kpss/cografya/turizm/test-4.js",
+      "sha256": "9340345a9385916f1110a6c004ead396dc6c2b73e5a4e5f385488a7d1d5765aa"
+    },
+    {
+      "path": "public/questions/kpss/cografya/ulasim-ve-ticaret/test-1.js",
+      "sha256": "0c06769a8954802f8092d16bd7d2cc350edf06c6b4c45340cd80d9cbc9c8bbd9"
+    },
+    {
+      "path": "public/questions/kpss/cografya/ulasim-ve-ticaret/test-2.js",
+      "sha256": "31ce6fe90620196127102d096ba28c83c3dbc179e70bb5dacbd401d1738ed962"
+    },
+    {
+      "path": "public/questions/kpss/cografya/ulasim-ve-ticaret/test-3.js",
+      "sha256": "9441bf20b28589835534062d56794c7fde3d28c9836a517b9a578b4fa401ed43"
+    },
+    {
+      "path": "public/questions/kpss/cografya/ulasim-ve-ticaret/test-4.js",
+      "sha256": "240fb9690f26c947451448757c0ded8bd76d0eb244e96d87e357afc109992fbf"
+    }
+  ]
+}

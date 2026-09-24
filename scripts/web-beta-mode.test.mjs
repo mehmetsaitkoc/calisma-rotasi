@@ -14,6 +14,7 @@ async function start(){
       HOST:'127.0.0.1',
       RENDER:'true',
       NODE_ENV:'production',
+      ROTA_ACCOUNTS_MODE:'local-only',
       ROTA_APP_ORIGIN:'https://beta.example',
       OPENAI_API_KEY:''
     },
@@ -43,10 +44,21 @@ try{
   assert.equal(body.code,'ACCOUNTS_UNAVAILABLE');
   assert.match(body.error,/Web Beta|yerel kayıt|tarayıcı/i);
 
-  const home=await fetch(BASE+'/');
+  const home=await fetch(BASE+'/',{headers:{'Accept-Encoding':'br'}});
   assert.equal(home.status,200);
+  assert.equal(home.headers.get('content-encoding'),'br','Web index should use Brotli when supported');
+  const homeEtag=home.headers.get('etag');assert.ok(homeEtag,'Web index must expose an ETag');
   const html=await home.text();
   assert.match(html,/landing-final\.js/);
+  const individual=[...html.matchAll(/src=["']\/questions\/kpss\/[^"']+\/test-[1-4]\.js["']/g)];
+  const bundles=[...html.matchAll(/src=["'](\/runtime\/kpss-bundle\/[^"']+\.js)["']/g)].map(x=>x[1]);
+  assert.equal(individual.length,0,'Public web index must not fan out 256 individual question requests');
+  assert.equal(bundles.length,6,'Public web index must expose exactly six subject bundles');
+  const bundle=await fetch(BASE+bundles[0],{headers:{'Accept-Encoding':'br'}});
+  assert.equal(bundle.status,200);assert.equal(bundle.headers.get('content-encoding'),'br');
+  assert.match(await bundle.text(),/RotaQuestionBank|registerTest/,'Runtime subject bundle must contain the canonical bank modules');
+  const notModified=await fetch(BASE+'/',{headers:{'If-None-Match':homeEtag,'Accept-Encoding':'br'}});
+  assert.equal(notModified.status,304,'Web index ETag must support conditional reloads');
 
   const ent=await (await fetch(BASE+'/api/entitlements')).json();
   assert.equal(ent.accountRequired,false);

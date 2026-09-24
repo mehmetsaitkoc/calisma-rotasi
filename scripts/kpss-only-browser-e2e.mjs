@@ -108,7 +108,7 @@ try {
   await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
   await page.locator('.welcome.premium-landing-final').waitFor({ state: 'visible' });
   assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'YKS must not be selectable on the public surface');
-  assert.equal(await page.locator('[data-exam="kpss"]').count(), 1, 'Exactly one KPSS product entry must remain');
+  assert.equal(await page.locator('.v6-prep-card[data-exam="kpss"]').count(), 1, 'Exactly one KPSS product entry must remain');
   assert.equal(await page.getByText(/\bYKS\b/).count(), 0, 'Landing must not display YKS');
   assert.equal(await page.getByText(/\bTYT\b|\bAYT\b|\bYDT\b/).count(), 0, 'Landing must not display YKS-family exam labels');
 

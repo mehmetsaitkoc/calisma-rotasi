@@ -46,8 +46,13 @@ try{
   const errors=[];
   page.on('pageerror',e=>errors.push(String(e?.stack||e)));
 
-  await page.goto(BASE+'/?fresh=1',{waitUntil:'domcontentloaded'});
+  await page.goto(BASE+'/',{waitUntil:'domcontentloaded'});
   await page.locator('.welcome.premium-landing-final').waitFor({state:'visible'});
+  const betaRuntime=await page.evaluate(()=>({href:location.href,webBeta:window.RotaWebBeta===true,accountAvailable:window.RotaAccount?.available,status:window.RotaAccount?.status}));
+  assert.equal(new URL(betaRuntime.href).searchParams.has('fresh'),false,'Instagram-facing Web Beta test must use the real root URL, not developer preview mode');
+  assert.equal(betaRuntime.webBeta,true,'Render Web Beta must expose the local-only runtime flag');
+  assert.equal(betaRuntime.accountAvailable,false,'Public Web Beta must not advertise account/sync availability');
+  assert.equal(betaRuntime.status,'local-only','Public Web Beta must actually boot in local-only persistence mode');
   const firstUsableMs=await page.evaluate(()=>performance.now());
   await page.waitForLoadState('load');
   const resourceStats=await page.evaluate(()=>performance.getEntriesByType('resource').map(entry=>({name:entry.name,transferSize:entry.transferSize||0,encodedBodySize:entry.encodedBodySize||0,decodedBodySize:entry.decodedBodySize||0})));

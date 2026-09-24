@@ -14,7 +14,6 @@ async function start(){
       HOST:'127.0.0.1',
       RENDER:'true',
       NODE_ENV:'production',
-      ROTA_ACCOUNTS_MODE:'local-only',
       ROTA_APP_ORIGIN:'https://beta.example',
       OPENAI_API_KEY:''
     },

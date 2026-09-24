@@ -183,6 +183,47 @@ try{
 
   await page.screenshot({path:'work/production-evidence/web-beta-today-390.png',fullPage:true});
 
+  // Web Beta persistence controls must be usable and stay KPSS-only.
+  await page.locator('.sidebar [data-action="nav"][data-view="settings"]').first().evaluate(node=>node.click());
+  await page.getByRole('heading',{name:'Ayarlar ve yedek'}).waitFor({state:'visible'});
+  const settingsCopy=((await page.locator('#app').innerText())||'');
+  assert.match(settingsCopy,/tarayıcıda yerel olarak saklanır/i);
+  assert.match(settingsCopy,/Yedek indir/i);
+  assert.match(settingsCopy,/Yedek yükle/i);
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b|Rota Hoca/i.test(settingsCopy),'Web Beta settings must stay KPSS-only');
+
+  const downloadPromise=page.waitForEvent('download');
+  await page.locator('[data-action="export"]').click();
+  const download=await downloadPromise;
+  assert.match(download.suggestedFilename(),/^calisma-rotasi-yedek-\d{4}-\d{2}-\d{2}\.json$/,'Backup export must produce a dated JSON file');
+
+  const backupJson=await page.evaluate(()=>{
+    let current=null;
+    for(const raw of Object.values(localStorage)){
+      try{const parsed=JSON.parse(raw);if(parsed?.workspaces?.kpss){current=parsed;break;}}catch{}
+    }
+    if(!current)throw new Error('Web Beta state missing for backup test');
+    return JSON.stringify(window.RotaContracts.makeBackupEnvelope(current,{appVersion:'4.1'}));
+  });
+  const backupInput=page.locator('#backup-file');
+  await backupInput.setInputFiles({name:'rota-valid.json',mimeType:'application/json',buffer:Buffer.from(backupJson)});
+  await page.getByText('KPSS yedeğini yükle?',{exact:true}).waitFor({state:'visible'});
+  const backupModalText=((await page.locator('#modal').innerText())||'');
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b|Rota Hoca/i.test(backupModalText),'Backup confirmation must not leak retired scope');
+  await page.locator('#modal [data-action="close-modal"]').click();
+
+  await backupInput.setInputFiles({name:'too-large.json',mimeType:'application/json',buffer:Buffer.alloc(2*1024*1024+1,0x20)});
+  await page.getByText(/Yedek dosyası en fazla 2 MB olabilir/i).waitFor({state:'visible'});
+
+  await backupInput.setInputFiles({name:'broken.json',mimeType:'application/json',buffer:Buffer.from('{broken')});
+  await page.getByText(/Yedek yüklenmedi/i).last().waitFor({state:'visible'});
+
+  await page.locator('[data-action="reset-workspace"]').click();
+  await page.getByText('KPSS kayıtlarını sıfırla?',{exact:true}).waitFor({state:'visible'});
+  const resetText=((await page.locator('#modal').innerText())||'');
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b|Rota Hoca/i.test(resetText),'Reset confirmation must stay KPSS-only');
+  await page.locator('#modal [data-action="close-modal"]').click();
+
   assert.deepEqual(pageErrors,[],'Page errors:\n'+pageErrors.join('\n'));
   assert.deepEqual(consoleErrors,[],'Console errors:\n'+consoleErrors.join('\n'));
   console.log('Web beta share readiness passed: landing + onboarding + Today + local-only storage + KPSS-only/no-dead-sales surfaces.');

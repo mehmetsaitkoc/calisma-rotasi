@@ -1471,10 +1471,6 @@ body.app-premium-next-ready .report-premium-hero{
   body.app-premium-next-ready .mobile-dock{
     left:10px!important;
     right:10px!important;
-    width:auto!important;
-    max-width:none!important;
-    margin:0!important;
-    box-sizing:border-box!important;
     bottom:9px!important;
     padding:6px 7px calc(6px + env(safe-area-inset-bottom))!important;
     border:1px solid rgba(20,31,54,.10)!important;

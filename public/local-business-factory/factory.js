@@ -70,7 +70,7 @@ function setStructuredData(item) {
 function applySeo(item) {
   document.title = item.seo?.title || item.name + " — Web Sitesi Demo";
   createMeta("description", item.seo?.description || item.description);
-  createMeta("theme-color", item.palette?.surface || "#ffffff");
+  createMeta("theme-color", item.palette?.surface || "#ffffff");\n  createMeta("robots", item.verified ? "index,follow" : "noindex,follow");
   createMeta("og:title", document.title, true);
   createMeta("og:description", item.seo?.description || item.description, true);
   createMeta("og:type", "website", true);

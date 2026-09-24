@@ -82,7 +82,7 @@ try{
   assert.match(copy,/Örnek Paneli Gör/i);
   assert.ok(!/Rota Hoca/i.test(copy),'Landing must not mention retired Rota Hoca');
   assert.ok(!/Yorumlar|SSS|Gerçek Sonuç|1 Dakikada Keşfet/i.test(copy),'Landing must not expose dead navigation or misleading copy');
-  assert.equal(await page.locator('[data-exam="kpss"]').count(),1,'Landing must expose exactly one real KPSS product entry');
+  assert.equal(await page.locator('.v6-prep-card[data-exam="kpss"]').count(),1,'Landing must expose exactly one real KPSS product entry');
   assert.equal(await page.locator('[data-exam="yks"]').count(),0,'Web Beta must stay KPSS-only');
 
   const topStart=page.locator('.v6-nav-actions .v6-gradient-btn');

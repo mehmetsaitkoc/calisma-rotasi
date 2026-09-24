@@ -15,6 +15,21 @@ assert.ok(core);
 new Function('window','globalThis',core)(env,env);
 const R=env.RotaCore,Q=env.RotaQuestionBank;
 const between=(start,end)=>{const a=html.indexOf(start),b=html.indexOf(end,a);assert.ok(a>=0&&b>a,start);return html.slice(a,b);};
+{
+ const catalog=env.RotaCatalog.subjects.filter(subject=>subject.exam==='kpss');
+ const workspace={customTopics:[],topicState:{}};
+ let mastery=null;
+ const renderTopics=new Function('subjects','w','ui','head','btn','icon','subIcon','esc','empty','routeTopicMasterySignal','topicStudyTests','topicStudyTestsHtml',between('function topicsPage','function seriesSvg')+';return topicsPage;')(
+  ()=>catalog,()=>workspace,{stage:'all',query:''},()=>'',()=>'',()=>'',()=>'',String,()=>'',()=>mastery,()=>[],()=>''
+ );
+ for(const progress of [null,{base:true,review3:true,review7:false,hasEvidence:true,performanceOk:true,ready:false,progress:3,total:4,next:'7 gün tekrarı'}]){
+  mastery=progress;
+  const rendered=renderTopics();
+  assert.equal((rendered.match(/class="topic-title"/g)||[]).length,64,'All 64 KPSS topics must render');
+  assert.equal((rendered.match(/class="topic-mastery-progress /g)||[]).length,progress?64:0,'Mastery progress remains conditional');
+  assert.doesNotMatch(rendered,/>\s*}\s*</,'Topic rows must not expose a literal template-closing brace with or without mastery progress');
+ }
+}
 const definitionSource=between('function miniExamDefinition','function miniCatalogInfo')+';return {miniExamDefinition,topicStudyTests,miniCanServe};';
 const definitions=new Function('window','ROTA_MINI_EXAMS',definitionSource)(env,[]);
 const pilots=Q.topicTests();

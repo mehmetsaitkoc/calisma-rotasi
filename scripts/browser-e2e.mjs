@@ -74,6 +74,10 @@ async function navigate(page, view) {
     await sidebar.click();
   }
   await page.locator('#app').waitFor({ state: 'visible' });
+  if(view==='report'){
+    await page.getByRole('heading',{name:'Gelişimim',exact:true}).waitFor({state:'visible'});
+    await page.locator('[data-action="nav"][data-view="monthly-report"]').click();
+  }
 }
 
 function latestTaskMode(space, task) {
@@ -144,7 +148,7 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   await premiumWelcome.waitFor({ state: 'visible' });
   assert.equal(await page.locator('.premium-proof-item').count(), 3, 'Premium landing must render the three product-value signals');
   await page.locator('.premium-trust-strip').waitFor({ state: 'visible' });
-  await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
+  await page.locator('.v6-prep-card[data-action="choose-exam"][data-exam="kpss"]').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
 
   // Stage 1 · welcome
@@ -186,6 +190,8 @@ async function submitWizard(page, { workingDays = [0,1,2,3,4,5,6], expectView = 
   if (expectView === 'plan') {
     await page.getByRole('heading', { name: 'Programım' }).waitFor({ state: 'visible' });
     assert.ok((await page.locator('.route-plan-card').count()) > 0, 'Rest-day onboarding must reveal the generated weekly route instead of an empty Today screen');
+    await page.locator('body.pnx-program-day-ready').waitFor({ state: 'attached' });
+    await page.locator('.pnx-program-week-strip').waitFor({ state: 'visible' });
   } else {
     await page.locator('.route-task').first().waitFor({ state: 'visible' });
     await page.locator('[data-premium-surface="today"]').waitFor({ state: 'visible' });
@@ -728,6 +734,24 @@ try {
   await assertCleanRender(page, 'post onboarding today');
   await assertTodayContract(page);
   assert.ok((await page.locator('.route-task').count()) > 0, 'Onboarding must produce visible tasks');
+
+  // Public beta scope must stay consistently KPSS-only, including secondary settings.
+  await navigate(page,'settings');
+  const settingsCopy=((await page.locator('#app').innerText())||'').trim();
+  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/i.test(settingsCopy),'Settings must not leak retired YKS-family product copy');
+  assert.ok(!/Rota Hoca/i.test(settingsCopy),'Settings must not expose retired Rota Hoca');
+  assert.match(settingsCopy,/KPSS/i,'Settings must identify the active KPSS scope');
+  assert.equal(await page.locator('[data-action="paid-sample"]').count(),0,'Public beta must not expose the fake sample-panel entry');
+
+  const webBetaMode=await page.evaluate(()=>window.RotaWebBeta===true);
+  if(webBetaMode){
+    assert.equal(
+      await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-action="paid-membership"],[data-view="membership"]').count(),
+      0,
+      'Public Web Beta must not expose unfinished pricing or membership controls'
+    );
+  }
+
   const workspaceV3 = await appState(page);
   assert.equal(workspaceV3.value.workspaces.kpss.schemaVersion,3,'Fresh onboarding must use workspace schema v3');
   assert.match(workspaceV3.value.workspaces.kpss.sync?.workspaceId||'',/^ws-kpss-[A-Za-z0-9-]{8,}$/,'Workspace must expose a stable sync-ready identity');
@@ -1052,7 +1076,7 @@ try {
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 
-  // Rota Hoca is retired from the product surface. Legacy internal data/contracts may remain,
+  // Rota Hoca is retired from the public beta surface. Legacy internal contracts may remain,
   // but students must not be able to navigate to or render the teacher workspace.
   assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Rota Hoca navigation must stay removed');
   assert.equal(await page.locator('[data-premium-surface="teacher"]').count(), 0, 'Rota Hoca surface must stay unreachable');
@@ -1277,7 +1301,7 @@ try {
   await desktopPage.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
   await desktopPage.locator('.welcome.premium-landing-final').waitFor({ state: 'visible' });
   assert.equal(await desktopPage.locator('[data-exam="yks"]').count(), 0, 'KPSS-only landing must not expose a YKS product control');
-  assert.equal(await desktopPage.locator('[data-exam="kpss"]').count(), 1, 'KPSS-only landing must keep one KPSS entry point');
+  assert.equal(await desktopPage.locator('.v6-prep-card[data-exam="kpss"]').count(), 1, 'KPSS-only landing must keep one KPSS entry point');
   await desktopPage.locator('.v6-main-cta').click();
   await desktopPage.locator('[data-premium-surface="onboarding"]').waitFor({ state: 'visible' });
   let desktopSnapshot = await appState(desktopPage);

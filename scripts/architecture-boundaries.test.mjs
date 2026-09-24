@@ -51,9 +51,11 @@ const context=sandbox.RotaTeacherContext.build({
   mastery:{scope:'topic',ready:false,progress:2,total:4,baseDate:'2026-09-18',review3:false,review7:false,openMistake:false,next:'3 gün tekrarı'},
   recentLogs:Array.from({length:20},(_,i)=>({date:'2026-09-20',subject:'Matematik',minutes:25,questions:18,title:'Log '+i})),
   teacherSignals:Array.from({length:12},(_,i)=>({subject:'Matematik',topic:'Problemler',status:'review',question:'Soru '+i})),
+  activeTask:{subject:'Matematik',topic:'Problemler',title:'Kısa doğrulama',minutes:10,state:'running',password:'DROP-ACTIVE'},
+  recovery:{status:'repair',eligible:true,reason:'İki ölçümde aynı açık',accuracy:.4,evidenceCount:2,weakSkills:Array(10).fill('Oran ilişkisi'),privateNotes:'DROP-RECOVERY'},
   unsupportedSecret:'must-not-survive'
 });
-assert.equal(context.contextVersion,2,'Rota Hoca context contract must be v2');
+assert.equal(context.contextVersion,3,'Rota Hoca context contract must be v3');
 assert.equal(context.todayPlan.length,8,'Today plan must stay bounded');
 assert.equal(context.recentLogs.length,8,'Recent logs must stay bounded');
 assert.equal(context.teacherSignals.length,6,'Teacher signals must stay bounded');
@@ -61,5 +63,7 @@ assert.equal(Object.hasOwn(context,'unsupportedSecret'),false,'Unknown context f
 assert.equal(context.contextHealth.hasTodayPlan,true);
 assert.equal(context.contextHealth.hasStudentModel,true);
 assert.equal(context.selected.subject,'Matematik');
+assert.equal(context.activeTask.state,'running');assert.equal(context.recovery.evidenceCount,2);assert.equal(context.recovery.weakSkills.length,6);
+assert.ok(!JSON.stringify(context).includes('DROP-ACTIVE'));assert.ok(!JSON.stringify(context).includes('DROP-RECOVERY'),'New context fields must preserve the explicit nested allowlist');
 
 console.log('Architecture boundaries passed: presenter + bounded Rota Hoca context');

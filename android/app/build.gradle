@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace = "app.rotasi.shell"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId = providers.gradleProperty("rotaApplicationId").getOrElse("app.rotasi.development")
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode = providers.gradleProperty("rotaVersionCode").getOrElse("1").toInteger()
+        versionName = providers.gradleProperty("rotaVersionName").getOrElse("4.2.0")
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        debug { storeFile = rootProject.file("../work/android-build/debug.keystore") }
+        release {
+            def storePath = System.getenv("ROTA_ANDROID_KEYSTORE")
+            if (storePath) {
+                storeFile = file(storePath)
+                storePassword = System.getenv("ROTA_ANDROID_STORE_PASSWORD")
+                keyAlias = System.getenv("ROTA_ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ROTA_ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        debug { applicationIdSuffix = ".debug" }
+
+        release {
+            if (System.getenv("ROTA_ANDROID_KEYSTORE")) signingConfig = signingConfigs.release
+            debuggable = false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+// Refuse accidental publication with the development identity or incomplete signing inputs.
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.name.toLowerCase().contains("release") } && System.getenv("ROTA_ANDROID_KEYSTORE")) {
+        if (android.defaultConfig.applicationId == "app.rotasi.development") throw new GradleException("Set the owner-approved applicationId before signing a release.")
+        for (def field : ["ROTA_ANDROID_STORE_PASSWORD", "ROTA_ANDROID_KEY_ALIAS", "ROTA_ANDROID_KEY_PASSWORD"]) {
+            if (!System.getenv(field)) throw new GradleException("Release signing configuration is incomplete.")
+        }
+    }
+}

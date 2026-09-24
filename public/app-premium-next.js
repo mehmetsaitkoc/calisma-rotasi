@@ -832,6 +832,21 @@
     }
   }
 
+  function removeWebBetaUnavailableUi() {
+    if (!window.RotaWebBeta) return;
+    document.documentElement.style.setProperty('--preview-h','0px');
+    const previewBar = document.querySelector('.preview-bar');
+    if (previewBar) {
+      previewBar.hidden = true;
+      previewBar.replaceChildren();
+    }
+    document.querySelectorAll('.sidebar-plus,[data-action="paid-membership"],.topbar-upgrade,[data-view="monthly-report"]').forEach((node) => {
+      const wrapper = node.closest('.nav-item,.sidebar-plus');
+      if (wrapper) wrapper.remove();
+      else node.remove();
+    });
+  }
+
   function removeTeacherUi() {
     const teacherSurface = document.querySelector('.teacher-page,[data-premium-surface="teacher"]');
     if (teacherSurface) {
@@ -842,10 +857,9 @@
       }
       teacherSurface.remove();
     }
-
     document.querySelectorAll('[data-view="teacher"]').forEach((node) => {
       const wrapper = node.closest('.nav-item,.side-link,.sidebar-item,li');
-      if (wrapper && /rota\s*hoca/i.test(text(wrapper))) wrapper.remove();
+      if (wrapper) wrapper.remove();
       else node.remove();
     });
     document.querySelectorAll('.pnx3-teacher-card,.pnx-teacher-card').forEach((node) => node.remove());
@@ -936,6 +950,7 @@
     observer.disconnect();
     try {
       removeTeacherUi();
+      removeWebBetaUnavailableUi();
       const shell = document.querySelector('.app-shell');
       const header = document.querySelector('.route-v1-head[data-premium-surface="today"]');
       document.body.classList.toggle(BODY_CLASS, !!shell);

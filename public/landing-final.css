@@ -207,6 +207,21 @@ body:has(.welcome.premium-landing-final) .preview-bar{display:none!important}\n.
 }
 .v6-play .v6-icon{width:20px;height:20px}
 .v6-video-btn strong{font-size:15px}
+.v6-beta-note{
+  margin:10px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:#8192ae!important;
+  font-size:11px!important;
+  line-height:1.45!important;
+  text-align:left;
+  cursor:pointer;
+  text-decoration:underline;
+  text-decoration-color:rgba(129,146,174,.32);
+  text-underline-offset:3px;
+}
+.v6-beta-note:hover{color:#b8c5d9!important}
 .v6-feature-strip{
   display:flex;align-items:center;gap:17px;flex-wrap:wrap;
   margin-top:27px;

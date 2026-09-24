@@ -1,6 +1,6 @@
 {
   "name": "calisma-rotasi-rota-hoca-v4",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,12 +14,43 @@
     "pilot:operations:test": "node scripts/route-engine-pilot-operations.test.mjs",
     "pilot:operations:ui:test": "node scripts/route-engine-pilot-operations-ui.test.mjs",
     "production:smoke": "node scripts/production-smoke.mjs",
-    "contracts:test": "node scripts/catalog-boundary.test.mjs && node scripts/workspace-schema.test.mjs && node scripts/route-contracts.test.mjs && node scripts/report-analytics.test.mjs && node scripts/architecture-boundaries.test.mjs && node scripts/pilot-metrics.test.mjs && node scripts/mini-catalog.test.mjs && node scripts/kpss-practice-catalog.test.mjs && node scripts/server-contracts.test.mjs && node scripts/server-runtime.test.mjs && node scripts/premium-ui-contract.test.mjs && node scripts/premium-onboarding-contract.test.mjs && node scripts/app-premium-next-contract.test.mjs && node scripts/kpss-only-contract.test.mjs && node scripts/kpss-history-professional.test.mjs && node scripts/color-mode-contract.test.mjs && npm run questions:test",
+    "contracts:test": "node scripts/catalog-boundary.test.mjs && node scripts/workspace-schema.test.mjs && node scripts/route-contracts.test.mjs && node scripts/report-analytics.test.mjs && node scripts/architecture-boundaries.test.mjs && node scripts/pilot-metrics.test.mjs && node scripts/mini-catalog.test.mjs && node scripts/kpss-practice-catalog.test.mjs && node scripts/server-contracts.test.mjs && node scripts/server-runtime.test.mjs && node scripts/web-delivery.test.mjs && node scripts/premium-ui-contract.test.mjs && node scripts/premium-onboarding-contract.test.mjs && node scripts/app-premium-next-contract.test.mjs && node scripts/kpss-only-contract.test.mjs && node scripts/kpss-history-professional.test.mjs && node scripts/color-mode-contract.test.mjs && npm run questions:test",
     "questions:test": "node scripts/question-bank.test.mjs && node scripts/question-bank-integration.test.mjs && node scripts/question-bank-full.test.mjs && node scripts/question-bank-math-content.test.cjs",
     "questions:audit": "node scripts/question-bank-audit.mjs",
-    "questions:browser": "node scripts/question-bank-browser.test.mjs"
+    "questions:browser": "node scripts/question-bank-browser.test.mjs",
+    "web:static": "node scripts/web-static-build.mjs",
+    "web:static:test": "node scripts/web-static-browser.test.mjs",
+    "native:bridge": "node scripts/native-build.mjs --web-bridge",
+    "native:prepare": "node scripts/native-build.mjs",
+    "native:sync": "node scripts/native-build.mjs && cap sync android",
+    "native:test": "node scripts/native-shell.test.mjs",
+    "android:debug": "node scripts/android-build.mjs debug",
+    "android:release": "node scripts/android-build.mjs release",
+    "android:verify": "node scripts/android-verify.mjs",
+    "accounts:test": "node scripts/account-sync.test.mjs && node scripts/account-security.test.mjs && node scripts/account-mail.test.mjs && node scripts/teacher-account.test.mjs && node scripts/delete-account-page.test.mjs && node scripts/web-beta-mode.test.mjs",
+    "student-recovery:test": "node scripts/student-recovery.test.mjs",
+    "personal-sources:test": "node scripts/personal-source-compat.test.mjs",
+    "android:instrumentation": "cd android && ./gradlew --no-daemon --console=plain :app:connectedDebugAndroidTest",
+    "accounts:browser": "node scripts/account-client-browser.test.mjs && node scripts/account-actions-browser.test.mjs",
+    "onboarding:browser": "node scripts/onboarding-resume-browser.test.mjs"
   },
   "engines": {
     "node": ">=24.21.0 <25"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.2",
+    "@capacitor/android": "8.5.2",
+    "@capacitor/app": "8.1.1",
+    "@capacitor/camera": "8.2.4",
+    "@capacitor/network": "8.0.1",
+    "@capacitor/keyboard": "8.0.5",
+    "@capacitor/status-bar": "8.0.3",
+    "@capacitor/filesystem": "8.1.3",
+    "@capacitor/share": "8.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2",
+    "esbuild": "0.28.2",
+    "playwright": "1.62.1"
   }
 }

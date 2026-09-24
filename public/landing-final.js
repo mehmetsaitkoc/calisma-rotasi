@@ -53,8 +53,9 @@
 
   function topNav(welcome){
     const nav = el('nav','v6-topbar');
-    const brandBtn = button('', 'select', 'v6-brand-button');
+    const brandBtn = button('', null, 'v6-brand-button');
     brandBtn.append(brand());
+    brandBtn.addEventListener('click',()=>welcome.scrollIntoView({behavior:'smooth',block:'start'}));
 
     const links = el('div','v6-nav-links');
     const anchor = (text, cls = '') => {
@@ -65,19 +66,16 @@
     const home = anchor('Ana Sayfa','active');
     const how = anchor('Nasıl Çalışır?');
     const features = anchor('Özellikler');
-    const plans = anchor('Planlar');
-    plans.dataset.action='paid-pricing';
-    const comments = anchor('Yorumlar');
-    const faq = anchor('SSS');
+    const plans = anchor('Ücretsiz Beta');
+    home.addEventListener('click',()=>welcome.scrollIntoView({behavior:'smooth',block:'start'}));
     how.addEventListener('click',()=>welcome.querySelector('.v6-feature-strip')?.scrollIntoView({behavior:'smooth',block:'center'}));
     features.addEventListener('click',()=>welcome.querySelector('.v6-dashboard')?.scrollIntoView({behavior:'smooth',block:'center'}));
-    comments.addEventListener('click',()=>welcome.querySelector('.v6-trust')?.scrollIntoView({behavior:'smooth',block:'center'}));
-    faq.addEventListener('click',()=>welcome.querySelector('.v6-trust')?.scrollIntoView({behavior:'smooth',block:'center'}));
-    links.append(home,how,features,plans,comments,faq);
+    plans.addEventListener('click',()=>welcome.querySelector('.v6-prep-grid')?.scrollIntoView({behavior:'smooth',block:'center'}));
+    links.append(home,how,features,plans);
 
     const actions = el('div','v6-nav-actions');
-    const workspace = button('Giriş Yap','paid-start','v6-outline-btn');
-    const start = button('Ücretsiz Başla →','paid-start','v6-gradient-btn');
+    const workspace = button('Web Beta',null,'v6-outline-btn',{accountAction:'open'});
+    const start = button('Ücretsiz Başla →','choose-exam','v6-gradient-btn',{exam:'kpss'});
     actions.append(workspace,start);
 
     nav.append(brandBtn,links,actions);
@@ -87,7 +85,7 @@
   function heroCopy(){
     const copy = el('section','v6-hero-copy');
     const badge = el('div','v6-hero-badge');
-    badge.append(el('i'),el('span','', 'Senin hedefin. Bizim rotamız.'));
+    badge.append(el('i'),el('span','', 'Ücretsiz Web Beta · Sana özel KPSS rotası'));
 
     const h1 = el('h1');
     h1.append(document.createTextNode('Kişisel Çalışma'));
@@ -104,25 +102,26 @@
     const p = el('p','v6-hero-copytext','Çalışma Rotası, hedeflerine, seviyene ve zamanına göre sana özel çalışma planı oluşturur. Daha verimli, daha bilinçli, daha senin gibi.');
 
     const actions = el('div','v6-hero-actions');
-    const start = button('Ücretsiz Başla →','paid-start','v6-gradient-btn v6-main-cta');
+    const start = button('Ücretsiz Başla →','choose-exam','v6-gradient-btn v6-main-cta',{exam:'kpss'});
     const video = el('button','v6-video-btn');
     video.type='button';
-    const play = el('span','v6-play'); play.append(icon('play'));
-    video.append(play,el('strong','', '1 Dakikada Keşfet'));
+    const play = el('span','v6-play'); play.append(icon('chart'));
+    video.append(play,el('strong','', 'Örnek Paneli Gör'));
     video.addEventListener('click',()=>document.querySelector('.v6-dashboard')?.scrollIntoView({behavior:'smooth',block:'center'}));
     actions.append(start,video);
+    const betaNote = button('Beta bilgisi · Çalışmaların bu tarayıcıda saklanır. Instagram içinden açtıysan Safari/Chrome’da devam etmen önerilir.',null,'v6-beta-note',{accountAction:'open'});
 
     const features = el('div','v6-feature-strip');
     [
       ['user','Kişiye Özel Plan',true],
       ['chart','Akıllı Analiz',true],
       ['refresh','Sürekli Takip',true],
-      ['star','Gerçek Sonuç',false]
+      ['refresh','3 + 7 Gün Tekrar',false]
     ].forEach(([ic,t,proof])=>{
       const item=el('span','v6-feature-item'+(proof?' premium-proof-item':'')); item.append(icon(ic),el('b','',t)); features.append(item);
     });
 
-    copy.append(badge,h1,slogan,p,actions,features);
+    copy.append(badge,h1,slogan,p,actions,betaNote,features);
     return copy;
   }
 
@@ -187,12 +186,12 @@
     const main=el('div','v6-dash-main');
     const top=el('div','v6-dash-top');
     const search=el('div','v6-search','Ders, konu veya hedef ara...');
-    const profile=el('div','v6-profile'); profile.append(el('span','v6-avatar','MS'),el('div','v6-profile-text'));
-    profile.lastElementChild.append(el('strong','', 'Mehmet Sait'),el('small','', 'KPSS Lisans Adayı'));
+    const profile=el('div','v6-profile'); profile.append(el('span','v6-avatar','KA'),el('div','v6-profile-text'));
+    profile.lastElementChild.append(el('strong','', 'KPSS Adayı'),el('small','', 'Lisans · GY–GK'));
     top.append(search,profile);
 
     const hello=el('div','v6-hello');
-    hello.append(el('div','', 'Merhaba, Mehmet Sait 👋'),el('small','', 'Bugün hedeflerine bir adım daha yaklaş.'));
+    hello.append(el('div','', 'Merhaba, KPSS Adayı 👋'),el('small','', 'Bugün hedeflerine bir adım daha yaklaş.'));
     const quote=el('div','v6-dash-quote','Disiplin, hayalleri gerçeğe dönüştürür.');
 
     const head=el('div','v6-dash-head'); head.append(hello,quote);
@@ -229,7 +228,7 @@
     const foot=el('div','v6-dash-foot');
     const motivational=el('div','v6-dash-mot'); motivational.append(icon('bolt'),el('div'));
     motivational.lastElementChild.append(el('strong','', 'Küçük adımlar, büyük sonuçlar.'),el('span','', 'Bugün de hedeflerine bir adım daha yaklaş.'));
-    const task=el('button','v6-dash-task','Bugünün görevlerine başla →');task.type='button';task.dataset.action='paid-start';
+    const task=button('Bugünün görevlerine başla →','choose-exam','v6-dash-task',{exam:'kpss'});
     foot.append(motivational,task);
 
     main.append(top,head,stats,lower,foot);
@@ -254,8 +253,18 @@
     return svg;
   }
 
-  function prepCard(exam,title,desc,kind){
-    const b=button('', 'choose-exam', 'v6-prep-card '+kind, {exam});
+  function prepCard(exam,title,desc,kind,existingControl=null){
+    // Reuse the application's original exam control when available. The core app
+    // binds onboarding behavior to that live node, so replacing it with a fresh
+    // lookalike can silently detach the real product action in production mode.
+    const b=existingControl || button('', 'choose-exam', '', {exam});
+    b.type='button';
+    b.className='v6-prep-card '+kind;
+    b.dataset.action='choose-exam';
+    b.dataset.exam=exam;
+    b.hidden=false;
+    b.removeAttribute('aria-hidden');
+    b.textContent='';
     const iconWrap=el('span','v6-prep-icon'); iconWrap.append(icon('book'));
     const copy=el('span','v6-prep-copy'); copy.append(el('strong','',title),el('small','',desc));
     const arrow=el('span','v6-prep-arrow'); arrow.append(icon('arrow'));
@@ -280,6 +289,7 @@
 
   function build(welcome){
     if(welcome.dataset.pixelMatch==='1') return;
+    const originalKpssControl=welcome.querySelector('[data-action="choose-exam"][data-exam="kpss"]');
     welcome.dataset.pixelMatch='1';
     welcome.setAttribute('data-premium-surface','welcome');
     welcome.classList.add('premium-landing-final');
@@ -294,7 +304,7 @@
     const cards=el('div','v6-prep-grid');
     cards.classList.add('kpss-only-grid');
     cards.append(
-      prepCard('kpss','KPSS Rotanı Kur','Lisans GY–GK için kişisel planını\\noluştur ve çalıştıkça rotanı geliştir.','kpss')
+      prepCard('kpss','KPSS Rotanı Kur','Lisans GY–GK için kişisel planını oluştur ve çalıştıkça rotanı geliştir.','kpss',originalKpssControl)
     );
     lower.append(cards,trust());
 

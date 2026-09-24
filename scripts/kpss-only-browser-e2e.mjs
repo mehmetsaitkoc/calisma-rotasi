@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 
 const PORT = Number(process.env.KPSS_ONLY_E2E_PORT || 8817);
 const BASE = `http://127.0.0.1:${PORT}`;
-const FIXED_DAY = '2026-09-21';
+const FIXED_DAY = '2026-09-24';
 const server = spawn(process.execPath, ['server.mjs'], {
   env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', RENDER: 'false' },
   stdio: ['ignore', 'pipe', 'pipe']
@@ -108,7 +108,7 @@ try {
   await page.goto(BASE + '/?fresh=1', { waitUntil: 'domcontentloaded' });
   await page.locator('.welcome.premium-landing-final').waitFor({ state: 'visible' });
   assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'YKS must not be selectable on the public surface');
-  assert.equal(await page.locator('[data-exam="kpss"]').count(), 1, 'Exactly one KPSS product entry must remain');
+  assert.equal(await page.locator('.v6-prep-card[data-exam="kpss"]').count(), 1, 'Exactly one KPSS product entry must remain');
   assert.equal(await page.getByText(/\bYKS\b/).count(), 0, 'Landing must not display YKS');
   assert.equal(await page.getByText(/\bTYT\b|\bAYT\b|\bYDT\b/).count(), 0, 'Landing must not display YKS-family exam labels');
 
@@ -145,17 +145,15 @@ try {
   assert.equal(await page.locator('[data-scope="TYT"],[data-scope="AYT"],[data-scope="YDT"]').count(), 0, 'Academy must hide YKS session filters');
   const stages = await page.locator('.academy-course .course-stage').allTextContents();
   assert.ok(stages.length > 0 && stages.every(stage => stage.trim().startsWith('KPSS')), 'Academy must expose KPSS courses only');
+  assert.equal(stages.length, 6, 'Internal library must expose all six KPSS subjects');
+  assert.deepEqual(await page.locator('[data-internal-question-library] .academy-mini-stats strong').allTextContents(), ['64', '256', '3072'], 'Internal topic/test/question counts must survive the KPSS boundary');
+  assert.equal(await page.locator('[data-series-card],#turkish-series-select').count(), 0, 'Internal library must not expose an external teacher chooser');
 
-  const pricingButton = page.locator('[data-action="paid-pricing"]').first();
-  assert.ok(await pricingButton.count(), 'Configured KPSS shell must expose pricing navigation');
-  await pricingButton.evaluate(node => node.click());
-  await page.locator('.pricing-page').waitFor({ state: 'visible' });
-  await page.waitForFunction(() => {
-    const copy = (document.querySelector('.pricing-page')?.innerText || '').toLocaleUpperCase('tr-TR');
-    return !/\\bYKS\\b|\\bTYT\\b|\\bAYT\\b|\\bYDT\\b/.test(copy);
-  });
-  const pricingCopy = (await page.locator('.pricing-page').innerText()).toLocaleUpperCase('tr-TR');
-  assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(pricingCopy), 'Pricing must be KPSS-only');
+  assert.equal(
+    await page.locator('[data-action="paid-pricing"],[data-action="paid-offer"],[data-action="paid-upgrade"],[data-view="membership"]').count(),
+    0,
+    'Public Web Beta must not expose unfinished pricing or membership navigation'
+  );
 
   const visibleCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(visibleCopy), 'Visible product UI must remain KPSS-only');

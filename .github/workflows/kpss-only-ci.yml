@@ -34,7 +34,7 @@ jobs:
         run: node scripts/kpss-only-contract.test.mjs
 
       - name: Install Playwright test runtime
-        run: npm install --no-save playwright@1.55.0
+        run: npm ci
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium

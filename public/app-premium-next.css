@@ -1,3 +1,12 @@
+/* WEB BETA · ROTA HOCA RETIRED */
+body.app-premium-next-ready [data-view="teacher"],
+body.app-premium-next-ready .teacher-page,
+body.app-premium-next-ready [data-premium-surface="teacher"],
+body.pnx3-dashboard-ready .pnx3-teacher-card,
+body.pnx3-dashboard-ready .pnx-teacher-card{
+  display:none!important;
+}
+
 /* APP PREMIUM NEXT V1 · TODAY FOCUS + ROTA INTELLIGENCE
    Presentation-only layer. Route Engine, Student Model, entitlements and persistence stay untouched. */
 

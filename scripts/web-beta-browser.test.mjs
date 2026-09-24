@@ -58,6 +58,9 @@ try{
   assert.ok(!/Rota Hoca/i.test(await page.title()),'Browser title must not mention retired Rota Hoca');
   const metaDescription=await page.locator('meta[name="description"]').getAttribute('content');
   assert.match(metaDescription||'',/KPSS/i,'Public meta description must be KPSS-specific');
+  assert.equal(await page.locator('link[rel="icon"][href="/favicon.svg"]').count(),1,'Public beta must expose the branded favicon');
+  assert.equal(await page.locator('meta[name="theme-color"][content="#071225"]').count(),1,'Public beta must expose the branded browser theme color');
+  assert.match((await page.locator('meta[property="og:title"]').getAttribute('content'))||'',/Çalışma Rotası/i,'Public beta must expose share metadata');
   for(const retired of ['Rota Hoca','Yorumlar','SSS','1 Dakikada Keşfet','Gerçek Sonuç']){
     assert.equal(visible.includes(retired),false,'Public Web Beta must not expose retired/dead copy: '+retired);
   }

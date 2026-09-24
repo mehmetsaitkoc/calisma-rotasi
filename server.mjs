@@ -396,7 +396,7 @@ function encodedAsset(req,key,raw){
   else if(encoding==='gzip')body=gzipSync(raw,{level:5});
   WEB_ENCODING_CACHE.set(cacheKey,body);return {encoding,body};
 }
-function sendEncoded(req,res,{key,raw,type,cache='public, max-age=300, stale-while-revalidate=86400',etag='"'+key+'"'}){
+function sendEncoded(req,res,{key,raw,type,cache='public, max-age=300, must-revalidate',etag='"'+key+'"'}){
   if(req.headers['if-none-match']===etag){res.writeHead(304,{'etag':etag,'cache-control':cache,'vary':'Accept-Encoding'});return res.end();}
   const out=encodedAsset(req,key,raw),headers={'content-type':type,'content-length':out.body.length,'cache-control':cache,'etag':etag,'vary':'Accept-Encoding'};
   if(out.encoding!=='identity')headers['content-encoding']=out.encoding;
@@ -421,7 +421,7 @@ async function serve(req,res){
   catch{return json(res,404,{error:'Bulunamadı.'});}
   if(!st.isFile())return json(res,404,{error:'Bulunamadı.'});
   const etag='W/"'+st.size.toString(16)+'-'+Math.floor(st.mtimeMs).toString(16)+'"';
-  const cache='public, max-age=300, stale-while-revalidate=86400',type=mime(real);
+  const cache='public, max-age=300, must-revalidate',type=mime(real);
   const compressible=/^(?:text\/|application\/(?:json|javascript))/.test(type)||type.startsWith('image/svg+xml');
   if(compressible&&st.size<=2*1024*1024){
     const raw=await fs.promises.readFile(real);

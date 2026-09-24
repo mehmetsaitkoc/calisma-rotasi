@@ -465,6 +465,10 @@ const server=http.createServer(async (req,res)=>{
   res.setHeader('referrer-policy','no-referrer');
   res.setHeader('x-frame-options','SAMEORIGIN');
   res.setHeader('permissions-policy',"camera=(), microphone=(), geolocation=()");
+  // Safe CSP baseline for the inline-heavy legacy shell. A strict script/style CSP
+  // needs a nonce/hash migration first; these directives harden framing, plugins,
+  // base URL rewriting and form exfiltration without breaking the current app.
+  res.setHeader('content-security-policy',"object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
   if(IS_RENDER||process.env.NODE_ENV==='production')res.setHeader('strict-transport-security','max-age=31536000; includeSubDomains');
   if(req.url.startsWith('/api/')){if(accounts.cors(req,res))return;if(await accounts.route(req,res))return;}
   if(req.method==='GET'&&req.url==='/api/health'){ const local=isLocalRequest(req),entitlement=runtimeEntitlement(); return json(res,200,{ok:true,accounts:{available:accounts.available!==false,mode:accounts.mode||'persistent'},aiConfigured:accounts.available!==false&&!!runtimeApiKey,ttsConfigured:accounts.available!==false&&!!runtimeApiKey,model:runtimeModel,profile:runtimeProfile,ttsModel:TTS_MODEL,demoFallback:false,honestUnavailableFallback:true,entitlement:{tier:entitlement.tier,source:entitlement.source,purchaseEnabled:entitlement.purchaseEnabled,accountRequired:entitlement.accountRequired},teacherPolicy:{rateLimitPerMinute:TEACHER_RATE_LIMIT,windowMs:RATE_WINDOW_MS,maxBodyBytes:MAX_BODY,maxOutputTokens:TEACHER_MAX_OUTPUT_TOKENS,costProfile:runtimeProfile,contextSchemaVersion:TEACHER_CONTEXT_VERSION},configurable:local&&!runtimeApiKey,deploy:{provider:IS_RENDER?'render':'local',gitCommit:process.env.RENDER_GIT_COMMIT||'',gitBranch:process.env.RENDER_GIT_BRANCH||'',repo:process.env.RENDER_GIT_REPO_SLUG||'',externalUrl:process.env.RENDER_EXTERNAL_URL||''}}); }

@@ -33,7 +33,7 @@ try{
   assert.equal(new Set(resources.filter(x=>/\/runtime\/kpss-bundle\/[a-z0-9-]+\.js(?:\?|$)/.test(x))).size,6);
   assert.equal(apiRequests.length,0,'Static Web Beta must not depend on backend API calls');
 
-  await page.getByRole('button',{name:'Web Beta'}).click();
+  await page.getByRole('button',{name:/Beta bilgisi/}).click();
   await page.getByRole('heading',{name:'Ücretsiz Web Beta'}).waitFor({state:'visible'});
   assert.match((await page.locator('dialog').innerText())||'',/tarayıcıda yerel olarak saklanır/i);
   await page.locator('[data-action="close-modal"]').click();

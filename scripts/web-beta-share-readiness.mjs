@@ -72,7 +72,23 @@ try{
 
   await page.goto(BASE+'/?fresh=1',{waitUntil:'domcontentloaded'});
   await page.locator('.welcome.premium-landing-final').waitFor({state:'visible'});
-  await noOverflow(page,'390px landing');
+  const landingWidths=[1512,1440,1280,1024,768,430,390,375,360,320];
+  for(const width of landingWidths){
+    await page.setViewportSize({width,height:width>=768?900:844});
+    await noOverflow(page,width+'px landing');
+    assert.ok(await page.locator('.v6-main-cta').isVisible(),width+'px landing must keep the primary CTA visible');
+    const geometry=await page.locator('.welcome.premium-landing-final').evaluate(root=>{
+      const nav=root.querySelector('.v6-topbar')?.getBoundingClientRect();
+      const cta=root.querySelector('.v6-main-cta')?.getBoundingClientRect();
+      const copy=root.querySelector('.v6-hero-copytext');
+      return {navWidth:nav?.width||0,ctaWidth:cta?.width||0,ctaHeight:cta?.height||0,copyFont:Number.parseFloat(copy?getComputedStyle(copy).fontSize:'0')||0};
+    });
+    assert.ok(geometry.navWidth<=width+2,width+'px navbar must fit the viewport');
+    assert.ok(geometry.ctaWidth>=120&&geometry.ctaHeight>=40,width+'px primary CTA must remain tappable');
+    assert.ok(geometry.copyFont>=14,width+'px hero body copy must remain legible');
+    await page.screenshot({path:path.join(OUT,'landing-'+width+'.png'),fullPage:false});
+  }
+  await page.setViewportSize({width:390,height:844});
   await fs.promises.mkdir('work/production-evidence',{recursive:true});
   await page.screenshot({path:'work/production-evidence/web-beta-landing-390.png',fullPage:true});
 
@@ -118,7 +134,20 @@ try{
   await page.clock.fastForward(5000);
   await page.locator('.app-shell').waitFor({state:'visible'});
   await page.locator('.route-task').first().waitFor({state:'visible'});
-  await noOverflow(page,'390px Today');
+  const todayWidths=[430,390,375,360,320];
+  for(const width of todayWidths){
+    await page.setViewportSize({width,height:844});
+    await noOverflow(page,width+'px Today');
+    const dock=page.locator('.mobile-dock');
+    assert.ok(await dock.isVisible(),width+'px Today must keep the bottom navigation visible');
+    const dockBox=await dock.boundingBox();
+    assert.ok(dockBox&&dockBox.left>=-1&&dockBox.right<=width+1,width+'px bottom navigation must stay inside the viewport');
+    const firstTask=page.locator('.route-task').first();
+    const taskBox=await firstTask.boundingBox();
+    assert.ok(taskBox&&taskBox.left>=-1&&taskBox.right<=width+1,width+'px route task must stay inside the viewport');
+    await page.screenshot({path:path.join(OUT,'today-'+width+'.png'),fullPage:false});
+  }
+  await page.setViewportSize({width:390,height:844});
 
   const todayCopy=((await page.locator('body').innerText())||'');
   assert.ok(!/Rota Hoca/i.test(todayCopy),'Today must not mention retired Rota Hoca');
@@ -129,6 +158,29 @@ try{
   assert.equal(await page.locator('.topbar-upgrade').count(),0,'Inactive Plus topbar CTA must be absent in Web Beta');
   assert.equal(await page.locator('[data-view="monthly-report"]').count(),0,'Unavailable monthly-report upsell must be absent in Web Beta');
   assert.match(((await page.locator('[data-account-status]').innerText())||''),/Web Beta|Yerel kayıt/i,'Account status must explain local-only beta storage');
+  const task=page.locator('.route-task').first();
+  assert.ok(await task.locator('.check-btn').count(),'Today task must expose completion');
+  assert.ok(await task.locator('[data-action="route-later"]').count(),'Today task must expose Daha sonra');
+  assert.ok(await task.locator('[data-action="route-skip"]').count(),'Today task must expose Atla');
+  assert.ok(((await task.locator('.route-task-reason').textContent())||'').trim(),'Today task must explain why it is scheduled');
+  assert.ok(((await task.locator('.route-mode-explain').textContent())||'').trim(),'Today task must explain its route mode');
+
+  // Exercise the mobile toast layout with multiple simultaneous messages. Only the
+  // newest may remain visible, and it must sit above the bottom navigation.
+  await page.evaluate(()=>{
+    const host=document.querySelector('#toasts');
+    if(!host)throw new Error('Toast host missing');
+    host.replaceChildren(...['Bir','İki','Son bildirim'].map(text=>{
+      const node=document.createElement('div');node.className='toast';node.textContent=text;return node;
+    }));
+  });
+  const visibleToasts=page.locator('#toasts .toast:visible');
+  assert.equal(await visibleToasts.count(),1,'Mobile Web Beta must show only the latest toast');
+  const toastBox=await visibleToasts.first().boundingBox();
+  const dockBox=await page.locator('.mobile-dock').boundingBox();
+  assert.ok(toastBox&&dockBox&&toastBox.bottom<=dockBox.top+2,'Toast must remain above the bottom navigation');
+  await page.evaluate(()=>document.querySelector('#toasts')?.replaceChildren());
+
   await page.screenshot({path:'work/production-evidence/web-beta-today-390.png',fullPage:true});
 
   assert.deepEqual(pageErrors,[],'Page errors:\n'+pageErrors.join('\n'));

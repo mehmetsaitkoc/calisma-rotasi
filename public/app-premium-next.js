@@ -835,7 +835,12 @@
   function removeWebBetaUnavailableUi() {
     if (!window.RotaWebBeta) return;
     document.documentElement.style.setProperty('--preview-h','0px');
-    document.querySelectorAll('.preview-bar,.sidebar-plus,[data-action="paid-membership"],.topbar-upgrade,[data-view="monthly-report"]').forEach((node) => {
+    const previewBar = document.querySelector('.preview-bar');
+    if (previewBar) {
+      previewBar.hidden = true;
+      previewBar.replaceChildren();
+    }
+    document.querySelectorAll('.sidebar-plus,[data-action="paid-membership"],.topbar-upgrade,[data-view="monthly-report"]').forEach((node) => {
       const wrapper = node.closest('.nav-item,.sidebar-plus');
       if (wrapper) wrapper.remove();
       else node.remove();

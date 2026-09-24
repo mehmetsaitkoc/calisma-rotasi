@@ -34,11 +34,6 @@
     return svg;
   };
 
-  const startKpss = () => {
-    if (typeof window.RotaPublicStartKpss === 'function') return window.RotaPublicStartKpss();
-    document.querySelector('.v6-prep-card.kpss')?.click();
-  };
-
   const button = (label, action, cls = '', attrs = {}) => {
     const b = el('button', cls, label);
     b.type = 'button';
@@ -79,8 +74,7 @@
 
     const actions = el('div','v6-nav-actions');
     const workspace = button('Web Beta',null,'v6-outline-btn',{accountAction:'open'});
-    const start = button('Ücretsiz Başla →',null,'v6-gradient-btn');
-    start.addEventListener('click',startKpss);
+    const start = button('Ücretsiz Başla →','choose-exam','v6-gradient-btn',{exam:'kpss'});
     actions.append(workspace,start);
 
     nav.append(brandBtn,links,actions);
@@ -107,8 +101,7 @@
     const p = el('p','v6-hero-copytext','Çalışma Rotası, hedeflerine, seviyene ve zamanına göre sana özel çalışma planı oluşturur. Daha verimli, daha bilinçli, daha senin gibi.');
 
     const actions = el('div','v6-hero-actions');
-    const start = button('Ücretsiz Başla →',null,'v6-gradient-btn v6-main-cta');
-    start.addEventListener('click',startKpss);
+    const start = button('Ücretsiz Başla →','choose-exam','v6-gradient-btn v6-main-cta',{exam:'kpss'});
     const video = el('button','v6-video-btn');
     video.type='button';
     const play = el('span','v6-play'); play.append(icon('chart'));
@@ -234,7 +227,7 @@
     const foot=el('div','v6-dash-foot');
     const motivational=el('div','v6-dash-mot'); motivational.append(icon('bolt'),el('div'));
     motivational.lastElementChild.append(el('strong','', 'Küçük adımlar, büyük sonuçlar.'),el('span','', 'Bugün de hedeflerine bir adım daha yaklaş.'));
-    const task=el('button','v6-dash-task','Bugünün görevlerine başla →');task.type='button';task.addEventListener('click',startKpss);
+    const task=button('Bugünün görevlerine başla →','choose-exam','v6-dash-task',{exam:'kpss'});
     foot.append(motivational,task);
 
     main.append(top,head,stats,lower,foot);

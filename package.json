@@ -25,7 +25,7 @@
     "android:debug": "node scripts/android-build.mjs debug",
     "android:release": "node scripts/android-build.mjs release",
     "android:verify": "node scripts/android-verify.mjs",
-    "accounts:test": "node scripts/account-sync.test.mjs && node scripts/account-security.test.mjs && node scripts/account-mail.test.mjs && node scripts/teacher-account.test.mjs && node scripts/delete-account-page.test.mjs",
+    "accounts:test": "node scripts/account-sync.test.mjs && node scripts/account-security.test.mjs && node scripts/account-mail.test.mjs && node scripts/teacher-account.test.mjs && node scripts/delete-account-page.test.mjs && node scripts/web-beta-mode.test.mjs",
     "student-recovery:test": "node scripts/student-recovery.test.mjs",
     "personal-sources:test": "node scripts/personal-source-compat.test.mjs",
     "android:instrumentation": "cd android && ./gradlew --no-daemon --console=plain :app:connectedDebugAndroidTest",

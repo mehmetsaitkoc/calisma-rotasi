@@ -38,6 +38,7 @@ jobs:
         run: |
           node scripts/web-beta-browser.test.mjs
           node scripts/recovery-browser.test.mjs
+          node scripts/web-beta-share-readiness.mjs
           npm run accounts:browser
           node scripts/onboarding-resume-browser.test.mjs
           node scripts/personal-source-browser.test.mjs

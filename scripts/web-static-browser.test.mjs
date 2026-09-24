@@ -40,7 +40,8 @@ try{
   await page.locator('.v6-main-cta').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
   assert.equal(await page.locator('[data-view="teacher"]').count(),0);
-  assert.equal(await page.locator('.preview-bar').count(),0);
+  assert.equal(await page.locator('#preview-bar').count(),1);
+  assert.equal(await page.locator('#preview-bar').isVisible(),false);
   assert.deepEqual(errors,[]);
   await context.close();
   console.log('Static Web Beta browser passed: zero API dependency, six bundles, direct onboarding, retired surfaces absent.');

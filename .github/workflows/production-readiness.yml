@@ -36,6 +36,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Sequential isolated browser scenarios
         run: |
+          node scripts/web-beta-browser.test.mjs
           node scripts/recovery-browser.test.mjs
           npm run accounts:browser
           node scripts/onboarding-resume-browser.test.mjs

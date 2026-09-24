@@ -136,10 +136,7 @@ async function assertTodayContract(page) {
   assert.ok(await page.locator('.pnx3-week-card').isVisible(), 'Today must expose the weekly progress card');
   assert.ok(await page.locator('.pnx3-goals-card').isVisible(), 'Today must expose KPSS goals');
   assert.ok(await page.locator('.pnx3-highlights-card').isVisible(), 'Today must expose weekly KPSS highlights');
-  const openedMenu=!(await page.locator('.sidebar [data-view="teacher"]').isVisible());
-  if(openedMenu)await page.locator('.mobile-dock [data-action="menu"]').click();
-  assert.ok(await page.locator('.sidebar [data-view="teacher"]').isVisible(), 'Today menu must expose visible Rota Hoca navigation');
-  if(openedMenu)await page.locator('.sidebar [data-view="today"]').click();
+  assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Today must not expose the retired Rota Hoca navigation');
   assert.ok(await page.locator('.pnx3-results-card').isVisible(), 'Today must expose the last-exam results surface');
   assert.ok(await page.locator('.pnx3-quote-card').isVisible(), 'Today must expose the daily quote card');
   assert.equal(await page.locator('.pnx3-insight-archive').count(), 1, 'Explainability must remain available below the dashboard');
@@ -1059,11 +1056,12 @@ try {
   await completeTask(page, review7.id, { questions: 12, correct: 10, wrong: 2, outcome: 'ok' });
   await assertCleanRender(page, 'after 3/7 retention loop');
 
-  // The restored teacher is opt-in; the learning loop must not send automatic AI requests.
-  assert.ok(await page.locator('[data-view="teacher"]').count()>0, 'Rota Hoca navigation must stay reachable');
-  assert.equal(await page.locator('[data-premium-surface="teacher"]').count(), 0, 'Rota Hoca surface is rendered only after explicit navigation');
-  assert.equal(teacherRequest, null, 'Ordinary learning-loop navigation must not call the teacher backend');
-  await assertCleanRender(page, 'after opt-in Rota Hoca surface check');
+  // Rota Hoca is retired from the public beta surface. Legacy internal contracts may remain,
+  // but students must not be able to navigate to or render the teacher workspace.
+  assert.equal(await page.locator('[data-view="teacher"]').count(), 0, 'Rota Hoca navigation must stay removed');
+  assert.equal(await page.locator('[data-premium-surface="teacher"]').count(), 0, 'Rota Hoca surface must stay unreachable');
+  assert.equal(teacherRequest, null, 'Retired Rota Hoca UI must not call the teacher backend during the learning loop');
+  await assertCleanRender(page, 'after retired Rota Hoca surface check');
 
   // Behavior hardening: Daha sonra must be reversible without duplicate evidence,
   // Atla must reschedule the task, and both signals must survive a real reload.

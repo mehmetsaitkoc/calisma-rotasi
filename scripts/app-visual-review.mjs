@@ -88,7 +88,7 @@ async function navigateMobile(page,view){
 }
 async function submitWizard(page){
   await page.locator('[data-premium-surface="welcome"]').waitFor({state:'visible'});
-  await page.locator('[data-action="choose-exam"][data-exam="kpss"]').click();
+  await page.locator('.v6-prep-card[data-action="choose-exam"][data-exam="kpss"]').click();
   await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
 
   const form=()=>page.locator('#setup-wizard-form');

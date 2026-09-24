@@ -49,6 +49,11 @@ try{
 
   await page.goto(BASE+'/?fresh=1',{waitUntil:'domcontentloaded'});
   await page.locator('.welcome.premium-landing-final').waitFor({state:'visible'});
+  const resources=await page.evaluate(()=>performance.getEntriesByType('resource').map(entry=>entry.name));
+  const individualQuestionRequests=resources.filter(url=>/\/questions\/kpss\/.+\/test-[1-4]\.js(?:\?|$)/.test(url));
+  const bundleRequests=resources.filter(url=>/\/runtime\/kpss-bundle\/[a-z0-9-]+\.js(?:\?|$)/.test(url));
+  assert.equal(individualQuestionRequests.length,0,'First landing load must not request individual KPSS test modules');
+  assert.equal(new Set(bundleRequests).size,6,'First landing load must use six subject bundles');
 
   const visible=((await page.locator('body').innerText())||'');
   for(const retired of ['Rota Hoca','Yorumlar','SSS','1 Dakikada Keşfet','Gerçek Sonuç']){

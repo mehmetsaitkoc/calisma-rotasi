@@ -339,8 +339,29 @@ if(WEB_QUESTION_FILES.size!==6||[...WEB_QUESTION_FILES.values()].reduce((n,x)=>n
   throw Error('Web KPSS soru bankası bundle haritası beklenen 6 ders / 256 test ile eşleşmiyor.');
 }
 const WEB_BETA_FLAG=accounts.mode==='local-only'?'<script>window.RotaWebBeta=true</script>':'';
+const SOCIAL_ORIGIN=(()=>{
+  const candidate=process.env.ROTA_APP_ORIGIN||process.env.RENDER_EXTERNAL_URL||'';
+  try{
+    const url=new URL(candidate);
+    if(url.origin!==candidate||!['https:','http:'].includes(url.protocol))return '';
+    if((IS_RENDER||process.env.NODE_ENV==='production')&&url.protocol!=='https:')return '';
+    return url.origin;
+  }catch{return '';}
+})();
+const SOCIAL_META=[
+  '<meta property="og:type" content="website">',
+  '<meta property="og:locale" content="tr_TR">',
+  '<meta property="og:site_name" content="Çalışma Rotası">',
+  '<meta property="og:title" content="Çalışma Rotası · KPSS Web Beta">',
+  '<meta property="og:description" content="Çalışma programı değil, sana özel rota. KPSS için kişisel plan, deneme analizi, yanlış takibi ve 3/7 günlük tekrar döngüsü.">',
+  SOCIAL_ORIGIN?'<meta property="og:url" content="'+SOCIAL_ORIGIN+'/">':'',
+  SOCIAL_ORIGIN?'<meta property="og:image" content="'+SOCIAL_ORIGIN+'/hero-journey-final.webp">':'',
+  '<meta name="twitter:card" content="summary_large_image">',
+  '<meta name="twitter:title" content="Çalışma Rotası · KPSS Web Beta">',
+  '<meta name="twitter:description" content="Çalışma programı değil, sana özel rota. KPSS için kişisel çalışma rotanı oluştur.">'
+].filter(Boolean).join('');
 WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE_BUNDLED
-  .replace('</head>',WEB_BETA_FLAG+'<link rel="stylesheet" href="/landing-final.css"></head>')
+  .replace('</head>',WEB_BETA_FLAG+SOCIAL_META+'<link rel="stylesheet" href="/landing-final.css"></head>')
   .replace('</body>','<script src="/landing-final.js" defer></script></body>');
 const WEB_INDEX_BODY=Buffer.from(WEB_INDEX_SOURCE_BUNDLED,'utf8');
 const WEB_BUNDLE_CACHE=new Map(),WEB_ENCODING_CACHE=new Map();

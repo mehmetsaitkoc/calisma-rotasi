@@ -106,7 +106,29 @@ try{
   assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Modal must be closed before starting onboarding');
 
   await page.locator('.v6-main-cta').click();
-  await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible'});
+  try{
+    await page.locator('[data-premium-surface="onboarding"]').waitFor({state:'visible',timeout:4000});
+  }catch(error){
+    const debug=await page.evaluate(()=>{
+      const states=[];
+      for(const [key,raw] of Object.entries(localStorage)){
+        if(!key.startsWith('calisma-rotasi:all:v5'))continue;
+        try{const value=JSON.parse(raw);states.push({key,activeExam:value?.activeExam||null,kpssConfigured:!!value?.workspaces?.kpss?.configured,kpssProfile:value?.workspaces?.kpss?.profile||null});}catch{}
+      }
+      return {
+        bodyText:(document.body?.innerText||'').slice(0,1800),
+        hasLanding:!!document.querySelector('.welcome.premium-landing-final'),
+        hasOnboarding:!!document.querySelector('[data-premium-surface="onboarding"]'),
+        hasAppShell:!!document.querySelector('.app-shell'),
+        title:document.title,
+        accountStatus:window.RotaAccount?.status,
+        accountAvailable:window.RotaAccount?.available,
+        webBeta:window.RotaWebBeta===true,
+        states
+      };
+    });
+    throw new Error('Web Beta onboarding transition failed. '+JSON.stringify({debug,errors},null,2),{cause:error});
+  }
   const activeExam=await page.evaluate(()=>{
     for(const [key,raw] of Object.entries(localStorage)){
       if(!key.startsWith('calisma-rotasi:all:v5'))continue;

@@ -2677,6 +2677,7 @@ function confirmAction(title,message,fn,label='Onayla',danger=false){ui.confirmF
 function currentTypes(){if(state.activeExam==='kpss')return ['KPSS'];const map={say:'AYT_SAY',ea:'AYT_EA',soz:'AYT_SOZ',dil:'YDT'};return [...new Set(['TYT',...(map[w().settings.track]?[map[w().settings.track]]:[]),...w().exams.map(x=>x.type)])];}
 function typeOptions(selected,all=false){return (all?'': '').concat(currentTypes().map(t=>`<option value="${t}" ${t===selected?'selected':''}>${C.TYPES[t].label}</option>`).join(''));}
 function chooseExam(exam){leaveVideo();state.activeExam=exam;ui.videoSubject='all';ui.videoQuery='';ui.videoFilter='all';ui.stage='all';ui.query='';ui.mockFilter='';ui.weekStart=today();ui.setupStep=0;ui.view=w().configured&&w().profile?.completed?(w().profile.summaryConfirmed===false?'summary':'today'):'setup';if(exam==='kpss'){resumeOnboarding();rememberOnboarding();}save();render();}
+window.RotaPublicStartKpss=()=>chooseExam('kpss');
 function navigate(view){if(view==='teacher'||(window.RotaWebBeta&&['pricing','membership'].includes(view)))view=state.activeExam?'today':'select';if(window.RotaWebBeta&&view==='monthly-report')view='report';if(teacherSpeech?.active)teacherStopSpeaking(true);ui.view=view;document.body.classList.remove('menu-open');render();window.scrollTo({top:0,behavior:'instant'});}
 /* Ücretli ürün deneyimi: yalnızca arayüz önizlemesi.
  * Bu değişken bir yetkilendirme veya abonelik kaydı DEĞİLDİR.

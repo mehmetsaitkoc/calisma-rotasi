@@ -2714,10 +2714,13 @@ icons.lock='M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4M12 14v3';
 icons.credit='M3 5h18v14H3zM3 10h18M6 15h4';
 function plusBadge(label='PLUS'){return `<span class="plus-badge">${icon('spark')}${label}</span>`;}
 function previewBar(){
+ const host=$('#preview-bar');if(!host)return;
+ if(window.RotaWebBeta){host.hidden=true;host.replaceChildren();return;}
+ host.hidden=false;
  const themeLabel=UI_THEME?(THEME_NAMES[UI_THEME]||UI_THEME.toUpperCase()):'VARSAYILAN';
  const themeLinks='';
  const publicBeta=entitlement.source==='public_beta'||window.RotaAccount?.available===false,tierLabel=isPlus()?'ROTA PLUS':publicBeta?'WEB BETA':'ROTA FREE',sourceLabel=publicBeta?'Ücretsiz':entitlement.source==='local_dev'?'Yerel geliştirme erişimi':'Güvenli Ücretsiz';
- $('#preview-bar').innerHTML=`<div class="preview-inner"><span class="preview-caption"><i></i><span>${tierLabel}<span class="preview-extra"> · ${sourceLabel}</span></span></span><div class="preview-controls">${themeLinks}<button class="preview-text" data-action="nav" data-view="academy">Soru kütüphanesi</button>${sampleSaved?'<span class="sample-tag">Örnek veriler</span><button data-action="paid-end-sample" class="preview-text">Örnekten çık</button>':''}</div></div>`;
+ host.innerHTML=`<div class="preview-inner"><span class="preview-caption"><i></i><span>${tierLabel}<span class="preview-extra"> · ${sourceLabel}</span></span></span><div class="preview-controls">${themeLinks}<button class="preview-text" data-action="nav" data-view="academy">Soru kütüphanesi</button>${sampleSaved?'<span class="sample-tag">Örnek veriler</span><button data-action="paid-end-sample" class="preview-text">Örnekten çık</button>':''}</div></div>`;
 }
 function publicNav(){return `<nav class="welcome-nav paid-public-nav"><button class="brand-button" data-action="select" aria-label="Çalışma Rotası ana sayfa">${logo()}</button><div class="row"><button class="public-link ${ui.view==='pricing'?'active':''}" data-action="paid-pricing">Paketler</button>${btn(isPlus()?'Çalışma alanım '+icon('right'):'Ücretsiz başla '+icon('right'),'paid-start','primary sm')}</div></nav>`;}
 function welcomeUpgrade(){return `<section class="welcome-upgrade"><div class="row">${plusBadge('ROTA PLUS')}<span class="tiny muted">TEMEL TAKİPTEN BİR ADIM ÖTEYE</span></div><div class="welcome-upgrade-body"><div><h3>Sonucunu gör. <span class="serif">Sıradaki adımını belirle.</span></h3><p>Gelişmiş aylık raporlar, uzun dönem trendleri ve kişisel analiz ve öneriler.</p></div><div class="welcome-upgrade-price"><div><strong>Plus</strong><span> · üyelik satışı henüz açık değil</span></div>${btn('Özellikleri gör '+icon('arrow'),'paid-pricing','primary')}</div></div><span class="price-footnote">Satış başlamadan önce fiyat kesinleşecek · Ücretsiz paketle başlayabilirsin.</span></section>`;}

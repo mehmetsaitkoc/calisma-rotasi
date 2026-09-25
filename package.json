@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prestart": "node scripts/google-site-verification.mjs",
     "start": "node server.mjs",
+    "seo:verification:test": "node --test scripts/google-site-verification.test.mjs",
     "test": "npm run contracts:test && node scripts/route-engine-smoke.mjs && node scripts/route-engine-stress.mjs && node scripts/route-engine-route-sim.mjs && node scripts/route-engine-longitudinal.mjs && node scripts/route-engine-closed-loop.mjs",
     "quality:report": "node scripts/route-engine-quality-report.mjs",
     "critical:audit": "node scripts/route-engine-critical-personas.mjs",
@@ -18,6 +20,7 @@
     "questions:test": "node scripts/question-bank.test.mjs && node scripts/question-bank-integration.test.mjs && node scripts/question-bank-full.test.mjs && node scripts/question-bank-math-content.test.cjs",
     "questions:audit": "node scripts/question-bank-audit.mjs",
     "questions:browser": "node scripts/question-bank-browser.test.mjs",
+    "preweb:static": "node scripts/google-site-verification.mjs",
     "web:static": "node scripts/web-static-build.mjs",
     "web:static:test": "node scripts/web-static-browser.test.mjs",
     "native:bridge": "node scripts/native-build.mjs --web-bridge",

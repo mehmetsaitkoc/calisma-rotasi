@@ -6,6 +6,7 @@ import { brotliCompressSync, gzipSync, constants as ZLIB } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { createAccounts } from './server/accounts.mjs';
 import { readJson as validatedJson,failure } from './server/validation.mjs';
+import { mergeHeadMetadata } from './server/html-head.mjs';
 
 await import('./public/route-contracts.js');
 await import('./public/teacher-context.js');
@@ -373,8 +374,8 @@ const SOCIAL_META=[
   '<meta name="twitter:title" content="Çalışma Rotası · KPSS Web Beta">',
   '<meta name="twitter:description" content="Çalışma programı değil, sana özel rota. KPSS için kişisel çalışma rotanı oluştur.">'
 ].filter(Boolean).join('');
-WEB_INDEX_SOURCE_BUNDLED=WEB_INDEX_SOURCE_BUNDLED
-  .replace('</head>',WEB_BETA_FLAG+WEB_PUBLIC_META+SOCIAL_META+'<link rel="stylesheet" href="/landing-final.css"></head>')
+WEB_INDEX_SOURCE_BUNDLED=mergeHeadMetadata(WEB_INDEX_SOURCE_BUNDLED,SOCIAL_META)
+  .replace('</head>',WEB_BETA_FLAG+WEB_PUBLIC_META+'<link rel="stylesheet" href="/landing-final.css"></head>')
   .replace('</body>','<script src="/landing-final.js" defer></script></body>');
 const WEB_INDEX_BODY=Buffer.from(WEB_INDEX_SOURCE_BUNDLED,'utf8');
 const WEB_BUNDLE_CACHE=new Map(),WEB_ENCODING_CACHE=new Map(),WEB_ETAG_CACHE=new Map();

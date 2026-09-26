@@ -169,3 +169,6 @@ try {
   if (server.exitCode === null) server.kill('SIGKILL');
   if (process.exitCode) console.error(serverLog);
 }
+
+// Keep the production contract covered by the existing pre-merge KPSS CI.
+await import('./production-smoke-regression.mjs');

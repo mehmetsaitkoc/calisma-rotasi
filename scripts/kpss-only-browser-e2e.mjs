@@ -169,3 +169,17 @@ try {
   if (server.exitCode === null) server.kill('SIGKILL');
   if (process.exitCode) console.error(serverLog);
 }
+
+// Keep the production contract covered by the existing pre-merge KPSS CI.
+await import('./production-smoke-regression.mjs');
+
+// One-off read-only audit of the unchanged deployed main; removed after evidence is captured.
+console.log('Live production smoke audit: expected deployed main 02559634e0a0c9316cc94ef8d66afb39203b50de');
+await new Promise((resolve, reject) => {
+  const child = spawn(process.execPath, ['scripts/production-smoke.mjs'], {
+    env: { ...process.env, PRODUCTION_URL: 'https://calisma-rotasi-1.onrender.com', EXPECTED_SHA: '02559634e0a0c9316cc94ef8d66afb39203b50de', PRODUCTION_DEPLOY_WAIT_MS: '90000', PRODUCTION_POLL_MS: '5000' },
+    stdio: 'inherit', timeout: 180_000
+  });
+  child.once('error', reject);
+  child.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`Live production audit failed: code=${code}, signal=${signal}`)));
+});

@@ -1,0 +1,37 @@
+name: Munimaj Preview QA
+on:
+  push:
+    branches: ['gpt/munimaj-signature-experience']
+    paths: ['munimaj/**', '.github/workflows/munimaj-preview-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve and verify credited stock photography
+        run: |
+          mkdir -p munimaj-reference-assets
+          python3 - <<'PY'
+          import urllib.request, pathlib, json, concurrent.futures
+          ids=[9880843,9881075,9881570,9881565,9881575,9881712,9881708,9881715,9881714,9881706,9881707,9881167,9881172,9881168,9880845,7816433,7816434,7816435,7816437,7816438,7816439,7816440,7816133,7814833,15591934,15591935,15591936,15591937,31861865,31861864]
+          root=pathlib.Path('munimaj-reference-assets')
+          def fetch(i):
+              url=f'https://images.pexels.com/photos/{i}/pexels-photo-{i}.jpeg?cs=tinysrgb&w=1600&q=85&fm=jpg'
+              req=urllib.request.Request(url,headers={'User-Agent':'Munimaj-demo-photo-validation/1.0','Accept':'image/jpeg'})
+              with urllib.request.urlopen(req,timeout=35) as res: data=res.read()
+              if len(data)<10000 or data[:2]!=b'\xff\xd8': raise ValueError(f'Invalid JPEG: {i}')
+              (root/f'{i}.jpg').write_bytes(data)
+              return {'id':i,'bytes':len(data),'source':url,'license':'https://www.pexels.com/license/','usage':'Reference stock photo, not a real Munimaj product or endorsement'}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool: rows=list(pool.map(fetch,ids))
+          (root/'sources.json').write_text(json.dumps(rows,indent=2))
+          print(f'Validated {len(rows)} reference photographs; no deployment performed.')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: munimaj-reference-assets
+          path: munimaj-reference-assets/
+          retention-days: 7

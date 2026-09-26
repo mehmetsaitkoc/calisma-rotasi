@@ -1,0 +1,147 @@
+name: PR72 post-merge live audit
+
+on:
+  push:
+    branches: [gpt/pr72-post-merge-live-audit]
+
+permissions:
+  contents: read
+
+jobs:
+  live-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PRODUCTION_URL: https://calisma-rotasi-1.onrender.com
+      EXPECTED_SHA: d29673ddc84998162190e8576c59d8f186ff5b78
+      PRODUCTION_DEPLOY_WAIT_MS: '120000'
+      PRODUCTION_POLL_MS: '5000'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: d29673ddc84998162190e8576c59d8f186ff5b78
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Confirm product and SEO sources are unchanged
+        run: |
+          git diff --exit-code 02559634e0a0c9316cc94ef8d66afb39203b50de HEAD -- public server server.mjs package.json package-lock.json .github
+          npm run seo:test
+      - name: Run actual smoke against merged live production
+        run: npm run production:smoke
+      - name: Verify delivered SEO and all live KPSS start controls
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import { chromium } from 'playwright';
+          import { verifyKpssEntryPoints } from './scripts/kpss-entry-contract.mjs';
+          import { verificationToken } from './scripts/google-site-verification.mjs';
+
+          const base = process.env.PRODUCTION_URL;
+          const expected = process.env.EXPECTED_SHA;
+          const evidence = { checkedAt: new Date().toISOString(), expectedCommit: expected, sourceComparison: 'public/server/SEO/dependencies/workflows unchanged from 02559634', hosts: [] };
+          fs.mkdirSync('artifacts', { recursive: true });
+          const browser = await chromium.launch({ headless: true });
+          try {
+            for (const host of [base, 'https://calisma-rotasi.onrender.com']) {
+              const entry = { host };
+              evidence.hosts.push(entry);
+              const context = await browser.newContext({ viewport: { width: 360, height: 800 }, locale: 'tr-TR', timezoneId: 'Europe/Istanbul' });
+              try {
+                const healthResponse = await context.request.get(host + '/api/health', { timeout: 45000 });
+                entry.healthStatus = healthResponse.status();
+                assert.ok(healthResponse.ok(), 'Health must be reachable');
+                const health = await healthResponse.json();
+                entry.commit = health.deploy?.gitCommit || health.gitCommit;
+                entry.accounts = health.accounts;
+                entry.aiConfigured = health.aiConfigured;
+                entry.ttsConfigured = health.ttsConfigured;
+                assert.equal(health.ok, true);
+                assert.equal(entry.commit, expected, 'Live host must run merged commit');
+                assert.deepEqual(health.accounts, { available: false, mode: 'local-only' });
+                assert.equal(health.aiConfigured, false);
+                assert.equal(health.ttsConfigured, false);
+
+                const response = await context.request.get(host + '/', { timeout: 45000 });
+                entry.homeStatus = response.status();
+                entry.finalUrl = response.url();
+                assert.equal(response.status(), 200);
+                const html = await response.text();
+                const page = await context.newPage();
+                // DOMParser inspects raw delivered HTML without executing application scripts.
+                entry.seo = await page.evaluate((source) => {
+                  const doc = new DOMParser().parseFromString(source, 'text/html');
+                  const meta = selector => Array.from(doc.head.querySelectorAll(selector), n => n.getAttribute('content'));
+                  return {
+                    title: doc.title,
+                    verification: meta('meta[name="google-site-verification"]'),
+                    descriptions: meta('meta[name="description"]'),
+                    robots: meta('meta[name="robots"]'),
+                    canonical: Array.from(doc.head.querySelectorAll('link[rel="canonical"]'), n => n.getAttribute('href')),
+                    social: Object.fromEntries(['og:title','og:description','og:url','og:image','og:type'].map(key => [key, meta('meta[property="' + key + '"]')])),
+                    twitter: Object.fromEntries(['twitter:card','twitter:title','twitter:description','twitter:image'].map(key => [key, meta('meta[name="' + key + '"]')]))
+                  };
+                }, html);
+                assert.equal(entry.seo.verification.filter(token => token === verificationToken).length, 1, 'Owner verification token must occur once in delivered head');
+                assert.equal(entry.seo.canonical.length, 1, 'One canonical URL');
+                assert.equal(entry.seo.descriptions.length, 1, 'One meta description');
+                assert.ok(entry.seo.descriptions[0].trim());
+                assert.match(entry.seo.title, /Çalışma Rotası/);
+                assert.ok(!/noindex/i.test(entry.seo.robots.join(' ')), 'Public page must not be noindex');
+                for (const [name, values] of Object.entries(entry.seo.social)) {
+                  assert.equal(values.length, 1, name + ' must be emitted exactly once');
+                  assert.ok(values[0], name + ' must be nonempty');
+                }
+                for (const [name, values] of Object.entries(entry.seo.twitter)) {
+                  assert.ok(values.length <= 1, name + ' must not be duplicated');
+                }
+                assert.equal(entry.seo.twitter['twitter:card'].length, 1);
+                const file = 'googlea93ee0c7f97fd614.html';
+                const proof = await context.request.get(host + '/' + file, { timeout: 45000 });
+                entry.verificationFileStatus = proof.status();
+                assert.equal(proof.status(), 200);
+                assert.equal((await proof.text()).trim(), fs.readFileSync('public/' + file, 'utf8').trim(), 'Verification file must match the owner-provided source');
+                const robots = await context.request.get(host + '/robots.txt', { timeout: 45000 });
+                entry.robotsStatus = robots.status();
+                entry.robotsText = (await robots.text()).slice(0, 4000);
+                const sitemap = await context.request.get(host + '/sitemap.xml', { timeout: 45000 });
+                entry.sitemapStatus = sitemap.status();
+                entry.sitemapText = (await sitemap.text()).slice(0, 8000);
+                assert.equal(robots.status(), 200);
+                assert.equal(sitemap.status(), 200);
+                assert.match(entry.robotsText, /Sitemap:/i);
+                assert.match(entry.sitemapText, /<urlset/);
+                await page.goto(host + '/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+                await page.locator('.welcome.premium-landing-final[data-pixel-match="1"]').waitFor({ state: 'visible', timeout: 30000 });
+                assert.equal(await page.locator('meta[name="google-site-verification"]').evaluateAll((nodes, token) => nodes.filter(n => n.content === token).length, verificationToken), 1, 'Runtime must preserve owner verification');
+                await page.screenshot({ path: 'artifacts/' + (host === base ? 'production' : 'canonical-host') + '-landing-mobile.png', fullPage: true });
+                entry.result = 'PASS';
+              } catch (error) {
+                entry.result = 'FAIL';
+                entry.error = String(error?.stack || error);
+                console.error('Live host audit:', JSON.stringify(entry));
+                if (host === base) throw error;
+              } finally {
+                await context.close();
+              }
+              console.log('Live host audit:', JSON.stringify(entry));
+            }
+            evidence.entryPoints = await verifyKpssEntryPoints(browser, base);
+            evidence.result = 'PASS';
+            console.log('Post-merge live audit passed:', JSON.stringify(evidence));
+          } finally {
+            fs.writeFileSync('artifacts/post-merge-live-audit.json', JSON.stringify(evidence, null, 2));
+            await browser.close();
+          }
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr72-post-merge-live-evidence
+          path: artifacts/
+          retention-days: 14

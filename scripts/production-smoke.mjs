@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
+import { assertKpssLanding, assertKpssOnboarding } from './kpss-entry-contract.mjs';
 
 const BASE = (process.env.PRODUCTION_URL || 'https://calisma-rotasi-1.onrender.com').replace(/\/$/,'');
 const EXPECTED_SHA = (process.env.EXPECTED_SHA || process.env.GITHUB_SHA || '').trim();
@@ -175,10 +176,10 @@ try {
   const app = page.locator('#app');
   await app.waitFor({ state: 'visible', timeout: 30_000 });
   assert.ok((await app.innerText()).trim().length > 20, 'Production app must not render a blank shell');
+  await assertKpssLanding(page, 'Production welcome');
   await assertCleanRender(page, 'production welcome');
 
   assert.equal(await page.locator('[data-exam="yks"]').count(), 0, 'Production must not expose a YKS product control');
-  assert.equal(await page.locator('[data-exam="kpss"]').count(), 1, 'Production must expose one KPSS entry point');
   const welcomeCopy = (await page.locator('body').innerText()).toLocaleUpperCase('tr-TR');
   assert.ok(!/\bYKS\b|\bTYT\b|\bAYT\b|\bYDT\b/.test(welcomeCopy), 'Production welcome must be KPSS-only');
 
@@ -188,6 +189,7 @@ try {
 
   const wizard = page.locator('#setup-wizard-form');
   await wizard.waitFor({ state: 'visible', timeout: 20_000 });
+  await assertKpssOnboarding(page, 'Production onboarding');
   assert.ok(await page.locator('[data-premium-surface="onboarding"]').isVisible(), 'Production must open the premium KPSS onboarding surface');
   assert.ok(await wizard.locator('button[type="submit"]').count(), 'Production onboarding must render the premium welcome stage');
   assert.equal(await wizard.locator('select[name="track"]').count(), 0, 'Production KPSS onboarding must not render a YKS track selector');
